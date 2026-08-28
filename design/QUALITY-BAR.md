@@ -40,8 +40,10 @@ deepest mandatory fixes — never polish notes. Iterate until WOWED.
 Critiques are saved to `design/critiques/` (numbered, dated, verbatim),
 and a land that earned a WOWED may not be regressed by a later session.
 
-**Verdicts earned so far:** none. Session 1 built the sheet; nothing has
-faced a gate yet. Every land is presumed NOT YET.
+**Verdicts earned so far:** THE COMMON + the Brim south face + the
+title poster (WOWED, critique-art-1); THE KINGDOM OF BRIM interior +
+CASTLE GREYWEATHER (WOWED, critique-art-2). Every other land is a
+scatter draft and is presumed NOT YET.
 
 ## 3. The permanent constraints
 

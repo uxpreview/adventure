@@ -102,6 +102,8 @@ export const ROADS: Road[] = [
   { width: 4.5, pts: [[148, 205], [210, 208], [268, 205], [330, 202]] },
   // the forest track: kingdom east gate into the Penwood
   { width: 3.2, pts: [[55, -110], [95, -130], [130, -160], [150, -195], [160, -230]] },
+  // the market lane: Brim Square east to the Wood Gate (Session 3)
+  { width: 3.4, pts: [[-40, -86], [-12, -96], [18, -104], [42, -109], [55, -110]] },
   // canyon trail: downs NE corner up the canyon mouth
   { width: 3, pts: [[225, 8], [255, -40], [280, -85], [300, -130], [305, -175]] },
 ];

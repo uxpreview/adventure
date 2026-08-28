@@ -146,6 +146,13 @@ export class App {
     this.world.inkImmediate(this.region.id);
     this.snapCamera();
 
+    // region builders speak to the mixer without a plumbing run:
+    // proximity motions (pigeons put up, the rook parliament breaking)
+    // fire their own one-shots through this bridge
+    window.addEventListener('inklands:event', (e) => {
+      if (this.started) this.audio.event((e as CustomEvent<string>).detail);
+    });
+
     window.addEventListener('resize', () => this.resize());
     this.resize();
     this.renderer.setAnimationLoop(() => this.tick());
@@ -316,8 +323,8 @@ export class App {
     if (here.id !== this.region.id) this.crossInto(here);
     this.surfaceTick();
 
-    // the Common's ambience: a lark somewhere up, and the well's one
-    // joke if you stand close enough (Session 8 generalizes this)
+    // land ambience: each land gets its one voice (Session 8 will
+    // generalize this into the score)
     if (this.started) {
       this.ambientAcc -= dt;
       if (this.ambientAcc <= 0) {
@@ -325,6 +332,23 @@ export class App {
           const nearWell = Math.hypot(this.char.pos.x + 57, this.char.pos.z - 45) < 8;
           this.audio.event(nearWell && Math.random() > 0.45 ? 'well-plink' : 'lark');
           this.ambientAcc = 9 + Math.random() * 13;
+        } else if (this.region.id === 'kingdom') {
+          const nearSquare = Math.hypot(this.char.pos.x + 45, this.char.pos.z + 82) < 16;
+          if (nearSquare && Math.random() > 0.35) {
+            this.audio.event('market-murmur');
+            this.ambientAcc = 10 + Math.random() * 10;
+          } else {
+            this.audio.event('brim-bell');
+            this.ambientAcc = 26 + Math.random() * 22;
+          }
+        } else if (this.region.id === 'castle') {
+          if (Math.random() < 0.7) {
+            this.audio.event('banner-snap');
+            this.ambientAcc = 6 + Math.random() * 8;
+          } else {
+            this.audio.event('rook-caw');
+            this.ambientAcc = 15 + Math.random() * 15;
+          }
         } else {
           this.ambientAcc = 5;
         }

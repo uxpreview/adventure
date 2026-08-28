@@ -1,5 +1,67 @@
 # SESSIONS — the handoff log
 
+## Session 3 — 2026-08-28 — the old world
+
+### Shipped
+- **THE KINGDOM OF BRIM interior rebuilt to spec**
+  (`design/specs/kingdom-of-brim.md`): six places — the south gate
+  inside, the high street, Brim Square, the belfry yard, the orchard
+  close, the Wood Gate. Terrace runs of half-timbered houses
+  (`townRowTexture`, 6 seeds, front- AND side-gabled roofs mixed)
+  replace the 14 scattered cottage stamps; the square gets a
+  two-tier fountain, market cross, five stalls, bunting, crates,
+  cobble-wear; the belfry is now full-pressure with a clock whose
+  hands disagree. East + north walls rebuilt in the Session 2 wall
+  register with drum towers and a new north gate.
+- **CASTLE GREYWEATHER rebuilt to spec**
+  (`design/specs/castle-greyweather.md`): the banner avenue tightens
+  toward a low gatehouse, the ridge wall rides its crags, the bailey
+  keeps a toppled king and the castle well, the moat pool gets reeds
+  and a wind-flagged hawthorn, and a pencil pine treeline closes the
+  north horizon.
+- **The Session 2 vista placeholder is gone.** The pale roofline rank
+  is replaced by the real town plus a new `backStreetTexture` far
+  rank (long ridges + chimneys, never a picket of triangles) that
+  fades as the walker closes on it.
+- **New prop box** `src/world/textures-oldworld.ts` (~20 textures).
+- **Motion**: bunting breathing, swifts round the belfry, pigeons that
+  scatter when you walk into them, rooks circling the keep and a
+  parliament on the statue that breaks when you approach, banner-field
+  wind. **Sound**: `brim-bell`, `market-murmur`, `pigeon-flap`,
+  `banner-snap`, `rook-caw`, wired per region in App's ambience.
+- **Gate: WOWED** after 4 rounds — `design/critiques/critique-art-2.md`
+  (verbatim). Protected now: the north-gate reveal, the banner avenue
+  with the keep clearing its gatehouse, and Brim Square under bunting.
+
+### State
+- Build green; `tools/shoot-oldworld.mjs` is the Session 3 contact
+  sheet; Session 2's protected framings re-shot and verified richer,
+  not regressed.
+- Four lands hold the bar (Common, Brim south face + interior,
+  Greyweather). Ladder says Session 4 = THE COAST.
+
+### Gotchas (new; Sessions 1–2 all still apply)
+- **The frame-top ceiling decides all architecture.** The shipping
+  camera shows only ~10 world units of height at 33 units out and
+  ~16 at 82. Anything taller crops, and a tall near building fills
+  the upper frame so nothing behind it can be seen at all. That is
+  why Greyweather's keep is drawn WIDE (640×320, 34×17 units) and its
+  gatehouse is only 9.5: height contests are won by spread, not by
+  scale. Do not "fix" a hidden landmark by making it taller.
+- Gate arches need `passFade(px, pz, gx, lo, hi)` — the camera trails
+  12 units behind the walker, so a fade keyed to the walker alone
+  pops while the camera is still inside the arch. Both Brim gates,
+  the Greyweather gatehouse and the whole ridge wall use it.
+- The pale/failing-pressure register is a DISTANCE register only: any
+  pale standee within ~16 units reads as a flat grey slab. Fade them.
+- Region builders can fire audio without plumbing: dispatch
+  `inklands:event` on window (App bridges it to `Audio.event`).
+- `layout.ts` gained one road (the market lane, Brim Square → Wood
+  Gate). No rect, river, bridge, mood or step-zone change; terrain and
+  map pick roads up automatically.
+- `bannerTexture(seed, 'red'|'blue')` now takes a forced color — the
+  coin-flip was putting blue banners in a land whose accent is red.
+
 ## Session 2 — 2026-08-28 — the first minute
 
 ### Shipped

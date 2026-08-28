@@ -280,6 +280,48 @@ export class Audio {
         this.tone(659, 0.12, 0.4, 0.02);
         break;
       }
+      case 'brim-bell': {
+        // the belfry earning the hour: strike, hum, and the low answer
+        const j = 0.985 + Math.random() * 0.03;
+        this.knock(220 * j, 0.014);
+        this.tone(466 * j, 0.02, 1.8, 0.014);
+        this.tone(311 * j, 0.05, 2.4, 0.018);
+        this.tone(196 * j, 1.35, 0.08, 0.016); // the second strike's knock
+        this.tone(349 * j, 1.38, 2.6, 0.014);
+        break;
+      }
+      case 'market-murmur': {
+        // the square at work: a barrel set down, a trader's two notes
+        const j = 0.94 + Math.random() * 0.12;
+        this.knock(240 * j, 0.018);
+        this.knock(180 * j, 0.012);
+        this.tone(523 * j, 0.16, 0.3, 0.012);
+        break;
+      }
+      case 'pigeon-flap': {
+        // the square's pigeons put up: three fast soft beats climbing
+        const j = 0.9 + Math.random() * 0.2;
+        this.knock(320 * j, 0.012);
+        this.knock(430 * j, 0.01);
+        this.knock(560 * j, 0.008);
+        break;
+      }
+      case 'banner-snap': {
+        // the only wind on the page cracking a banner once
+        const j = 0.9 + Math.random() * 0.25;
+        this.knock(1500 * j, 0.02);
+        this.knock(640 * j, 0.012);
+        break;
+      }
+      case 'rook-caw': {
+        // two low rasps a third apart; the parliament is in session
+        const j = 0.93 + Math.random() * 0.14;
+        this.knock(210 * j, 0.02);
+        this.tone(175 * j, 0.02, 0.14, 0.02);
+        this.knock(175 * j, 0.016);
+        this.tone(147 * j, 0.24, 0.16, 0.018);
+        break;
+      }
       case 'panel': {
         // a pair pays off — rising by pair index (ch03 §8)
         const n = data ?? 0;

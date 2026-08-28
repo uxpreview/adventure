@@ -666,11 +666,11 @@ export function keepTexture(seed: number): THREE.CanvasTexture {
   });
 }
 
-export function bannerTexture(seed: number): THREE.CanvasTexture {
+export function bannerTexture(seed: number, force?: 'red' | 'blue'): THREE.CanvasTexture {
   return makeTexture(64, 160, seed, (ctx, r) => {
     line(ctx, 32, 152, 32, 16, r, { width: 2.4, alpha: 0.9 });
     line(ctx, 20, 22, 44, 22, r, { width: 2, alpha: 0.85 });
-    const c = r() > 0.5 ? '#8f4a52' : '#4a6a8f';
+    const c = force ? (force === 'red' ? '#8f4a52' : '#4a6a8f') : r() > 0.5 ? '#8f4a52' : '#4a6a8f';
     fillPoly(ctx, [[22, 24], [42, 24], [42, 88], [32, 78], [22, 88]], c, 0.7);
     stroke(ctx, [[22, 24], [22, 88], [32, 78], [42, 88], [42, 24]], r, { width: 1.6, alpha: 0.85 });
     scribbleCircle(ctx, 32, 48, 7, r, { width: 1.3, alpha: 0.7, color: '#efece2' });
