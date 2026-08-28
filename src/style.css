@@ -1,0 +1,302 @@
+/* INKLANDS — the chrome. Every visible word is re-lettered onto a
+   canvas by the stroke library; the font stacks here are the
+   accessibility fallback under those canvases. */
+
+:root {
+  --paper: #f5f2ea;
+  --ink: #232633;
+  --ink-soft: rgba(35, 38, 51, 0.62);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Georgia, 'Times New Roman', serif;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+#app > canvas {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+}
+
+.lettered canvas {
+  mix-blend-mode: multiply;
+}
+
+/* ---------- loader ---------- */
+.loader {
+  position: absolute;
+  inset: 0;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  z-index: 60;
+  transition: opacity 0.7s ease;
+}
+.loader.gone {
+  opacity: 0;
+  pointer-events: none;
+}
+.loader-track {
+  width: min(240px, 60vw);
+  height: 3px;
+  background: rgba(35, 38, 51, 0.12);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.loader-bar {
+  height: 100%;
+  background: var(--ink-soft);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+/* ---------- title ---------- */
+.title-veil {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: max(9vh, 40px);
+  z-index: 50;
+  transition: opacity 0.9s ease;
+  pointer-events: none;
+}
+.title-veil.gone {
+  opacity: 0;
+}
+.title-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  pointer-events: auto;
+}
+.title-veil.gone .title-box {
+  pointer-events: none;
+}
+.game-sub {
+  opacity: 0.85;
+}
+.title-btn {
+  background: none;
+  border: 1.6px solid rgba(35, 38, 51, 0.55);
+  border-radius: 3px 14px 4px 12px / 10px 4px 12px 5px;
+  padding: 9px 26px 7px;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.title-btn:hover {
+  transform: rotate(-0.6deg) scale(1.03);
+  border-color: var(--ink);
+}
+
+/* ---------- hud ---------- */
+.hud {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  display: flex;
+  gap: 10px;
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+.hud.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.hud-btn {
+  background: none;
+  border: 1.4px solid rgba(35, 38, 51, 0.4);
+  border-radius: 3px 10px 4px 9px / 8px 4px 9px 5px;
+  padding: 6px 12px 4px;
+  cursor: pointer;
+}
+.hud-btn:hover {
+  border-color: var(--ink);
+}
+
+/* ---------- region card ---------- */
+.region-card {
+  position: absolute;
+  left: 50%;
+  top: 12%;
+  transform: translateX(-50%) translateY(-8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 35;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.region-card.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---------- hint ---------- */
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: max(26px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 35;
+  transition: opacity 0.7s ease;
+}
+.hint.show {
+  opacity: 1;
+}
+
+/* ---------- poi labels + prompt ---------- */
+.labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+}
+.poi-label {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.poi-label.show {
+  opacity: 1;
+}
+#prompt {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  cursor: pointer;
+  z-index: 32;
+  padding: 4px 10px;
+  pointer-events: none;
+}
+#prompt.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---------- joystick ---------- */
+#joy {
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  margin: -48px 0 0 -48px;
+  border: 1.4px solid rgba(35, 38, 51, 0.25);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 34;
+  transition: opacity 0.2s ease;
+}
+#joy .nub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: 1.6px solid rgba(35, 38, 51, 0.45);
+  background: rgba(245, 242, 234, 0.5);
+  border-radius: 50%;
+}
+#joy.active {
+  opacity: 1;
+}
+
+/* ---------- note card ---------- */
+.note-veil {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(60, 56, 46, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 55;
+  transition: opacity 0.4s ease;
+}
+.note-veil.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.note-card {
+  background: #f7f4eb;
+  border: 1.4px solid rgba(35, 38, 51, 0.3);
+  border-radius: 4px 16px 5px 14px / 12px 5px 14px 6px;
+  box-shadow: 3px 4px 0 rgba(35, 38, 51, 0.12);
+  padding: 26px 30px 20px;
+  max-width: min(460px, 88vw);
+  transform: rotate(-0.5deg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.note-close {
+  align-self: flex-end;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+/* ---------- map ---------- */
+.map-veil {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(60, 56, 46, 0.22);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 56;
+  transition: opacity 0.4s ease;
+}
+.map-veil.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.map-slot {
+  transform: rotate(0.4deg);
+  box-shadow: 4px 6px 0 rgba(35, 38, 51, 0.14);
+  border: 1.4px solid rgba(35, 38, 51, 0.3);
+  border-radius: 3px 12px 4px 10px / 9px 4px 10px 5px;
+  overflow: hidden;
+  line-height: 0;
+}
+.map-canvas {
+  width: min(92vw, 78vh * 1.2368, 940px);
+  height: auto;
+  display: block;
+}

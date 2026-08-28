@@ -1,0 +1,91 @@
+# INKLANDS
+
+*A world in one sheet — twelve lands, one pen.*
+
+An open-world adventure drawn entirely in procedural ballpoint, built on
+the engine from [margins](https://github.com/uxpreview/margins). The
+whole world is a single enormous page lying on a desk: the sea runs off
+the torn west edge, and past every margin lies the next sheet down and
+then wood. **There is not one image asset in this repository** — every
+tree, tower, cactus and traffic light is drawn onto an offscreen canvas
+by a seeded wobbly-stroke library at load, and every word the player
+reads is hand-lettered by the same pen.
+
+Sketch-like, but real: under the line work sits a field of muted
+watercolor washes — one stain per land, ragged at the borders — with
+roads, a river and an animated sea painted into it. The same painted
+pixels the shader reads also answer the game: whether you can wade
+here, what a footstep sounds like, whether the page takes your ink.
+
+## The twelve lands
+
+| | | |
+|---|---|---|
+| THE WIDE BLUE | open water | sailboats, buoys, wading shallows |
+| LONGSHORE | the coast | palms, umbrellas, huts on stilts, the boardwalk |
+| CASTLE GREYWEATHER | the high seat | the keep, the gatehouse, banner avenue |
+| THE KINGDOM OF BRIM | the walled town | cottages, Brim Square, the market |
+| THE COMMON | where you woke | the crossroads, the old well, three oaks |
+| MAPLE COURT | the neighborhood | porch lights, picket fences, the green |
+| THE PENWOOD | under the pines | pine dark, mushrooms, the tarn |
+| SPLITROCK CANYON | the deep cut | striated walls, the Needle Arch |
+| THE HARROW DOWNS | farm country | wheat, hay bales, the mill, a scarecrow |
+| THE BLEACH FLATS | the desert | dune script, saguaros, tumbleweeds, the oasis |
+| GREYLINE CITY | downtown | hatched towers, lit windows, the Junction |
+| THE CUBICLE MILE | the office park | ruled glass, hedges, the 8:15 stop |
+
+A river rises in the canyon, crosses the whole sheet and meets the sea
+past the boardwalk; three plank bridges carry the roads over it. Every
+border crossing changes the music's mood, the footstep underfoot, and
+deals a region card — nothing else, because the sheet is continuous.
+
+## What's here so far
+
+- **Walking is drawing.** Footprints are ink; wet paper refuses them.
+- **The land inks itself in.** Each region's furniture is born as faint
+  pencil under-drawing and re-inks in a radial wave from wherever you
+  first cross its border.
+- **Vistas.** The camera sits low enough that the keep reads from the
+  meadow and the city towers from across the downs; the fog is a
+  horizon, not a curtain.
+- **A hand-drawn map** (`M`) that only names the lands you have walked.
+- **24 places worth a look**, each with a note in the world's voice.
+- **All-procedural audio**: paper-room ambience, pen-scratch steps in
+  six surface timbres (sand, grass, stone, planks, water, paper), and a
+  music-box melody that wanders a different scale in every land.
+- Position, discovered lands and strides walked saved to `localStorage`.
+
+The story layer is deliberately not started yet — see `DIRECTION.md`
+for where it could go.
+
+## Run it
+
+```sh
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # type-check + production build in dist/
+```
+
+Desktop: WASD or arrows, `E` to look, `M` for the map. Mobile: drag
+anywhere to steer, tap to interact.
+
+Append `?debug` to expose `window.__inklands` (teleport, region query,
+terrain probes, audio) for testing. `tools/shoot.mjs` drives the game
+under Playwright with real key events and screenshots every land.
+
+## How it's made
+
+Ported whole from margins: the ink library (`src/engine/ink.ts`), paper
+grain, hand-lettering and handwriting synthesis, footprints, the walk
+cycle, the paper post-pass, the audio engine. New for the open world:
+
+- `src/world/layout.ts` — the twelve rects, roads, river, bridges;
+  the one authored truth the terrain, map and audio all read.
+- `src/world/terrain.ts` — the whole world as one sheet: wash field
+  painted at load (1 texel per world unit), domain-warped borders,
+  animated water, plus CPU queries for collision and step timbre.
+- `src/world/regions/` — a builder per land placing instanced standee
+  fields and one-off drawings; streaming keeps first-visit cost off
+  the walk.
+- `src/world/textures.ts` — the prop box: forty-odd seeded drawings,
+  ink outline over a light wash stain.
