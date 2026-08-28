@@ -1,9 +1,10 @@
 # The INKLANDS quality bar
 
 *Binding on every session. Adapted from margins' `design/QUALITY-BAR.md`,
-which earned its verdicts; where this file is silent, that file rules.
-If a session cannot meet the bar, the session ships less scope — never a
-lower bar.*
+which earned its verdicts — but margins is a **reference, not an
+authority**: this is a different game, and its inherited laws hold only
+where INKLANDS has ratified them (§3). If a session cannot meet the bar,
+the session ships less scope — never a lower bar.*
 
 ---
 
@@ -14,11 +15,13 @@ and to be the walk people send each other the way they send *Alto's
 Odyssey*, *Journey*, *Sable*, and *A Short Hike* — a drawn open world
 that feels authored in every frame.
 
-**The world comes first, for now.** Story is deferred by owner decision
-(2026-08-28): sessions build the world out and up until every land
-survives its critic; the story arrives into a world already worth
-walking. DIRECTION.md holds the story candidates; do not start one
-without the owner.
+**The world comes first, then the systems, then the story.** Owner
+decision, 2026-08-28: the foundations that change how a land is authored
+(elevation, camera, traversal, time) land before the remaining lands do,
+and the story is picked at Session 7 — see `PLAN.md`. Until then
+DIRECTION.md holds the candidates; do not start one without the owner.
+`design/WORLD-SYSTEMS.md` is the standing plan for everything that is
+not a land.
 
 ## 2. The verdict gates
 
@@ -29,8 +32,9 @@ specs, never on intentions.
 - **The art director** — rejects anything that looks procedural,
   placeholder, or like a tech demo wearing a style. Reviews a contact
   sheet of the session's lands (wide, mid, and detail shots per land,
-  from the shipping camera) blind against *Gris*, *Sable*, and margins
-  itself. The bar: *they cannot tell which world had an art budget.*
+  from the shipping camera, **desktop and portrait**) blind against
+  *Gris*, *Sable*, and margins itself. The bar: *they cannot tell which
+  world had an art budget.*
 - **The Awwwards juror** — scores design, usability, creativity,
   content on the whole build: title, first minute, one full land
   crossing, the map. The bar: Site of the Day contention, not "nice".
@@ -53,15 +57,31 @@ scatter draft and is presumed NOT YET.
 - **Sketch-like but real.** Ballpoint line work over muted watercolor
   wash. Washes come only from `palette.ts` `WASH`; nothing outside that
   file invents a color.
-- **One sheet.** The world is a single page on a desk. The rects in
-  `src/world/layout.ts` are the shared truth of terrain, map, audio and
-  collision — move content freely, move borders only with a layout-wide
-  audit (map, roads, river, moods, step zones).
+- **One sheet, and the sheet has a shape.** The world is a single page
+  on a desk. The rects in `src/world/layout.ts` are the shared truth of
+  terrain, map, audio and collision — move content freely, move borders
+  only with a layout-wide audit (map, roads, river, moods, step zones).
+  The page is **not flat**: it creases, curls, buckles and tears (see
+  `design/WORLD-SYSTEMS.md` §1). Elevation is drawn from that
+  vocabulary, never from generic hills, and standees stay vertical on
+  slopes — they are cutouts standing on a warped page.
 - **60fps on mid-range mobile**, portrait playable, DPR capped at 2.
   A land that cannot hold frame rate is redesigned, not shipped slow.
 - **The build stays green.** `npm run build` (tsc + vite) passes before
   any commit; pushes auto-deploy, so never push what fails locally.
-- **No faces.** Doodle-folk are posture and clothing, never features.
+- **No faces.** The walker has two dots; nobody else has a face.
+  Doodle-folk are posture, placement and clothing — which is exactly why
+  they must express through routine instead (WORLD-SYSTEMS §5).
+- **Mobile and desktop are both first-class.** Every contact sheet is
+  shot in portrait (390×844) as well as desktop (1280×720), and the art
+  director reviews both. A composition that only works in landscape is
+  not done.
+- **Inherited rules must be re-ratified or dropped.** This engine was
+  ported whole from margins, and some of its laws are margins' story
+  rather than our design — the flat ground was one, and it cost us a
+  critique round before anyone noticed. When a rule blocks the world,
+  ask first whether INKLANDS ever chose it. `design/WORLD-SYSTEMS.md`
+  keeps the running audit.
 
 ## 4. What "good" means for a land
 

@@ -1,5 +1,31 @@
 # SESSIONS — the handoff log
 
+## Session 3.5 — 2026-08-28 — owner direction (no code)
+
+Design conversation after the Session 3 gate, baked into the repo as
+`design/WORLD-SYSTEMS.md` plus re-cut `PLAN.md` / `QUALITY-BAR.md` /
+`PROMPT.md`. Decisions, so nobody re-litigates them:
+
+- **The flat ground was an inheritance, not a decision** — and it goes.
+  Paper is flat but not rigid: the sheet creases, curls, buckles and
+  tears. Session 4 is a foundations session that gives the page a shape.
+- **The ordering rule:** systems that change how a land is authored
+  (elevation, camera, traversal, time) ship BEFORE the remaining lands.
+  The ladder was re-cut around this; the coast moved to Session 5 so it
+  can be authored with elevation rather than re-opened after it.
+- **margins is a reference, not an authority.** Every inherited rule is
+  now re-ratified or dropped; WORLD-SYSTEMS carries the running audit.
+  First pass found `AudioDirector` (739 lines, never called), ~60 dead
+  `Audio.event` cases, and the two-blues forgery contract in
+  `palette.ts` — all margins plot, none of it ours.
+- **Mobile and desktop are both first-class**, enforced at the gate:
+  every contact sheet now shoots portrait as well as desktop.
+- **Mounts are rewards, one per quadrant, each refusing the others'
+  ground** (horse / bicycle / rowboat / the 8:15 / paper plane). Walking
+  stays the universal verb; no fast-travel menu, ever.
+- **Blots-as-caves parked** until the story gives them a reason.
+- **Story is picked at Session 7**, not before.
+
 ## Session 3 — 2026-08-28 — the old world
 
 ### Shipped
@@ -38,7 +64,8 @@
   sheet; Session 2's protected framings re-shot and verified richer,
   not regressed.
 - Four lands hold the bar (Common, Brim south face + interior,
-  Greyweather). Ladder says Session 4 = THE COAST.
+  Greyweather). Ladder re-cut after this session: Session 4 = THE PAPER
+  HAS A SHAPE (foundations), coast moves to Session 5.
 
 ### Gotchas (new; Sessions 1–2 all still apply)
 - **The frame-top ceiling decides all architecture.** The shipping

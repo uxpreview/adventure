@@ -77,3 +77,10 @@ tonally heavier and needs the most new simulation.
    instances into placed characters with a two-line note economy.
 4. **Story pick** — decide among the three above (or a fourth), then
    write STORY.md before building any of it, the way margins did.
+   **Scheduled for Session 7** (owner decision, 2026-08-28): the
+   foundations that change how a land is authored come first. See
+   `PLAN.md` and `design/WORLD-SYSTEMS.md`.
+
+Note: blots-as-caves (the `BLOT` inverted palette) stay parked until a
+story needs them — a cave system with no reason to exist is Skyrim's
+weakest content, not something to copy.
