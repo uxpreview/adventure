@@ -1,5 +1,54 @@
 # SESSIONS — the handoff log
 
+## Session 2 — 2026-08-28 — the first minute
+
+### Shipped
+- **THE COMMON rebuilt to spec** (`design/specs/the-common.md`, the
+  first land spec): six named places (crossroads, well, oaks, gate
+  fields, long fence, riverbend), cluster-scattered grass in six
+  drawings + tall seedheads + three one-species flower drifts, worn
+  ground under every place, two composed voids. New prop box in
+  `src/world/textures-common.ts` (~25 textures).
+- **The Brim vista** (kingdom south face, in `buildKingdom`): varied
+  wall segments + drum towers, the rebuilt south gatehouse
+  (`brimGateTexture`) with red pennants (animated), town rooflines +
+  belfry stacked behind the battlements, and the false-perspective
+  pencil keep (`keepVistaTexture`, a meadow standee) that fades before
+  the walker reaches the wall. Roof/belfry layer fades once inside the
+  town. East wall stays draft for Session 3.
+- **The title poster**: pulled-back pre-start camera, loader now fully
+  lets go before the title letters in (title-veil starts `gone` +
+  0.75 s delay), portrait subtitle clamped.
+- **Engine**: `hatch()` clips itself (was spraying streaks from every
+  wide box); StandeeField wind sway + player-bend (`wind` opt,
+  `setPlayer`); region updates receive `(dt, t, px, pz)`; meadow
+  ambience (`lark`, `well-plink` events + App ticker); swallows,
+  rope-swing pendulum.
+- **Gate: WOWED** after 6 rounds — `design/critiques/critique-art-1.md`
+  (verbatim, all rounds). Title framing, gate stack, and well/poppy
+  cluster are now protected compositions.
+
+### State
+- Build green; all 12 lands verified walkable (`tools/shoot.mjs`);
+  first-minute framings in `tools/shoot-first-minute.mjs`.
+- THE COMMON + the Brim south face hold the bar. Kingdom interior,
+  castle, and everything else remain scatter drafts — ladder says
+  Session 3 = CASTLE GREYWEATHER + KINGDOM interior.
+
+### Gotchas (new; Session 1's all still apply)
+- The keep vista is FALSE PERSPECTIVE (meadow-owned standee at
+  z≈−52, fog off). Session 3 must keep its fade (gone by z<12) or
+  players catch it standing inside the town.
+- The camera passes through the gate arch entering Brim — reads as
+  "walking under", but Session 3 should add a proximity fade.
+- Meadow lean-grass is never x-flipped: the wind lean is drawn in.
+- Headless screenshot pages that aren't foregrounded get rAF-throttled
+  (the loader tween never finishes) — `bringToFront()` in shoot
+  scripts, and close the desktop page before the portrait one.
+- Rooflines/belfry and the vista keep are placeholders the Session 3
+  town must REPLACE seamlessly from the south approach: re-shoot
+  `09/10` framings and diff against the WOWED sheet before removing.
+
 ## Session 1 — 2026-08-28 — the sheet
 
 ### Shipped

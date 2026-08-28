@@ -93,8 +93,9 @@ export class UI {
     this.mapSlot = el('map-slot', this.map);
     this.map.addEventListener('click', () => this.closeMap());
 
-    // title
-    this.title = el('title-veil', this.root);
+    // title — starts gone so the loader's fade never overlaps it;
+    // App shows it once the loader has fully let go
+    this.title = el('title-veil gone', this.root);
     const tbox = el('title-box', this.title);
     const t = el('game-title', tbox);
     letterEl(t, 'INKLANDS', { ...S.display(44), px: 44 });

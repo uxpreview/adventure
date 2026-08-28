@@ -12,6 +12,12 @@ export type StandeeFieldOpts = {
   overshoot?: number;
   /** Ground decal instead of standing quad. */
   decal?: boolean;
+  /**
+   * Wind sway (THE COMMON spec §9.1): every instance leans on a
+   * per-instance phase, amplitude scaled by height up the quad, and
+   * bends away from the walker set via setPlayer(). Vertex-stage only.
+   */
+  wind?: { amp: number; freq: number };
 };
 
 /**
@@ -37,6 +43,7 @@ export class StandeeField {
       color = 0xffffff,
       overshoot = 0.12,
       decal = false,
+      wind,
     } = opts;
     this.count = capacity;
 
@@ -55,11 +62,17 @@ export class StandeeField {
         uGhost: { value: ghost },
         uBase: { value: baseOpacity },
         uOvershoot: { value: overshoot },
+        uWind: { value: new THREE.Vector2(wind?.amp ?? 0, wind?.freq ?? 0) },
+        uQuadH: { value: h },
+        uPlayer: { value: new THREE.Vector2(1e6, 1e6) },
       },
       vertexShader: /* glsl */ `
         attribute float aBirth;
         uniform float uTime;
         uniform float uOvershoot;
+        uniform vec2 uWind;
+        uniform float uQuadH;
+        uniform vec2 uPlayer;
         varying vec2 vUv;
         varying float vWake;
         void main() {
@@ -69,7 +82,23 @@ export class StandeeField {
           // back-out scale spring around the quad's base
           float spring = t > 0.0 ? 1.0 + uOvershoot * exp(-t * 4.0) * sin(min(t, 1.2) * 9.0) : 1.0;
           vec3 p = position * spring;
-          gl_Position = projectionMatrix * viewMatrix * instanceMatrix * modelMatrix * vec4(p, 1.0);
+          vec4 wp = instanceMatrix * modelMatrix * vec4(p, 1.0);
+          if (uWind.x > 0.0) {
+            // the wind, and the walker: both act on the top of the
+            // blade, in world space so flips and rotations stay honest
+            vec2 origin = vec2(instanceMatrix[3][0], instanceMatrix[3][2]);
+            float hFac = clamp(position.y / uQuadH, 0.0, 1.0);
+            float phase = origin.x * 1.7 + origin.y * 2.3;
+            float sway = sin(uTime * uWind.y + phase)
+                       + 0.5 * sin(uTime * uWind.y * 2.7 + phase * 1.3);
+            wp.x += sway * uWind.x * hFac * hFac;
+            vec2 away = origin - uPlayer;
+            float d = length(away);
+            if (d < 1.7 && d > 1e-4) {
+              wp.xz += (away / d) * (1.0 - d / 1.7) * 0.55 * hFac;
+            }
+          }
+          gl_Position = projectionMatrix * viewMatrix * wp;
         }
       `,
       fragmentShader: /* glsl */ `
@@ -188,6 +217,11 @@ export class StandeeField {
 
   update(time: number) {
     this.mat.uniforms.uTime.value = time;
+  }
+
+  /** Where the walker is, for the grass-parting bend (wind fields only). */
+  setPlayer(x: number, z: number) {
+    (this.mat.uniforms.uPlayer.value as THREE.Vector2).set(x, z);
   }
 
   dispose() {

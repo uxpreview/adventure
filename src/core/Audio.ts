@@ -264,6 +264,22 @@ export class Audio {
         this.tone(1760, 0.14, 0.2, 0.025);
         break;
       }
+      case 'lark': {
+        // the Common's bird: three quick chirps stepping up and away,
+        // pitch-jittered so no two larks are the same lark
+        const j = 0.96 + Math.random() * 0.1;
+        this.tone(1760 * j, 0, 0.13, 0.02);
+        this.tone(2093 * j, 0.11, 0.11, 0.018);
+        this.tone(1975 * j, 0.24, 0.2, 0.015);
+        break;
+      }
+      case 'well-plink': {
+        // a drop finally reaching the water a long way down
+        this.knock(140, 0.016);
+        this.tone(880, 0.04, 0.09, 0.016);
+        this.tone(659, 0.12, 0.4, 0.02);
+        break;
+      }
       case 'panel': {
         // a pair pays off — rising by pair index (ch03 §8)
         const n = data ?? 0;

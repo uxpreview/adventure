@@ -7,7 +7,7 @@ what the first minute shows gets the bar first.
 
 | # | Session | Scope |
 |---|---------|-------|
-| 2 | **The first minute** | THE COMMON + the title framing + the south face of THE KINGDOM OF BRIM (the wall vista is the spawn's horizon). Specs, rebuild, art-director gate to WOWED. |
+| 2 | **The first minute** ✓ 2026-08-28 | THE COMMON + the title framing + the south face of THE KINGDOM OF BRIM (the wall vista is the spawn's horizon). Specs, rebuild, art-director gate to WOWED (`design/critiques/critique-art-1.md`). |
 | 3 | **The old world** | CASTLE GREYWEATHER + THE KINGDOM interior (square, lanes, gates). The keep approach is the game's flagship walk. |
 | 4 | **The coast** | LONGSHORE + THE WIDE BLUE: coastline as a composition, boardwalk as a place, the regatta, surf audio. |
 | 5 | **Farm & forest** | THE HARROW DOWNS + THE PENWOOD: field patchwork vs pine dark; the tarn; the forest track. |

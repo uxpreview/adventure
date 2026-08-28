@@ -1,42 +1,32 @@
-# PROMPT — Session 2: THE FIRST MINUTE
+# PROMPT — Session 3: THE OLD WORLD
 
 You are continuing INKLANDS in `uxpreview/adventure`, branch
 `claude/open-world-adventure-game-hsf9nj` (default; pushes auto-deploy
 to Vercel project `adventure`). Read, in order: `design/QUALITY-BAR.md`
-(binding), `PLAN.md`, `README.md`, `SESSIONS.md`. Story is parked —
-this is a WORLD session.
+(binding), `PLAN.md`, `README.md`, `SESSIONS.md` (Session 2's gotchas
+especially). Story is parked — this is a WORLD session.
 
 ## The job
 
-Take the two things every visitor sees first and hold them to the bar:
+CASTLE GREYWEATHER + THE KINGDOM OF BRIM interior, to the bar:
 
-1. **THE COMMON** — the spawn land. Today it is a scatter draft: even
-   grass, floating props, no composition. Spec it per
-   `design/LAND-SPEC-TEMPLATE.md` (THE SHOT, 4–7 named places,
-   composition plan, ink technique, motion, sound), then rebuild it.
-   The crossroads, the well, and the oaks should become PLACES with
-   weight — clustering, occlusion layers, deliberate voids, worn
-   ground where feet have been, texture variants so no silhouette
-   repeats in frame.
-2. **The title framing + the northern horizon** — the title screen is
-   the game's poster: compose it deliberately (walker, meadow
-   foreground, Brim's wall and the castle stacked in the fog). Rebuild
-   the KINGDOM's south face only as far as the vista needs (the wall,
-   the gatehouse, roofline silhouettes behind it) — the town interior
-   is Session 3.
-
-Also fix while you are in there: the loader's fade overlapping the
-title for a beat.
+1. **THE KINGDOM interior** — spec per `design/LAND-SPEC-TEMPLATE.md`,
+   then rebuild: the square, the lanes, both gates as places. The
+   Session 2 vista layer (rooflines, belfry, the false-perspective
+   keep in `meadow.ts`) is a PLACEHOLDER your real town must replace
+   seamlessly — the south-approach framings (`tools/
+   shoot-first-minute.mjs` 09/10) are WOWED and may not regress.
+   Add the gate-arch proximity fade Session 2 noted.
+2. **CASTLE GREYWEATHER** — the keep approach is the game's flagship
+   walk: spec it, rebuild it (keep, gatehouse, ridge wall, moat pool,
+   banners taking the only wind).
 
 ## The gate
 
-When the build is green, shoot a contact sheet from the running game
-(`tools/shoot.mjs` plus hand-framed walks via `?debug` /
-`window.__inklands.goto`) — wide, mid, and detail per subject, plus the
-title screen. LOOK at every image. Then run the hostile art-director
-critique from `design/QUALITY-BAR.md` §2 against the screenshots, write
-it to `design/critiques/critique-art-1.md` with a WOWED / NOT YET
-verdict and mandatory fixes, and iterate until WOWED. Do not end the
+Shoot wide/mid/detail per subject from the shipping camera plus the
+protected Session 2 framings, LOOK at every image, run the hostile
+art-director critique per QUALITY-BAR §2, log to
+`design/critiques/critique-art-2.md`, iterate to WOWED. Do not end the
 session on NOT YET with fixes unattempted.
 
 ## Law (short form — QUALITY-BAR.md is the long form)
@@ -44,5 +34,5 @@ session on NOT YET with fixes unattempted.
 Zero image assets; all marks via `src/engine/ink.ts`; washes only from
 `palette.ts`; layout rects move only with a layout-wide audit; 60fps
 mobile; build green before every push; no faces on doodle-folk; nothing
-reads as an array. End the session: pushed, `SESSIONS.md` handoff
-updated, verdicts logged.
+reads as an array; WOWED lands may not regress. End the session:
+pushed, `SESSIONS.md` handoff updated, verdicts logged.

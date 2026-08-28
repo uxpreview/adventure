@@ -55,6 +55,7 @@ export class App {
   private started = false;
   private elapsed = 0;
   private persistAcc = 0;
+  private ambientAcc = 6;
   private camTarget = new THREE.Vector3();
   private clock = new THREE.Clock();
   private activePoi: ReturnType<POIManager['update']> = null;
@@ -179,8 +180,10 @@ export class App {
       ease: 'power2.inOut',
       onUpdate: () => this.ui.setProgress(state.t),
       onComplete: () => {
+        // sequence, don't overlap: the loader lets go of the page
+        // completely before the title is lettered onto it
         this.ui.hideLoader();
-        this.ui.showTitle(this.save.data.pos !== null);
+        gsap.delayedCall(0.75, () => this.ui.showTitle(this.save.data.pos !== null));
       },
     });
   }
@@ -260,6 +263,13 @@ export class App {
    * stay in frame at any distance; the fog is the skyline.
    */
   private cameraOffset() {
+    if (!this.started) {
+      // the poster framing: pulled back and up so the title shot reads
+      // walker low, road climbing, Brim's wall and the keep in the haze
+      return this.camera.aspect < 0.8
+        ? new THREE.Vector3(0, 6.6, 16.2)
+        : new THREE.Vector3(0, 6.0, 14.6);
+    }
     return this.camera.aspect < 0.8
       ? new THREE.Vector3(0, 6.6, 13.6)
       : new THREE.Vector3(0, 5.6, 12.4);
@@ -305,6 +315,21 @@ export class App {
     const here = regionAt(this.char.pos.x, this.char.pos.z);
     if (here.id !== this.region.id) this.crossInto(here);
     this.surfaceTick();
+
+    // the Common's ambience: a lark somewhere up, and the well's one
+    // joke if you stand close enough (Session 8 generalizes this)
+    if (this.started) {
+      this.ambientAcc -= dt;
+      if (this.ambientAcc <= 0) {
+        if (this.region.id === 'meadow') {
+          const nearWell = Math.hypot(this.char.pos.x + 57, this.char.pos.z - 45) < 8;
+          this.audio.event(nearWell && Math.random() > 0.45 ? 'well-plink' : 'lark');
+          this.ambientAcc = 9 + Math.random() * 13;
+        } else {
+          this.ambientAcc = 5;
+        }
+      }
+    }
 
     if (this.started) {
       this.activePoi = this.poi.update(this.char.pos);

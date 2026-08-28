@@ -41,7 +41,8 @@ export type BuildCtx = {
   }) => [number, number][];
 };
 
-export type RegionBuilder = (ctx: BuildCtx) => ((dt: number, t: number) => void) | void;
+export type RegionBuilder = (ctx: BuildCtx) =>
+  ((dt: number, t: number, px: number, pz: number) => void) | void;
 
 /** A point of interest plus the note card its interact opens, if any. */
 export type WorldPOI = import('../../engine/POI').POIDef & {
@@ -66,7 +67,7 @@ const BUILDERS: Record<RegionId, RegionBuilder> = {
 type Built = {
   group: THREE.Group;
   fields: StandeeField[];
-  update: ((dt: number, t: number) => void) | null;
+  update: ((dt: number, t: number, px: number, pz: number) => void) | null;
   inked: boolean;
 };
 
@@ -182,8 +183,11 @@ export class World {
       }
       b.group.visible = d < SHOW_REACH;
       if (b.group.visible) {
-        for (const f of b.fields) f.update(t);
-        b.update?.(dt, t);
+        for (const f of b.fields) {
+          f.update(t);
+          f.setPlayer(x, z);
+        }
+        b.update?.(dt, t, x, z);
       }
       if (!b.inked && spec.id === currentId) {
         b.inked = true;

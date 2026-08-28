@@ -380,7 +380,11 @@ export function scribbleCircle(
   stroke(ctx, pts, r, { jitter: rad * 0.04, ...o });
 }
 
-/** Parallel hatching inside a clip path the caller sets up. */
+/**
+ * Parallel hatching, clipped to its own rect. (Art director S2: the
+ * unclipped version sprayed rotated lines far past wide-thin boxes —
+ * every wall and canopy grew diagonal streaks across the sky.)
+ */
 export function hatch(
   ctx: Ctx2D,
   x: number,
@@ -393,6 +397,9 @@ export function hatch(
   o: StrokeOpts = {}
 ) {
   ctx.save();
+  ctx.beginPath();
+  ctx.rect(x - 1, y - 1, w + 2, h + 2);
+  ctx.clip();
   ctx.translate(x + w / 2, y + h / 2);
   ctx.rotate(angle);
   const d = Math.hypot(w, h);

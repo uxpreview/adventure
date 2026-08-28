@@ -98,6 +98,11 @@ body {
 }
 .game-sub {
   opacity: 0.85;
+  max-width: 94vw;
+}
+.game-sub canvas {
+  max-width: 100%;
+  height: auto;
 }
 .title-btn {
   background: none;

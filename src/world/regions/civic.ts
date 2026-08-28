@@ -7,6 +7,10 @@ import {
   shopfrontTexture, trafficLightTexture, benchTexture, busStopTexture,
   planterTexture, doodleFolkTexture, bushTexture, signpostTexture,
 } from '../textures';
+import {
+  brimWallTexture, wallTowerTexture, brimGateTexture, gatePennantTexture,
+  rooflineTexture, belfryTexture,
+} from '../textures-common';
 import type { RegionBuilder, WorldPOI } from './index';
 
 /* ================================================================== *
@@ -18,12 +22,51 @@ import type { RegionBuilder, WorldPOI } from './index';
 export const buildKingdom: RegionBuilder = (ctx) => {
   const { r } = ctx;
 
-  // the town wall: south face with the road gate, east face with the wood gate
-  for (let x = -142; x < 52; x += 16) {
-    if (Math.abs(x + 45) < 10) continue; // the south gate
-    ctx.standee(townWallTexture(800 + x, 512, 160), 16.5, 5.2, x + 8, -13);
+  /* -- the south face: the spawn's whole horizon (Session 2 spec) ----
+   * Segments vary in width, height and seed; drum towers punctuate the
+   * run; the gatehouse centers it with two red pennants; the town's
+   * rooflines and the belfry stack behind the battlements so the wall
+   * reads as a town and not a fence. */
+  const gateL = -53.5;
+  const gateR = -36.5;
+  let wx = -148;
+  let si = 0;
+  while (wx < 54) {
+    if (wx >= gateL && wx < gateR) { wx = gateR; continue; } // the gate
+    let segW = 12 + r() * 7;
+    if (wx < gateL && wx + segW > gateL) segW = gateL - wx;
+    if (wx + segW > 56) segW = 56 - wx;
+    if (segW < 4) { wx += segW; continue; }
+    const segH = 5.0 + r() * 0.9;
+    ctx.standee(brimWallTexture(800 + si), segW + 1.2, segH, wx + segW / 2,
+      -13 + (r() - 0.5) * 1.6);
+    wx += segW;
+    si++;
   }
-  ctx.standee(gatehouseTexture(810), 12, 12, -45, -12.5);
+  // drum towers stand proud of the wall line, breaking the run's rhythm
+  [-116, -76, -16, 24].forEach((tx, i) =>
+    ctx.standee(wallTowerTexture(880 + i), 6.4, 8.2, tx + (r() - 0.5) * 3, -11.6));
+  ctx.standee(brimGateTexture(810), 13, 13, -45, -12.5);
+  const pennantL = ctx.standee(gatePennantTexture(811), 1.5, 3, -49.1, -13.2);
+  const pennantR = ctx.standee(gatePennantTexture(812), 1.5, 3, -40.9, -13.0);
+  pennantL.position.y = 10.3;
+  pennantR.position.y = 10.3;
+
+  // the town behind its wall: gable rows, then the belfry over them.
+  // These are the vista's midground; from INSIDE the town they'd read
+  // as beached tents, so the update fades them once the walker is in.
+  const vistaLayer: ReturnType<typeof ctx.standee>[] = [];
+  const roofRuns: [number, number, number, number][] = [
+    // x, z, width, seed
+    [-120, -26, 34, 0], [-84, -30, 30, 1], [-52, -24, 26, 2],
+    [-18, -28, 32, 0], [14, -25, 26, 1], [40, -30, 24, 2],
+    [-100, -44, 38, 1], [-58, -48, 34, 2], [-20, -46, 36, 0], [22, -44, 30, 1],
+  ];
+  roofRuns.forEach(([x, z, w, v], i) =>
+    vistaLayer.push(ctx.standee(rooflineTexture(840 + i * 3 + v, 512, 160), w, w * (160 / 512), x, z)));
+  vistaLayer.push(ctx.standee(belfryTexture(870), 5.5, 11, -62, -42));
+
+  // the east face keeps the draft wall until Session 3 takes the town
   for (let z = -152; z < -22; z += 16) {
     if (Math.abs(z + 110) < 10) continue; // the east gate to the Penwood
     ctx.standee(townWallTexture(820 + z, 512, 160), 16.5, 5.2, 56, z + 8, { rotY: Math.PI / 2 });
@@ -64,6 +107,19 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   const banners = ctx.field(bannerTexture(871), 8, { w: 1.6, h: 4 });
   [[-52, -108], [-38, -108], [-52, -56], [-38, -56], [-70, -82], [-20, -82], [-45, -30], [-45, -130]]
     .forEach(([x, z], i) => banners.set(i, x, z, 1, 0, i % 2 === 0));
+
+  return (_dt: number, t: number, _px: number, pz: number) => {
+    // the gate pennants take the same wind as the meadow grass
+    pennantL.scale.x = 1 + Math.sin(t * 5.1) * 0.16 + Math.sin(t * 1.3) * 0.06;
+    pennantR.scale.x = 1 + Math.sin(t * 4.6 + 1.9) * 0.16 + Math.sin(t * 1.1 + 0.7) * 0.06;
+    // the roof vista holds for the approach, lets go once you're in
+    const k = Math.max(0, Math.min(1, (pz + 8) / 8));
+    for (const m of vistaLayer) {
+      const mat = m.material as import('three').MeshBasicMaterial;
+      mat.opacity = k;
+      m.visible = k > 0.02;
+    }
+  };
 };
 
 export const KINGDOM_POIS: WorldPOI[] = [
