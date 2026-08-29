@@ -88,6 +88,13 @@ changes how every future land is authored.*
 - Build green. 210k terrain triangles in one static draw call, no
   per-frame CPU, no new draw call per prop. Worst frame is still THE
   COMMON at 280 draws, unchanged by elevation.
+- **`main` is the branch now.** After this session the four per-session
+  branches (all strictly linear) were consolidated: `main` was created
+  at the Session 4 tip and made the repo default. Vercel's production
+  branch is a project setting that does NOT follow the GitHub default,
+  so it has to be pointed at `main` by hand once; and a branch created
+  through the GitHub API fires no push event, so Vercel does not list a
+  branch until something is actually pushed to it.
 - Protected now, in BOTH viewports: everything Sessions 2–3 protected,
   plus the castle-reveal / avenue-foot / avenue-climb stack and the
   portrait poster.
@@ -278,8 +285,11 @@ Design conversation after the Session 3 gate, baked into the repo as
   visible at distance); per-land music moods; three new step surfaces;
   the hand-drawn map (M); 24 POI notes; localStorage save.
 - Hosted: Vercel project `adventure` (imported by owner; the connector
-  cannot create projects — 403), production tracks this branch at
-  https://adventure-ryankm.vercel.app.
+  cannot create projects — 403) at https://adventure-ryankm.vercel.app.
+  **Superseded after Session 4:** production tracked this session's
+  branch until 2026-08-29, when the four session branches were
+  consolidated onto `main` and `main` became the default. See Session
+  4's State note for the current arrangement.
 
 ### State
 - Build green (`npm run build` = tsc + vite). All twelve lands verified
