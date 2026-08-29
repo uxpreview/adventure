@@ -7,6 +7,11 @@ export type POIDef = {
   radius: number;
   /** Label that fades in when near (like the reference's artwork labels). */
   label?: string;
+  /**
+   * How high over the place its name is written. Session 4 raised the
+   * default and dropped the prompt's: on the castle ramp the two were
+   * six-tenths of a unit apart and printed on top of each other.
+   */
   labelHeight?: number;
   /** If set, an interact prompt appears in range; tapping/E triggers it. */
   prompt?: string;
@@ -24,7 +29,7 @@ export class POI {
   inRange = false;
   labelEl: HTMLDivElement | null = null;
   constructor(def: POIDef) {
-    this.def = { enabled: true, labelHeight: 2.0, ...def };
+    this.def = { enabled: true, labelHeight: 3.4, ...def };
   }
   get enabled() {
     return this.def.enabled !== false;
@@ -43,6 +48,9 @@ export class POIManager {
   /** Exposed so the shoot harness can walk to a chapter's own triggers
    *  by label instead of hard-coding coordinates that drift with staging. */
   pois: POI[] = [];
+  /** The ground under a world point — labels are written over places,
+   *  and since Session 4 places have a height. */
+  groundAt: ((x: number, z: number) => number) | null = null;
   private v = new THREE.Vector3();
 
   constructor(
@@ -107,7 +115,7 @@ export class POIManager {
       if (p.labelEl) {
         const show = d < p.def.radius * 1.6;
         p.labelEl.classList.toggle('show', show);
-        if (show) this.place(p.labelEl, p.def.x, p.def.labelHeight!, p.def.z);
+        if (show) this.place(p.labelEl, p.def.x, this.ground(p.def.x, p.def.z) + p.def.labelHeight!, p.def.z);
       }
       if (inR && p.def.onInteract && d < best) {
         best = d;
@@ -118,11 +126,15 @@ export class POIManager {
     if (active) {
       letterEl(this.promptEl, active.def.prompt ?? 'look', S.voice(11.5));
       this.promptEl.classList.add('show');
-      this.place(this.promptEl, active.def.x, 1.4, active.def.z);
+      this.place(this.promptEl, active.def.x, this.ground(active.def.x, active.def.z) + 0.55, active.def.z);
     } else {
       this.promptEl.classList.remove('show');
     }
     return active;
+  }
+
+  private ground(x: number, z: number) {
+    return this.groundAt ? this.groundAt(x, z) : 0;
   }
 
   private place(el: HTMLElement, x: number, y: number, z: number) {
@@ -136,7 +148,12 @@ export class POIManager {
     const hh = el.offsetHeight;
     const pad = 10;
     sx = Math.min(Math.max(sx, hw + pad), window.innerWidth - hw - pad);
-    sy = Math.min(Math.max(sy, hh + pad), window.innerHeight - pad);
+    // Session 4, portrait as a first-class viewport: a tappable prompt
+    // that lands in the top half of a tall screen is out of thumb reach.
+    // Labels float where their place is; the PROMPT comes to the hand.
+    const tall = window.innerWidth / window.innerHeight < 0.8;
+    const floor = tall && el === this.promptEl ? window.innerHeight * 0.42 : hh + pad;
+    sy = Math.min(Math.max(sy, floor), window.innerHeight - pad);
     el.style.left = `${sx}px`;
     el.style.top = `${sy}px`;
   }

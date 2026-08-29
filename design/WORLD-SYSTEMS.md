@@ -191,17 +191,20 @@ the thing it is steering toward.
 *The flat ground was inherited, not chosen. So the standing question for
 every rule in this codebase is: did INKLANDS choose this, or did it
 arrive from margins? Anything inherited must be re-ratified on its own
-merits or dropped. This is the first pass; keep auditing.*
+merits or dropped. Session 4 executed the first pass; keep auditing.*
 
-### Drop
+### Dropped — Session 4, 2026-08-28 ✓
 
-| what | where | why |
-|---|---|---|
-| **`AudioDirector`** (739 lines) | `src/core/AudioDirector.ts` | margins' Chapter 10 finale score. `director()` is never called from anywhere in INKLANDS. Delete. |
-| **~60 of 66 `Audio.event` cases** | `src/core/Audio.ts` | margins chapter hooks (`wo-tape-boom`, `blot-edge`, `xray-taught`, `mom-underline`, `ghost-raised`…). Only the meadow, Brim and Greyweather events are live. Keep the synthesis helpers, delete the dead cases. |
-| **The two-blues forgery contract** | `src/engine/palette.ts` | WARM_BLUE vs COLD_BLUE, the paling curves, the greyscale-separation requirement and the "nothing may write a blue" law all encode margins' plot (a 1996 Bic vs a 1999 forging pen). INKLANDS has no forger. Keep one blue as a colour; drop the contract and the commentary. |
-| **Smudge auto-on for WARM_BLUE** | `src/engine/ink.ts` | the drag-ghost is a left-handed character's hand in margins. Keep the *effect* (it is a good ink behaviour and it is our rain), drop the automatic rule and the fiction. |
-| **The flat sheet** | `terrain.ts` and the quality bar | see §1. |
+| what | where | why | outcome |
+|---|---|---|---|
+| **`AudioDirector`** (739 lines) | `src/core/AudioDirector.ts` | margins' Chapter 10 finale score. `director()` was never called from anywhere in INKLANDS. | File deleted; `director()`, `releaseDirector()` and the `holdSilence` hook into it gone from `Audio.ts`. |
+| **59 of 66 `Audio.event` cases** | `src/core/Audio.ts` | margins chapter hooks (`wo-tape-boom`, `blot-edge`, `xray-taught`, `mom-underline`, `ghost-raised`…). | Deleted. The seven that survive are the ones the world actually says: `lark`, `well-plink`, `brim-bell`, `market-murmur`, `pigeon-flap`, `banner-snap`, `rook-caw`. Every synthesis helper kept — they are the instrument, not the score. |
+| **The two-blues forgery contract** | `src/engine/palette.ts` | WARM_BLUE vs COLD_BLUE, the paling curves, the greyscale-separation requirement and the "nothing may write a blue" law all encoded margins' plot (a 1996 Bic vs a 1999 forging pen). INKLANDS has no forger. | Gone, with `warmBlueA`/`coldBlueA`, the four paling tokens, `PRINTED_RULE`, `DAWN_WARM` and `INK_PALE_HEX`. One `BLUE` remains as a colour. |
+| **Smudge auto-on for WARM_BLUE** | `src/engine/ink.ts` | the drag-ghost is a left-handed character's hand in margins. | The rule is gone; the *effect* is kept and is now opt-in and off by default. It is a true ballpoint behaviour and it is how this world will draw rain (§7). |
+| **The flat sheet** | `terrain.ts` and the quality bar | see §1. | Gone. `src/world/elevation.ts` is the page's shape and the one authority on where the ground is. |
+
+Net: ~900 lines of another game's story removed, and the bundle is
+~14 kB smaller than it was before elevation was added to it.
 
 ### Keep, but re-ratified on INKLANDS' own merits
 
@@ -213,10 +216,10 @@ merits or dropped. This is the first pass; keep auditing.*
 - **The paper post-pass, hand-lettering, footprints, region streaming,
   the ink-in cascade.** All load-bearing.
 - **No faces on doodle-folk** — kept, because it forces expression
-  through posture and that is what makes the folk work. **But the rule
-  as written is already violated:** the walker has two dot eyes in
-  `characterSheet()`. Re-word it: *the walker has two dots; nobody else
-  has a face.*
+  through posture and that is what makes the folk work. The rule as
+  written was already violated by `characterSheet()`'s two dot eyes, so
+  Session 4 re-worded it in QUALITY-BAR §3: *the walker has two dots;
+  nobody else has a face.* ✓
 
 ### Parked
 

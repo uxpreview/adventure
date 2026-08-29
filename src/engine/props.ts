@@ -3,6 +3,12 @@ import * as THREE from 'three';
 /**
  * Props are paper stand-ups and ground decals: flat planes carrying ink
  * textures, exactly like drawings standing up out of the page.
+ *
+ * Session 4: the page is no longer flat, so the two kinds part company.
+ * A STANDEE is a cutout — it stands vertically wherever the ground puts
+ * it and never tilts with the slope. A DECAL is a mark ON the page — it
+ * lies down along the surface normal. Decals carry a polygon offset so
+ * a wide mark on a fold can never fight the ground for the same pixel.
  */
 
 export function makeStandee(
@@ -36,6 +42,9 @@ export function makeDecal(
     transparent: true,
     opacity,
     depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -4,
+    polygonOffsetUnits: -8,
   });
   const m = new THREE.Mesh(geo, mat);
   m.position.y = 0.01;

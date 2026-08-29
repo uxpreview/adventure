@@ -4,8 +4,13 @@ import {
   paperGrainTexture, paperSheetTexture, deskGrainTexture, paperSpec,
 } from '../engine/paper';
 import {
-  WORLD, REGION_SPECS, ROADS, RIVER, RIVER_WIDTH, BRIDGES, PONDS, type Rect,
+  WORLD, REGION_SPECS, ROADS, RIVER, RIVER_WIDTH, BRIDGES, PONDS, coastX, type Rect,
 } from './layout';
+import {
+  HeightField, H_STEP, H_MIN_X, H_MAX_X, H_MIN_Z, H_MAX_Z, MAX_WALK_SLOPE, SHEET_PAD,
+} from './elevation';
+
+export { coastX };
 
 /**
  * THE SHEET — the entire world as one page.
@@ -17,6 +22,14 @@ import {
  * new is UNDER the line work: a painted field of muted washes, one per
  * land, with the roads and the water laid into it. Sketch first, real
  * second — the wash never covers the paper, it stains it.
+ *
+ * Session 4 gave the page a SHAPE (see elevation.ts). The mesh is no
+ * longer a quad: it is displaced from the height field, and every vertex
+ * carries the two numbers a pen would need to draw the fold — how the
+ * surface leans away from the light, and how sharply it is cupped. The
+ * fragment shader turns those into shading and into the shadow that
+ * lives in a crease. Nothing here invents a height; elevation.ts is the
+ * one authority and this file reads it.
  *
  * The wash field is painted once at load into a 1-unit-per-texel map:
  *   rgb = the land's stain (regions churned soft at the borders)
@@ -32,11 +45,6 @@ const TEX_W = 768;
 const TEX_H = 576;
 const SPAN_X = WORLD.maxX - WORLD.minX;
 const SPAN_Z = WORLD.maxZ - WORLD.minZ;
-
-/** The coastline: where the sand gives up and the sea begins. */
-export function coastX(z: number): number {
-  return -250 + Math.sin(z * 0.018) * 10 + Math.sin(z * 0.043 + 1.7) * 6;
-}
 
 const smoothstep = (a: number, b: number, x: number) => {
   const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
@@ -68,6 +76,8 @@ export class Terrain {
   private water: Uint8Array;
   /** road mask per texel, 0..255. */
   private road: Uint8Array;
+  /** The shape of the page. The one authority on where the ground is. */
+  readonly field = new HeightField();
 
   constructor() {
     this.grain = paperGrainTexture(11);
@@ -87,10 +97,47 @@ export class Terrain {
     this.tintTex.wrapT = THREE.ClampToEdgeWrapping;
     this.tintTex.needsUpdate = true;
 
-    const geo = new THREE.PlaneGeometry(1400, 1200);
+    /* ---- the shape of the page ------------------------------------ *
+     * One plane, subdivided at exactly the height field's pitch so mesh
+     * vertices land on field nodes and the geometry can never disagree
+     * with what the walker stands on. */
+    const segX = Math.round((H_MAX_X - H_MIN_X) / H_STEP);
+    const segZ = Math.round((H_MAX_Z - H_MIN_Z) / H_STEP);
+    const geo = new THREE.PlaneGeometry(H_MAX_X - H_MIN_X, H_MAX_Z - H_MIN_Z, segX, segZ);
     geo.rotateX(-Math.PI / 2);
+    const pos = geo.attributes.position as THREE.BufferAttribute;
+    const n = pos.count;
+    const shade = new Float32Array(n * 4);
+    /* The desk lamp is BEHIND the page and to the left — which means
+     * every slope that faces the camera faces away from the light and
+     * reads dark. Round 4 of the gate found the castle scarp lit and
+     * therefore invisible, so the curtain wall appeared to float on the
+     * skyline. A hillside you are looking at should be the shaded one. */
+    const LX = -0.38, LY = 0.86, LZ = -0.34;
+    const CAV = 8; // the stencil the cupping is measured over, in units
+    for (let i = 0; i < n; i++) {
+      const x = pos.getX(i);
+      const z = pos.getZ(i);
+      const h = this.field.heightAt(x, z);
+      pos.setY(i, h);
+      const [nx, ny, nz] = this.field.normalAt(x, z);
+      shade[i * 4] = nx * LX + ny * LY + nz * LZ;
+      // cupping: positive in a fold's bottom, negative along its crest
+      const ring =
+        (this.field.heightAt(x + CAV, z) + this.field.heightAt(x - CAV, z) +
+          this.field.heightAt(x, z + CAV) + this.field.heightAt(x, z - CAV)) * 0.25;
+      shade[i * 4 + 1] = (ring - h) / 1.8;
+      // the fall line, so hatching can run DOWN a cliff the way a hand
+      // draws one, whichever way the cliff happens to face
+      const [gx, gz] = this.field.gradAt(x, z);
+      shade[i * 4 + 2] = gx;
+      shade[i * 4 + 3] = gz;
+    }
+    pos.needsUpdate = true;
+    geo.setAttribute('aShade', new THREE.BufferAttribute(shade, 4));
+    geo.computeBoundingSphere();
 
-    const pad = 14;
+    const pad = SHEET_PAD;
     this.mat = new THREE.ShaderMaterial({
       uniforms: THREE.UniformsUtils.merge([
         THREE.UniformsLib.fog,
@@ -112,12 +159,16 @@ export class Terrain {
           uTime: { value: 0 },
           uSeed: { value: 0.37 },
           uFogCap: { value: 0.74 },
+          uFlatLam: { value: 0.86 },
         },
       ]),
       vertexShader: /* glsl */ `
         #include <fog_pars_vertex>
+        attribute vec4 aShade;
         varying vec3 vWorld;
+        varying vec4 vShade;
         void main() {
+          vShade = aShade;
           vec4 wp = modelMatrix * vec4(position, 1.0);
           vWorld = wp.xyz;
           vec4 mvPosition = viewMatrix * wp;
@@ -138,7 +189,9 @@ export class Terrain {
         uniform float uTime;
         uniform float uSeed;
         uniform float uFogCap;
+        uniform float uFlatLam;
         varying vec3 vWorld;
+        varying vec4 vShade;
 
         float hash(vec2 p) {
           return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -225,21 +278,110 @@ export class Terrain {
             washed = mix(washed, waterCol, smoothstep(0.015, 0.28, wtr) * 0.92);
           }
 
+          /* THROUGH the page: down in the tear you can see the desk.
+           * SPLITROCK is a rip in the sheet, and the whole point of a
+           * rip is what is under it — so the same two bands that lie
+           * past the margin are painted into the bottom of the cut. */
+          float through = smoothstep(-3.4, -9.5, vWorld.y) * mSheet;
+
           /* the page under it, and the desk under that */
           vec3 col = washed;
-          if (mSheet < 0.999) {
+          if (mSheet < 0.999 || through > 0.002) {
             vec3 nextCol = uPaper * 0.905 + vec3(-0.006, 0.0, 0.010);
-            float shadeA = 1.0 - 0.26 * exp(-max(0.0, sdA) * 1.15);
+            float shadeA = 1.0 - 0.40 * exp(-max(0.0, sdA) * 1.05);
             vec3 next = nextCol * (1.0 + grain * 0.052) * shadeA;
             float dg = texture2D(uDesk, rot(p * 0.052, 0.18)).r;
             float dg2 = vnoise(rot(p * vec2(0.030, 0.16), 0.18));
             float dg3 = vnoise(rot(p * vec2(0.009, 0.055) + 21.0, 0.18));
             vec3 deskCol = vec3(0.520, 0.452, 0.368);
-            float shadeB = 1.0 - 0.30 * exp(-max(0.0, sdB) * 0.85);
+            float shadeB = 1.0 - 0.38 * exp(-max(0.0, sdB) * 0.80);
             vec3 desk = deskCol * (1.0 + (dg - 0.5) * 0.40 + (dg2 - 0.5) * 0.30
                                       + (dg3 - 0.5) * 0.34) * shadeB;
             col = washed * mSheet + next * mNext + desk * mDesk;
+            /* the cut: paper's own back first, then wood, then dark */
+            float deep = smoothstep(-6.5, -12.0, vWorld.y);
+            vec3 under = mix(next, desk, deep);
+            col = mix(col, under * (1.0 - 0.18 * deep), through);
           }
+
+          /* ---- the shape of the page, DRAWN ----------------------- *
+           * Round 1 of the art-director gate rejected the first pass in
+           * one line: shaded with a smooth gradient, a fold reads as an
+           * airbrushed dune, and the sheet stops being a sheet. A pen
+           * does not have a gradient. It has three moves, and all three
+           * are here:
+           *
+           *   TONE     the wash goes on heavier where the page leans out
+           *            of the light — small, or it becomes airbrush;
+           *   HATCH    a slope is shaded with STROKES. World-space, so
+           *            they belong to the ground and never crawl; angled
+           *            and wobbled, so they are a hand's; gated hard on
+           *            gradient, so flat land never gets corduroy; and
+           *            faded with distance, because a pen stops
+           *            describing a hillside you cannot see;
+           *   THE LINE ink POOLS in the bottom of a fold and the crest
+           *            keeps the paper's own white. That single dark
+           *            line down a valley is what makes a crease a
+           *            crease instead of a dent. */
+          float lam = vShade.x;
+          float cav = vShade.y;
+          vec2 fall = vShade.zw;
+          float grad = length(fall);
+
+          float lean = clamp(1.0 + (lam - uFlatLam) * 0.44, 0.82, 1.06);
+          col *= mix(1.0, lean, mSheet);
+
+          /* HATCHING is for CLIFFS ONLY. Round 2 put it on every gentle
+           * slope at a three-unit pitch and it read as drapery, not as
+           * pen: soft, enormous, and describing nothing. Round 3 cut it
+           * back again — a pen hatches what is actually a CLIFF (the
+           * castle scarp, the tear's walls), finely, in broken strokes,
+           * and stops when the thing is too far off to describe. A fold
+           * in the ground is described by its line, not by shading. */
+          float shadeSide = smoothstep(uFlatLam - 0.04, uFlatLam - 0.44, lam);
+          float steep = smoothstep(0.36, 1.00, grad);
+          float near = 1.0 - smoothstep(58.0, 124.0, vFogDepth);
+          float hatchAmt = steep * mix(0.45, 1.0, shadeSide) * near * mSheet;
+          if (hatchAmt > 0.004) {
+            /* Strokes run DOWN the slope. Round 6 of the gate had them
+             * running along the contours, where perspective squashed
+             * them into strata and the scarp read as a smudge. A hand
+             * drawing a cliff draws down it, always, whichever way the
+             * cliff faces — so the stroke direction is taken from the
+             * fall line the geometry already knows. */
+            vec2 dn = fall / max(grad, 1e-4);
+            vec2 across = vec2(-dn.y, dn.x);
+            float u = dot(p, across);
+            float v = dot(p, dn);
+            /* The stroke is the same size ON THE PAGE at every distance,
+             * because a pen has one nib and one hand. So the world-space
+             * pitch scales with depth: tight underfoot, open on a far
+             * hillside. Without this a slope five units from the lens
+             * gets strokes a metre wide and reads as herringbone. */
+            float pitch = mix(3.4, 5.6, steep)
+                        * clamp(28.0 / max(vFogDepth, 6.0), 0.34, 3.2);
+            float s1 = sin(u * pitch + (vnoise(p * 0.8 + 5.0) - 0.5) * 2.2);
+            /* strokes, not lines: each one stops where the hand lifted */
+            float brk = smoothstep(0.26, 0.60, vnoise(vec2(u * 0.9, v * 0.28) + 11.0));
+            float h1 = smoothstep(0.16, 0.82, s1) * brk;
+            /* a crossing pass only where it is genuinely a wall */
+            float s2 = sin((u * 0.72 + v * 0.62) * pitch * 0.8
+                       + (vnoise(p * 0.6 + 19.0) - 0.5) * 2.0);
+            float h2 = smoothstep(0.40, 0.95, s2) * smoothstep(0.80, 1.25, grad);
+            col = mix(col, uInk, clamp(h1 * 0.36 + h2 * 0.26, 0.0, 0.52) * hatchAmt);
+          }
+
+          /* THE LINE. Ink pools in the bottom of a fold, and the crest
+           * keeps the paper's own white. This single dark line down a
+           * valley is what makes a crease a crease and not a dent. */
+          // a wide soft settling, and then the LINE itself: a crease is
+          // legible because the pen went down the very bottom of it once
+          col = mix(col, uInk, smoothstep(0.22, 0.62, cav) * 0.13 * mSheet);
+          float fold = smoothstep(0.60, 0.90, cav) * mSheet;
+          col = mix(col, uInk, fold * 0.40);
+          // a torn lip shows the paper's own white fibres, and it shows
+          // them brightest exactly where the page breaks
+          col += smoothstep(0.24, 0.80, -cav) * (0.055 + 0.11 * steep) * mSheet;
 
           col += grain * 0.032;
           gl_FragColor = vec4(col, 1.0);
@@ -282,6 +424,32 @@ export class Terrain {
     return tz * TEX_W + tx;
   }
 
+  /** The ground at (x, z) — what everything stands on. */
+  heightAt(x: number, z: number): number {
+    return this.field.heightAt(x, z);
+  }
+
+  /** The ground with the cockle averaged out: what the camera stands on
+   *  so it does not get seasick over a buckle. */
+  smoothHeightAt(x: number, z: number, r?: number): number {
+    return this.field.smoothHeightAt(x, z, r);
+  }
+
+  /** Unit surface normal — decals and footprints lie along it. Standees
+   *  never do: they are cutouts standing on a warped page. */
+  normalAt(x: number, z: number): [number, number, number] {
+    return this.field.normalAt(x, z);
+  }
+
+  slopeAt(x: number, z: number): number {
+    return this.field.slopeAt(x, z);
+  }
+
+  /** Too steep to walk. The scarp under Greyweather is made of this. */
+  tooSteep(x: number, z: number): boolean {
+    return this.field.slopeAt(x, z) > MAX_WALK_SLOPE;
+  }
+
   /** Waterness underfoot, 0 dry .. 1 open sea. */
   waterAt(x: number, z: number): number {
     return this.water[this.texel(x, z)] / 255;
@@ -299,8 +467,9 @@ export class Terrain {
     return false;
   }
 
-  /** Past wading depth the sea refuses the walker. */
+  /** What the page refuses: deep water, and ground too steep to climb. */
   blockedAt(x: number, z: number): boolean {
+    if (this.tooSteep(x, z)) return true;
     if (this.waterAt(x, z) <= 0.62) return false;
     return !this.nearBridge(x, z);
   }
@@ -339,11 +508,11 @@ function paintWorld(): { data: Uint8Array; water: Uint8Array; road: Uint8Array }
     for (let i = 0; i < 8; i++) {
       const bx = px(r.minX + rand() * (r.maxX - r.minX));
       const bz = pz(r.minZ + rand() * (r.maxZ - r.minZ));
-      const rad = (18 + rand() * 42) * sx;
+      const rad = (14 + rand() * 26) * sx;
       const dark = rand() > 0.5;
       const g = ctx.createRadialGradient(bx, bz, 0, bx, bz, rad);
       const k = dark ? 0.88 : 1.1;
-      g.addColorStop(0, `rgba(${Math.round(cr * k)},${Math.round(cg * k)},${Math.round(cb * k)},0.35)`);
+      g.addColorStop(0, `rgba(${Math.round(cr * k)},${Math.round(cg * k)},${Math.round(cb * k)},0.2)`);
       g.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = g;
       ctx.fillRect(bx - rad, bz - rad, rad * 2, rad * 2);

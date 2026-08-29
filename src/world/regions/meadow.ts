@@ -139,7 +139,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   // the rope swing hangs from the leaning oak; pivot re-seated to the top
   const swing = ctx.standee(ropeSwingTexture(427), 1.5, 3.0, OAKS.x + 7.4, OAKS.z + 3.2);
   swing.geometry.translate(0, -3.0, 0);
-  swing.position.y = 5.6;
+  ctx.hang(swing, 5.6);
 
   /* ---- THE GATE FIELDS: hedgerows funnel the king's road ---------- */
   ctx.standee(hedgerowTexture(430), 15, 6.6, -55, 22);
@@ -206,7 +206,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       const a = t * s.w + s.ph;
       s.m.position.x = s.cx + Math.cos(a) * s.rx;
       s.m.position.z = s.cz + Math.sin(a * 2) * s.rz * 0.5;
-      s.m.position.y = 4.6 + Math.sin(a * 3.1) * 1.2;
+      s.m.position.y = ctx.groundY(s.cx, s.cz) + 4.6 + Math.sin(a * 3.1) * 1.2;
       s.m.scale.x = Math.sin(a) > 0 ? -Math.abs(s.m.scale.x) : Math.abs(s.m.scale.x);
     }
     // the keep vista holds only at meadow distance

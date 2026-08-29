@@ -80,6 +80,13 @@ export function regionAt(x: number, z: number): RegionSpec {
 
 export const SPAWN = { x: -45, z: 58 };
 
+/** The coastline: where the sand gives up and the sea begins. Lives here
+ *  rather than in terrain.ts because the height field, the wash field and
+ *  the map all need it and none of them may depend on each other. */
+export function coastX(z: number): number {
+  return -250 + Math.sin(z * 0.018) * 10 + Math.sin(z * 0.043 + 1.7) * 6;
+}
+
 /* ------------------------------------------------------------------ *
  * ROADS. One connected web, authored once; the terrain paints them,
  * the map draws them, bridges sit where they cross the river.
@@ -89,7 +96,10 @@ export type Road = { pts: [number, number][]; width: number };
 
 export const ROADS: Road[] = [
   // the king's road: castle gate → kingdom square → the meadow → Maple Court
-  { width: 5, pts: [[-45, -195], [-45, -120], [-48, -60], [-45, -15], [-45, 58], [-42, 130], [-45, 200], [-45, 262]] },
+  // Session 4: the road now climbs the castle ramp and goes through the
+  // barbican, because the avenue IS the way up the ridge and a bare
+  // pale slope read as nothing. Terrain and map pick it up for free.
+  { width: 5, pts: [[-45, -218], [-45, -206], [-45, -195], [-45, -120], [-48, -60], [-45, -15], [-45, 58], [-42, 130], [-45, 200], [-45, 262]] },
   // the coast road: meadow west over the dune line to the boardwalk
   { width: 4, pts: [[-45, 58], [-110, 62], [-165, 60], [-205, 58]] },
   // the east road: meadow → the downs → bridge → desert edge

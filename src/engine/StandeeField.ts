@@ -18,6 +18,14 @@ export type StandeeFieldOpts = {
    * bends away from the walker set via setPlayer(). Vertex-stage only.
    */
   wind?: { amp: number; freq: number };
+  /**
+   * The ground under an instance (Session 4). Set once by ctx.field, so
+   * the twelve region builders never have to think about height: every
+   * f.set(i, x, z, ...) call already written stands the instance on the
+   * page's real surface. Standees stay VERTICAL on a slope — they are
+   * cutouts on a warped sheet, not objects lying on a hill.
+   */
+  ground?: (x: number, z: number) => number;
 };
 
 /**
@@ -34,6 +42,8 @@ export class StandeeField {
   private positions: { x: number; z: number }[] = [];
   private dummy = new THREE.Object3D();
   private count: number;
+  private ground: ((x: number, z: number) => number) | null;
+  private isDecal: boolean;
 
   constructor(tex: THREE.Texture, capacity: number, opts: StandeeFieldOpts) {
     const {
@@ -44,8 +54,11 @@ export class StandeeField {
       overshoot = 0.12,
       decal = false,
       wind,
+      ground,
     } = opts;
     this.count = capacity;
+    this.ground = ground ?? null;
+    this.isDecal = decal;
 
     const geo = new THREE.PlaneGeometry(w, h);
     if (decal) geo.rotateX(-Math.PI / 2);
@@ -132,7 +145,10 @@ export class StandeeField {
   /** Place instance i. Negative scaleX flips the silhouette. */
   set(i: number, x: number, z: number, scale = 1, rotY = 0, flip = false) {
     this.positions[i] = { x, z };
-    this.dummy.position.set(x, 0.001 + (i % 7) * 0.0004, z);
+    const g = this.ground ? this.ground(x, z) : 0;
+    // a decal is a mark on the page and needs clearance over a fold; a
+    // standee is a cutout and only needs its feet on the ground
+    this.dummy.position.set(x, g + (this.isDecal ? 0.05 : 0.001) + (i % 7) * 0.0004, z);
     this.dummy.rotation.set(0, rotY, 0);
     this.dummy.scale.set(flip ? -scale : scale, scale, scale);
     this.dummy.updateMatrix();

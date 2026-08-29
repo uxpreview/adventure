@@ -44,12 +44,12 @@ export const buildOcean: RegionBuilder = (ctx) => {
 
   return (dt: number, t: number) => {
     for (const b of boats) {
-      b.m.position.y = Math.sin(t * 0.8 + b.ph) * 0.12;
+      b.m.position.y = ctx.groundY(b.m.position.x, b.m.position.z) + Math.sin(t * 0.8 + b.ph) * 0.12;
       b.m.rotation.z = Math.sin(t * 0.55 + b.ph) * 0.035;
       b.m.position.x = b.x + Math.sin(t * 0.11 + b.ph) * 2.2;
     }
     for (const b of buoys) {
-      b.m.position.y = Math.sin(t * 1.1 + b.ph) * 0.16;
+      b.m.position.y = ctx.groundY(b.m.position.x, b.m.position.z) + Math.sin(t * 1.1 + b.ph) * 0.16;
     }
     for (let i = 0; i < gullState.length; i++) {
       const g = gullState[i];

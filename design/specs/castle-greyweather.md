@@ -159,3 +159,41 @@ statue (a king who fell over and was left) gain wry bodies.
 None. Reuses StandeeField wind, region update player position, and the
 App ambience ticker added for the Common (extended by region id, which
 Session 8 will generalize).
+
+
+---
+
+## Session 4 addendum — the ridge is real (2026-08-28)
+
+This spec was written for a flat sheet, and it says so in every line
+that describes the high seat: the keep's height was a wide texture, the
+gatehouse was kept low so the keep could clear it, and "the wall riding
+the crags" was four crag stand-ups in a row. `design/WORLD-SYSTEMS.md`
+§1 named that as the thing holding the world back. Session 4 fixed the
+ground under it. What changed, so nobody rebuilds the old version:
+
+- **The land is a scarp with a flat top** — something under the sheet,
+  twelve and a half units up, with its south face too steep to walk.
+  Authored in `src/world/elevation.ts`, not here.
+- **The banner avenue IS the ramp.** It climbs from about three units at
+  its foot (z ≈ −166) to the plateau at z ≈ −212, and it is the only
+  frontal way up. Off the avenue the face refuses; a walker who crosses
+  the entire world's curled northern rim can still come down onto the
+  ridge from behind, and that is a reward, not a leak.
+- **The gatehouse is a BARBICAN and it sits low on the ramp** (z = −192,
+  about seven units up). The curtain wall stands on the brow above it,
+  placed by asking the height field where the brow is. The keep is on
+  the plateau at z = −250. Three beats, each clearing the one in front,
+  at three real heights — which is the composition this spec always
+  wanted and could not have on flat ground.
+- **The crags are gone.** They were a picture of a ridge standing in
+  front of the ridge's own place. What is at its foot now is fallen
+  stone and scree lying along the slope.
+- **The moat pool is at the ridge's WEST foot**, where a moat belongs,
+  and the west approach (x ≈ −120) is a real composition: the pool in
+  the near ground and the hatched scarp rising beyond it.
+- The bailey is cobbled and keeps the toppled king, the castle well and
+  the rook parliament. It is still the emptiest place in the land; it
+  wants one authored thing when the story arrives (Session 7).
+
+Verdict: WOWED, `design/critiques/critique-art-3.md`.

@@ -7,68 +7,40 @@ export const PAPER_HEX = 0xf5f2ea;
 export const INK_HEX = 0x232633;
 
 /*
- * The two blues. Contract (SESSIONS.md S1 / pacing §4a / RULINGS #2):
- * WARM_BLUE is Bea's 1996 Bic — violet-leaning, ≈10 L* LIGHTER than
- * COLD_BLUE (the 1999 forging pen, steel-leaning). Greyscale conversion
- * must still sort the two populations; the smudge pass (ink.ts) is the
- * structural second channel. Paling never converges them: warm dies
- * toward warm-grey, cold toward blue-grey. Warm saturation is capped
- * below full until Chapter 9's reveal. The art director owns these
- * values; chapters never write a blue hex.
- */
-export const WARM_BLUE = '#5b6ee0'; // L* ≈ 50
-export const WARM_BLUE_HEX = 0x5b6ee0;
-export const COLD_BLUE = '#2f5f9e'; // L* ≈ 40
-export const COLD_BLUE_HEX = 0x2f5f9e;
-/**
- * Her ink at an opacity, from the one source.
+ * ONE BLUE.
  *
- * Art director round 2, Fix 4: "The standing rule 'black is his, warm
- * blue is hers' only lands if her blue is one recognizable substance the
- * player learns by sight in Chapter 1 and can still identify in Chapter
- * 10." The constants were already single; the drift was chapters mixing
- * their own rgba() by eye. **The only permitted variation is opacity.**
- * Nothing outside this file may write a blue.
+ * Session 4's inheritance audit (WORLD-SYSTEMS, "The inheritance audit")
+ * retired everything that used to live here. margins ran a two-blue
+ * FORGERY CONTRACT — a warm 1996 Bic against a cold 1999 forging pen,
+ * with divergent paling curves, a greyscale-separation requirement and a
+ * standing law that nothing outside this file might write a blue. Every
+ * clause of it encoded that book's plot. INKLANDS has no forger, no
+ * paling registry and no second hand, so the contract is gone and the
+ * commentary with it.
+ *
+ * What is kept is a colour: one blue, because a page of ballpoint wants
+ * exactly one, and it is the walker's alternate skin.
  */
-const rgbaOf = (hex: string, a: number) =>
-  `rgba(${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)},${a})`;
-export const warmBlueA = (a: number) => rgbaOf(WARM_BLUE, a);
-export const coldBlueA = (a: number) => rgbaOf(COLD_BLUE, a);
+export const BLUE = '#5b6ee0';
+export const BLUE_HEX = 0x5b6ee0;
+export const BLUE_SOFT = 'rgba(91,110,224,0.55)';
 
-/**
- * The rules PRINTED on a sheet of paper by a machine, which are not ink
- * and must never be mistaken for it. Real ruled paper is faint blue;
- * this book cannot afford a third blue on the page, so its rules are the
- * grey of a worn press.
- */
-export const PRINTED_RULE = 'rgba(150,148,142,0.42)';
-
-/** What each blue pales toward — divergent by design, never a shared grey. */
-export const WARM_BLUE_PALE = '#a89ba6';
-export const WARM_BLUE_PALE_HEX = 0xa89ba6;
-export const COLD_BLUE_PALE = '#6c7c94';
-export const COLD_BLUE_PALE_HEX = 0x6c7c94;
-/** Ink pales barely at all; the delta against blue is the story. */
-export const INK_PALE_HEX = 0x2e3140;
-
-/** Graphite. Exempt from all blue paling (ARCHITECTURE token list). */
+/** Graphite: the under-drawing, the far register, the unfinished. */
 export const PENCIL = '#6b6f76';
 export const PENCIL_HEX = 0x6b6f76;
 
-/** Kitchen light / the seam of dawn (Ch 7 seam, Ch 8 kitchen). */
-export const DAWN_WARM = '#e3b878';
-export const DAWN_WARM_HEX = 0xe3b878;
-
-/** The grey heel-smear of a left hand following wet ink (smudge pass). */
+/**
+ * The grey of ink dragged before it dried. margins made this a
+ * left-handed character's heel and turned it on automatically for her
+ * ink; Session 4 dropped the rule and kept the mark, because it is a
+ * true ballpoint behaviour and because it is how this world will draw
+ * rain (WORLD-SYSTEMS §7). Opt in per stroke.
+ */
 export const SMUDGE_GREY = 'rgba(116,112,124,1)';
 
-// Legacy v1 alias — B.'s doodle skin + old shared art still reference it.
-// v2 narrative art must use WARM_BLUE / COLD_BLUE, never this.
-export const BLUE = WARM_BLUE;
-export const BLUE_SOFT = 'rgba(91,110,224,0.55)';
-export const BLUE_HEX = WARM_BLUE_HEX;
-
 // The Blot inverts the page: black ground, white (negative-space) marks.
+// Parked by owner decision until a story gives caves a reason; kept
+// because the inversion is spectacular and costs nothing to hold.
 export const BLOT = '#15161d';
 export const BLOT_HEX = 0x15161d;
 export const WHITE_INK = '#efece2';

@@ -66,12 +66,25 @@ npm run dev      # http://localhost:5173
 npm run build    # type-check + production build in dist/
 ```
 
-Desktop: WASD or arrows, `E` to look, `M` for the map. Mobile: drag
-anywhere to steer, tap to interact.
+Desktop: WASD or arrows, `E` to look, `M` for the map. Mobile: drag in
+the lower part of the screen to steer (the top is the vista and the
+joystick is kept off it), tap to interact.
 
 Append `?debug` to expose `window.__inklands` (teleport, region query,
-terrain probes, audio) for testing. `tools/shoot.mjs` drives the game
-under Playwright with real key events and screenshots every land.
+terrain probes, frame cost, audio) for testing.
+
+```sh
+node tools/check-terrain.mjs   # assert the height field, off-screen
+node tools/shoot-shape.mjs     # every landform, both viewports
+node tools/shoot-first-minute.mjs
+node tools/shoot-oldworld.mjs
+node tools/shoot.mjs           # all twelve lands, walkability smoke test
+node tools/shoot-fps.mjs       # frame cost, draw calls, triangles
+```
+
+Every shoot script renders **desktop (1280×720) and portrait (390×844)**
+through `tools/shoot-lib.mjs`; portrait is a gated viewport, not a
+courtesy check.
 
 ## How it's made
 
@@ -81,9 +94,21 @@ cycle, the paper post-pass, the audio engine. New for the open world:
 
 - `src/world/layout.ts` — the twelve rects, roads, river, bridges;
   the one authored truth the terrain, map and audio all read.
+- `src/world/elevation.ts` — **the shape of the page.** The world is a
+  sheet of paper on a desk, and paper is flat but not rigid: it creases
+  (one fold, north to south, that the east road dives through), curls at
+  its margins, buckles where the wash went on wet, tears (SPLITROCK),
+  and rides over what is under it (Castle Greyweather's ridge). One
+  height grid; the mesh, the shading, the walker, every prop and all
+  collision read it and nothing else invents a height. Steep is
+  impassable, which is free traversal gating.
 - `src/world/terrain.ts` — the whole world as one sheet: wash field
   painted at load (1 texel per world unit), domain-warped borders,
-  animated water, plus CPU queries for collision and step timbre.
+  animated water, the displaced mesh, and the shading that DRAWS the
+  page's shape rather than rendering it — tone where the page leans out
+  of the light, ink pooled down the bottom of a crease, pen hatching
+  down the fall line of anything that is genuinely a cliff. Plus CPU
+  queries for collision, step timbre and height.
 - `src/world/regions/` — a builder per land placing instanced standee
   fields and one-off drawings; streaming keeps first-visit cost off
   the walk.

@@ -78,7 +78,7 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: max(9vh, 40px);
+  padding-top: max(6vh, 28px);
   z-index: 50;
   transition: opacity 0.9s ease;
   pointer-events: none;
@@ -105,7 +105,10 @@ body {
   height: auto;
 }
 .title-btn {
-  background: none;
+  /* the button is written ON the page, so it needs its own scrap of
+     paper: at the poster framing it lands over Brim's gate arch and
+     without a plate the lettering disappears into the drawing */
+  background: rgba(245, 242, 234, 0.8);
   border: 1.6px solid rgba(35, 38, 51, 0.55);
   border-radius: 3px 14px 4px 12px / 10px 4px 12px 5px;
   padding: 9px 26px 7px;
@@ -304,4 +307,40 @@ body {
   width: min(92vw, 78vh * 1.2368, 940px);
   height: auto;
   display: block;
+}
+
+
+/* ------------------------------------------------------------------ *
+ * PORTRAIT IS NOT DESKTOP MADE NARROW (Session 4).
+ *
+ * WORLD-SYSTEMS §8 made mobile a first-class viewport and the art
+ * director now reviews it. Two things it caught at the gate:
+ *
+ *  1. the title poster's SET OUT button sat a third of the way down the
+ *     screen — on top of Brim's keep, in the one part of the frame the
+ *     poster exists to show, and out of thumb reach. In portrait the
+ *     lettering keeps the top and the button goes to the bottom third,
+ *     where a thumb already is.
+ *  2. touch targets belong in the lower band for the same reason. The
+ *     joystick's own rule lives in Input.ts.
+ * ------------------------------------------------------------------ */
+@media (max-aspect-ratio: 4 / 5) {
+  .title-veil {
+    padding-top: max(7vh, 34px);
+  }
+  .title-btn {
+    position: absolute;
+    left: 50%;
+    bottom: max(8.5vh, 62px);
+    transform: translateX(-50%);
+    padding: 13px 34px 11px;
+    background: rgba(245, 242, 234, 0.86);
+  }
+  .title-btn:hover {
+    transform: translateX(-50%) rotate(-0.6deg) scale(1.03);
+  }
+  /* two buttons (continue + set out) stack, newest lowest */
+  .title-btn + .title-btn {
+    bottom: max(3.4vh, 22px);
+  }
 }

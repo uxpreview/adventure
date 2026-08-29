@@ -80,6 +80,9 @@ export class Footprints {
       `,
       transparent: true,
       depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -4,
+      polygonOffsetUnits: -8,
     });
 
     this.mesh = new THREE.InstancedMesh(geo, this.mat, capacity);
@@ -116,16 +119,26 @@ export class Footprints {
     this.mat.uniforms.uTime.value = this.time;
   }
 
-  /** Drop one print at pos, pointing along heading (radians, +Z forward). */
-  stamp(pos: THREE.Vector3, heading: number, y = 0.012) {
+  /**
+   * Drop one print at pos, pointing along heading (radians, +Z forward).
+   * `y` is clearance ABOVE pos.y, because since Session 4 pos.y is the
+   * ground; `normal` lies the print along the page where the page folds.
+   */
+  stamp(pos: THREE.Vector3, heading: number, y = 0.03, normal?: [number, number, number]) {
     this.stepSide *= -1;
     const side = 0.11 * this.stepSide;
     this.dummy.position.set(
       pos.x + Math.cos(heading) * side,
-      y,
+      pos.y + y,
       pos.z - Math.sin(heading) * side
     );
-    this.dummy.rotation.set(0, heading, 0);
+    if (normal) {
+      this.dummy.rotation.set(
+        Math.atan2(normal[2], normal[1]), heading, -Math.atan2(normal[0], normal[1]), 'YXZ'
+      );
+    } else {
+      this.dummy.rotation.set(0, heading, 0);
+    }
     this.dummy.updateMatrix();
     this.mesh.setMatrixAt(this.head, this.dummy.matrix);
     this.mesh.instanceMatrix.needsUpdate = true;

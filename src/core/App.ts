@@ -60,17 +60,22 @@ export class App {
   private clock = new THREE.Clock();
   private activePoi: ReturnType<POIManager['update']> = null;
   private prevPos = new THREE.Vector3();
+  /** The ground the camera is standing on, damped. */
+  private camGround = 0;
+  /** How much higher the ground ahead is than the ground here, damped. */
+  private camRise = 0;
 
   constructor() {
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setClearColor(PAPER_HEX);
     this.ui.root.appendChild(this.renderer.domElement);
 
-    this.camera = new THREE.PerspectiveCamera(42, 1, 0.1, 320);
+    this.camera = new THREE.PerspectiveCamera(App.CAM.desktop.fov, 1, 0.1, 320);
     this.camera.position.set(SPAWN.x, 8.2, SPAWN.z + 10.4);
     // an open world lives on its sightlines: the keep from the meadow,
-    // the towers from the downs. The fog is a horizon, not a curtain.
-    this.scene.fog = new THREE.Fog(PAPER_HEX, 50, 175);
+    // the towers from the downs. The fog is a horizon, not a curtain —
+    // and since Session 4 it is a horizon that moves when you climb.
+    this.scene.fog = new THREE.Fog(PAPER_HEX, App.CAM.fogNear, App.CAM.fogFar);
 
     this.scene.add(this.terrain.mesh);
     this.world = new World(this.scene, this.terrain);
@@ -87,6 +92,9 @@ export class App {
     this.fx.setPaperSeed(3);
     this.input = new Input(this.renderer.domElement, this.ui.joyEl);
     this.poi = new POIManager(this.camera, this.ui.labelRoot, this.ui.promptEl);
+    // a label is written over the place it names, and the place has a
+    // height now
+    this.poi.groundAt = (x, z) => this.terrain.heightAt(x, z);
 
     // every point of interest exists from the start; distance hides them
     for (const def of ALL_POIS) {
@@ -170,7 +178,37 @@ export class App {
         region: () => this.region.id,
         goto: (x: number, z: number) => {
           this.char.teleport(x, z);
+          this.char.setGround(
+            this.terrain.heightAt(x, z), this.terrain.normalAt(x, z)
+          );
           this.snapCamera();
+        },
+        /**
+         * What one frame COSTS, in milliseconds, from here.
+         *
+         * The 60fps law (QUALITY-BAR §3) needs a number, and rAF cadence
+         * cannot give one in a headless sandbox with no GPU — it reports
+         * whatever the compositor felt like (it reported 1 fps). So this
+         * renders n frames back to back and blocks on the pipeline so
+         * the measurement includes the GPU, and reports draw calls and
+         * triangles with it. The absolute figure is a software
+         * rasteriser's, not a phone's; the RATIO between two builds, and
+         * the counts beside it, are the useful numbers.
+         */
+        frameCost: (frames = 30) => {
+          const gl = this.renderer.getContext();
+          this.fx.render(0.016);
+          gl.finish();
+          const t0 = performance.now();
+          for (let i = 0; i < frames; i++) this.fx.render(0.016);
+          gl.finish();
+          const ms = (performance.now() - t0) / frames;
+          // the composer's last pass is a fullscreen quad, so read the
+          // counts from a direct scene render instead of from it
+          this.renderer.setRenderTarget(null);
+          this.renderer.render(this.scene, this.camera);
+          const r = this.renderer.info.render;
+          return { ms, calls: r.calls, tris: r.triangles };
         },
         begin: () => this.start(this.save.data.pos === null),
       };
@@ -250,36 +288,133 @@ export class App {
     this.renderer.setSize(w, h);
     this.fx.setSize(w, h, dpr);
     this.camera.aspect = w / h;
-    this.camera.fov = this.camera.aspect < 0.8 ? 54 : 42;
+    this.camera.fov = this.camRig().fov;
     this.camera.updateProjectionMatrix();
+  }
+
+  /* ================================================================ *
+   * THE CAMERA — a designed system (Session 4).
+   *
+   * Session 3 discovered the FRAME-TOP CEILING: at 33 units out the
+   * shipping camera showed about ten units of height, so any tall near
+   * thing filled the upper frame and hid everything behind it. That
+   * ceiling was never chosen — it fell out of three constants in an
+   * offset function. Elevation broke it outright: a keep standing on a
+   * ridge thirteen units up is simply not in frame under those numbers.
+   *
+   * So the camera has parameters now, and each one is a design decision
+   * with a reason:
+   *
+   *   back / up / look   the resting framing. `look` is the height the
+   *                      camera aims at ABOVE THE WALKER'S GROUND, and
+   *                      it is what sets the ceiling: the shallower the
+   *                      declination, the more sky-side frame there is
+   *                      for tall things to occupy.
+   *   rise{Back,Up,Look} RISING GROUND MUST REVEAL MORE — and the way
+   *                      to reveal more is DISTANCE, not pitch. Pitching
+   *                      up to catch a keep on a ridge throws the walker
+   *                      out of the bottom of the frame; pulling BACK
+   *                      and up raises the frame top at every distance
+   *                      while keeping the same angle down to the
+   *                      walker. So the camera reads the ground ahead
+   *                      and, when a landform is up there, retreats: the
+   *                      vista shot is a wider shot, which is what it is
+   *                      in every film ever made. All three terms are
+   *                      zero on flat ground, which is what protects the
+   *                      WOWED compositions of Sessions 2 and 3.
+   *   fogPerUnit         HEIGHT BUYS DISTANCE. Climb and the haze pulls
+   *                      back: the curled rim and the castle ridge are
+   *                      vistas because you can see further from them.
+   *
+   * And it must not make anyone seasick. Three dampers do that: the
+   * ground is sampled as a small disc average rather than a point, the
+   * vertical follow runs slower than the horizontal one, and the rise
+   * term is damped slower still so cresting a fold is a swell, not a
+   * jolt.
+   * ================================================================ */
+  private static CAM = {
+    /** Resting framing: how far back, how high, and what height it aims
+     *  at over the walker's own ground. Portrait is NOT desktop with a
+     *  wider lens — a tall frame wants the camera further back and its
+     *  aim higher, or a vista arrives as a strip of ground and haze. */
+    desktop: { back: 13.0, up: 6.0, look: 3.4, fov: 42 },
+    portrait: { back: 14.4, up: 6.9, look: 4.0, fov: 54 },
+    /** The poster, before you set out. */
+    posterDesktop: { back: 15.2, up: 6.4, look: 5.0, fov: 42 },
+    posterPortrait: { back: 16.6, up: 7.0, look: 5.8, fov: 54 },
+    /** Where the camera looks for ground worth revealing. */
+    aheadNear: 34,
+    aheadMid: 60,
+    aheadFar: 88,
+    riseCap: 14,
+    /** Per unit of ground rising ahead: how far the camera retreats,
+     *  how much it climbs, and how much its aim climbs. Solved, not
+     *  guessed — see design/critiques/critique-art-3.md: they put the
+     *  walker a quarter up the frame and Greyweather's keep two-thirds
+     *  up it from the foot of the banner avenue. */
+    riseBack: 0.90,
+    riseUp: 0.52,
+    riseLook: 0.38,
+    /** Never let the camera end up inside a scarp it is climbing. */
+    clearance: 2.8,
+    /** The horizon, and what a climb adds to it. */
+    fogNear: 50,
+    fogFar: 175,
+    fogPerUnit: 3.6,
+  };
+
+  private camRig() {
+    const C = App.CAM;
+    const portrait = this.camera.aspect < 0.8;
+    if (!this.started) return portrait ? C.posterPortrait : C.posterDesktop;
+    return portrait ? C.portrait : C.desktop;
   }
 
   private snapCamera() {
     this.camTarget.copy(this.char.pos);
-    const off = this.cameraOffset();
-    this.camera.position.set(this.char.pos.x + off.x, off.y, this.char.pos.z + off.z);
-    this.camera.lookAt(this.char.pos.x, 2.4, this.char.pos.z);
+    this.camGround = this.terrain.smoothHeightAt(this.char.pos.x, this.char.pos.z);
+    this.camRise = this.riseAhead(this.char.pos.x, this.char.pos.z, this.camGround);
+    const rig = this.camRig();
+    const C = App.CAM;
+    this.camera.position.set(
+      this.char.pos.x,
+      this.camGround + rig.up + this.camRise * C.riseUp,
+      this.char.pos.z + rig.back + this.camRise * C.riseBack
+    );
+    this.camera.lookAt(
+      this.char.pos.x,
+      this.camGround + rig.look + this.camRise * C.riseLook,
+      this.char.pos.z
+    );
+    this.applyFog();
   }
 
   /**
-   * Margins shot its pages steeply from above, and that camera decided
-   * its staging; an open world is decided by its vistas instead — the
-   * keep from the meadow, the towers across the downs. So the camera
-   * sits lower and further back, with the look target lifted so the
-   * frame keeps a band of horizon over the walker's head. Tall things
-   * stay in frame at any distance; the fog is the skyline.
+   * How much higher the page gets in front of you. The camera always
+   * looks north, so "ahead" is three probes up the −Z axis: near enough
+   * to answer a fold, far enough to answer a ridge. Only rises count —
+   * walking toward a hole should not tip the camera into the ground.
    */
-  private cameraOffset() {
-    if (!this.started) {
-      // the poster framing: pulled back and up so the title shot reads
-      // walker low, road climbing, Brim's wall and the keep in the haze
-      return this.camera.aspect < 0.8
-        ? new THREE.Vector3(0, 6.6, 16.2)
-        : new THREE.Vector3(0, 6.0, 14.6);
-    }
-    return this.camera.aspect < 0.8
-      ? new THREE.Vector3(0, 6.6, 13.6)
-      : new THREE.Vector3(0, 5.6, 12.4);
+  private riseAhead(x: number, z: number, here: number) {
+    const C = App.CAM;
+    const t = this.terrain;
+    const up = Math.max(
+      t.smoothHeightAt(x, z - C.aheadNear),
+      t.smoothHeightAt(x, z - C.aheadMid),
+      t.smoothHeightAt(x, z - C.aheadFar)
+    );
+    return Math.max(0, Math.min(C.riseCap, up - here));
+  }
+
+  /** Height buys distance: the haze pulls back as you climb. */
+  private applyFog() {
+    const C = App.CAM;
+    const lift = Math.max(0, this.camGround) * C.fogPerUnit;
+    const fog = this.scene.fog as THREE.Fog;
+    fog.near = C.fogNear + lift * 0.28;
+    fog.far = C.fogFar + lift;
+    this.camera.far = Math.max(320, fog.far * 1.7);
+    this.camera.updateProjectionMatrix();
   }
 
   private tick() {
@@ -290,6 +425,16 @@ export class App {
     this.char.frozen = this.ui.noteOpen || this.ui.mapOpen || !this.started;
 
     this.prevPos.copy(this.char.pos);
+    // the grade the walker is about to climb, read BEFORE the step so
+    // the cost applies to the step that pays it
+    const spd = Math.hypot(this.char.vel.x, this.char.vel.z);
+    if (spd > 0.2) {
+      const ax = this.char.pos.x + (this.char.vel.x / spd) * 2.2;
+      const az = this.char.pos.z + (this.char.vel.z / spd) * 2.2;
+      this.char.grade = (this.terrain.heightAt(ax, az) - this.char.pos.y) / 2.2;
+    } else {
+      this.char.grade = 0;
+    }
     this.char.update(dt, this.input.move);
 
     // deep water refuses the walker: slide along the shore if we can
@@ -308,6 +453,12 @@ export class App {
       }
       this.char.group.position.copy(this.char.pos);
     }
+
+    // and then stands on whatever the page does there
+    this.char.setGround(
+      this.terrain.heightAt(this.char.pos.x, this.char.pos.z),
+      this.terrain.normalAt(this.char.pos.x, this.char.pos.z)
+    );
 
     const moved = Math.hypot(
       this.char.pos.x - this.prevPos.x,
@@ -365,22 +516,42 @@ export class App {
       }
     }
 
-    // damped follow with a little lead in the direction of travel
+    /* ---- the follow ------------------------------------------------ *
+     * Horizontal: damped, with a little lead in the direction of travel.
+     * Vertical: slower, off a disc-averaged ground, so cockle never
+     * reaches the frame. Rise: slower still, so cresting the castle
+     * ramp opens the frame as a swell rather than a jolt. */
     const lead = 0.5;
     const tx = this.char.pos.x + this.char.vel.x * lead;
     const tz = this.char.pos.z + this.char.vel.z * lead;
     const k = 1 - Math.exp(-dt * 3.2);
     this.camTarget.x += (tx - this.camTarget.x) * k;
     this.camTarget.z += (tz - this.camTarget.z) * k;
-    const off = this.cameraOffset();
-    this.camera.position.x += (this.camTarget.x + off.x - this.camera.position.x) * k;
-    this.camera.position.y += (off.y - this.camera.position.y) * k;
-    this.camera.position.z += (this.camTarget.z + off.z - this.camera.position.z) * k;
+
+    const C = App.CAM;
+    const rig = this.camRig();
+    const groundNow = this.terrain.smoothHeightAt(this.camTarget.x, this.camTarget.z);
+    this.camGround += (groundNow - this.camGround) * (1 - Math.exp(-dt * 2.0));
+    const riseNow = this.riseAhead(this.camTarget.x, this.camTarget.z, groundNow);
+    this.camRise += (riseNow - this.camRise) * (1 - Math.exp(-dt * 1.1));
+
+    const camX = this.camTarget.x;
+    const camZ = this.camTarget.z + rig.back + this.camRise * C.riseBack;
+    // never inside the hill: on the scarp the ground behind the walker
+    // can be higher than the walker is
+    const camY = Math.max(
+      this.camGround + rig.up + this.camRise * C.riseUp,
+      this.terrain.heightAt(camX, camZ) + C.clearance
+    );
+    this.camera.position.x += (camX - this.camera.position.x) * k;
+    this.camera.position.y += (camY - this.camera.position.y) * (1 - Math.exp(-dt * 2.4));
+    this.camera.position.z += (camZ - this.camera.position.z) * k;
     this.camera.lookAt(
       this.camTarget.x,
-      this.started ? 2.4 : this.camera.aspect < 0.8 ? 5.4 : 4.6,
+      this.camGround + rig.look + this.camRise * C.riseLook,
       this.camTarget.z
     );
+    this.applyFog();
 
     this.fx.render(dt);
   }

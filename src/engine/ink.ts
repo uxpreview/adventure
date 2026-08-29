@@ -1,11 +1,12 @@
 import * as THREE from 'three';
-import { INK, BLUE, WARM_BLUE, SMUDGE_GREY } from './palette';
+import { INK, BLUE, SMUDGE_GREY } from './palette';
 
 /**
- * Tint convention for palable art: textures whose ink belongs to a paling
- * token (WARM_BLUE / COLD_BLUE) are drawn in TINT (white) and colored by
- * their material, so the central paling registry can run the token's
- * color curve. Mixed-token art must be split across materials.
+ * TINT: art drawn in white and coloured by its material, so one canvas
+ * can serve several inks. (margins used this to run a central paling
+ * registry over a two-blue contract; the contract is gone — see
+ * palette.ts — but drawing in white and tinting at the material is still
+ * how a texture gets to be more than one colour.)
  */
 export const TINT = '#ffffff';
 
@@ -33,14 +34,13 @@ type StrokeOpts = {
   alpha?: number;
   passes?: number;
   /**
-   * The left-hand drag-ghost (pacing CR-4 / ch04 §10): a soft offset
-   * heel-smear pass under the stroke — her left hand following the pen.
-   * Defaults ON for WARM_BLUE ink (RULINGS #2 — every real-Bea mark
-   * carries it, at every scale; opt out explicitly). Forged (COLD_BLUE)
-   * strokes stay clean. On TINT canvases pass `smudge: true` yourself —
-   * the token isn't knowable from white. Pass an object to scale the
-   * drag: `{ scale: 6, vertical: true }` is rain (her smear as weather,
-   * which is Chapter 4's whole plot).
+   * The drag-ghost: a soft offset heel-smear pass under the stroke, the
+   * mark a hand makes crossing its own wet ink. margins turned this on
+   * automatically for one character's blue; Session 4's inheritance
+   * audit dropped that rule and kept the effect, so it is now OPT-IN and
+   * OFF by default — a drawing behaviour, not a plot point. Pass an
+   * object to scale the drag: `{ scale: 6, vertical: true }` is rain,
+   * which is what this pass is really for here (WORLD-SYSTEMS §7).
    */
   smudge?: boolean | SmudgeOpts;
 };
@@ -258,12 +258,12 @@ export function stroke(
   o: StrokeOpts = {}
 ) {
   const { color = INK, width = 2, jitter = 1.6, alpha = 0.92, passes = 2 } = o;
-  const smudgeOpt = o.smudge ?? color === WARM_BLUE;
+  const smudgeOpt = o.smudge ?? false;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   if (smudgeOpt) {
-    // her left hand following the pen: two soft grey passes dragged
-    // down-left under the real ink (white ghost on TINT canvases)
+    // a hand following the pen: two soft grey passes dragged down-left
+    // under the real ink (white ghost on TINT canvases)
     const cfg: SmudgeOpts = typeof smudgeOpt === 'object' ? smudgeOpt : {};
     const scale = cfg.scale ?? 1;
     const dx = cfg.vertical ? 0 : -2.2 * scale;

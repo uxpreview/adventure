@@ -17,7 +17,7 @@ import {
   marketCrossTexture, buntingTexture, appleTreeTexture, pigeonTexture,
   woodGateTexture, cobblePlazaDecal, backStreetTexture, stoneWearDecal,
   crateBarrelTexture, greyweatherKeepTexture,
-  greyweatherGateTexture, ridgeWallTexture, tallBannerTexture, cragTexture,
+  greyweatherGateTexture, ridgeWallTexture, tallBannerTexture,
   toppledStatueTexture, gnarledHawthornTexture, farPinesTexture, rookTexture,
   screeDecal,
 } from '../textures-oldworld';
@@ -76,8 +76,8 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   const southGate = ctx.standee(brimGateTexture(810), 13, 13, -45, -12.5);
   const pennantL = ctx.standee(gatePennantTexture(811), 1.5, 3, -49.1, -13.2);
   const pennantR = ctx.standee(gatePennantTexture(812), 1.5, 3, -40.9, -13.0);
-  pennantL.position.y = 10.3;
-  pennantR.position.y = 10.3;
+  ctx.hang(pennantL, 10.3);
+  ctx.hang(pennantR, 10.3);
 
   /* -- the high street: terraces lean over the king's road ----------- *
    * The first west run stays short so the belfry yard keeps an open
@@ -141,7 +141,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     ctx.standee(buntingTexture(1477), 25, 6.25, -45.5, -81, { rotY: 0.45 }),
   ];
   // hung at lamp height: flags must clear a walker's head, not swipe it
-  for (const b of bunting) b.position.y = 1.75;
+  for (const b of bunting) ctx.hang(b, 1.75);
 
   /* -- THE BELFRY YARD (open to the south — the camera needs in) ----- */
   ctx.standee(brimBelfryTexture(1480), 6.5, 13, -66, -44);
@@ -197,7 +197,14 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   ctx.standee(wallTowerTexture(1541), 6.2, 8, 56.5, -58 + (r() - 0.5) * 3, { rotY: Math.PI / 2 });
   ctx.standee(woodGateTexture(1542), 12, 12, 56, -110, { rotY: Math.PI / 2 });
 
-  /* -- the north wall: the town closed toward the castle ------------- */
+  /* -- the north wall: the town closed toward the castle ------------- *
+   * Collected, because since Session 4 the camera RETREATS when the
+   * ground ahead rises — and the ground ahead of this wall is
+   * Greyweather's ridge. Standing on the banner avenue put the camera
+   * back through Brim's own north wall and shot the whole castle
+   * through the back of it. The camera only ever looks north, so a wall
+   * the walker has already passed can only obstruct: it lets go. */
+  const northRun: THREE.Mesh[] = [];
   wx = -148;
   let ni = 0;
   while (wx < 54) {
@@ -206,13 +213,13 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     if (wx < gateL && wx + segW > gateL) segW = gateL - wx;
     if (wx + segW > 56) segW = 56 - wx;
     if (segW < 4) { wx += segW; continue; }
-    ctx.standee(brimWallTexture(1550 + ni), segW + 1.2, 4.8 + r() * 0.8, wx + segW / 2,
-      -157 + (r() - 0.5) * 1.4);
+    northRun.push(ctx.standee(brimWallTexture(1550 + ni), segW + 1.2, 4.8 + r() * 0.8, wx + segW / 2,
+      -157 + (r() - 0.5) * 1.4));
     wx += segW;
     ni++;
   }
-  ctx.standee(wallTowerTexture(1570), 6.2, 8, -100 + (r() - 0.5) * 3, -155.6);
-  ctx.standee(wallTowerTexture(1571), 6.2, 8, -6 + (r() - 0.5) * 3, -155.8);
+  northRun.push(ctx.standee(wallTowerTexture(1570), 6.2, 8, -100 + (r() - 0.5) * 3, -155.6));
+  northRun.push(ctx.standee(wallTowerTexture(1571), 6.2, 8, -6 + (r() - 0.5) * 3, -155.8));
   const northGate = ctx.standee(brimGateTexture(1572), 11.5, 11.5, -45, -156.5);
   ctx.decal(wheelRutsDecal(1573), 11, 5.5, -45, -148, Math.PI / 2, 0.6);
 
@@ -267,6 +274,14 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     pLMat.opacity = pRMat.opacity = 1 - sNear * 0.8;
     const nNear = passFade(px, pz, -45, -172, -153);
     ngMat.opacity = 1 - nNear * 0.92;
+    // past the north wall, it is only ever between the camera and the
+    // castle: let it go (and take the gate with it)
+    const outNorth = Math.max(0, Math.min(1, (-pz - 156) / 5));
+    for (const m of northRun) {
+      (m.material as THREE.MeshBasicMaterial).opacity = 1 - outNorth;
+      m.visible = outNorth < 0.98;
+    }
+    if (outNorth > 0) ngMat.opacity = Math.min(ngMat.opacity, 1 - outNorth);
 
     // the back-street rank fades as the walker closes on it
     for (const m of backRoofMeshes) {
@@ -287,7 +302,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
       const a = t * s.w + s.ph;
       s.m.position.x = s.cx + Math.cos(a) * s.rx;
       s.m.position.z = s.cz + Math.sin(a * 2) * s.rz * 0.5;
-      s.m.position.y = 8.6 + Math.sin(a * 2.7) * 1.6;
+      s.m.position.y = ctx.groundY(s.cx, s.cz) + 8.6 + Math.sin(a * 2.7) * 1.6;
       s.m.scale.x = Math.sin(a) > 0 ? -Math.abs(s.m.scale.x) : Math.abs(s.m.scale.x);
     }
 
@@ -319,7 +334,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
         p.m.scale.x = (p.tx > p.fx ? -1 : 1) * Math.abs(p.m.scale.x);
         if (u >= 1) {
           p.flying = false;
-          p.m.position.y = 0;
+          p.m.position.y = ctx.groundY(p.x, p.z);
         }
       }
     }
@@ -373,42 +388,104 @@ export const KINGDOM_POIS: WorldPOI[] = [
 export const buildCastle: RegionBuilder = (ctx) => {
   const { r } = ctx;
 
-  /* -- the ridge wall, broken and heavy ------------------------------ *
-   * Segments are collected so the whole run can let go once the
-   * walker is past it: the camera must never shoot the bailey or the
-   * moat pool through the wall's back. */
-  const gapL = -54;
-  const gapR = -36;
+  /* ================================================================ *
+   * CASTLE GREYWEATHER, ON A REAL RIDGE (Session 4).
+   *
+   * Session 3 drew the high seat: the keep's height was a wide texture,
+   * "the wall riding the crags" was four crag stand-ups in a row, and
+   * the ground under all of it was flat. Session 1 of WORLD-SYSTEMS
+   * named that as the single biggest thing holding the world back, and
+   * this is the session that fixes it. The ridge is now something UNDER
+   * THE SHEET — a book under a page makes a scarp with a flat top, not
+   * a hill — and everything here is placed against that fact:
+   *
+   *   · the banner avenue CLIMBS. It is the ramp. From its foot the
+   *     ground ahead rises twelve units, which is what the camera reads
+   *     to pull back and open the frame (App.CAM).
+   *   · the curtain wall is placed by walking north from the foot until
+   *     the ground reaches the brow — it FOLLOWS the ridge, at whatever
+   *     height the page put it, and steps forward around the gate the
+   *     way a real enceinte does.
+   *   · the barbican sits low on the ramp and the keep stands on the
+   *     plateau, so the approach stacks: barbican, then wall, then keep,
+   *     each one clearing the one in front. Session 3 had to win that
+   *     contest with texture width; the ridge wins it with ground.
+   *   · the scarp itself is stone: scree lying ALONG the slope (decals
+   *     follow the surface now) and the ridge's broken toe at its foot.
+   *     The crags no longer stand in for the hill. They are the hill's
+   *     rubble.
+   * ================================================================ */
+
+  /** The plateau under the keep — what the rooks circle above. */
+  const ridgeTop = ctx.groundY(-45, -246);
+
+  /** Walk north from the approach until the page reaches `target`: that
+   *  is where this column of the ridge has its brow. */
+  const lipZ = (x: number, target: number) => {
+    for (let z = -194; z >= -234; z -= 1) if (ctx.groundY(x, z) >= target) return z;
+    return -226;
+  };
+
+  /* -- THE SCARP: the ridge's south face, in stone ------------------- */
+  // scree lies ALONG the slope; boulders are its broken toe at the foot
+  const screeSpots: [number, number, number][] = [
+    [-88, -207, 0.1], [-72, -209, 0.45], [-14, -209, 0.2], [16, -211, 0.55], [40, -210, 0.3],
+  ];
+  screeSpots.forEach(([x, z, rot], i) => ctx.decal(screeDecal(975 + i), 15, 8, x, z, rot, 0.6));
+  /* The four crag stand-ups are GONE. They were the high seat drawn —
+   * a picture of a ridge, standing on flat ground, in front of the
+   * ridge's own place. The ridge is real now, so its toe is what a
+   * ridge's toe actually is: fallen stone. */
+  const rubble = ctx.field(boulderTexture(921), 18, { w: 2.4, h: 1.7 });
+  [[-88, -204], [-78, -201], [-64, -203], [-9, -200], [6, -204], [24, -199], [42, -204],
+   [-95, -197], [-70, -196], [-2, -196], [18, -206], [37, -207], [-83, -207], [30, -195],
+   [-86, -196], [11, -197], [46, -199], [-74, -207]]
+    .forEach(([x, z], i) => rubble.set(i, x, z, 0.7 + r() * 0.8, 0, r() > 0.5));
+
+  /* -- THE CURTAIN WALL, riding the brow ---------------------------- *
+   * Placed by the ground, not by a number: for each run of wall we ask
+   * the page where its lip is and stand the segment a metre inside it.
+   * The gap is the gate, and the wall steps forward to meet it. */
+  const gapL = -60;
+  const gapR = -30;
   const wallRun: THREE.Mesh[] = [];
-  let wx = -148;
+  const wallFeet: [number, number][] = [];
+  let wx = -80;
   let si = 0;
-  while (wx < 54) {
+  while (wx < 44) {
     if (wx >= gapL && wx < gapR) { wx = gapR; continue; }
-    let segW = 14 + r() * 6;
+    let segW = 13 + r() * 6;
     if (wx < gapL && wx + segW > gapL) segW = gapL - wx;
-    if (wx + segW > 56) segW = 56 - wx;
+    if (wx + segW > 46) segW = 46 - wx;
     if (segW < 4) { wx += segW; continue; }
-    wallRun.push(ctx.standee(ridgeWallTexture(948 + si), segW + 1.2, 6 + r() * 0.8, wx + segW / 2,
-      -197 + Math.sin(wx * 0.03) * 2.2 + (r() - 0.5) * 1.2));
+    const cx = wx + segW / 2;
+    const wz = lipZ(cx, 11.8) - 1.4;
+    wallRun.push(ctx.standee(ridgeWallTexture(948 + si), segW + 1.2, 6.4 + r() * 0.9, cx, wz));
+    wallFeet.push([cx, wz]);
     wx += segW;
     si++;
   }
-  // the gatehouse is deliberately LOW: at 15 units it filled the whole
-  // upper frame from the avenue and the keep could never clear it
-  const gate = ctx.standee(greyweatherGateTexture(970), 9.5, 9.5, -45, -198.5);
+  // spill at the foot of the wall: without it a wall on a brow reads as
+  // a cut-out floating on the skyline, because its base is a straight
+  // line across an empty slope
+  const spill = ctx.field(boulderTexture(923), 22, { w: 2.1, h: 1.5 });
+  wallFeet.forEach(([cx, wz], i) => {
+    for (let k = 0; k < 2 && i * 2 + k < 22; k++) {
+      spill.set(i * 2 + k, cx + (r() - 0.5) * 13, wz + 2.4 + r() * 3.4,
+        0.55 + r() * 0.5, 0, r() > 0.5);
+    }
+  });
+  // drum towers pinch the gate: the wall's two ends are the gatehouse
+  const towerL = ctx.standee(wallTowerTexture(960), 5.6, 8.4, gapL - 1.5, lipZ(gapL - 1.5, 11.8) - 2.2);
+  const towerR = ctx.standee(wallTowerTexture(961), 5.6, 8.4, gapR + 1.5, lipZ(gapR + 1.5, 11.8) - 2.2);
+  wallRun.push(towerL, towerR);
 
-  /* -- the crags: the high seat drawn, not modeled ------------------- */
-  const crags: [number, number, number, number][] = [
-    [-128, -192, 16, 971], [-90, -201, 13, 972], [16, -193, 15, 971], [44, -202, 11, 972],
-  ];
-  const cragMeshes = crags.map(([x, z, w, seed], i) =>
-    ctx.standee(cragTexture(seed + i * 7), w, w * (176 / 288), x + (r() - 0.5) * 3, z));
-  ctx.decal(screeDecal(975), 14, 7, -110, -203, 0.1, 0.65);
-  ctx.decal(screeDecal(976), 13, 6.5, -70, -201, 0.5, 0.55);
-  ctx.decal(screeDecal(977), 14, 7, 30, -202, 0.2, 0.6);
+  /* -- THE BARBICAN: low on the ramp, so the ridge can rise behind it *
+   * Its height is not the point and never was — it is the FIRST of the
+   * approach's three beats, and the ridge does the rest. */
+  const gate = ctx.standee(greyweatherGateTexture(970), 9.5, 9.5, -45, -192);
 
-  /* -- the keep: the tallest drawing on the sheet, and it must WIN
-   * the skyline from its own gatehouse on the avenue framings ------- */
+  /* -- THE KEEP: on the plateau, where the high seat belongs --------- */
   const keep = ctx.standee(greyweatherKeepTexture(980), 34, 17, -45, -250);
   ctx.standee(tallBannerTexture(981), 2.8, 7.4, -56, -240);
   ctx.standee(tallBannerTexture(982), 2.8, 7.4, -34, -239.5);
@@ -416,11 +493,11 @@ export const buildCastle: RegionBuilder = (ctx) => {
   // got built into anything
   ctx.standee(wellTexture(983), 3.4, 4.3, -32, -228);
 
-  /* -- the banner avenue: pairs tightening toward the gate ----------- */
+  /* -- THE BANNER AVENUE: pairs tightening up the climb --------------- */
   const avenue: [number, number][] = [];
   const half = [9, 8.4, 7.8, 7.2, 6.6];
   half.forEach((hx, i) => {
-    const z = -166 - i * 7.2 + (r() - 0.5) * 1.6;
+    const z = -172 - i * 6.2 + (r() - 0.5) * 1.6;
     avenue.push([-45 - hx, z], [-45 + hx, z + 0.8]);
   });
   for (let v = 0; v < 2; v++) {
@@ -430,18 +507,30 @@ export const buildCastle: RegionBuilder = (ctx) => {
     pts.forEach(([x, z], i) => f.set(i, x, z, 0.9 + r() * 0.2, 0, false));
   }
   // fallen merlon stones at the verge, and the approach's wear
-  const rocks = ctx.field(boulderTexture(920), 8, { w: 2.6, h: 1.8 });
-  [[-56, -171], [-33, -186], [-59, -190], [-30, -168], [-62, -226], [-24, -238], [-70, -184], [12, -214]]
-    .forEach(([x, z], i) => rocks.set(i, x, z, 0.7 + r() * 0.55, 0, r() > 0.5));
-  ctx.decal(wheelRutsDecal(986), 12, 6, -45, -178, Math.PI / 2, 0.5);
-  ctx.decal(stoneWearDecal(987), 10, 8, -45, -194, 0.3, 0.6);
+  const rocks = ctx.field(boulderTexture(920), 15, { w: 2.6, h: 1.8 });
+  [[-56, -175], [-33, -186], [-59, -190], [-30, -172], [-62, -226], [-24, -238], [-70, -182], [12, -220],
+   [-64, -178], [-27, -193], [-67, -197], [-25, -180], [-60, -167], [-31, -201], [-69, -170]]
+    .forEach(([x, z], i) => rocks.set(i, x, z, 0.6 + r() * 0.7, 0, r() > 0.5));
+  ctx.decal(wheelRutsDecal(986), 12, 6, -45, -180, Math.PI / 2, 0.5);
+  ctx.decal(wheelRutsDecal(1006), 11, 5.5, -46, -196, Math.PI / 2 + 0.05, 0.4);
+  ctx.decal(wheelRutsDecal(1007), 12, 6, -44.5, -209, Math.PI / 2 - 0.04, 0.34);
+  ctx.decal(stoneWearDecal(987), 10, 8, -45, -191, 0.3, 0.6);
 
-  /* -- the bailey: stone worn grey, the toppled king, the parliament - */
-  ctx.decal(stoneWearDecal(988), 15, 12, -45, -220, 0.8, 0.65);
-  ctx.decal(stoneWearDecal(989), 11, 9, -45, -234, 1.6, 0.55);
+  /* -- the bailey: a cobbled yard on the plateau, the toppled king --- *
+   * On flat ground the two soft wear-blobs Session 3 used read as
+   * stains; on a bare plateau under an open sky they read as puddles of
+   * nothing. The bailey gets a drawn floor instead. */
+  ctx.decal(cobblePlazaDecal(1002), 32, 24, -45, -224, 0.06, 0.8);
+  ctx.decal(cobblePlazaDecal(1003), 22, 16, -48, -240, 0.5, 0.62);
+  ctx.decal(stoneWearDecal(988), 13, 10, -62, -216, 0.8, 0.34);
+  ctx.decal(stoneWearDecal(989), 11, 9, -26, -232, 1.6, 0.32);
+  // the bailey's working clutter: stone that never got built into
+  // anything, stacked where somebody meant to come back for it
+  ctx.standee(crateBarrelTexture(1004), 3.6, 2.5, -66, -232, { rotY: 0.4 });
+  ctx.standee(crateBarrelTexture(1005), 3.1, 2.2, -20, -222, { rotY: -0.5 });
   ctx.standee(toppledStatueTexture(990), 7, 4, -56, -222, { rotY: 0.15 });
 
-  /* -- the moat pool: reeds, the hawthorn, stillness ----------------- */
+  /* -- the moat pool: at the ridge's west foot, reflecting it -------- */
   const reedSpots: [number, number, number][] = [
     [-108, -212, 1], [-104, -221, 0.85], [-96, -222, 1.05], [-92, -214, 0.8],
     [-106, -207, 0.9], [-95, -208, 0.7], [-110, -218, 0.9], [-99, -224, 0.75],
@@ -450,7 +539,7 @@ export const buildCastle: RegionBuilder = (ctx) => {
     ctx.standee(reedsTexture(992 + (i % 2)), 3.4 * s, 3.4 * s, x, z));
   ctx.standee(gnarledHawthornTexture(994), 9, 9, -90, -206);
 
-  /* -- the far layer: pale pines past the keep ----------------------- */
+  /* -- the far layer: pale pines along the plateau's northern rim ---- */
   ctx.standee(farPinesTexture(995), 52, 13, -78, -272);
   ctx.standee(farPinesTexture(996, 384, 128), 34, 11.3, 10, -276);
   ctx.standee(farPinesTexture(997, 640, 128), 44, 8.8, -126, -269);
@@ -471,23 +560,25 @@ export const buildCastle: RegionBuilder = (ctx) => {
     { m: ctx.standee(rookTexture(1001), 1.5, 1.05, -57.5, -221.6), up: false, ph: 1.1 },
     { m: ctx.standee(rookTexture(1002), 1.4, 1, -54, -222.4), up: false, ph: 3.7 },
   ];
-  for (const p of perched) p.m.position.y = 1.9;
+  for (const p of perched) ctx.hang(p.m, 1.9);
 
   const gateMat = gate.material as THREE.MeshBasicMaterial;
   const keepMat = keep.material as THREE.MeshBasicMaterial;
 
   return (dt: number, t: number, px: number, pz: number) => {
-    // the arch fade at the gatehouse; the whole ridge wall lets go
-    // once the walker is past it; the keep steps aside when the
-    // walker goes behind it (the camera would lose them otherwise)
-    const gNear = passFade(px, pz, -45, -213, -195);
+    // the barbican's arch fade; the curtain wall lets go once the walker
+    // is through it (the camera must never shoot the bailey through the
+    // back of the wall); the keep steps aside when walked behind
+    const gNear = passFade(px, pz, -45, -207, -188);
     gateMat.opacity = 1 - gNear * 0.92;
-    const past = Math.max(0, Math.min(1, (-pz - 193) / 4));
+    // ALL THE WAY OFF, not down to a tenth: since Session 4 the camera
+    // stands where the wall is when the walker is in the bailey, and a
+    // six-unit wall at ten per cent opacity one unit from the lens is a
+    // grey rectangle across the whole frame.
+    const past = Math.max(0, Math.min(1, (-pz - 203) / 6));
     for (const seg of wallRun) {
-      (seg.material as THREE.MeshBasicMaterial).opacity = 1 - past * 0.9;
-    }
-    for (const c of cragMeshes) {
-      (c.material as THREE.MeshBasicMaterial).opacity = 1 - past * 0.85;
+      (seg.material as THREE.MeshBasicMaterial).opacity = 1 - past;
+      seg.visible = past < 0.98;
     }
     const behind = Math.max(0, Math.min(1, (-244 - pz) / 6));
     keepMat.opacity = 1 - behind * 0.75;
@@ -497,7 +588,7 @@ export const buildCastle: RegionBuilder = (ctx) => {
       const a = t * s.w + s.ph;
       s.m.position.x = s.cx + Math.cos(a) * s.rx;
       s.m.position.z = s.cz + Math.sin(a * 2) * s.rz * 0.5;
-      s.m.position.y = s.h + Math.sin(a * 2.3) * 2.2;
+      s.m.position.y = ridgeTop + s.h + Math.sin(a * 2.3) * 2.2;
       s.m.scale.x = Math.sin(a) > 0 ? -Math.abs(s.m.scale.x) : Math.abs(s.m.scale.x);
     }
 
@@ -513,11 +604,13 @@ export const buildCastle: RegionBuilder = (ctx) => {
         const a = t * 0.36 + p.ph;
         p.m.position.x = -45 + Math.cos(a) * 19;
         p.m.position.z = -242 + Math.sin(a * 2) * 9 * 0.5;
-        p.m.position.y = 14 + Math.sin(a * 2.6) * 2;
+        p.m.position.y = ridgeTop + 14 + Math.sin(a * 2.6) * 2;
         p.m.scale.x = Math.sin(a) > 0 ? -Math.abs(p.m.scale.x) : Math.abs(p.m.scale.x);
         if (!near && Math.hypot(px + 56, pz + 222) > 26) {
           p.up = false;
-          p.m.position.set(p.ph > 2 ? -54 : -57.5, 1.9, p.ph > 2 ? -222.4 : -221.6);
+          const hx = p.ph > 2 ? -54 : -57.5;
+          const hz = p.ph > 2 ? -222.4 : -221.6;
+          p.m.position.set(hx, ctx.groundY(hx, hz) + 1.9, hz);
         }
       }
     }

@@ -10,6 +10,13 @@ const FRAMES = 8; // 0 idle · 1–6 walk · 7 sit
  * Pip — a flat ink figure standing on the page like a paper cut-out.
  * Movement uses acceleration and damping so starts and stops feel soft;
  * footprints and step sounds are driven by distance travelled.
+ *
+ * Session 4: the page has a shape, so Pip has a ground. `setGround`
+ * lifts the figure onto it every frame; `grade` (the gradient of the
+ * ground in the direction of travel) makes a climb cost something and a
+ * descent give it back — the only place in the game where the terrain
+ * pushes back on the verb. Pip does NOT lean into the slope: a paper
+ * cutout stands upright on a warped sheet, always.
  */
 export class Character {
   group = new THREE.Group();
@@ -18,6 +25,11 @@ export class Character {
   heading = 0;
   maxSpeed = 4.1;
   frozen = false;
+  /**
+   * Rise per unit travelled, in the direction of travel. Uphill drags,
+   * downhill lets go — subtly, because this is a walk, not a climb.
+   */
+  grade = 0;
   onStep: (() => void) | null = null;
   /**
    * Footprint stamp gate (ARCHITECTURE #34). False = steps and step
@@ -45,6 +57,8 @@ export class Character {
   private wobble = 0;
   private wobbleSeed = 0;
   private stepGate = 0.62;
+  private groundY = 0;
+  private groundN: [number, number, number] = [0, 1, 0];
 
   constructor(private prints: Footprints) {
     this.tex = this.buildSheet(false);
@@ -138,10 +152,27 @@ export class Character {
   }
 
   teleport(x: number, z: number, heading = 0) {
-    this.pos.set(x, 0, z);
+    this.pos.set(x, this.groundY, z);
     this.vel.set(0, 0, 0);
     this.heading = heading;
     this.group.position.copy(this.pos);
+  }
+
+  /**
+   * Put the figure on the page. Called every frame with the ground under
+   * the walker's feet and the page's normal there; the blob shadow lies
+   * along the surface, the figure stands square to the world.
+   */
+  setGround(y: number, normal?: [number, number, number]) {
+    this.groundY = y;
+    this.pos.y = y;
+    this.group.position.y = y;
+    if (normal) {
+      this.groundN = normal;
+      const [nx, ny, nz] = normal;
+      // the shadow is a mark on the paper, so it follows the paper
+      this.shadow.rotation.set(Math.atan2(nz, ny), 0, -Math.atan2(nx, ny));
+    }
   }
 
   private setFrame(f: number) {
@@ -158,12 +189,15 @@ export class Character {
     }
 
     const accel = 16;
-    const speed0 = this.maxSpeed * (1 - 0.38 * Math.min(1, this.wobble));
+    // a climb costs, a descent gives a little back
+    const hill = 1 - Math.max(-0.22, Math.min(0.42, this.grade)) * 0.55;
+    const speed0 = this.maxSpeed * (1 - 0.38 * Math.min(1, this.wobble)) * hill;
     const target = new THREE.Vector3(move.x, 0, move.y).multiplyScalar(speed0);
     this.vel.x += (target.x - this.vel.x) * Math.min(1, accel * dt * 0.45);
     this.vel.z += (target.z - this.vel.z) * Math.min(1, accel * dt * 0.45);
 
-    this.pos.addScaledVector(this.vel, dt);
+    this.pos.x += this.vel.x * dt;
+    this.pos.z += this.vel.z * dt;
     if (bounds) {
       this.pos.x = THREE.MathUtils.clamp(this.pos.x, bounds.minX, bounds.maxX);
       this.pos.z = THREE.MathUtils.clamp(this.pos.z, bounds.minZ, bounds.maxZ);
@@ -191,7 +225,7 @@ export class Character {
           const j = (this.wobbleSeed / 0xffffffff - 0.5) * 0.36 * this.wobble;
           this.stepGate = 0.62 * (1 + j);
         }
-        if (this.stamping) this.prints.stamp(this.pos, this.heading);
+        if (this.stamping) this.prints.stamp(this.pos, this.heading, 0.03, this.groundN);
         this.onStep?.();
       }
     } else {

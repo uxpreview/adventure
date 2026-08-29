@@ -1,5 +1,3 @@
-import { AudioDirector } from './AudioDirector';
-
 /** Per-chapter mood for the generative music layer. */
 type Mood = {
   /** Scale degrees in Hz the melody may draw from. */
@@ -166,27 +164,6 @@ export class Audio {
   }
 
   /**
-   * The ending's own score (design/score.md §5), built on first ask and
-   * torn down with the chapter. Only Chapter 10 has one: the finale is
-   * the only place where the player plays the music.
-   */
-  private directorInstance: AudioDirector | null = null;
-
-  director(): AudioDirector | null {
-    this.init();
-    if (!this.ctx || !this.master) return null;
-    if (!this.directorInstance) {
-      this.directorInstance = new AudioDirector(this.ctx, this.master, () => this.muted);
-    }
-    return this.directorInstance;
-  }
-
-  releaseDirector() {
-    this.directorInstance?.dispose();
-    this.directorInstance = null;
-  }
-
-  /**
    * The composed zero (score §4.5, ch10 Beat 5): everything off, with no
    * timeout and no automatic way back. `holdTacet` ducks the room to 30%
    * because a room is still a room; this takes the room too. The player
@@ -195,7 +172,6 @@ export class Audio {
    */
   holdSilence(on: boolean) {
     this.holdTacet(on);
-    this.directorInstance?.holdSilence(on);
     if (!this.ctx) return;
     this.ambient?.gain.linearRampToValueAtTime(
       on ? 0 : this.lastAmbient,
@@ -221,49 +197,20 @@ export class Audio {
     }
   }
 
-  /* ---------- named events (chapter hooks; score doc §4.3 subset) ---------- */
+  /* ---------- named events: the voices of the lands ---------- */
 
-  /** Small vocabulary of adaptive-layer events used by Ch 1–2. */
-  event(name: string, data?: number) {
+  /**
+   * INKLANDS' one-shot vocabulary. Session 4's inheritance audit deleted
+   * fifty-nine cases that were margins' chapter hooks (`wo-tape-boom`,
+   * `xray-taught`, `mom-underline`…) — none of them ours, none of them
+   * ever fired here. What remains is what the world actually says, and
+   * every land that ships from here adds at least one line to it
+   * (QUALITY-BAR §4, "sound is place"). The synthesis helpers below are
+   * kept whole: they are the instrument, not the score.
+   */
+  event(name: string, _data?: number) {
     if (!this.ctx || this.muted || this.tacet) return;
     switch (name) {
-      case 'tally': {
-        // dry woodblock tick, pitch creeping up comically with the count
-        this.knock(300 + Math.min(600, (data ?? 0) * 1.2));
-        break;
-      }
-      case 'cold': {
-        // a single detuned cold note — the game's first minor inflection
-        this.tone(311 * 1.012, 0, 1.6, 0.035);
-        break;
-      }
-      case 'warm-low': {
-        this.tone(196, 0, 1.4, 0.045);
-        break;
-      }
-      case 'flare-tick': {
-        this.knock(900 + Math.random() * 300, 0.02);
-        break;
-      }
-      case 'segment': {
-        this.tone(1046, 0, 0.5, 0.04);
-        break;
-      }
-      case 'leg': {
-        // two-note figure, unresolved — the route continues
-        this.tone(523, 0, 0.4, 0.04);
-        this.tone(587, 0.22, 0.7, 0.035);
-        break;
-      }
-      case 'homely': {
-        this.tone(392, 0, 0.9, 0.04);
-        break;
-      }
-      case 'bird': {
-        this.tone(1568, 0, 0.18, 0.03);
-        this.tone(1760, 0.14, 0.2, 0.025);
-        break;
-      }
       case 'lark': {
         // the Common's bird: three quick chirps stepping up and away,
         // pitch-jittered so no two larks are the same lark
@@ -320,284 +267,6 @@ export class Audio {
         this.tone(175 * j, 0.02, 0.14, 0.02);
         this.knock(175 * j, 0.016);
         this.tone(147 * j, 0.24, 0.16, 0.018);
-        break;
-      }
-      case 'panel': {
-        // a pair pays off — rising by pair index (ch03 §8)
-        const n = data ?? 0;
-        this.tone(523 * Math.pow(2, n / 12), 0, 0.45, 0.042);
-        this.tone(784 * Math.pow(2, n / 12), 0.13, 0.6, 0.03);
-        break;
-      }
-      case 'credits': {
-        // escalating comic plinks, layers 1-4. Layer 5 never calls this.
-        const n = data ?? 1;
-        this.knock(380 + n * 130, 0.03 + n * 0.008);
-        break;
-      }
-      case 'boat-lap': {
-        this.knock(160 + Math.random() * 60, 0.012);
-        break;
-      }
-      case 'rain-begin': {
-        this.tone(2093, 0, 0.12, 0.016);
-        break;
-      }
-      case 'slice': {
-        // the razor stub: one dry tick, over before it registers
-        this.knock(2400, 0.05);
-        break;
-      }
-      case 'flare-fail': {
-        // note()'s corpse: flatted, pitched down a fourth, decay halved
-        this.tone(660 * 0.75 * 0.943, 0, 0.25, 0.04);
-        this.tone(880 * 0.75 * 0.943, 0.1, 0.3, 0.028);
-        break;
-      }
-      case 'ghost-raised': {
-        // no chime. a low paper-flex whump, like a book settling
-        this.thump(70, 0.7);
-        break;
-      }
-      case 'crackle': {
-        // brittle, high, short — each of the three lower than the last
-        const n = data ?? 0;
-        this.burst(3200 - n * 700, 0.07);
-        break;
-      }
-      case 'blue-voice': {
-        // the hairline of blue, given a voice
-        this.tone(1318, 0, 0.8, 0.03);
-        break;
-      }
-      case 'xray-taught': {
-        // one soft low note: the instrument, acknowledged
-        this.tone(174.6, 0, 1.8, 0.036);
-        break;
-      }
-      case 'valley-enter': {
-        this.tone(146.8, 0, 2.6, 0.032);
-        this.tone(220 * 0.994, 0.5, 2.2, 0.02);
-        break;
-      }
-      case 'terraces': {
-        this.tone(440, 0, 0.7, 0.026);
-        this.tone(466.2, 0.3, 0.9, 0.02);
-        break;
-      }
-      case 'cap': {
-        // he pulls the brim down. one low tone, no melody.
-        this.tone(130.8, 0, 1.7, 0.04);
-        break;
-      }
-      case 'point-back': {
-        this.tone(196, 0, 1.2, 0.034);
-        this.tone(261.6, 0.42, 1.6, 0.026);
-        break;
-      }
-      case 'blot-edge': {
-        // the room tone pre-laps the Blot: paper noise, nothing else
-        this.thump(52, 1.5);
-        break;
-      }
-      case 'dry-step': {
-        this.knock(1500 + Math.random() * 400, 0.016);
-        break;
-      }
-      /* ---- chapter 7: a score made of subtraction ---- */
-      case 'enter-blot': {
-        // the world's pen-scratch dies; what is left is a room, not a page
-        this.setAmbientLevel(0.006);
-        break;
-      }
-      case 'flood-still': {
-        // near-inaudible: the flood settling, and only if you stopped
-        this.tone(3136, 0, 2.2, 0.008);
-        break;
-      }
-      case 'surface': {
-        this.thump(190, 0.55);
-        break;
-      }
-      case 'sink': {
-        this.thump(120, 0.9);
-        break;
-      }
-      case 'letterform': {
-        // a dry sub-click. NO chime — the friendly voice would be obscene
-        this.knock(120, 0.02);
-        break;
-      }
-      case 'sit': {
-        this.setAmbientLevel(0.0045);
-        break;
-      }
-      case 'stand': {
-        this.setAmbientLevel(0.006);
-        this.thump(60, 1.1);
-        break;
-      }
-      case 'feather-shore': {
-        // the page breathes back in, and two notes with it
-        this.setAmbientLevel(0.018);
-        this.tone(392, 0, 1.6, 0.028);
-        this.tone(523, 0.7, 2.0, 0.022);
-        break;
-      }
-      case 'landmark': {
-        // a dry page-settle tick, quieter each time. L4 is nearly silent.
-        const n = data ?? 0;
-        this.knock(240 + n * 40, 0.006 + n * 0.008);
-        break;
-      }
-      case 'paper': {
-        this.burst(1800, 0.13);
-        break;
-      }
-      case 'box-dark': {
-        this.setAmbientLevel(0);
-        break;
-      }
-      case 'dawn-seam': {
-        // first light is the first sound
-        this.setAmbientLevel(0.014);
-        this.tone(174.6, 0, 3.4, 0.03);
-        this.tone(261.6, 1.2, 3.0, 0.02);
-        break;
-      }
-      case 'pencil-line': {
-        // graphite: shaped noise, the first drawing sound since the pour
-        for (let i = 0; i < 7; i++) {
-          window.setTimeout(() => this.burst(900 + Math.random() * 1400, 0.4), i * 1400);
-        }
-        break;
-      }
-      case 'tilt-up':
-        // nothing. The silence IS the sting.
-        break;
-      /* ---- chapter 8: graphite over ink ---- */
-      case 'atlas-enter': {
-        // lamp-warm room tone: the warmest room in the back half
-        this.setAmbientLevel(0.02);
-        break;
-      }
-      case 'eraser': {
-        // filtered noise rub, three short strokes
-        for (let i = 0; i < 3; i++) {
-          window.setTimeout(() => this.burst(640 + Math.random() * 220, 0.16), i * 260);
-        }
-        break;
-      }
-      case 'crumb': {
-        this.knock(1900 + Math.random() * 500, 0.008);
-        break;
-      }
-      case 'mom-underline': {
-        // room tone to nothing for two seconds; back three dB softer.
-        // The chapter's entire silence budget, spent here (ch08 §8).
-        if (this.ambient && this.ctx) {
-          const t = this.ctx.currentTime;
-          this.ambient.gain.linearRampToValueAtTime(0.00001, t + 0.3);
-          this.ambient.gain.setValueAtTime(0.00001, t + 2.3);
-          this.ambient.gain.linearRampToValueAtTime(this.lastAmbient * 0.7, t + 3.1);
-        }
-        window.setTimeout(() => this.setAmbientLevel(this.lastAmbient), 22000);
-        break;
-      }
-      case 'line-hesitate': {
-        // the melody suspends on a degree that doesn't resolve
-        this.tone(466.2, 0, 2.6, 0.02);
-        break;
-      }
-      case 'line-withdraw': {
-        this.tone(392, 0, 1.8, 0.024);
-        break;
-      }
-      case 'page-slide': {
-        // long paper-drag swell, then the table takes the weight
-        this.burst(500, 2.2);
-        window.setTimeout(() => this.burst(700, 2.0), 1800);
-        window.setTimeout(() => this.burst(900, 1.6), 3600);
-        window.setTimeout(() => this.thump(70, 0.9), 5600);
-        break;
-      }
-      case 'pencil-setdown': {
-        // one dry wooden click, close-mic'd
-        this.knock(210, 0.06);
-        window.setTimeout(() => this.knock(150, 0.03), 45);
-        break;
-      }
-      case 'replay-door': {
-        this.thump(120, 0.6);
-        break;
-      }
-      /* ---- chapter 9: the score earned back by coverage ---- */
-      case 'wo-first-crack': {
-        // a long dry split
-        this.burst(2400, 0.5);
-        window.setTimeout(() => this.burst(1500, 0.4), 160);
-        window.setTimeout(() => this.burst(700, 0.5), 340);
-        break;
-      }
-      case 'wo-flake': {
-        // papery shiver; pitch falls as the chains grow longer
-        const k = Math.min(1, data ?? 0);
-        this.burst(2600 - k * 1200, 0.05 + k * 0.06);
-        break;
-      }
-      case 'wo-region': {
-        // one soft chord per cleared region; the leviathan's is lowest
-        const n = data ?? 0;
-        const base = [329.6, 392, 261.6, 196][n % 4];
-        this.tone(base, 0, 2.6, 0.034);
-        this.tone(base * 1.5, 0.4, 2.6, 0.024);
-        this.tone(base * 2, 0.9, 3.0, 0.018);
-        break;
-      }
-      case 'wo-glow': {
-        this.tone(1046.5, 0, 3.2, 0.012);
-        break;
-      }
-      case 'wo-gate-open': {
-        // the seam-crack running to the corner
-        for (let i = 0; i < 6; i++) {
-          window.setTimeout(() => this.burst(2000 - i * 220, 0.12), i * 380);
-        }
-        break;
-      }
-      case 'wo-names': {
-        // a single warm note. No solve-chime — the names are not a collectible.
-        this.tone(523.3, 0, 3.4, 0.04);
-        break;
-      }
-      case 'wo-tape-descend': {
-        this.burst(3400, 1.8);
-        break;
-      }
-      case 'wo-tape-boom': {
-        this.thump(90, 0.8);
-        this.knock(140, 0.05);
-        break;
-      }
-      case 'wo-nib-lift': {
-        // the lift replaces any chime after — N.
-        this.knock(1200, 0.014);
-        break;
-      }
-      case 'wo-wrap': {
-        this.burst(800, 1.4);
-        window.setTimeout(() => this.burst(1000, 1.2), 900);
-        break;
-      }
-      case 'wo-string': {
-        this.burst(2600, 0.3);
-        break;
-      }
-      case 'wo-boom': {
-        // the mailbox: the biggest low event in the game, then silence
-        this.thump(38, 2.6);
-        this.tone(41, 0, 1.8, 0.09);
-        this.setAmbientLevel(0);
         break;
       }
     }

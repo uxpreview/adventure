@@ -1,10 +1,19 @@
 import * as THREE from 'three';
 
 /**
- * Unified input: WASD/arrows on keyboard, and a drag-anywhere virtual
- * joystick that serves both touch and mouse. Exposes one normalized move
- * vector (x = right, y = toward camera-forward/−Z).
+ * Unified input: WASD/arrows on keyboard, and a drag virtual joystick
+ * that serves both touch and mouse. Exposes one normalized move vector
+ * (x = right, y = toward camera-forward/−Z).
+ *
+ * Session 4, portrait as a first-class viewport (WORLD-SYSTEMS §8): "the
+ * joystick must never sit under the thing it is steering toward." On a
+ * tall screen the top of the frame is the VISTA — the keep on its ridge,
+ * the thing you are walking to — and a drag-anywhere stick puts a ring
+ * and a thumb right on it. So on a tall screen the walk drag belongs to
+ * the lower band of the page and the vista band stays clear. On a wide
+ * screen there is no vista band to protect, and the whole canvas drags.
  */
+const WALK_BAND_TOP = 0.38;
 export class Input {
   move = new THREE.Vector2();
   enabled = true;
@@ -27,6 +36,8 @@ export class Input {
 
     canvas.addEventListener('pointerdown', (e) => {
       if (!this.enabled || this.pointerId !== null) return;
+      const tall = window.innerWidth / window.innerHeight < 0.8;
+      if (tall && e.clientY < window.innerHeight * WALK_BAND_TOP) return;
       this.pointerId = e.pointerId;
       this.origin.set(e.clientX, e.clientY);
       this.joyVec.set(0, 0);
