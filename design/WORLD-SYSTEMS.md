@@ -16,8 +16,10 @@ map you could cross in ten minutes.
 
 We take **principles** from the big ones — RDR2's world having business
 of its own, GTA's density of incidental activity, Skyrim's "see a thing,
-go to it" — and never their breadth. A thousand-person-year simulation
-is not the competition; a world that feels authored in every frame is.
+go to it", **Fallout's habit of telling whole stories with nothing but
+the objects left in a room** (§10) — and never their breadth. A
+thousand-person-year simulation is not the competition; a world that
+feels authored in every frame is.
 
 Three rules fall out of that, and they govern every system below:
 
@@ -144,6 +146,8 @@ express through posture, placement and routine.
 - **One visible want each.** Not a dialogue tree — someone standing at
   the gate *looking north* tells you what they want. You learn wants by
   looking, which is the verb the game already has.
+- **And a name** (§10). A name costs one line and converts a prop into
+  a person; nothing else about them changes.
 - **The co-walker.** Someone falls in beside you for a stretch and then
   stops dead at their land's border, because they are drawn in that
   land's ink and cannot leave it.
@@ -189,6 +193,154 @@ Portrait implications to design for, not patch later: less horizontal
 frame means vistas must be *taller* compositions; touch targets and POI
 prompts need thumb-reach placement; the joystick must never sit under
 the thing it is steering toward.
+
+---
+
+## 9. The score — one music box, twelve rooms
+
+*Owner direction, 2026-08-29: each region should have its own
+background music. This section is the standing plan for it.*
+
+### Where we actually are
+
+`Audio.MOODS` already carries twelve per-region entries, and each one
+sets a **scale**, a **gap** and a **level**. That is real — the melody
+genuinely wanders a different mode in every land — but it is all played
+on the **same instrument**, over the **same room tone**, and the
+difference between two lands is a handful of semitones. A player can
+cross a border blind and hear the footstep change; they cannot hear the
+*music* change. That is the gap.
+
+### The five moves, in order of return
+
+1. **A land's music is its INSTRUMENT, not its scale.** This is
+   nine-tenths of the effect and it is the thing we do not have. Five
+   synthesised voices cover twelve lands with deliberate doubling:
+   - **the music box** — what exists: a fast-decay pitched ping;
+   - **the plucked string** — Karplus–Strong (a noise burst into a
+     short delay line with a lowpass in its feedback). About twenty
+     lines, costs almost nothing, and sounds *nothing* like a sine.
+     This is the single highest-value addition to the instrument box;
+   - **the bowed/held voice** — a saw through a resonant lowpass with a
+     slow attack, for the ceremonial lands;
+   - **struck metal** — an inharmonic partial stack with a long tail.
+     `bell-buoy` (Session 5) is already this instrument;
+   - **air** — filtered noise with a moving resonant peak. `surge`
+     (Session 5) is already this instrument.
+   Two of the five are therefore already written; the score session
+   builds the other three and gives each land a voice.
+2. **A bed per land, not one room tone everywhere.** `startAmbient` is
+   currently a single lowpass noise loop and it is identical in the
+   canyon and the office park. It should be per-land and it should be
+   the quietest thing in the mix: the sea's hush, the pines' hush, the
+   city's hum, the office park's air handling, the canyon's near-silence
+   with a long tail on everything else.
+3. **A border is a CROSSFADE, not a cut.** `setMood` already ramps the
+   melody's level; the instrument and the bed need an equal-power
+   crossfade of three or four seconds so a border is a place you pass
+   through rather than a switch you flip.
+4. **The score answers the player.** `setMoodIntensity` exists and
+   **nothing in this game calls it.** Traversal is the obvious caller:
+   run and the score leans in, stand still and it thins to almost
+   nothing. Session 6 owns traversal and must leave that seam in place.
+5. **The score answers the hour.** Same crossfade machinery as the day
+   cycle. Session 6 builds the cycle; it must expose the hour as a
+   parameter the mixer can read, or the score session has to re-open it.
+
+### Where the music comes from — a proposal, owner's call
+
+Fallout's radio works because the music has a **source**: somebody is
+broadcasting, and you are receiving. Our equivalent is not a radio, and
+it is sitting right there in the metaphor:
+
+> **The music is not in the world. It is in the room where the page is.**
+> Somebody is at that desk, drawing this, with something on quietly in
+> the background. What changes per land is not the tune — it is what the
+> page does to it.
+
+Near the sea the wind takes it; under the pines it is muffled and close;
+in GREYLINE CITY it picks up an AM edge; on the Holdfast you are far
+enough out that only the low end reaches you. One line of fiction, and
+it explains why the music is small, why it is sparse, why it is
+recognisably the same everywhere, and why it is different everywhere. It
+also gives THE UNFINISHED SHEET (DIRECTION.md) its ending a second
+meaning: you reach the desk, and you find out what has been playing.
+
+**Law, unchanged:** zero assets, so every voice is synthesis; the whole
+graph stays a handful of nodes; and nothing outside `Audio.ts` invents
+an instrument, exactly as nothing outside `palette.ts` invents a colour.
+
+---
+
+## 10. What we take from Fallout, and what we refuse
+
+*Owner direction, 2026-08-29. Fallout is a strange benchmark for a
+ten-minute walk with no combat — which is the point. It is on this list
+for exactly one thing it does better than anything else, and that one
+thing is the thing INKLANDS is structurally forced into.*
+
+### The one thing
+
+**Fallout tells whole stories with nothing but the objects left in a
+room.** Two skeletons in a bathtub and a teddy bear. A chair, a chain
+and a cage. You are never told; you read the room and you are certain.
+
+INKLANDS has **no faces, no dialogue trees, no quest log and no
+cutscenes** — every channel Fallout could have used and chose not to,
+we do not have at all. So the vignette is not an influence here, it is
+the native mode, and Fallout is the best available teacher of it.
+
+**The rule that falls out:** every land carries **two or three authored
+TABLEAUX** — small groups of props that tell one complete story and are
+never explained. Not decoration, not "misc props" (which the bar
+already forbids): a composition with a subject.
+
+And ours has a twist Fallout cannot use, because everything here is a
+DRAWING and the drawing can be part of the story:
+
+- a picnic blanket with two settings, one of them rubbed out;
+- a boat with no oars, and a pair of oars drawn ten units away at the
+  wrong scale;
+- a fence that runs perfectly for forty units and then, where the hand
+  got bored, becomes four wobbles and stops;
+- the same tree drawn three times, getting better.
+
+### The other four
+
+2. **Deadpan institutional cheer, not grimness.** Vault-Tec is funny
+   because an upbeat voice describes something bleak and never breaks.
+   We already do this and have not admitted it — the office park's
+   standing note is pure Fallout: *"the timetable says the 8:15 is
+   coming. the 8:15 is drawn nowhere on this sheet. everyone waiting
+   knows both of these things and has made their peace."* That is the
+   house voice. Name it, keep it, and never let it become jokes.
+3. **The world can be WRITTEN ON.** Fallout speaks through terminals,
+   posters and notes. We hand-letter everything (`ink.lettering`,
+   `legibleCaps`) and currently use it only for the UI and the map,
+   which leaves an entire channel unused. Signs, a chalked board, a
+   notice actually nailed to Greyweather's gate rather than only
+   described on a card, a tide table, a timetable. Cheap, on-brand, and
+   it is how a land argues without a narrator.
+4. **A region has a THESIS, not just a biome.** Fallout's regions are
+   ideological before they are geographic. Ours vary by wash and by
+   landform; DIRECTION.md's east-by-south gradient (walking is growing
+   up) is a thesis we have written down and barely used. From the story
+   session on, a land spec's §1 should be able to say what its land
+   *argues*, not only what it looks like.
+5. **A name is free, and it turns a prop into a person.** Fallout is
+   full of people you meet once who are entirely one thing. Our
+   doodle-folk cannot have faces, so they get one posture, one place,
+   one routine (§5) — and a NAME. Nothing else about them changes.
+
+### What we refuse, explicitly
+
+Combat, weapons, damage, enemies. A quest log, objective markers, a
+compass. Dialogue trees and speech checks. Loot, inventory, crafting,
+encumbrance. Karma and reputation. Levelling. **The Pip-Boy** — a
+diegetic menu is still a menu, and rule 1 of §0 is that the world says
+it or it does not get said. And the ash: Fallout is post-apocalyptic
+and this is a sheet of paper with a lark on it. **We take the
+archaeology and the deadpan. We do not take the apocalypse.**
 
 ---
 

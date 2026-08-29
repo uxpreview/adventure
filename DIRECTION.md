@@ -25,6 +25,12 @@ rather than fight:
   or finishing something half-drawn gets this for free.
 - **Notes in the margins.** The POI note cards speak in a wry narrator
   voice that already hints somebody drew all this and left.
+- **The world can only speak through objects.** No faces, no dialogue
+  trees, no quest log, no cutscenes — every channel a normal game would
+  use is missing on purpose. So a story here is told the way Fallout
+  tells its best ones: in what is left lying in a room
+  (`design/WORLD-SYSTEMS.md` §10). Any candidate below has to work in
+  that mode or it does not work at all.
 
 ## Three candidate stories
 
@@ -47,6 +53,14 @@ looking for the pen.
   of the joke.
 - **Why it fits:** uses cascade, ghost fields, the wry notes, and the
   kid-to-grown-up geography without adding a single new system class.
+- **Why the Fallout direction strengthens it** (owner input,
+  2026-08-29): the thing Fallout does better than anyone is
+  ARCHAEOLOGY — every room legible as what it was before you got
+  there. This story makes archaeology the *verb*: pencil under-drawing
+  is the "before", inking it in is the reading of it, and every
+  unfinished thing on the sheet is a room with the objects still in it.
+  It also gives §9's score proposal an ending: the last thing you
+  finish is the desk, and you find out what has been playing.
 
 ### 2. THE COURIER OF BRIM
 
@@ -67,9 +81,12 @@ tonally heavier and needs the most new simulation.
 
 ## Either way, next sessions
 
-1. **Sound and motion pass** — windmill sails that turn, banner
-   flutter, gull cries keyed to the coast mood, city traffic murmur;
-   ambient per-land one-shots through `Audio.event`.
+1. **The score** — one instrument per land rather than one music box
+   for the world, a bed per land instead of one room tone, borders that
+   crossfade, and a mix that answers both the hour and how you are
+   moving. See `design/WORLD-SYSTEMS.md` §9; it is Session 8 on the
+   ladder, ahead of the remaining land sessions, because a land's voice
+   is part of authoring the land.
 2. **Interiors** — one per civic land to start: the keep's hall, a
    Brim tavern, an office lobby (gloss steps already wait for it).
    Small sub-sheets entered by door POI, same engine.

@@ -11,6 +11,12 @@ Elevation, the camera, traversal and time all do. Building six more
 lands flat and then adding elevation means re-opening six lands — so the
 ladder was re-cut after Session 3 to put the foundations first.
 
+**The same rule moved THE SCORE forward** (2026-08-29): a land's VOICE
+is part of authoring the land, so per-land music belongs ahead of the
+five lands still to be built, not in the polish pass at the end. It sat
+at Session 11; it is Session 8. Nothing else moved, and the story stays
+at Session 7 where the owner put it.
+
 | # | Session | Scope |
 |---|---------|-------|
 | 2 | **The first minute** ✓ 2026-08-28 | THE COMMON + the title framing + the south face of THE KINGDOM OF BRIM. Gate to WOWED (`critique-art-1.md`). |
@@ -19,11 +25,12 @@ ladder was re-cut after Session 3 to put the foundations first.
 | 5 | **The coast** ✓ 2026-08-29 | LONGSHORE + THE WIDE BLUE, the first lands authored *with* elevation. THE HOLDFAST (a headland the tear went round, authored as a polygon so its faces are planar), THE CUT (a ledge graded out of the page — the only way up), SHELTER COVE, and THE SANDBAR, which is what makes open water a land you can walk. Four new audio voices and two new instruments. Gate to WOWED (`critique-art-4.md`). |
 | 6 | **Traversal & time** | Sprint as ink weight, roads that carry, the river as a route (the rowboat), and the day cycle. Every land already built improves. The rowboat's quadrant is now built: LONGSHORE's cove and the river mouth are where it lives (WORLD-SYSTEMS §4). |
 | 7 | **The story** | Pick from DIRECTION.md (THE UNFINISHED SHEET recommended), write STORY.md, build the ink-in verb as the content system, and make the map the journal. From here every land session ships places **and** its unfinished things **and** one inhabitant. |
-| 8 | **Farm & forest** | THE HARROW DOWNS + THE PENWOOD: field patchwork vs pine dark; the tarn; the forest track. |
-| 9 | **The dry lands** | SPLITROCK CANYON (a tear in the page) + THE BLEACH FLATS: corridor drama, the oasis as reward. |
-| 10 | **The now** | MAPLE COURT + GREYLINE CITY + THE CUBICLE MILE: street rhythm, lit windows at dusk, the junction — and the 8:15 drawn into existence. |
-| 11 | **Motion & sound** | Systems pass: wind everywhere, sails and windmills turning, the ambient score per land, NPC routines. |
-| 12 | **The juror** | Awwwards pass on the whole build: title, first minute, map, UI feel, mobile portrait, performance audit, then the full-gauntlet critique. |
+| 8 | **The score** | Owner direction, 2026-08-29: each land gets its own music, not the same music box in a different mode. One synthesised instrument per land, a bed per land, borders that crossfade, and a mix that answers the hour and how you are moving. See `design/WORLD-SYSTEMS.md` §9. |
+| 9 | **Farm & forest** | THE HARROW DOWNS + THE PENWOOD: field patchwork vs pine dark; the tarn; the forest track. |
+| 10 | **The dry lands** | SPLITROCK CANYON (a tear in the page) + THE BLEACH FLATS: corridor drama, the oasis as reward. |
+| 11 | **The now** | MAPLE COURT + GREYLINE CITY + THE CUBICLE MILE: street rhythm, lit windows at dusk, the junction — and the 8:15 drawn into existence. |
+| 12 | **Motion & life** | Systems pass: wind everywhere, sails and windmills turning, NPC routines, road encounters. (The score moved out of this session to 8 — see the ordering rule.) |
+| 13 | **The juror** | Awwwards pass on the whole build: title, first minute, map, UI feel, mobile portrait, performance audit, then the full-gauntlet critique. |
 
 Rules of the ladder:
 
