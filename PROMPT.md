@@ -1,11 +1,12 @@
 # PROMPT — Session 5: THE COAST
 
-You are continuing INKLANDS in `uxpreview/adventure` (pushes auto-deploy
-to Vercel project `adventure`). Read, in order: `design/QUALITY-BAR.md`
-(binding), `design/WORLD-SYSTEMS.md`, `PLAN.md`, `README.md`,
-`SESSIONS.md` — Session 4's gotchas especially, because that session
-changed the ground under every land and retired one of Session 3's
-rules. Story stays parked until Session 7.
+You are continuing INKLANDS in `uxpreview/adventure` on `main` — the
+default branch, and what Vercel project `adventure` deploys to
+production. Read, in order: `design/QUALITY-BAR.md` (binding),
+`design/WORLD-SYSTEMS.md`, `PLAN.md`, `README.md`, `SESSIONS.md` —
+Session 4's gotchas especially, because that session changed the ground
+under every land and retired one of Session 3's rules. Story stays
+parked until Session 7.
 
 **This is a LAND session, and the first one authored on real ground.**
 Session 4 gave the sheet a shape; this is the session that finds out
