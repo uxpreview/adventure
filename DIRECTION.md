@@ -1,253 +1,244 @@
 # DIRECTION — what the game becomes
 
-The maps came first, on purpose: every land is walkable, sounds like
-itself, and has room left in it for a story. This file is the standing
-question of what that story is. Nothing here is built yet; the world
-was laid out so that any of these fit without moving a wall.
+## THE STANDING RULE
 
-**Owner direction, 2026-08-29: the target is HOURS of play, not a
-short walk** (`design/WORLD-SYSTEMS.md` §0, "A small map is not a short
-game"). That is a real change to this file, because the three candidates
-below were written for a two-hour game and it shows. A story that has to
-carry fifteen hours is a different object from a story that has to carry
-two, and the difference is not length — it is what kind of engine is
-underneath it. Everything from "What hours actually require" down is new
-and is the ideation the owner asked for.
+**The medium is the STYLE. It is never the SUBJECT.**
 
-## What the sheet already implies
+*Owner direction, 2026-08-29.* This world is drawn in ballpoint the way
+a comic is drawn in ink: it is how the thing looks, and that is all it
+is. A story about the paper, the pen, the drawing or the person who
+drew it is **not on the table**.
 
-Decisions already drawn into the world, which a story should use
-rather than fight:
+This file used to be full of them — every candidate it carried was a
+story about its own medium — which is how three sessions of design work
+drifted into mistaking the technique for the plot. That is now
+corrected, and the rule is written at the top so it stops recurring.
 
-- **One sheet, one pen.** Everything is one drawing. Whoever drew it
-  had one black pen, one blue, and a box of washes — and drew a castle,
-  a suburb and an office park on the same page, which is exactly what a
-  kid's (or a bored adult's) sheet actually looks like. The
-  anachronism is the setting's truth, not a bug.
-- **The geography argues time.** Old world in the north-west (castle,
-  walled town), the player's "now" in the center (meadow, neighborhood),
-  the grown-up world in the south-east (city, office park). Walking
-  east-by-south reads as growing up. The river crosses all of it and
-  ends at the sea.
-- **The world inks itself in where you walk.** The re-ink cascade is
-  already the mechanic of noticing. A story about attention, memory,
-  or finishing something half-drawn gets this for free.
-- **Notes in the margins.** The POI note cards speak in a wry narrator
-  voice that already hints somebody drew all this and left.
-- **The world can only speak through objects.** No faces, no dialogue
-  trees, no quest log, no cutscenes — every channel a normal game would
-  use is missing on purpose. So a story here is told the way Fallout
-  tells its best ones: in what is left lying in a room
-  (`design/WORLD-SYSTEMS.md` §10). Any candidate below has to work in
-  that mode or it does not work at all.
+What does NOT change: the ballpoint, the washes, the hand-lettering,
+the zero-asset law, and the sheet's own vocabulary for authoring
+terrain (`design/WORLD-SYSTEMS.md` §1 — creases, curls, tears). All of
+that is craft, and craft is exactly where the medium belongs. The
+STORY is about the world: its history, its regions, its people, and
+what they want.
+
+**Owner direction, same date: the target is HOURS of play** (§0 of
+WORLD-SYSTEMS, "A small map is not a short game"), and the hours come
+from **depth, not more map** — the sheet stays 760×560 and expanding it
+stays parked.
+
+---
+
+## What the world already implies
+
+Facts already built into twelve lands, a road web and a river. A story
+should use them rather than fight them:
+
+- **Twelve centuries on one landmass, all in use.** A castle, a walled
+  market town, a common, a suburb, a downtown and an office park, and
+  you can walk between them in ten minutes. **Nobody who lives there
+  finds this odd**, and that is the setting's central fact. Played
+  completely straight it produces both the comedy and the melancholy;
+  explained, it produces neither.
+- **The geography argues time.** Old world north-west, the present in
+  the centre, the corporate world south-east. Walking east-by-south is
+  walking forward — through history, or through a life, or both.
+- **It is ONE road with different names.** The king's road leaves
+  Greyweather's gate, comes down through Brim, crosses the Common, runs
+  up Maple Court as main street and ends — as the commuter spur — in a
+  car park. Twelve lands, one spine. Anything told here can be told
+  along it.
+- **Everybody is already waiting for something.** This was not planned
+  and it is the strongest thing in the world: the office park's
+  timetable, Greyweather with its banners up and nobody home, Brim's
+  market cross and its clock whose hands disagree, Maple Court's porch
+  lights, the Common's signpost.
+- **The walker is the only thing that crosses borders.** Doodle-folk
+  are of their land and do not leave it (WORLD-SYSTEMS §5, the
+  co-walker who stops dead at the border). Treat that as a fact about
+  the world, not a rendering trick, and the walker is automatically the
+  only messenger the world has.
+- **No faces, so no dialogue.** The world speaks in objects, posture,
+  placement and routine. That is a constraint on HOW a story is told
+  and it is the same constraint Fallout chose voluntarily (§10).
+
+---
 
 ## What hours actually require
 
-Fifteen hours with **no combat, no fail states, no timers, no quest log,
-no dialogue trees and no faces** is not a small ask. It has been done,
-repeatedly, and the games that did it did not do it the same way. Sorted
-by what actually keeps a person walking:
+Fifteen hours with **no combat, no fail states, no timers, no quest
+log, no dialogue trees and no faces** is not a small ask. It has been
+done repeatedly, and not the same way twice. Sorted by what actually
+keeps a person walking:
 
 | engine | who proves it | what it costs us | hours it buys |
 |---|---|---|---|
-| **knowledge** — you get better at reading, the world was always open | Outer Wilds, Obra Dinn, Tunic, Chants of Sennaar | **no new system class**: the verb is looking | scales with authored instances; this is the one that goes long |
+| **knowledge** — you get better at understanding, the world was always open | Outer Wilds, Obra Dinn, Tunic, Chants of Sennaar | **no new system class**: the verb is looking | scales with authored instances; this is the one that goes long |
 | **the world changes** — hours, weather, seasons | Stardew, Animal Crossing, RDR2 | one system, then free per land | multiplies everything already built |
 | **traversal changes** — you move differently, so the map is new | Sable, Breath of the Wild | the mount system (§4, designed) | one re-read of the whole map per mount |
 | **routine** — you learn where people are, and when | RDR2, Stardew | NPC schedules (§5, designed) | texture, not spine, but it is what makes a world feel inhabited |
 | **collection** — find all the things | everything, unfortunately | almost nothing | 2 hours, then it is a checklist |
 
-Two conclusions fall out, and they should govern the pick.
-
-**First: the spine has to be KNOWLEDGE, not collection.** This is the
-thing the three candidates below all get wrong, in the same way, because
-they were sized for two hours. "Find the pencil areas and ink them in",
-"carry the letter to twelve places", "hold back the white" are all
-*collection loops wearing different hats*: the player learns nothing by
-doing the ninth one that they did not know at the third. A collection
-loop is a fine texture and a terrible spine. What runs long is a loop
+**The spine has to be KNOWLEDGE, not collection.** A collection loop is
+a fine texture and a terrible spine: the player learns nothing doing the
+ninth one that they did not know at the third. What runs long is a loop
 where **the ninth one means something different because of the first
-eight** — where the content is in the player's head and the world just
-holds the evidence.
+eight** — where the content accumulates in the player's head and the
+world holds the evidence.
 
-**Second: this engine has a knowledge loop nobody else could build, and
-it has been sitting in plain sight since Session 1.** The world is drawn
-by `ink.ts`, and `ink.ts` has a *hand*: jitter, pressure, passes, bow,
-mis-registration, a seeded wobble. Those parameters ARE a person's
-handwriting. Change them and it is a different person's line — and the
-player can see it, because seeing it is what human eyes are best at.
-**The thing to be read is the drawing itself.** No other game can do
-this, because no other game's world is procedurally drawn by a library
-whose parameters are the character of a hand.
+Here, the thing to be understood is **the world**: what each land is,
+what happened to it, what its people want, and how twelve answers turn
+out to be one answer.
 
-## Three candidate stories
+---
 
-*(Written for a two-hour game. Read them with the table above in hand —
-each is scored for the hours target underneath.)*
+## The candidates
 
+*Everything this file carried before 2026-08-29 was a story about
+paper, and all of it is retired: THE UNFINISHED SHEET (an abandoned
+drawing; you look for the pen), THE OTHER HAND (two draughtsmen), THE
+TIDE OF WHITE (the page fading). One idea survives them and is folded
+in below: the last thing you reach should be the far south-east corner,
+and it should re-frame everything west of it.*
 
-### 1. THE UNFINISHED SHEET *(recommended)*
+*THE COURIER OF BRIM survives too, demoted: twelve fetch beats is about
+three hours and teaches nothing cumulative, so it is texture rather than
+spine — one good errand per land is exactly what an hours-long game
+wants underneath something else.*
 
-The sheet was abandoned mid-drawing. Some lands are complete; others
-fray at the edge into pencil under-drawing, construction lines, and
-white paper. The walker — the first doodle, who woke up alone — goes
-looking for the pen.
+### 1. THE 8:15 *(recommended)*
 
-- **Verb:** the interact verb becomes *finish the drawing*: stand in a
-  pencil-ghost area and hold to ink it in (the cascade system, made
-  diegetic and player-driven). Finishing a land wakes what lives there.
-- **Structure:** open — any land can be finished in any order; each
-  finished land adds an instrument/voice to its mood and a drawn NPC
-  with one want. The last thing to finish is the drawer's own empty
-  chair at a desk drawn on the far side of the office park: the sheet
-  turns out to be office paper, and the whole world was drawn in the
-  margins of a workday. Ties the office park in as the thesis instead
-  of the joke.
-- **Why it fits:** uses cascade, ghost fields, the wry notes, and the
-  kid-to-grown-up geography without adding a single new system class.
-- **Why the Fallout direction strengthens it** (owner input,
-  2026-08-29): the thing Fallout does better than anyone is
-  ARCHAEOLOGY — every room legible as what it was before you got
-  there. This story makes archaeology the *verb*: pencil under-drawing
-  is the "before", inking it in is the reading of it, and every
-  unfinished thing on the sheet is a room with the objects still in it.
-  It also gives §9's score proposal an ending: the last thing you
-  finish is the desk, and you find out what has been playing.
-- **Against the hours target: the ending is excellent, the middle is a
-  checklist.** "Stand here and hold to ink it in" is a collection loop,
-  and it will be lovely for two hours and a chore at four. The premise
-  and the ending are the best in the file and should be kept. **The
-  middle needs an engine, and candidate 4 is that engine.**
+**In the far south-east corner of the world there is a stop with a
+timetable on it. The timetable says the 8:15 is coming. There is no
+railway. There has never been a railway. Everyone waiting knows both of
+these things and has made their peace.**
 
-### 2. THE COURIER OF BRIM
+That is not a new idea — it is already in the game, in the world's own
+voice, and it is the best line anybody has written for this project.
+The story is what happens when somebody finally walks the other way
+down the platform.
 
-A letter needs carrying from the castle to a name nobody knows, and
-every land claims the addressee is theirs. A picaresque: one fetch
-chain per land, each told entirely in drawings and margin notes, no
-dialogue trees. Lighter than margins; pure adventure-serial tone.
-Cheapest to build (POIs + inventory of one item), but uses the world
-as backdrop rather than as subject.
+Because **every land is waiting for something**, in its own century's
+idiom, and none of them will say so directly:
 
-**Against the hours target: structurally capped.** Twelve fetch beats is
-about three hours and the thirteenth would be padding, because a fetch
-chain teaches you nothing cumulative. Its real value is as a **side
-structure inside a bigger story** — one good errand per land is exactly
-the kind of texture an hours-long game wants. Demote from spine to
-texture.
+| land | what it is waiting for | what that makes it believe |
+|---|---|---|
+| CASTLE GREYWEATHER | a king who rode out and did not come back — the banners are still up, and somebody is still changing them | that loyalty is a thing you keep doing after it stops making sense |
+| THE KINGDOM OF BRIM | market day, which has been "next week" for a while: stalls set, bunting up, the clock's hands disagreeing | that if you keep the ritual, the thing comes back |
+| THE COMMON | whoever is at the far end of the road — four names on the signpost and one of them is not a place | nothing yet, which is why you start here |
+| MAPLE COURT | people who left. The porch lights are on | that leaving is temporary |
+| THE PENWOOD | something out of the tarn | that some things should not be waited for |
+| THE HARROW DOWNS | the harvest, honestly and correctly | that waiting is just work with a date on it |
+| SPLITROCK / THE BLEACH FLATS | rain | that the answer is elsewhere |
+| GREYLINE CITY | nothing — everybody is going somewhere and nobody arrives | that waiting is for people who have not made it |
+| THE CUBICLE MILE | the 8:15 | that a timetable is a promise, and a promise is enough |
 
-### 3. THE TIDE OF WHITE
+The walker is the only thing in this world that crosses borders. So
+sooner or later every land decides **you must be the one they have been
+waiting for.** You are not. But you are the only messenger the world
+has, and when you finally line the twelve waits up beside each other
+they turn out to be one wait, and it has an answer.
 
-Paling, played forward: the sheet is fading from the west (the sea
-grows; the beach thins) and the walker herds the world's drawings
-east while looking for a way to stop it. Urgent and mechanical
-(territory control against a timer), strongest systemic hook, but
-tonally heavier and needs the most new simulation.
+- **Progression is knowledge**: what each land waits for, why, and what
+  the neighbours think of it. Nothing unlocks; you were always able to
+  go anywhere. What changes is that you understand what you are looking
+  at, and the world re-reads.
+- **The ending is already designed.** WORLD-SYSTEMS §4 makes "the 8:15
+  arrives" the reward for finishing the office park. It should be the
+  ending of the game rather than a mount unlock: the last land, the far
+  corner, and a train comes across the whole world for the first time.
+  What it carries — and who gets on — is the last decision.
+- **Every land gets an ideology for free**, which is the Fallout region
+  thesis (§10) with no extra authoring: *what a place is waiting for is
+  what it believes.*
+- **The humour is structural and deadpan.** A civilisation that has
+  organised itself, sincerely and permanently, around a train with no
+  track is Vault-Tec-grade, and it is funnier the straighter it is
+  played.
+- **No new system classes.** Places, notes, routines, one errand per
+  land, and the mounts we already designed.
+- **The risk, honestly:** it must not become twelve fetch quests with a
+  theme, and the ending has to land emotionally or the whole thing is a
+  shrug. Both are authoring problems, not design problems.
 
-**Against the hours target: retire it.** It was always in tension with
-WORLD-SYSTEMS §0 rule 2 (*nothing is urgent; no timers, no fail
-states*), and the hours target makes that fatal rather than awkward:
-urgency sustained over fifteen hours is not tension, it is grind, and a
-territory-control timer is the one shape on this list that actively
-punishes the thing this world is for, which is dawdling. Keep the
-IMAGE — the sea eating the west edge of the page is a beautiful,
-terrifying picture — and use it as a place or an act, never as a clock.
+### 2. THE LAST OF THE OLD WORLD
 
-### 4. THE OTHER HAND *(new, 2026-08-29 — and the recommended engine)*
+Greyweather is empty. Brim is thinning. The city is growing and the
+office park is new. Nothing dramatic is happening — the old world is
+simply being **left**, the way places actually get left: economically,
+politely, one family at a time. You are from it, and you walk east to
+see what is replacing you.
 
-**There are two hands on this page.**
+Every land has an opinion about the change and they contradict each
+other; the downs think the city is a customer, the city thinks the
+downs are scenery, Brim thinks it is still the capital of something.
+Mature, needs no fantasy element at all, and the strongest regional
+ideology in the file. **Risk:** it is a mood more than a story, and a
+mood cannot carry fifteen hours by itself.
 
-Most of the world is one person's line. The wobble is theirs, the
-pressure is theirs, the particular way they draw a roof or give up on a
-crowd is theirs — and after twenty minutes you know it without being
-told, the way you know a friend's handwriting.
+### 3. THE KING'S ROAD
 
-Some of it is not. A fence that runs true for forty units and then, all
-at once, becomes four wobbles and stops. A tree drawn three times in a
-row, getting better. A castle that is too good — traced off something.
-A whole land drawn at the wrong scale by somebody who had not learned
-scale yet. A gate drawn twice, the second one over the first, because
-the first was wrong and could not be erased.
+One road, twelve names, and everybody on it going the other way. A
+picaresque of road encounters and named people you meet once and never
+again — a cart with a broken wheel, someone lost, a funeral you should
+not interrupt (WORLD-SYSTEMS §5). Warmest, funniest, most Fallout in
+texture, and cheapest to build.
 
-The game is **learning to see the line.** And once you can, you cannot
-stop, and the entire world you already walked re-reads itself.
+**Risk:** the weakest ending in the file, because a picaresque does not
+have one. Best used as **the texture inside candidate 1** rather than
+as the whole thing.
 
-- **Verb: unchanged.** Walk and look. There is nothing to unlock,
-  nothing to collect, nothing to fight. The gate is in your head, which
-  is the only kind of gate this game is allowed to have.
-- **Progression is knowledge.** Hour one you notice that *something*
-  about the Penwood is off. Hour three you can name it. Hour six you
-  walk into Brim and realise the whole south wall is the second hand
-  and the town behind it is not, and you know what that means, and
-  nobody has said a word to you.
-- **Why it goes long:** every authored instance is content, and the
-  reveals are *cumulative* rather than additive — the moment you work
-  out that the castle was traced is worth an hour of walking, and it is
-  only worth it because of the forty small things you noticed first.
-- **Why only this engine can do it:** `ink.ts` already parameterises a
-  hand. `stroke()` has jitter, passes, alpha, taper and a deliberate
-  mis-registration between passes; `line()` has a single-sign bow whose
-  depth grows with length, *because a wrist is a compass*. A second hand
-  is a second parameter set — perhaps thirty lines of code — and the
-  entire world can then be authored in either. **That is a moat. Nobody
-  can copy this game's mystery without rebuilding this game's engine.**
-- **The risk, stated honestly:** abstraction. "Two drawing styles" is a
-  puzzle, not a story, and puzzles do not make anybody cry. It needs a
-  human anchor — *who* the two hands are and why one of them was
-  drawing on the other's page — and it needs the reveal to be about
-  people rather than about line weight.
+### The recommendation
 
-### The recommendation: one game, not four
+**THE 8:15, with THE KING'S ROAD's encounters as its texture.**
 
-THE UNFINISHED SHEET has the best premise, the best verb and much the
-best ending in this file. What it lacks is a middle that survives four
-hours. THE OTHER HAND is a middle that survives fifteen and has no
-ending at all.
+It takes the strongest line already written in this game and makes it
+the spine; it gives all twelve lands an ideology at no cost; it uses
+the geography Session 1 drew as its thesis rather than as a backdrop;
+its progression is knowledge, which is the only engine that reaches
+hours without combat; its ending is already designed and is a
+spectacle; and it needs nothing we have not already planned to build.
 
-**They are the same game.** The sheet was abandoned mid-drawing; you
-walk it looking for the pen; the ink-in verb is your moment-to-moment
-texture and the thing that makes finishing feel good — and the reason to
-keep going is that **finishing something shows you who drew it.** Every
-inked-in place is evidence. The second hand is why the sheet was
-abandoned. The desk at the far side of the office park is where you find
-out what happened to both of them.
+---
 
-That gives us, in one object: a verb (ink it in), a loop (read the
-line), a spine (two people, one page), an ending (the desk), a reason
-for the geography we already drew (east-by-south is growing up — and
-one of the hands got older while the other did not), and a use for every
-system already planned. Nothing here needs a system class we have not
-already designed.
+## Two consequences that need work before Session 7
 
-**Sizing it honestly.** Twelve lands × six places, three unfinished
-things, two Fallout tableaux (§10) and one or two inhabitants with a
-routine; eight interiors; five mounts; a day cycle and weather. First
-pass ≈ 4–6 hours. Second pass, with mounts and hours and the ink-in
-verb changing what is walkable and what is visible ≈ 4–6 more. The
-reading layer ≈ 4, if it is authored with the same discipline as the
-terrain. **Call it twelve to sixteen hours**, and note that it needs
-roughly five sessions beyond the current ladder — interiors,
-inhabitants and routine, weather, and one authoring pass for the
-evidence. That is the real cost of the owner's target and it should be
-on the ladder before anybody promises it.
+1. **The ink-in verb is not the content system any more.** WORLD-SYSTEMS
+   §6 made "stand in pencil-ghost ground and hold to ink it in" the
+   side-quest system, and that was a paper story. The cascade stays —
+   it is a beautiful *effect* and the world inking itself in around
+   your arrival is one of the best things we have — but it is no longer
+   a **verb**. The content system has to be rebuilt around knowledge:
+   you learn a name, a fact, a route or a reason, and places open
+   because you now know where to go and what to look at. Plus one
+   authored errand per land.
+2. **The world's own voice needs a pass.** The POI notes lean hard on
+   the medium — *"the tallest drawing on the sheet"*, *"the sound of a
+   drawing bragging about being a drawing"*, *"the wash went over this
+   page in one pass and missed a strip"*. Session 5's coast notes lean
+   hardest of all, and that is on me. The **wryness stays** — it is the
+   house voice and it is good — but the winking at the pen has to go
+   wherever it is doing the talking rather than decorating. Budget a
+   voice pass across all thirty-five notes.
 
 ## Either way, next sessions
 
 1. **The score** — one instrument per land rather than one music box
    for the world, a bed per land instead of one room tone, borders that
    crossfade, and a mix that answers both the hour and how you are
-   moving. See `design/WORLD-SYSTEMS.md` §9; it is Session 8 on the
-   ladder, ahead of the remaining land sessions, because a land's voice
-   is part of authoring the land.
-2. **Interiors** — one per civic land to start: the keep's hall, a
-   Brim tavern, an office lobby (gloss steps already wait for it).
-   Small sub-sheets entered by door POI, same engine.
-3. **NPCs with one want each** — the doodle-folk field graduates a few
-   instances into placed characters with a two-line note economy.
-4. **Story pick** — **ideation opened 2026-08-29 at the owner's
-   request**, and this file now carries a fourth candidate and a
-   recommendation (THE UNFINISHED SHEET as the spine, THE OTHER HAND as
-   its engine). The pick itself is still the owner's and still
+   moving. `design/WORLD-SYSTEMS.md` §9; Session 8 on the ladder, ahead
+   of the remaining land sessions, because a land's voice is part of
+   authoring the land.
+2. **Interiors** — one per civic land to start: the keep's hall, a Brim
+   tavern, an office lobby (gloss steps already wait for it). Small
+   sub-sheets entered by door POI, same engine. They multiply the map
+   without expanding it, which is exactly what the hours target wants.
+3. **NPCs with one want each, and a name** — the doodle-folk field
+   graduates a few instances into placed characters with a routine
+   (§5) and a two-line note economy.
+4. **Story pick** — ideation opened 2026-08-29 at the owner's request
+   and redone on the right premise. The pick is the owner's and is
    **scheduled for Session 7**; STORY.md gets written before a line of
-   it is built, the way margins did. See `PLAN.md`.
+   it is built, the way margins did.
 
 Note: blots-as-caves (the `BLOT` inverted palette) stay parked until a
 story needs them — a cave system with no reason to exist is Skyrim's

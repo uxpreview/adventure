@@ -9,6 +9,18 @@ anything here is judged. `PLAN.md` holds the order.*
 
 ## 0. What kind of open world this is
 
+**THE MEDIUM IS THE STYLE. IT IS NEVER THE SUBJECT.** *(Owner
+direction, 2026-08-29.)* This world is drawn in ballpoint the way a
+comic is drawn in ink: it is how the thing looks. A story about the
+paper, the pen, the drawing or the person who drew it is not on the
+table, and every candidate DIRECTION.md carried before that date was
+one — which is how three sessions of design drifted into mistaking the
+technique for the plot. The ballpoint, the washes, the hand-lettering
+and the sheet's terrain vocabulary (§1) all stay exactly as they are:
+that is CRAFT, and craft is where the medium belongs. The story is
+about the world — its history, its regions, its people, and what they
+want.
+
 The bar names *Alto's Odyssey*, *Journey*, *Sable* and *A Short Hike*.
 Those are **small open worlds**, and they shine for nearly the opposite
 reasons Skyrim and GTA do: no quest log, no markers, no urgency, and a
@@ -199,17 +211,45 @@ express through posture, placement and routine.
   respond: sheep part, fish scatter in the shallows, a dog follows you
   for half a land, a cat on a wall wakes if you run past.
 
-## 6. The unfinished sheet — the content system
+## 6. The content system — knowledge, not collection
 
-DIRECTION.md's recommended verb (stand in pencil-ghost ground, hold to
-ink it in) is not only a story mechanic. It is **the side-quest system**,
-in the world's own logic, with no log and no markers: every land holds
-unfinished things, and finishing one wakes what lives there.
+*Rewritten 2026-08-29. This section used to be "the unfinished sheet":
+stand in pencil-ghost ground, hold to ink it in, and that is the
+side-quest system. It was a story about the drawing, so it is gone
+under the standing rule in §0 — and it was also the wrong SHAPE for a
+game that has to run for hours, which is the more useful half of the
+lesson.*
 
-**The map is the quest journal** — pencil for what you have heard about,
-ink for what you have finished. That also fixes the map's current
-problem: it is a reference tool when it should be the record of your own
-walk, and the artifact people screenshot.
+**A collection loop caps at about two hours.** Whatever the thing being
+collected is, the player learns nothing doing the ninth one that they
+did not know at the third, and past that point it is a checklist — the
+exact failure the bar already refuses. Collection is a texture. It is
+never the reason anybody is still here at hour six (§0).
+
+**What runs long is knowledge**, and this world is unusually well set
+up for it:
+
+- **You already only have one verb: looking.** No faces, no dialogue
+  trees, no combat. Everything the player will ever learn, they learn by
+  going somewhere and noticing. That is a constraint on every other
+  system and a gift to this one.
+- **Knowledge is the inventory.** Not an item, not a journal entry — a
+  NAME, a FACT, a ROUTE, a REASON. Places open because you now know
+  where to go and what you are looking at, not because a flag flipped.
+  Chants of Sennaar and Obra Dinn both run ten-plus hours on this and
+  nothing else.
+- **The map is the record** — this part survives from the old section
+  and is still right. Pencil for what you have heard about, ink for what
+  you have seen. It fixes the map's current problem (a reference tool
+  that should be the record of your own walk) and it is the artifact
+  people screenshot.
+- **The cascade stays, as an EFFECT.** The world inking itself in around
+  your arrival is one of the best things this engine does. It is no
+  longer a verb the player performs; it is what noticing looks like.
+- **One authored errand per land, underneath.** DIRECTION.md's COURIER
+  demoted from spine to texture: a cart with a broken wheel, someone
+  lost, something to carry two lands east. Authored, never generated,
+  and never the reason to keep playing — the reason is what you find out.
 
 ## 7. Time and weather — the world changes without you
 
@@ -288,24 +328,34 @@ cross a border blind and hear the footstep change; they cannot hear the
    cycle. Session 6 builds the cycle; it must expose the hour as a
    parameter the mixer can read, or the score session has to re-open it.
 
-### Where the music comes from — a proposal, owner's call
+### Where the music comes from
 
 Fallout's radio works because the music has a **source**: somebody is
-broadcasting, and you are receiving. Our equivalent is not a radio, and
-it is sitting right there in the metaphor:
+broadcasting and you are receiving, and the fiction does the work that
+a hundred lines of mixing code cannot.
 
-> **The music is not in the world. It is in the room where the page is.**
-> Somebody is at that desk, drawing this, with something on quietly in
-> the background. What changes per land is not the tune — it is what the
-> page does to it.
+*(A source was proposed here on 2026-08-29 — that the music is playing
+in the room where the page is — and retired the same day under §0's
+standing rule. It was the medium as the subject again, in the one
+system where it would have been hardest to take back out.)*
 
-Near the sea the wind takes it; under the pines it is muffled and close;
-in GREYLINE CITY it picks up an AM edge; on the Holdfast you are far
-enough out that only the low end reaches you. One line of fiction, and
-it explains why the music is small, why it is sparse, why it is
-recognisably the same everywhere, and why it is different everywhere. It
-also gives THE UNFINISHED SHEET (DIRECTION.md) its ending a second
-meaning: you reach the desk, and you find out what has been playing.
+The source, if there is one, should come from the STORY, and the story
+is picked at Session 7. Until then the score is built diegetically
+neutral: a per-land instrument, a per-land bed, and crossfades — none
+of which presume where the music is coming from. Two candidates worth
+holding on to for whoever picks:
+
+- **the world plays it.** Each land's instrument is a thing that is
+  actually there: Brim's is the belfry and the market; Greyweather's is
+  wind in a stone building with nobody in it; the office park's is two
+  notes of hold music; the coast's is the sea. Nothing is "scored" —
+  you are simply hearing where you are. This is the cheapest to justify
+  and it costs no fiction at all.
+- **somebody is playing it.** One instrument, carried, moving around
+  the world on its own schedule — you hear it far off in one land and
+  come across it in another. That is a character, a routine (§5) and a
+  score in one object, and it would be the best use of the mount system
+  nobody has thought of yet.
 
 **Law, unchanged:** zero assets, so every voice is synthesis; the whole
 graph stays a handful of nodes; and nothing outside `Audio.ts` invents
@@ -338,15 +388,21 @@ TABLEAUX** — small groups of props that tell one complete story and are
 never explained. Not decoration, not "misc props" (which the bar
 already forbids): a composition with a subject.
 
-And ours has a twist Fallout cannot use, because everything here is a
-DRAWING and the drawing can be part of the story:
+Ours are about the WORLD, not about how it was drawn (§0):
 
-- a picnic blanket with two settings, one of them rubbed out;
-- a boat with no oars, and a pair of oars drawn ten units away at the
-  wrong scale;
-- a fence that runs perfectly for forty units and then, where the hand
-  got bored, becomes four wobbles and stops;
-- the same tree drawn three times, getting better.
+- a picnic laid for two on the downs, with one place setting put away
+  again;
+- a rowboat pulled up past the wrack line and chained to a post, with
+  the chain long enough to have been unlocked every day for years and
+  the padlock rusted shut;
+- a market stall in Brim set out perfectly, under bunting, with the
+  cloth still folded on it — the trader got everything ready and did
+  not open;
+- three chairs facing a hedge at Maple Court, and the gap in the hedge
+  where there used to be a view of the city.
+
+Each of those is one composition, tells one complete story, is never
+explained, and needs no dialogue, no faces and no text.
 
 ### The other four
 
