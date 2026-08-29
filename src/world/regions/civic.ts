@@ -124,7 +124,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     // the market lane's north side
     [-6, -108, 26, 0.14], [22, -114, 24, -0.1],
   ];
-  const terraceMeshes = terraces.map(([x, z, w, rot], i) =>
+  terraces.forEach(([x, z, w, rot], i) =>
     ctx.standee(townRowTexture(1400 + i), w, w * (288 / 512), x, z, { rotY: rot }));
   /* THE WINDOWS COME ON. One run of panes per terrace, hung a hair in
    * front of the row it belongs to and lit by the same clock as the
