@@ -88,13 +88,31 @@ changes how every future land is authored.*
 - Build green. 210k terrain triangles in one static draw call, no
   per-frame CPU, no new draw call per prop. Worst frame is still THE
   COMMON at 280 draws, unchanged by elevation.
-- **`main` is the branch now.** After this session the four per-session
-  branches (all strictly linear) were consolidated: `main` was created
-  at the Session 4 tip and made the repo default. Vercel's production
-  branch is a project setting that does NOT follow the GitHub default,
-  so it has to be pointed at `main` by hand once; and a branch created
-  through the GitHub API fires no push event, so Vercel does not list a
-  branch until something is actually pushed to it.
+- **The world has an address: https://adventure.ryankm.com.** Set up
+  2026-08-29, after the session shipped. The whole arrangement, so no
+  future session has to rediscover it:
+  - **`main` is the branch.** The four per-session branches were all
+    strictly linear, so they were consolidated: `main` created at the
+    Session 4 tip, then made the repo default.
+  - **Vercel's production branch is a project setting that does NOT
+    follow the GitHub default.** It lives under Settings →
+    Environments → Production → Branch Tracking (it is no longer under
+    Settings → Git, which is where every stale guide says it is). It is
+    now `main`, so every push to `main` deploys to production.
+  - **A branch created through the GitHub API fires no push event**, so
+    Vercel will not even list the branch until something is genuinely
+    pushed to it. That is why `main` was invisible in the dashboard at
+    first.
+  - **The domain is registered at Squarespace but its DNS points at
+    Vercel** — `adventure.ryankm.com` is a CNAME to a per-domain
+    `*.vercel-dns-017.com` target added as a Squarespace custom record.
+    Adding another subdomain later is the same two steps: add it in
+    Vercel, paste the CNAME Vercel gives you into Squarespace.
+  - "Auto-assign Custom Production Domains" is on, so the domain
+    follows every future production deploy with no action.
+  - The `.vercel.app` aliases still work and still serve the same
+    build; `adventure-three-flax.vercel.app` is the auto-generated
+    production one. Prefer the custom domain when sharing.
 - Protected now, in BOTH viewports: everything Sessions 2–3 protected,
   plus the castle-reveal / avenue-foot / avenue-climb stack and the
   portrait poster.
@@ -285,11 +303,10 @@ Design conversation after the Session 3 gate, baked into the repo as
   visible at distance); per-land music moods; three new step surfaces;
   the hand-drawn map (M); 24 POI notes; localStorage save.
 - Hosted: Vercel project `adventure` (imported by owner; the connector
-  cannot create projects — 403) at https://adventure-ryankm.vercel.app.
-  **Superseded after Session 4:** production tracked this session's
-  branch until 2026-08-29, when the four session branches were
-  consolidated onto `main` and `main` became the default. See Session
-  4's State note for the current arrangement.
+  cannot create projects — 403). **Superseded after Session 4** — the
+  world now lives at **https://adventure.ryankm.com**, production
+  tracks `main`, and Deployment Protection is off. See Session 4's
+  State note.
 
 ### State
 - Build green (`npm run build` = tsc + vite). All twelve lands verified
@@ -299,12 +316,14 @@ Design conversation after the Session 3 gate, baked into the repo as
   is THE FIRST MINUTE (see PROMPT.md).
 
 ### Gotchas
-- **Deployment Protection is still ON** — the URL is team-only until
-  the owner flips Vercel Authentication off (Settings → Deployment
-  Protection). The permission classifier blocks doing it from here.
-- The sandbox egress proxy blocks `*.vercel.app` — verify deploys via
-  the Vercel MCP tools (`web_fetch_vercel_url`, build logs), never the
-  browser.
+- ~~**Deployment Protection is still ON**~~ — resolved 2026-08-29: no
+  password, no Vercel Authentication, no IP allowlist. The link is
+  genuinely shareable.
+- The sandbox egress proxy blocks the hosted origins — `*.vercel.app`
+  AND `ryankm.com` both come back 403 from the CONNECT tunnel. Verify
+  deploys through the Vercel MCP tools (`web_fetch_vercel_url`, which
+  reaches the custom domain too, plus build logs), never the browser
+  and never plain `curl`.
 - Commits must be authored `Claude <noreply@anthropic.com>` — the
   owner's iCloud email is push-rejected by GitHub email privacy.
 - `?debug` exposes `window.__inklands` (goto, region, terrain probes,
