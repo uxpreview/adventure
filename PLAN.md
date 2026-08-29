@@ -32,6 +32,19 @@ at Session 7 where the owner put it.
 | 12 | **Motion & life** | Systems pass: wind everywhere, sails and windmills turning, NPC routines, road encounters. (The score moved out of this session to 8 — see the ordering rule.) |
 | 13 | **The juror** | Awwwards pass on the whole build: title, first minute, map, UI feel, mobile portrait, performance audit, then the full-gauntlet critique. |
 
+**This ladder does not reach the owner's target yet, and it should say
+so.** The target is now HOURS of play, not a short walk
+(`design/WORLD-SYSTEMS.md` §0). Sessions 2–13 build a world that is
+complete, beautiful and roughly four to six hours deep. Getting to
+twelve-plus needs about five more, and they are the ones DIRECTION.md
+sizes: **interiors** (they multiply the map without expanding the
+sheet), **inhabitants and routine** (§5 — the cheapest texture per byte
+in any world), **weather** (§7 — it multiplies every land again, the way
+time does), and **one authoring pass for the story's evidence** across
+all twelve lands. They are deliberately NOT numbered here: the story
+pick at Session 7 decides what they contain, and putting numbers on them
+before that is planning fiction.
+
 Rules of the ladder:
 
 - A session may swap scope up the ladder, never skip the gate.

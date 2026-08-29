@@ -21,6 +21,47 @@ the objects left in a room** (§10) — and never their breadth. A
 thousand-person-year simulation is not the competition; a world that
 feels authored in every frame is.
 
+### A small map is not a short game
+
+**Owner correction, 2026-08-29, and it matters enough to write in
+capitals somewhere: TEN MINUTES IS THE CROSSING, NOT THE GAME.** The
+target is a world people play for HOURS.
+
+Those two facts are not in tension, and every game on the benchmark list
+proves it — Skyrim's map is a twenty-minute run and people give it three
+hundred hours; Outer Wilds' entire solar system is smaller than this
+sheet and it is a twenty-hour game; *Obra Dinn* is one ship. A small map
+is a decision about **density**, and this project's whole bar is density:
+every mark authored, nothing generated, nothing filler.
+
+So the hours do not come from more sheet. **Expanding the world is still
+parked** (see the audit) and gets more expensive every session, because
+at this bar a new land costs a full session. The hours come from **depth
+— reasons to walk the same ground again** — and there are exactly four
+engines for that, all of them already half-built or already planned:
+
+1. **The world changes without you** (§7 — time, then weather). The
+   cheapest hours in this file by a wide margin: it multiplies every
+   land already built by the number of states it can be in, at no
+   authoring cost per land. Session 6.
+2. **You change how you move** (§4 — the mounts). Each mount re-opens
+   the whole map, because a map you row is not the map you walked.
+   Five are designed; the rowboat is Session 6.
+3. **Knowledge as progression.** Nothing gets stronger; *you* get
+   better at reading the page, and the world was always open. This is
+   how Outer Wilds, Obra Dinn, Tunic and Chants of Sennaar all run long
+   with no combat and no levelling — and it is the one engine this
+   project has never considered. It costs **no new system class**: the
+   verb is looking, which is the only verb we have. See DIRECTION.md.
+4. **Routine you learn** (§5). You come to know people by where they
+   are at a given hour. Enormous texture for a small cast.
+
+And one that must never be the spine: **collection**. It is the cheapest
+to author, it caps out fast, and it turns into a checklist — which is
+the exact failure the bar already refuses ("Skyrim's caves are its
+weakest content because they are generated"). Collection is a texture.
+It is never the reason anybody is still here at hour six.
+
 Three rules fall out of that, and they govern every system below:
 
 1. **No UI where the world can say it.** No quest markers, no objective
@@ -274,10 +315,12 @@ an instrument, exactly as nothing outside `palette.ts` invents a colour.
 
 ## 10. What we take from Fallout, and what we refuse
 
-*Owner direction, 2026-08-29. Fallout is a strange benchmark for a
-ten-minute walk with no combat — which is the point. It is on this list
-for exactly one thing it does better than anything else, and that one
-thing is the thing INKLANDS is structurally forced into.*
+*Owner direction, 2026-08-29. Fallout is a strange benchmark for a game
+with no combat — which is the point. It is on this list for exactly one
+thing it does better than anything else, and that one thing is the thing
+INKLANDS is structurally forced into. It is also the benchmark that best
+answers "how does a world stay interesting for hours without fighting in
+it", which is now the standing target (§0).*
 
 ### The one thing
 
