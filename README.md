@@ -23,8 +23,8 @@ here, what a footstep sounds like, whether the page takes your ink.
 
 | | | |
 |---|---|---|
-| THE WIDE BLUE | open water | sailboats, buoys, wading shallows |
-| LONGSHORE | the coast | palms, umbrellas, huts on stilts, the boardwalk |
+| THE WIDE BLUE | open water | the sandbar, the regatta, the bell buoy |
+| LONGSHORE | the coast | the promenade, the painted huts, the cut, the point |
 | CASTLE GREYWEATHER | the high seat | the keep, the gatehouse, banner avenue |
 | THE KINGDOM OF BRIM | the walled town | cottages, Brim Square, the market |
 | THE COMMON | where you woke | the crossroads, the old well, three oaks |
@@ -37,9 +37,13 @@ here, what a footstep sounds like, whether the page takes your ink.
 | THE CUBICLE MILE | the office park | ruled glass, hedges, the 8:15 stop |
 
 A river rises in the canyon, crosses the whole sheet and meets the sea
-past the boardwalk; three plank bridges carry the roads over it. Every
-border crossing changes the music's mood, the footstep underfoot, and
-deals a region card — nothing else, because the sheet is continuous.
+past the boardwalk; three plank bridges carry the roads over it. On the
+coast, a strip the wash never took runs a hundred and eighty units out
+into the sea — dry paper, so you can walk it, out past the surf and back
+ashore at the foot of the cliff path.
+
+Every border crossing changes the music's mood, the footstep underfoot,
+and deals a region card — nothing else, because the sheet is continuous.
 
 ## What's here so far
 
@@ -51,10 +55,13 @@ deals a region card — nothing else, because the sheet is continuous.
   meadow and the city towers from across the downs; the fog is a
   horizon, not a curtain.
 - **A hand-drawn map** (`M`) that only names the lands you have walked.
-- **24 places worth a look**, each with a note in the world's voice.
+- **35 places worth a look**, each with a note in the world's voice.
 - **All-procedural audio**: paper-room ambience, pen-scratch steps in
-  six surface timbres (sand, grass, stone, planks, water, paper), and a
-  music-box melody that wanders a different scale in every land.
+  six surface timbres (sand, grass, stone, planks, water, paper), a
+  music-box melody that wanders a different scale in every land, and a
+  handful of voices the lands own — a lark, a bell, rooks, and, on the
+  coast, surf that comes at shorter intervals the nearer you stand to
+  the water.
 - Position, discovered lands and strides walked saved to `localStorage`.
 
 The story layer is deliberately not started yet — see `DIRECTION.md`
@@ -80,6 +87,7 @@ node tools/check-terrain.mjs   # assert the height field, off-screen
 node tools/shoot-shape.mjs     # every landform, both viewports
 node tools/shoot-first-minute.mjs
 node tools/shoot-oldworld.mjs
+node tools/shoot-coast.mjs      # LONGSHORE + THE WIDE BLUE
 node tools/shoot.mjs           # all twelve lands, walkability smoke test
 node tools/shoot-fps.mjs       # frame cost, draw calls, triangles
 ```
@@ -100,10 +108,12 @@ cycle, the paper post-pass, the audio engine. New for the open world:
   sheet of paper on a desk, and paper is flat but not rigid: it creases
   (one fold, north to south, that the east road dives through), curls at
   its margins, buckles where the wash went on wet, tears (SPLITROCK),
-  and rides over what is under it (Castle Greyweather's ridge). One
-  height grid; the mesh, the shading, the walker, every prop and all
-  collision read it and nothing else invents a height. Steep is
-  impassable, which is free traversal gating.
+  rides over what is under it (Castle Greyweather's ridge), and on the
+  west coast its wet margin tore away in two bites around one tongue of
+  fibre that held — THE HOLDFAST, which a ledge somebody chiselled is
+  the only way onto. One height grid; the mesh, the shading, the walker,
+  every prop and all collision read it and nothing else invents a
+  height. Steep is impassable, which is free traversal gating.
 - `src/world/terrain.ts` — the whole world as one sheet: wash field
   painted at load (1 texel per world unit), domain-warped borders,
   animated water, the displaced mesh, and the shading that DRAWS the
@@ -115,4 +125,6 @@ cycle, the paper post-pass, the audio engine. New for the open world:
   fields and one-off drawings; streaming keeps first-visit cost off
   the walk.
 - `src/world/textures.ts` — the prop box: forty-odd seeded drawings,
-  ink outline over a light wash stain.
+  ink outline over a light wash stain. `textures-common.ts`,
+  `textures-oldworld.ts` and `textures-coast.ts` add a box per session,
+  each with its own stated ink technique.

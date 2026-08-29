@@ -927,13 +927,29 @@ export function bridgeTexture(seed: number): THREE.CanvasTexture {
 
 export function bridgeDeckDecal(seed: number): THREE.CanvasTexture {
   return makeTexture(192, 96, seed, (ctx, r) => {
-    ctx.globalAlpha = 0.85;
+    /* Session 5: this was an opaque tan RECTANGLE with a ruled border,
+     * and standing on the river-mouth crossing you were standing on a
+     * brown slab. A plank deck is planks: a dry wash the paper shows
+     * through, seams rather than drawn edges, and ends that are worn
+     * rather than ruled. */
+    ctx.globalAlpha = 0.44;
     ctx.fillStyle = '#c9ae82';
-    ctx.fillRect(6, 12, 180, 72);
+    ctx.fillRect(2, 8, 188, 80);
     ctx.globalAlpha = 1;
-    poly(ctx, [[6, 12], [186, 12], [186, 84], [6, 84]], r, { width: 2.2, alpha: 0.9 });
-    for (let x = 18; x < 186; x += 16) {
-      line(ctx, x, 14, x + (r() - 0.5) * 4, 82, r, { width: 1.2, alpha: 0.5, passes: 1 });
+    // the two stringers the planks are laid across, and the worn ends
+    line(ctx, 4, 14, 188, 12, r, { width: 1.6, alpha: 0.42, passes: 1 });
+    line(ctx, 4, 84, 188, 82, r, { width: 1.6, alpha: 0.42, passes: 1 });
+    for (let x = 8; x < 190; x += 13 + r() * 6) {
+      line(ctx, x, 8, x + (r() - 0.5) * 5, 88, r,
+        { width: 1.2, alpha: 0.2 + r() * 0.14, passes: 1 });
+    }
+    // the wear down the middle, and grit in the seams
+    hatch(ctx, 10, 34, 172, 30, 0.02, 9, r, { alpha: 0.08 });
+    for (let i = 0; i < 12; i++) {
+      const gx = 8 + r() * 176;
+      const gy = r() > 0.5 ? 10 + r() * 8 : 76 + r() * 10;
+      line(ctx, gx, gy, gx + 5 + r() * 8, gy + (r() - 0.5) * 4, r,
+        { width: 1.1, alpha: 0.14, passes: 1 }, 2);
     }
   });
 }

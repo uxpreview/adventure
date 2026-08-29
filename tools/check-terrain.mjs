@@ -97,6 +97,12 @@ const SPOTS = [
   ['forest', 145, -190], ['canyon lip', 300, -150], ['desert', 300, 45],
   ['downs', 148, -5], ['beach', -205, 60], ['ocean', -270, 60],
   ['maple court', -45, 195], ['city', 148, 205], ['office', 280, 205],
+  // the coast (Session 5)
+  ['boardwalk', -210, 58], ['river mouth', -203, 202], ['painted huts', -192, 4],
+  ['the cut foot', -202, -16], ['the cut mid', -226, -44], ['the holdfast', -236, -78],
+  ['shelter cove', -212, -134], ['cove back', -190, -150],
+  ['sandbar root', -256, 76], ['sandbar mid', -290, 30],
+  ['the long water', -299, 16], ['the mark', -300, -8], ['seaward face', -277, -32],
 ];
 console.log('\nstanding places — height / slope:');
 for (const [name, x, z] of SPOTS) {
@@ -167,6 +173,142 @@ if (H(-45, -236) < 10) fail('the avenue does not climb to the ridge top');
 // reachable from the kingdom without either the avenue or the rim.
 const sealed = flood(true);
 console.log(`  with the avenue sealed, the ridge top is ${sealed(-45, -234) ? 'still reachable the long way round (via the curled rim)' : 'unreachable'}`);
+
+/* ---- 4b. THE COAST (Session 5) ------------------------------------ *
+ * Three claims the coast makes, each of which is a lie unless the
+ * height field and the wash field agree:
+ *
+ *   1. the sandbar is DRY and it carries a walker out to sea;
+ *   2. without the bar, the open water refuses — so the bar is the
+ *      reason THE WIDE BLUE is a land and not a backdrop;
+ *   3. the Holdfast refuses everywhere except the cut.
+ *
+ * Walkability out there is a question about the WASH, not about the
+ * slope, and layout.seaAt is the one authority on it (terrain.ts paints
+ * from it and collision reads what it painted). That is what lets this
+ * run with no canvas and no renderer.
+ */
+const WET = 0.62; // terrain.blockedAt refuses past this
+const csm = (a, b, x) => {
+  const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+/** The sea as it would be with no sandbar in it. */
+const bareSea = (x, z) => csm(0, 42, L.coastX(z) - x);
+
+/** Flood the coast on foot from the boardwalk. `sea` chooses which
+ *  version of the water we are walking against; `sealed` fences off a
+ *  box, so a route can be proved to be the ONLY route. */
+/** Distance from the ledge's own authored spine. */
+function toCut(x, z) {
+  let best = 1e9;
+  const P = E.CUT_PATH;
+  for (let i = 0; i < P.length - 1; i++) {
+    const [ax, az] = P[i];
+    const [bx, bz] = P[i + 1];
+    const dx = bx - ax, dz = bz - az;
+    const u = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
+    best = Math.min(best, Math.hypot(x - (ax + dx * u), z - (az + dz * u)));
+  }
+  return best;
+}
+
+function coastFlood(sea, sealed) {
+  const g = 2;
+  const x0 = -380, x1 = -150, z0 = -280, z1 = 280;
+  const w = Math.round((x1 - x0) / g) + 1;
+  const h = Math.round((z1 - z0) / g) + 1;
+  const seen = new Uint8Array(w * h);
+  const ok = (gx, gz) => {
+    const x = x0 + gx * g;
+    const z = z0 + gz * g;
+    if (S(x, z) > MAX) return false;
+    if (sea(x, z) > WET) return false;
+    if (sealed && sealed(x, z)) return false;
+    return true;
+  };
+  const start = Math.round((58 - z0) / g) * w + Math.round((-210 - x0) / g);
+  const stack = [start];
+  seen[start] = 1;
+  while (stack.length) {
+    const c = stack.pop();
+    const cx = c % w;
+    const cz = (c - cx) / w;
+    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = cx + dx, nz = cz + dz;
+      if (nx < 0 || nz < 0 || nx >= w || nz >= h) continue;
+      const ni = nz * w + nx;
+      if (seen[ni] || !ok(nx, nz)) continue;
+      seen[ni] = 1;
+      stack.push(ni);
+    }
+  }
+  return (x, z) => !!seen[Math.round((z - z0) / g) * w + Math.round((x - x0) / g)];
+}
+
+console.log('\nthe coast — the sandbar is the road into THE WIDE BLUE:');
+{
+  const [ex, ez] = L.SANDBAR[L.SANDBAR.length - 1];
+  console.log(`  wash on the crest: ${L.seaAt(-290, 30).toFixed(2)} mid, ` +
+    `${L.seaAt(ex, ez).toFixed(2)} at the far end (dry is < ${WET})`);
+  console.log(`  wash 26 units off the spine: ${L.seaAt(-290, 56).toFixed(2)} (must refuse)`);
+  if (L.seaAt(-290, 56) <= WET) fail('the sea beside the sandbar is walkable — the bar is not a bar');
+
+  const withBar = coastFlood(L.seaAt, null);
+  const OUT = [['sandbar mid', -290, 30], ['the long water', -299, 16],
+    ['the mark', -300, -8], ['seaward face', -277, -32]];
+  for (const [n, x, z] of OUT) if (!withBar(x, z)) fail(`${n} is unreachable along the bar`);
+  console.log('  every place in the open water is reachable on foot along the bar \u2713');
+
+  const noBar = coastFlood(bareSea, null);
+  const stillOut = OUT.filter(([, x, z]) => noBar(x, z));
+  if (stillOut.length) fail(`the open water is walkable with no bar at all (${stillOut.map((s) => s[0])})`);
+  else console.log('  with the bar erased, the open water refuses everywhere \u2713');
+}
+
+console.log('\nthe holdfast — the cut is the ONLY way onto the point:');
+{
+  const top = H(-236, -78);
+  const climb = [[-200, -14], [-210, -27], [-220, -38], [-230, -49], [-238, -61], [-242, -76]];
+  console.log(`  the point stands at y=${top.toFixed(1)}; the cut climbs ` +
+    climb.map(([x, z]) => H(x, z).toFixed(1)).join(' \u2192 '));
+  let worst = 0;
+  for (let i = 0; i < climb.length - 1; i++) {
+    const [ax, az] = climb[i];
+    const [bx, bz] = climb[i + 1];
+    for (let k = 0; k <= 12; k++) {
+      const x = ax + (bx - ax) * (k / 12);
+      const z = az + (bz - az) * (k / 12);
+      worst = Math.max(worst, S(x, z));
+    }
+  }
+  console.log(`  worst gradient along the ledge: ${worst.toFixed(2)} (walk limit ${MAX})`);
+  if (worst > MAX) fail('the cut is too steep to walk');
+  if (top < 9.5) fail('the point is not standing up');
+
+  const openCoast = coastFlood(L.seaAt, null);
+  if (!openCoast(-236, -78)) fail('the point is unreachable on foot');
+  if (!openCoast(-212, -88)) fail('the plateau is unreachable on foot');
+  // Fence the LEDGE ITSELF — a band around its authored spine, below
+  // the rim — and leave every other square unit of the coast open. If
+  // the point is still reachable after that, there is a second way up
+  // and the whole place means less.
+  // twenty-one units, not the ledge's own thirteen: elevation.ts grades
+  // the page for eighteen units either side of the spine (thirteen of
+  // floor and then the inner wall), so a fence at the floor's own width
+  // leaves the ledge's shoulders open and the flood walks round the end
+  // of it and up
+  const cutSealed = coastFlood(L.seaAt, (x, z) => toCut(x, z) < 21);
+  // asked at a point well INSIDE the plateau, not at the ledge's own
+  // head — the fence has to be wider than the ledge it fences, so the
+  // question is whether the top of the point can be reached at all
+  const leak = cutSealed(-212, -88);
+  console.log(`  with the ledge sealed, the point is ${leak ? 'STILL reachable' : 'unreachable'}`);
+  if (leak) fail('the holdfast can be climbed without the cut');
+  // and sealing it must not island the coast north of the point
+  if (!cutSealed(-212, -134)) fail('sealing the ledge cuts Shelter Cove off from the beach');
+  console.log('  Shelter Cove is still reachable the landward way \u2713');
+}
 
 /* ---- 5. the tear must not sever the canyon trail ------------------ */
 console.log('\nthe tear:');

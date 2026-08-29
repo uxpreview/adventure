@@ -206,7 +206,9 @@ export class Audio {
    * ever fired here. What remains is what the world actually says, and
    * every land that ships from here adds at least one line to it
    * (QUALITY-BAR §4, "sound is place"). The synthesis helpers below are
-   * kept whole: they are the instrument, not the score.
+   * kept whole: they are the instrument, not the score — and Session 5
+   * added two of them, `surge` and `glide`, because a coast cannot be
+   * played on sine waves alone.
    */
   event(name: string, _data?: number) {
     if (!this.ctx || this.muted || this.tacet) return;
@@ -269,7 +271,132 @@ export class Audio {
         this.tone(147 * j, 0.24, 0.16, 0.018);
         break;
       }
+
+      /* ---- THE COAST (Session 5) ---------------------------------- *
+       * Four voices added deliberately to a file that is now only what
+       * the world actually says. The sea is the first thing in this
+       * game that is NOISE rather than pitch, which is why `surge` had
+       * to be built: every instrument here until now was a sine. */
+
+      case 'surf-break': {
+        // a wave standing up, breaking, and running out. The centre
+        // frequency falls as it collapses — the standing wave is bright
+        // and tight, the wash is broad and low — and no two are the same
+        // size, because the seventh one never is.
+        const big = Math.random();
+        const w = 0.7 + big * 0.75;
+        this.surge(0.55 * w, 1.25 + big * 0.9, 880 + big * 420, 240, 0.030 * w);
+        // the shingle in the backwash, a half-beat late
+        this.surge(0.8, 1.5, 2600, 1500, 0.009 * w, 0.55 + big * 0.3, 'highpass');
+        break;
+      }
+
+      case 'gull-cry': {
+        // the mew: a hard front and then a fall of about a fourth, two
+        // or three times, each one a little lower and a little later,
+        // because a gull is losing interest in its own point
+        const j = 0.9 + Math.random() * 0.22;
+        const n = 2 + (Math.random() > 0.55 ? 1 : 0);
+        for (let i = 0; i < n; i++) {
+          const f = (1180 - i * 130) * j;
+          this.glide(f, f * 0.72, i * (0.19 + Math.random() * 0.07), 0.2, 0.019 - i * 0.004);
+        }
+        break;
+      }
+
+      case 'bell-buoy': {
+        // bronze on the swell: a struck partial stack that is not quite
+        // harmonic (a bell never is), and then the roll back and the
+        // softer second strike a couple of seconds later
+        const j = 0.97 + Math.random() * 0.06;
+        this.knock(150 * j, 0.02);
+        this.tone(437 * j, 0.0, 2.6, 0.013);
+        this.tone(586 * j, 0.01, 2.1, 0.009);
+        this.tone(219 * j, 0.02, 3.4, 0.015);
+        const back = 1.6 + Math.random() * 1.4;
+        this.knock(140 * j, 0.012);
+        this.tone(437 * j, back, 1.9, 0.008);
+        this.tone(219 * j, back + 0.01, 2.4, 0.010);
+        break;
+      }
+
+      case 'halyard': {
+        // a wire slapping an aluminium mast: bright, metallic, and
+        // irregular, because the swell is irregular
+        const j = 0.92 + Math.random() * 0.2;
+        let at = 0;
+        for (let i = 0, n = 3 + Math.floor(Math.random() * 3); i < n; i++) {
+          this.glide(2400 * j * (0.9 + Math.random() * 0.3), 1500 * j, at, 0.045,
+            0.009 - i * 0.0012, 'triangle');
+          at += 0.09 + Math.random() * 0.22;
+        }
+        break;
+      }
     }
+  }
+
+  /* ---- two instruments the coast needed (Session 5) ---------------- */
+
+  /**
+   * SURGE — filtered noise with a shape: the sea, and the first thing in
+   * this game that is not a sine. A noise source through a band whose
+   * centre frequency SWEEPS from `f0` to `f1` while the gain rises over
+   * `up` and falls over `down`. A wave is exactly that: bright and tight
+   * as it stands, broad and low as it collapses.
+   */
+  private surge(
+    up: number, down: number, f0: number, f1: number, vol: number,
+    at = 0, type: BiquadFilterType = 'bandpass'
+  ) {
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    const t0 = ctx.currentTime + at;
+    const dur = up + down;
+    const src = ctx.createBufferSource();
+    src.buffer = this.noiseBuffer(dur + 0.1);
+    const f = ctx.createBiquadFilter();
+    f.type = type;
+    f.Q.value = type === 'bandpass' ? 0.9 : 0.6;
+    f.frequency.setValueAtTime(f0, t0);
+    f.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t0 + dur);
+    const g = ctx.createGain();
+    // silence the param before anything is scheduled on it: an
+    // AudioParam holds 1.0 until its first event, and that one sample
+    // of full-gain noise is a click louder than the whole wave
+    g.gain.value = 0.0001;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(vol, t0 + up);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    src.connect(f).connect(g).connect(this.master!);
+    src.start(t0);
+    src.stop(t0 + dur + 0.05);
+  }
+
+  /**
+   * GLIDE — a pitched note that goes somewhere. `tone` holds still and
+   * `knock` always falls a fixed fifth; a gull's mew and a halyard's
+   * slap both need a sweep they choose. Hard front, no attack ramp:
+   * both of these sounds start at their loudest.
+   */
+  private glide(
+    f0: number, f1: number, at: number, dur: number, vol: number,
+    type: OscillatorType = 'sine'
+  ) {
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    const t0 = ctx.currentTime + at;
+    const o = ctx.createOscillator();
+    o.type = type;
+    o.frequency.setValueAtTime(f0, t0);
+    o.frequency.exponentialRampToValueAtTime(Math.max(30, f1), t0 + dur);
+    const g = ctx.createGain();
+    g.gain.value = 0.0001;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(vol, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g).connect(this.master!);
+    o.start(t0);
+    o.stop(t0 + dur + 0.05);
   }
 
   /* ---------- the graphite voice (ch08 §8) ---------- */

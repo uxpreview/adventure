@@ -1,7 +1,7 @@
 import { rng, stroke, line, scribbleCircle, hatch } from '../engine/ink';
 import { INK, PENCIL } from '../engine/palette';
 import { letterCanvas, S } from './lettering';
-import { WORLD, REGION_SPECS, ROADS, RIVER, BRIDGES, PONDS } from '../world/layout';
+import { WORLD, REGION_SPECS, ROADS, RIVER, BRIDGES, PONDS, SANDBAR } from '../world/layout';
 import { coastX } from '../world/terrain';
 
 /**
@@ -58,10 +58,31 @@ export function renderMap(state: {
     }
   }
 
-  // the sea: coastline in blue, then lazy wave dashes out to the edge
+  // the sea: coastline in blue, then lazy wave dashes out to the edge.
+  // Sampled every SIX units since Session 5 — at fourteen the Holdfast
+  // and Shelter Cove were averaged into a smooth curve, and the map is
+  // the one place a player can see the coast's whole shape at once.
   const coast: [number, number][] = [];
-  for (let z = WORLD.minZ; z <= WORLD.maxZ; z += 14) coast.push([X(coastX(z)), Z(z)]);
+  for (let z = WORLD.minZ; z <= WORLD.maxZ; z += 6) coast.push([X(coastX(z)), Z(z)]);
   stroke(ctx, coast, r, { width: 2.2, alpha: 0.7, color: '#4a7ab0', jitter: 1.6 });
+  // the sandbar: dotted, the way a chart dots a thing that is only
+  // sometimes there
+  {
+    const bar: [number, number][] = SANDBAR.map(([x, z]) => [X(x), Z(z)]);
+    for (let i = 0; i < bar.length - 1; i++) {
+      const [ax, ay] = bar[i];
+      const [bx, by] = bar[i + 1];
+      const n = 5;
+      for (let k = 0; k < n; k++) {
+        const t0 = k / n;
+        const t1 = t0 + 0.6 / n;
+        stroke(ctx, [
+          [ax + (bx - ax) * t0, ay + (by - ay) * t0],
+          [ax + (bx - ax) * t1, ay + (by - ay) * t1],
+        ], r, { width: 2, alpha: 0.42, color: '#8a7a5a', passes: 1 });
+      }
+    }
+  }
   for (let i = 0; i < 60; i++) {
     const z = WORLD.minZ + r() * (WORLD.maxZ - WORLD.minZ);
     const x = WORLD.minX + 8 + r() * (coastX(z) - WORLD.minX - 22);

@@ -1,5 +1,143 @@
 # SESSIONS — the handoff log
 
+## Session 5 — 2026-08-29 — the coast
+
+*The first land session authored on real ground, and the test of whether
+Session 4's foundation was worth building.*
+
+### Shipped
+
+- **THE COAST'S OWN GROUND, authored first.** `elevation.ts` had the
+  dune line and a sea floor; it now has the three things that make a
+  coast a coast, and all three are in the sheet's vocabulary rather
+  than a landscape's:
+  - **THE HOLDFAST** — the headland. The wet margin tore away in two
+    bites and one tongue of fibre held; the point is what the tear went
+    ROUND. Eleven and a half units up, ringed by twelve of cliff that
+    holds ∇h past the walk limit for more than a stride. **It is a
+    POLYGON, not an ellipse**, and that was the session's hardest-won
+    lesson: paper tears along its fibres, in straight runs, so the point
+    has eight planar faces and a fall line that stays put on each of
+    them. A radial headland is a dome, and a pen cannot draw down a dome
+    (see the critique — it cost four rounds).
+  - **THE CUT** — the ledge somebody chiselled across its seaward face,
+    and the only way up. Not a ramp bolted on: the page is GRADED along
+    an authored spine, so the ledge is a cut where the page was high and
+    its own spoil where the page was low. The floor's profile is built
+    from the ground itself at load (sample, make monotone, cap the
+    grade at one in three and a half, lift the tail so it still
+    arrives) — a fixed formula stopped matching the hill the moment the
+    hill changed.
+  - **SHELTER COVE** — the bite behind the point, with the dune standing
+    up into a bank behind it so the cove opens only to its own water.
+  - **THE SANDBAR** — the answer to THE WIDE BLUE, and it comes out of
+    the metaphor rather than out of a boat: a wash leaves misses, and
+    this one left a dry streak running a hundred and eighty units out to
+    sea. It is authored in `layout.ts` (`SANDBAR`, `barDist`, `seaAt`)
+    so the height field, the wash field and collision cannot disagree
+    about it, and it is a ROUTE — out from the boardwalk, round the
+    regatta's mark, back ashore at the foot of the cut.
+  - **The shoreline is a LINE.** The sea's ramp went from forty-two
+    units to twenty-four; over forty-two a coast is a gradient between
+    two beiges and no amount of wrack saves it.
+- **LONGSHORE, six places** (`design/specs/longshore.md`): the
+  boardwalk, the painted huts, the cut, the holdfast, shelter cove, the
+  river mouth, with two composed voids carrying one midpoint each.
+  **The boardwalk is a PROMENADE running north** — the camera only ever
+  looks north, so a boardwalk laid east–west is two handrails across the
+  middle of the frame and nothing else.
+- **THE WIDE BLUE, five places**, four of them on the bar. A regatta on
+  a real closed course staged so its southern extremity sits twenty
+  units due north of where the player stands.
+- **New prop box** `src/world/textures-coast.ts` (~20 drawings). Two
+  techniques, both stated before a line was drawn: *the dry brush and
+  the horizontal* on land (every mark is a long low horizontal or a
+  vertical stab against it — nothing is diagonal except the cut, which
+  is why the cut reads as made), and *the waterline* at sea (every
+  floating drawing stops flat with one hatch of reflection and nothing
+  below).
+- **Sound is place, and the sea gets louder as you approach it.** Four
+  new `Audio.event` voices — `surf-break`, `gull-cry`, `bell-buoy`,
+  `halyard` — and the gap between breakers is a function of the walker's
+  distance from the water. Two new synthesis helpers: **`surge`** (a
+  noise band whose centre sweeps as the wave collapses — the first
+  non-sine instrument in the game) and **`glide`** (a pitched sweep, for
+  a gull's mew and a halyard's slap). **The step timbre changes when you
+  cross onto the bar**, because `ocean`'s step zone is now `sand` and
+  the shallows override themselves to `wet`: the player learns the bar
+  is paper without being told.
+- **Motion.** LONGSHORE: marram in a sea wind that never gusts, the
+  windsock, and a gull flock that puts up when you walk into it, wheels
+  out over the water and comes down FURTHER ALONG the beach each time.
+  THE WIDE BLUE: the fleet sails its course and heels into the turns,
+  the bell buoy works the swell and rings, and a shoal breaks and
+  scatters when you wade into it.
+- **Shared shading, re-audited.** Three changes to `terrain.ts` were
+  needed to make a cliff read, and all three were re-shot against the
+  four protected lands: the fall line's DIRECTION is taken over a wide
+  stencil while its magnitude stays the grid's; the magnitude is scaled
+  by the fall line's COHERENCE, so brows and corners take no strokes;
+  and **the hatch gate moved from 0.36 to 0.62, which is Session 4's own
+  law implemented at a number that means it** ("hatching is for cliffs").
+  Greyweather's scarp is better for it.
+- **Gate: WOWED** after 6 rounds — `design/critiques/critique-art-4.md`
+  (verbatim). The four protected lands are intact.
+
+### State
+- Build green. Worst coastal frame is the boardwalk at 176 draws,
+  against THE COMMON's 293; 213k terrain triangles in one static call,
+  unchanged.
+- `node tools/check-terrain.mjs` now proves the coast off-screen: the
+  bar is dry the whole way out, the open water refuses everywhere with
+  the bar erased, the ledge is walkable end to end, and **with the ledge
+  fenced the point is unreachable** while Shelter Cove still is.
+- Protected now, in both viewports: everything Sessions 2–4 protected,
+  plus the promenade walked north (portrait is the better of the two),
+  THE CUT from the lower ledge, the Holdfast from the bight, the bar at
+  its middle bend, and THE MARK with the fleet rounding it.
+
+### Gotchas (new; Sessions 1–4 all still apply)
+- **THE CAMERA ONLY EVER LOOKS NORTH, and that is a LAYOUT constraint,
+  not a camera note.** Anything the player is meant to walk ALONG has to
+  run north–south or it crosses the frame; anything they are meant to
+  LOOK at has to be north of where they stand. This session laid a
+  boardwalk east–west, staged a regatta west of the bar and put a
+  viewpoint west of a cliff, and all three had to be rebuilt. Check the
+  bearing before you place a thing, not after.
+- **A flat quad that runs away from the camera is invisible.** There is
+  no such thing as a handrail along a north–south walk in this engine.
+  Use a receding line of small standees (the promenade's bollards) and
+  put the rails where they face south (the jetty head).
+- **A radial landform cannot be hatched.** The shader draws down the
+  fall line; on anything doubly curved the fall line rotates, and
+  `dot(worldXZ, across)` with a rotating `across` produces caustics —
+  thumb prints, then herringbone. Author landforms with PLANAR FACES.
+  The paper vocabulary already said so: a tear runs straight and turns
+  at corners.
+- **Hatching is for cliffs, and 0.36 was never that.** A five-unit dune
+  over seventeen clears the old gate comfortably, which is where every
+  chevron on this coast was coming from. The gate is 0.62 now.
+- **Nothing in the height field may be finer than ~12 units — including
+  the things you CARVE.** The ledge's inner wall was five units wide and
+  aliased into chevrons until it was widened to eleven.
+- **`smax`'s k is measured in HEIGHT, and a generous k rounds a cliff's
+  TOE into a walkable ramp.** The Holdfast leaked at k = 2 (a four-unit
+  ramp at two thirds of the walk limit, all the way round); it holds at
+  0.8.
+- **A pale standee within ~16 units is a grey slab — including in front
+  of a cliff, especially in front of a cliff.** Four rounds of the gate
+  killed four generations of cut wall. If the ground can say it, let the
+  ground say it; give the drawings only what the height field cannot.
+- **A GLSL comment inside a JS template literal may not contain a
+  backtick.** Two of them silently broke the build mid-session and the
+  screenshots came back from a stale `dist`.
+- `layout.ts` gained `SANDBAR`/`barDist`/`seaAt`, `PLANKS`, one point on
+  the coast road (it now reaches the promenade), a reshaped `coastX`,
+  and `ocean`'s step zone changed `wet` → `sand`. `Terrain.nearBridge`
+  became `Terrain.onPlanks` and answers for the boardwalk too. No rect,
+  river, bridge or mood change.
+- The `?debug` frame-cost harness now covers five coastal framings.
+
 ## Session 4 — 2026-08-28 — the paper has a shape
 
 *A foundations session. Nothing here adds a land; everything here

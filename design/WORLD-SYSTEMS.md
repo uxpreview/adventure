@@ -48,11 +48,17 @@ less:
 | **the crease** | a hard fold with a shadow in it | a valley; a road that dives |
 | **the curl** | the sheet's margins lift, as paper always does | the world's rim — a boundary that is also a vista |
 | **the buckle** | where the wash was wet, the paper cockled | rolling ground: the downs, the common |
-| **the tear** | the page ripped; you can see down to the desk | SPLITROCK CANYON, which should *be* a tear |
+| **the tear** | the page ripped; you can see down to the desk | SPLITROCK CANYON, which should *be* a tear; and the coast, where the wet margin tore away round THE HOLDFAST |
+| **the miss** | the wash ran over the page and left a dry streak | THE SANDBAR — how open water became a land you can walk |
 | **what's under the sheet** | a book, a pencil, another sheet | hills, mesas, the castle ridge |
 
 Rules: **low amplitude** (roughly 0–12 units across the sheet) with two
-or three authored exceptions. Standees stay **vertical** on slopes —
+or three authored exceptions. **Author landforms with PLANAR FACES**
+(Session 5): the terrain draws a cliff in strokes down its fall line,
+and a doubly-curved landform has no constant fall line to draw down — it
+comes out as a thumb print, and then, if you wobble it, as herringbone.
+Paper tears in straight runs and turns at corners, so a landform is a
+polygon with faces, not an ellipse. Standees stay **vertical** on slopes —
 they are paper cutouts standing on a warped page, they do not tilt with
 the ground. Steep is impassable, which is free traversal gating.
 

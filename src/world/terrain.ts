@@ -1,13 +1,16 @@
 import * as THREE from 'three';
-import { PAPER_HEX, PAPER, INK_HEX } from '../engine/palette';
+import { PAPER_HEX, PAPER, INK_HEX, WASH } from '../engine/palette';
 import {
   paperGrainTexture, paperSheetTexture, deskGrainTexture, paperSpec,
 } from '../engine/paper';
 import {
-  WORLD, REGION_SPECS, ROADS, RIVER, RIVER_WIDTH, BRIDGES, PONDS, coastX, type Rect,
+  WORLD, REGION_SPECS, ROADS, RIVER, RIVER_WIDTH, BRIDGES, PLANKS, PONDS, coastX, seaAt,
+  barDist,
+  type Rect,
 } from './layout';
 import {
   HeightField, H_STEP, H_MIN_X, H_MAX_X, H_MIN_Z, H_MAX_Z, MAX_WALK_SLOPE, SHEET_PAD,
+  holdfastK,
 } from './elevation';
 
 export { coastX };
@@ -127,11 +130,59 @@ export class Terrain {
         (this.field.heightAt(x + CAV, z) + this.field.heightAt(x - CAV, z) +
           this.field.heightAt(x, z + CAV) + this.field.heightAt(x, z - CAV)) * 0.25;
       shade[i * 4 + 1] = (ring - h) / 1.8;
-      // the fall line, so hatching can run DOWN a cliff the way a hand
-      // draws one, whichever way the cliff happens to face
+      /* The fall line, so hatching can run DOWN a cliff the way a hand
+       * draws one, whichever way the cliff happens to face.
+       *
+       * Session 5: its DIRECTION is taken over a wide stencil and its
+       * MAGNITUDE over the grid's own. A pen draws a cliff down the way
+       * the cliff AS A WHOLE falls, not down the way one square metre of
+       * it happens to tip — and at the top and bottom of a face the
+       * cliff's own gradient goes to zero, so a one-cell reading there
+       * picks up the cockle instead and the strokes swing thirty degrees
+       * from row to row. That is what round 4 of the gate saw on the
+       * Holdfast and called herringbone. Magnitude is left exactly as it
+       * was, so `steep`, the stroke pitch and every hatched surface in
+       * Sessions 2–4 are untouched. */
       const [gx, gz] = this.field.gradAt(x, z);
-      shade[i * 4 + 2] = gx;
-      shade[i * 4 + 3] = gz;
+      const mag = Math.hypot(gx, gz);
+      const FALL = 7;
+      const wx = (this.field.heightAt(x + FALL, z) - this.field.heightAt(x - FALL, z)) / (2 * FALL);
+      const wz = (this.field.heightAt(x, z + FALL) - this.field.heightAt(x, z - FALL)) / (2 * FALL);
+      const wl = Math.hypot(wx, wz);
+      /* ---- COHERENCE ------------------------------------------------
+       * And now the thing that took five rounds of the gate to name.
+       *
+       * The hatch phase is `dot(worldXZ, across)` — a GLOBAL linear
+       * ramp read through a LOCAL direction. Where that direction is
+       * constant over a face, the isolines are the parallel strokes
+       * they are meant to be. Where it rotates, they are not strokes at
+       * all: they are the caustics of a rotating field, and they come
+       * out as chevrons and knots. That is the herringbone the Holdfast
+       * kept showing, and no amount of tuning the pitch or the noise
+       * could fix it, because it is the construction and not the
+       * parameters.
+       *
+       * The construction is fine on a face and wrong on a brow, so the
+       * answer is to hatch faces and not brows. Coherence measures the
+       * difference: how much the fall line at a point agrees with the
+       * fall line of the landform around it. It is folded into the
+       * stored MAGNITUDE, so `steep` — which is what gates the hatch —
+       * falls away wherever the direction is unreliable, and a pen
+       * simply leaves that part of the rock white. On a planar scarp
+       * (Greyweather's, the tear's walls) the two directions agree and
+       * nothing changes at all. */
+      const F2 = 17;
+      const bx = (this.field.heightAt(x + F2, z) - this.field.heightAt(x - F2, z)) / (2 * F2);
+      const bz = (this.field.heightAt(x, z + F2) - this.field.heightAt(x, z - F2)) / (2 * F2);
+      const bl = Math.hypot(bx, bz);
+      let coh = 1;
+      if (wl > 1e-5 && bl > 1e-5) {
+        const dot = (wx * bx + wz * bz) / (wl * bl);
+        coh = Math.max(0, Math.min(1, (dot - 0.68) / 0.28));
+      }
+      const m = mag * coh;
+      shade[i * 4 + 2] = wl > 1e-5 ? (wx / wl) * m : gx * coh;
+      shade[i * 4 + 3] = wl > 1e-5 ? (wz / wl) * m : gz * coh;
     }
     pos.needsUpdate = true;
     geo.setAttribute('aShade', new THREE.BufferAttribute(shade, 4));
@@ -339,7 +390,24 @@ export class Terrain {
            * and stops when the thing is too far off to describe. A fold
            * in the ground is described by its line, not by shading. */
           float shadeSide = smoothstep(uFlatLam - 0.04, uFlatLam - 0.44, lam);
-          float steep = smoothstep(0.36, 1.00, grad);
+          /* HATCHING IS FOR CLIFFS, and Session 5 finally made the
+           * threshold mean it. Session 4 wrote the law down as a gotcha
+           * — "on gentle ground it reads as corduroy" — and then left
+           * the gate at 0.36, which a five-unit dune over seventeen
+           * clears comfortably. It is why the coast kept coming back
+           * from the gate with chevrons on its sand: NOTHING on that
+           * dune is a cliff, and every stroke on it was a lie about the
+           * ground. At 0.62 the dune, the buckle and the river's own
+           * banks all fall silent, and what still draws is what is
+           * genuinely a wall: the Holdfast's face, the castle scarp,
+           * the tear.
+           *
+           * The gradient also means something stricter than it did:
+           * the magnitude in aShade.zw is scaled by the fall line's
+           * COHERENCE, so a brow or a corner — where the direction
+           * rotates and the stroke field turns into caustics — reads as
+           * gentle here and takes no strokes either. */
+          float steep = smoothstep(0.62, 1.15, grad);
           float near = 1.0 - smoothstep(58.0, 124.0, vFogDepth);
           float hatchAmt = steep * mix(0.45, 1.0, shadeSide) * near * mSheet;
           if (hatchAmt > 0.004) {
@@ -358,17 +426,41 @@ export class Terrain {
              * pitch scales with depth: tight underfoot, open on a far
              * hillside. Without this a slope five units from the lens
              * gets strokes a metre wide and reads as herringbone. */
-            float pitch = mix(3.4, 5.6, steep)
+            /* Session 5 opened the pitch out. At 3.4–5.6 a fifty-unit
+             * cliff got eighty strokes across it, which is not hatching
+             * — it is grain, and grain is what a texture does, not what
+             * a pen does. Twenty-odd strokes down a face is a hand. */
+            float pitch = mix(2.2, 3.4, steep)
                         * clamp(28.0 / max(vFogDepth, 6.0), 0.34, 3.2);
-            float s1 = sin(u * pitch + (vnoise(p * 0.8 + 5.0) - 0.5) * 2.2);
+            /* The phase wander is SLOW. Session 5: at p × 0.8 the noise
+             * had the same wavelength as the strokes it was displacing,
+             * so every stroke wandered independently of its neighbours
+             * and a big hatched face came out as WOODGRAIN — knots,
+             * swirls, a thumb print. A hand does not do that. A hand
+             * lays a bundle of strokes and the whole bundle drifts, so
+             * the wander runs at about a sixth of the stroke pitch and
+             * the strokes stay parallel to the ones beside them. */
+            float s1 = sin(u * pitch + (vnoise(p * 0.15 + 5.0) - 0.5) * 3.0);
             /* strokes, not lines: each one stops where the hand lifted */
-            float brk = smoothstep(0.26, 0.60, vnoise(vec2(u * 0.9, v * 0.28) + 11.0));
-            float h1 = smoothstep(0.16, 0.82, s1) * brk;
-            /* a crossing pass only where it is genuinely a wall */
-            float s2 = sin((u * 0.72 + v * 0.62) * pitch * 0.8
-                       + (vnoise(p * 0.6 + 19.0) - 0.5) * 2.0);
-            float h2 = smoothstep(0.40, 0.95, s2) * smoothstep(0.80, 1.25, grad);
-            col = mix(col, uInk, clamp(h1 * 0.36 + h2 * 0.26, 0.0, 0.52) * hatchAmt);
+            float brk = smoothstep(0.26, 0.60, vnoise(vec2(u * 0.55, v * 0.20) + 11.0));
+            /* and each one is a STROKE with paper either side of it:
+             * a wide smoothstep merges neighbouring strokes into a
+             * tone, which is the other half of why a hatched face read
+             * as woodgrain */
+            float h1 = smoothstep(0.44, 0.90, s1) * brk;
+            /* A crossing pass, only where it is genuinely a wall — and
+             * COARSE. Session 5: at pitch × 0.8 the second pass sat a
+             * few per cent off the first and the two beat together into
+             * herringbone on the Holdfast's face, which is a moiré and
+             * not a hand. A person's second pass over a cliff is wider
+             * than the first, not almost the same width; at 0.45 it
+             * reads as a second sweep of the pen, and it is broken by
+             * its own noise so it stops where the hand lifted. */
+            float s2 = sin((u * 0.72 + v * 0.62) * pitch * 0.45
+                       + (vnoise(p * 0.11 + 19.0) - 0.5) * 2.6);
+            float brk2 = smoothstep(0.22, 0.66, vnoise(vec2(v * 0.7, u * 0.22) + 31.0));
+            float h2 = smoothstep(0.40, 0.95, s2) * brk2 * smoothstep(0.80, 1.25, grad);
+            col = mix(col, uInk, clamp(h1 * 0.52 + h2 * 0.17, 0.0, 0.60) * hatchAmt);
           }
 
           /* THE LINE. Ink pools in the bottom of a fold, and the crest
@@ -459,10 +551,19 @@ export class Terrain {
     return this.road[this.texel(x, z)] > 96;
   }
 
-  /** Plank bridges span the river: near one, deep water carries you. */
-  nearBridge(x: number, z: number, r = 6): boolean {
+  /**
+   * Plank underfoot. The road's three bridges span the river; the
+   * boardwalk is LONGSHORE's own decking and runs out past the
+   * shoreline onto a jetty head. Both do the same two jobs: they knock
+   * HOLLOW, and they carry the walker over water the page would
+   * otherwise refuse.
+   */
+  onPlanks(x: number, z: number, pad = 0): boolean {
     for (const b of BRIDGES) {
-      if (Math.hypot(x - b.x, z - b.z) < r) return true;
+      if (Math.hypot(x - b.x, z - b.z) < 6 + pad) return true;
+    }
+    for (const p of PLANKS) {
+      if (Math.hypot(x - p.x, z - p.z) < p.r + pad) return true;
     }
     return false;
   }
@@ -471,7 +572,7 @@ export class Terrain {
   blockedAt(x: number, z: number): boolean {
     if (this.tooSteep(x, z)) return true;
     if (this.waterAt(x, z) <= 0.62) return false;
-    return !this.nearBridge(x, z);
+    return !this.onPlanks(x, z);
   }
 }
 
@@ -517,6 +618,46 @@ function paintWorld(): { data: Uint8Array; water: Uint8Array; road: Uint8Array }
       ctx.fillStyle = g;
       ctx.fillRect(bx - rad, bz - rad, rad * 2, rad * 2);
     }
+  }
+
+  /* ---- THE COAST IS NOT ALL SAND (Session 5) ---------------------- *
+   * One stain per land is the rule, and it is a good rule — but a rule
+   * about LANDS, not about everything inside one. LONGSHORE's stain is
+   * beach, and the two things on that coast which are emphatically not
+   * beach are the Holdfast (the piece of page the tear went round: torn
+   * paper, not blown sand) and the sandbar (the strip the wash MISSED,
+   * which is drier than the beach, not wetter). Round 1 of the gate
+   * looked at an eleven-unit cliff painted sand-coloured and called the
+   * whole coast a dune sea, which was the correct verdict.
+   *
+   * Both are painted here, before the border-softening pass, so they get
+   * the same ragged edge every other border in this world gets. */
+  {
+    const rock = mixHex(PAPER, WASH.castle, 0.66);
+    const dry = mixHex(PAPER, WASH.sand, 0.44);
+    const img = ctx.getImageData(0, 0, TEX_W, TEX_H);
+    const d = img.data;
+    for (let ty = 0; ty < TEX_H; ty++) {
+      const wz = WORLD.minZ + ((ty + 0.5) / TEX_H) * SPAN_Z;
+      for (let tx = 0; tx < TEX_W; tx++) {
+        const wx = WORLD.minX + ((tx + 0.5) / TEX_W) * SPAN_X;
+        if (wx > -150 || wx < -330) continue;
+        const i = (ty * TEX_W + tx) * 4;
+        // the point, and the rock it has been dropping onto its own
+        // foreshore for as long as there has been a point
+        const hk = holdfastK(wx, wz);
+        if (hk > 0.002) {
+          const k = hk;
+          for (let c = 0; c < 3; c++) d[i + c] += (rock[c] - d[i + c]) * k;
+        }
+        // the bar: dry sand where the sea is painted
+        const bk = 1 - smoothstep(4, 18, barDist(wx, wz));
+        if (bk > 0.002) {
+          for (let c = 0; c < 3; c++) d[i + c] += (dry[c] - d[i + c]) * bk * 0.85;
+        }
+      }
+    }
+    ctx.putImageData(img, 0, 0);
   }
 
   // soften every border: downscale and stretch back up, twice
@@ -581,10 +722,12 @@ function paintWorld(): { data: Uint8Array; water: Uint8Array; road: Uint8Array }
       const idx = ty * TEX_W + tx;
       road[idx] = roadData[idx * 4];
 
-      let w = 0;
-      // the sea: deepens west of the coastline
-      const d = coastX(wz) - wx;
-      if (d > 0) w = smoothstep(0, 42, d);
+      // the sea: deepens west of the coastline, EXCEPT on the sandbar,
+      // where the wash never took. layout.seaAt is the one authority on
+      // both facts, so the pixels the walker collides with and the
+      // numbers tools/check-terrain.mjs walks off-screen are the same
+      // numbers (Session 5).
+      let w = seaAt(wx, wz);
       // the river: width swells from source to mouth
       let best = 1e9;
       let bestT = 0;

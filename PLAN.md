@@ -16,8 +16,8 @@ ladder was re-cut after Session 3 to put the foundations first.
 | 2 | **The first minute** ✓ 2026-08-28 | THE COMMON + the title framing + the south face of THE KINGDOM OF BRIM. Gate to WOWED (`critique-art-1.md`). |
 | 3 | **The old world** ✓ 2026-08-28 | CASTLE GREYWEATHER + THE KINGDOM interior. The flagship keep walk. Gate to WOWED (`critique-art-2.md`). |
 | 4 | **The paper has a shape** ✓ 2026-08-28 | **Foundations.** Terrain elevation (crease / curl / buckle / tear / what's under the sheet) in `elevation.ts`, routed through the build context; a fold DRAWN rather than shaded; the camera redesigned around it; footprints, collision and the character lifted; steep made impassable. Portrait made a gated viewport. The margins inheritance audit executed. Greyweather rebuilt on a real ridge. Gate to WOWED (`critique-art-3.md`). |
-| 5 | **The coast** | LONGSHORE + THE WIDE BLUE — the first lands authored *with* elevation. The dune line and the sea floor are already in `elevation.ts`; this session authors the headland, the cliff path, the boardwalk, the regatta and surf audio ON them, and is the first test of whether the foundation was worth it. |
-| 6 | **Traversal & time** | Sprint as ink weight, roads that carry, the river as a route (the rowboat), and the day cycle. Every land already built improves. |
+| 5 | **The coast** ✓ 2026-08-29 | LONGSHORE + THE WIDE BLUE, the first lands authored *with* elevation. THE HOLDFAST (a headland the tear went round, authored as a polygon so its faces are planar), THE CUT (a ledge graded out of the page — the only way up), SHELTER COVE, and THE SANDBAR, which is what makes open water a land you can walk. Four new audio voices and two new instruments. Gate to WOWED (`critique-art-4.md`). |
+| 6 | **Traversal & time** | Sprint as ink weight, roads that carry, the river as a route (the rowboat), and the day cycle. Every land already built improves. The rowboat's quadrant is now built: LONGSHORE's cove and the river mouth are where it lives (WORLD-SYSTEMS §4). |
 | 7 | **The story** | Pick from DIRECTION.md (THE UNFINISHED SHEET recommended), write STORY.md, build the ink-in verb as the content system, and make the map the journal. From here every land session ships places **and** its unfinished things **and** one inhabitant. |
 | 8 | **Farm & forest** | THE HARROW DOWNS + THE PENWOOD: field patchwork vs pine dark; the tarn; the forest track. |
 | 9 | **The dry lands** | SPLITROCK CANYON (a tear in the page) + THE BLEACH FLATS: corridor drama, the oasis as reward. |
@@ -39,3 +39,12 @@ Rules of the ladder:
   other file may invent a height.
 - **Both viewports, every sheet.** `tools/shoot-lib.mjs` does it for
   free; there is no excuse left for judging landscape only.
+- **The camera only ever looks north, and that decides LAYOUT.** A thing
+  the player walks ALONG runs north–south; a thing they LOOK at is north
+  of where they stand. Session 5 lost rounds to a boardwalk laid
+  east–west and a regatta staged west of its viewpoint. Check the
+  bearing before placing, not after.
+- **Author landforms with PLANAR FACES.** The terrain draws a cliff in
+  strokes down its fall line, and a doubly-curved landform has no
+  constant fall line to draw down — it comes out as a thumb print. Paper
+  tears in straight runs and turns at corners; use that.

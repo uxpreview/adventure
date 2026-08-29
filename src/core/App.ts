@@ -12,7 +12,7 @@ import { Audio, type StepZone } from './Audio';
 import { UI } from '../ui/UI';
 import { renderMap } from '../ui/map';
 import { PAPER_HEX, INK_HEX } from '../engine/palette';
-import { SPAWN, regionAt, type RegionSpec } from '../world/layout';
+import { SPAWN, regionAt, coastX, barDist, type RegionSpec } from '../world/layout';
 import { MEADOW_POIS } from '../world/regions/meadow';
 import { FOREST_POIS, CANYON_POIS, DESERT_POIS, DOWNS_POIS } from '../world/regions/wilds';
 import { OCEAN_POIS, BEACH_POIS } from '../world/regions/coast';
@@ -271,7 +271,7 @@ export class App {
     const z = this.char.pos.z;
     const water = this.terrain.waterAt(x, z);
     let zone: StepZone;
-    if (this.terrain.nearBridge(x, z, 5)) zone = 'hollow';
+    if (this.terrain.onPlanks(x, z, -1)) zone = 'hollow';
     else if (water > 0.12) zone = 'wet';
     else if (this.terrain.roadAt(x, z)) zone = 'paper';
     else zone = this.region.step;
@@ -499,6 +499,38 @@ export class App {
           } else {
             this.audio.event('rook-caw');
             this.ambientAcc = 15 + Math.random() * 15;
+          }
+        } else if (this.region.id === 'beach') {
+          /* THE SEA GETS LOUDER AS YOU APPROACH IT, and that is the
+           * cheapest and truest place-sound available to this game: the
+           * gap between breakers is a function of how far the walker is
+           * from the water. On the dune it is a distant hush every nine
+           * seconds; standing in the wrack it is every three. */
+          const toSea = Math.max(0, this.char.pos.x - coastX(this.char.pos.z));
+          const near = Math.max(0, Math.min(1, 1 - toSea / 46));
+          if (Math.random() > 0.82) {
+            this.audio.event('gull-cry');
+            this.ambientAcc = 5 + Math.random() * 9;
+          } else {
+            this.audio.event('surf-break');
+            this.ambientAcc = 3.0 + (1 - near) * 6.5 + Math.random() * 2.6;
+          }
+        } else if (this.region.id === 'ocean') {
+          /* Out on the bar the surf is BEHIND you, so it comes at long
+           * gaps; what is close is the mark's bell and, off the
+           * moorings, somebody's halyards. */
+          const onBar = barDist(this.char.pos.x, this.char.pos.z) < 22;
+          const toMark = Math.hypot(this.char.pos.x + 308, this.char.pos.z + 36);
+          const roll = Math.random();
+          if (onBar && toMark < 62 && roll > 0.42) {
+            this.audio.event('bell-buoy');
+            this.ambientAcc = 7 + Math.random() * 8;
+          } else if (roll > 0.24) {
+            this.audio.event('halyard');
+            this.ambientAcc = 8 + Math.random() * 11;
+          } else {
+            this.audio.event('surf-break');
+            this.ambientAcc = 9 + Math.random() * 9;
           }
         } else {
           this.ambientAcc = 5;

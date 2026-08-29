@@ -1,4 +1,6 @@
-import { WORLD, REGION_SPECS, RIVER, BRIDGES, PONDS, coastX, type RegionId } from './layout';
+import {
+  WORLD, REGION_SPECS, RIVER, BRIDGES, PONDS, coastX, barDist, type RegionId,
+} from './layout';
 
 /**
  * THE PAPER HAS A SHAPE.
@@ -21,6 +23,22 @@ import { WORLD, REGION_SPECS, RIVER, BRIDGES, PONDS, coastX, type RegionId } fro
  *   the tear     the page ripped; SPLITROCK is that rip
  *   under it     a book under the page lifts CASTLE GREYWEATHER onto a
  *                real ridge with one way up
+ *
+ * Session 5 authored THE COAST on the same vocabulary, and it is the
+ * first land ground written for a land rather than for the sheet:
+ *
+ *   the holdfast  the wet margin tore away in two bites and one tongue
+ *                 of fibre HELD — so the headland is not a hill that
+ *                 happens to end at the sea, it is what the tear went
+ *                 round. Ten and a half units up, ringed by cliff.
+ *   the cut       the only way onto it. A ledge somebody chiselled
+ *                 across the seaward face: the page is carved DOWN to
+ *                 a gentle ramp in a narrow band, so the wall stands
+ *                 above it on the landward side and the cliff falls
+ *                 away on the other. Nothing else about the point is
+ *                 walkable, which is what makes the walk mean anything.
+ *   the bar       a dry streak where the wash never took, running a
+ *                 hundred and eighty units out into THE WIDE BLUE.
  *
  * Amplitude is deliberately LOW — roughly 0–12 units across a sheet 760
  * units wide — with three authored exceptions: the castle ridge (+12.5,
@@ -74,6 +92,23 @@ function smoothstep(a: number, b: number, x: number): number {
 
 /** A gaussian bump, the workhorse of every authored landform here. */
 const bump = (u: number) => Math.exp(-u * u);
+
+/**
+ * A CLIFF, not a hill: a smoothstep run through itself.
+ *
+ * A plain smoothstep spends its fall evenly across the band, which
+ * means a face wide enough for the height grid to resolve is never
+ * steep enough to refuse a walker — Session 5 found the Holdfast
+ * climbable on its whole seaward quarter for exactly that reason.
+ * Running the curve through itself keeps the same width on the grid
+ * and the same round lip and toe (a torn edge of paper has both), and
+ * puts half again as much of the fall into the middle of the face,
+ * which is where a cliff keeps it.
+ */
+function scarp(a: number, b: number, x: number): number {
+  const t = smoothstep(a, b, x);
+  return t * t * (3 - 2 * t);
+}
 
 /** Soft maximum: landforms MEET, they do not stack. The curl running
  *  into the castle ridge must read as one continuous piece of paper,
@@ -178,6 +213,200 @@ export function tearX(z: number): number {
 /** Where the dune line runs behind LONGSHORE. */
 export function duneX(z: number): number {
   return -174 + Math.sin(z * 0.021) * 7 + Math.sin(z * 0.06 + 2) * 3;
+}
+
+/* ------------------------------------------------------------------ *
+ * THE COAST (Session 5).
+ * ------------------------------------------------------------------ */
+
+/** The Holdfast's centre and its two radii. The point is an ELLIPSE of
+ *  standing paper: flat on top out to 0.70 of it, then fourteen units
+ *  of cliff. Fourteen is not a free number — the height grid's pitch is
+ *  four, so anything narrower aliases, and anything wider stops
+ *  refusing (the cliff has to hold |∇h| over 0.72 for long enough that
+ *  no stride crosses it). */
+/**
+ * THE HOLDFAST, in plan.
+ *
+ * Three rounds of the gate went into this shape and every one of them
+ * was rejected for the same underlying reason: it was ROUND. A radial
+ * headland is a dome, a dome's fall line rotates continuously, and the
+ * terrain shader hatches down the fall line — so the point came out
+ * first as a thumb print and then, once the radius was wobbled, as
+ * herringbone. Both are the same bug: a doubly-curved surface has no
+ * face for a pen to draw down.
+ *
+ * The fix is the metaphor, which had the answer all along. **Paper does
+ * not tear along a curve. It tears along its fibres**, in straight runs,
+ * turning where the grain turns — which is exactly what `tearX` already
+ * says about SPLITROCK. So the point is a POLYGON: seven straight runs
+ * of torn edge with corners between them. Every face is planar, every
+ * face has one constant fall line, and the hatching runs down each of
+ * them in parallel strokes the way a hand draws a cliff. The corners
+ * are what give the silhouette its breaks.
+ *
+ * The plan is convex, so the signed distance is just the largest of its
+ * seven half-plane distances: cheap, exact, and sharp at the corners.
+ */
+export const HOLD_PLAN: [number, number][] = [
+  [-259, -72], [-251, -97], [-228, -113], [-199, -107],
+  [-182, -85], [-187, -55], [-208, -37], [-239, -43],
+];
+// inner/outer bracket the cliff in SIGNED-DISTANCE units: full height
+// eleven units inside the torn edge, nothing one unit outside it. Twelve
+// units of face for eleven and a half of fall — which, run through
+// `scarp`, holds |∇h| well past the walk limit for about seven units of
+// its width. That is more than a stride, and it is what makes the ledge
+// the only way up.
+const HOLD = { y: 11.4, inner: -11, outer: 1.0 };
+
+/** Outward half-plane normals and offsets, built once. */
+const HOLD_EDGES = HOLD_PLAN.map((a, i) => {
+  const b = HOLD_PLAN[(i + 1) % HOLD_PLAN.length];
+  const dx = b[0] - a[0];
+  const dz = b[1] - a[1];
+  const len = Math.hypot(dx, dz) || 1;
+  // the plan is wound so that (dz, -dx) points out of it
+  return { nx: dz / len, nz: -dx / len, ax: a[0], az: a[1] };
+});
+
+/** Signed distance to the torn edge: negative on the point, positive
+ *  off it. Zero is the middle of the cliff, not its top. */
+function holdSD(x: number, z: number): number {
+  let m = -1e9;
+  for (const e of HOLD_EDGES) {
+    const d = (x - e.ax) * e.nx + (z - e.az) * e.nz;
+    if (d > m) m = d;
+  }
+  return m;
+}
+
+/**
+ * How much of the Holdfast there is at (x, z), 1 on the plateau and 0
+ * off the headland entirely. `terrain.ts` reads it to paint the point
+ * as ROCK rather than as sand: the wash field is one stain per land and
+ * LONGSHORE's is beach, but the point is the piece the tear went round,
+ * and torn paper is not a dune. Round 1 of the gate called an
+ * eleven-unit cliff a sand hill, and it was right to.
+ */
+export function holdfastK(x: number, z: number): number {
+  return 1 - smoothstep(-12, 8, holdSD(x, z));
+}
+
+/**
+ * THE CUT — the ledge somebody chiselled across the Holdfast's seaward
+ * face. Six authored points from the sand at the bight's north end,
+ * climbing north-west across the face and in through the point's own
+ * rim. Everything about this path is deliberate: it traverses rather
+ * than climbs, it stays on the seaward side so the drop is the sea, and
+ * it ends short of the crest so the last few strides are a CUTTING with
+ * rock on both hands.
+ */
+export const CUT_PATH: [number, number][] = [
+  [-205, -27], [-218, -32], [-229, -40], [-238, -50], [-243, -62], [-242, -75],
+];
+const CUT = CUT_PATH;
+
+const CUT_T: number[] = [0];
+for (let i = 1; i < CUT.length; i++) {
+  CUT_T.push(CUT_T[i - 1] + Math.hypot(CUT[i][0] - CUT[i - 1][0], CUT[i][1] - CUT[i - 1][1]));
+}
+const CUT_LEN = CUT_T[CUT_T.length - 1];
+
+/** Nearest point on the cut: how far off it, and how far along it. */
+function cutAt(x: number, z: number): { d: number; t: number } {
+  let best = 1e9;
+  let bestT = 0;
+  for (let i = 0; i < CUT.length - 1; i++) {
+    const [ax, az] = CUT[i];
+    const [bx, bz] = CUT[i + 1];
+    const dx = bx - ax;
+    const dz = bz - az;
+    const len2 = dx * dx + dz * dz || 1;
+    const u = clamp01(((x - ax) * dx + (z - az) * dz) / len2);
+    const d = Math.hypot(x - (ax + dx * u), z - (az + dz * u));
+    if (d < best) {
+      best = d;
+      bestT = (CUT_T[i] + Math.hypot(dx, dz) * u) / CUT_LEN;
+    }
+  }
+  return { d: best, t: bestT };
+}
+
+/** A point along the cut, by its parameter. */
+function cutPoint(t: number): [number, number] {
+  const s = clamp01(t) * CUT_LEN;
+  for (let i = 0; i < CUT.length - 1; i++) {
+    if (s <= CUT_T[i + 1] || i === CUT.length - 2) {
+      const u = (s - CUT_T[i]) / (CUT_T[i + 1] - CUT_T[i] || 1);
+      return [
+        CUT[i][0] + (CUT[i + 1][0] - CUT[i][0]) * u,
+        CUT[i][1] + (CUT[i + 1][1] - CUT[i][1]) * u,
+      ];
+    }
+  }
+  return CUT[CUT.length - 1];
+}
+
+/**
+ * THE LEDGE'S FLOOR — a GRADED profile, not a formula.
+ *
+ * Round 2 of the gate carved the ledge to a fixed ramp and the ramp
+ * stopped matching the hill the moment the headland's plan changed:
+ * where the natural ground sat below the ramp there was nothing to
+ * carve, and the walker met a stretch of raw cliff at one in one and a
+ * quarter. A ramp is the wrong idea anyway. What a person cutting a
+ * path does is GRADE it: they follow the ground, they take the high
+ * spots off, they throw the spoil into the low ones, and they never let
+ * the thing get steeper than they are willing to walk.
+ *
+ * So the floor is built from the ground itself, once, at load:
+ *   1. sample the page along the path with the cut turned off;
+ *   2. make it monotone — a path up a headland only ever climbs;
+ *   3. cap its grade at one in three and a half, forward;
+ *   4. lift the tail so it still arrives on the plateau.
+ * The result is bounded above and below by the ground it came from, so
+ * the ledge is a cut where the page is high and its own spoil where the
+ * page is low, which is what a ledge is.
+ */
+const CUT_N = 56;
+const CUT_DS = CUT_LEN / CUT_N;
+const CUT_GRADE = 0.28;
+let CUT_FLOOR: Float64Array | null = null;
+/** Guards the one recursion: the profile is measured on the page as it
+ *  would be with no ledge in it. */
+let cutSuspended = false;
+
+function cutFloorProfile(): Float64Array {
+  if (CUT_FLOOR) return CUT_FLOOR;
+  const raw = new Float64Array(CUT_N + 1);
+  cutSuspended = true;
+  for (let i = 0; i <= CUT_N; i++) {
+    const [x, z] = cutPoint(i / CUT_N);
+    raw[i] = landHeight(x, z);
+  }
+  cutSuspended = false;
+  const c = new Float64Array(CUT_N + 1);
+  c[0] = raw[0];
+  for (let i = 1; i <= CUT_N; i++) {
+    c[i] = Math.min(Math.max(c[i - 1], raw[i]), c[i - 1] + CUT_GRADE * CUT_DS);
+  }
+  // and it must still arrive: lift the tail back to the plateau
+  const top = raw[CUT_N];
+  c[CUT_N] = Math.max(c[CUT_N], top);
+  for (let i = CUT_N - 1; i >= 0; i--) {
+    c[i] = Math.max(c[i], c[i + 1] - CUT_GRADE * CUT_DS);
+  }
+  CUT_FLOOR = c;
+  return c;
+}
+
+function cutFloor(t: number): number {
+  const c = cutFloorProfile();
+  const f = clamp01(t) * CUT_N;
+  const i = Math.min(CUT_N - 1, Math.floor(f));
+  const u = f - i;
+  return c[i] + (c[i + 1] - c[i]) * u;
 }
 
 /** How far the bailey ramp reaches: 1 in the gate corridor, 0 on the
@@ -304,9 +533,28 @@ function landHeight(x: number, z: number): number {
   const brimSwell = 3.0 * bump((x + 50) / 92) * bump((z + 85) / 78);
   const commonClimb = 2.6 * smoothstep(66, -14, z) * bump((x + 45) / 130) * (1 - smoothstep(-14, -70, z));
 
-  /* ---- the dune line, and the sea floor beneath the wash ---------- */
+  /* ---- THE COAST -------------------------------------------------- *
+   * The dune line first, because the two coastal landforms are both
+   * defined against it: the Holdfast is where the dune STOPS (a dune
+   * cannot climb a headland, so the marram line ends against the
+   * point's south foot and picks up again behind the cove), and the
+   * cove's back is the dune closing behind sheltered water. */
   const bw = smoothstep(-262, -234, x) * (1 - smoothstep(-166, -138, x));
-  const dune = 5.4 * bump((x - duneX(z)) / 17) * bw;
+  // the point is a hole in the dune line: sixty units of coast where
+  // there is no sand to blow, because what is there is standing paper
+  const duneGap = 1 - 0.94 * bump((z + 76) / 38);
+  const dune = 5.4 * bump((x - duneX(z)) / 17) * bw * duneGap;
+
+  /* THE HOLDFAST: the tongue of fibre the tear went round.
+   * An ellipse of standing page — flat on top, then fourteen units of
+   * cliff all the way round it. The ring holds |∇h| well past the walk
+   * limit for about eight units of its width, which is more than a
+   * stride: there is no way up this except the cut. */
+  const holdfast = HOLD.y * (1 - scarp(HOLD.inner, HOLD.outer, holdSD(x, z)));
+
+  /* SHELTER COVE's back: behind the bite, the dune stands up into a
+   * bank, so the cove is a bowl that only opens to its own water. */
+  const coveBack = 4.4 * bump((x + 188) / 24) * bump((z + 148) / 30);
 
   /* ---- the tear ---------------------------------------------------- *
    * The page ripped and you can see a long way down. Its lips stand
@@ -340,11 +588,44 @@ function landHeight(x: number, z: number): number {
   land = smax(land, curlN, 5);
   land = smax(land, curlS, 5);
   land = smax(land, dune, 4);
+  land = smax(land, coveBack, 3);
+  // k = 0.8, not 2. A soft max blends over its own k in HEIGHT, so a
+  // generous k rounds the cliff's TOE into a four-unit ramp at two
+  // thirds of the walk limit — which round 3 of the gate found you
+  // could simply walk up, anywhere round the point. The toe of a torn
+  // edge is not round.
+  land = smax(land, holdfast, 0.8);
   land = smax(land, brimSwell + commonClimb, 4);
   land = smax(land, downsA, 4);
   land = smax(land, downsB, 4);
 
   let h = land + buckle + crease + penBasin + sag + tear;
+
+  /* ---- THE CUT ----------------------------------------------------- *
+   * A ledge is not a ramp bolted onto a cliff — it is stone TAKEN AWAY,
+   * and that is exactly how it is authored: inside a narrow band along
+   * the path the page is carved DOWN to the ledge's own gentle floor,
+   * and it is never built UP. That one asymmetry does all the work.
+   * On the landward side the face was higher than the floor, so the
+   * carve leaves a wall standing over your right hand; on the seaward
+   * side the face was already lower, so the carve does nothing at all
+   * and the cliff falls away off your left. The floor is thirteen units
+   * wide because anything narrower than the grid can resolve reads as a
+   * crack rather than as a path. */
+  if (!cutSuspended) {
+    const cu = cutAt(x, z);
+    if (cu.d < 18) {
+      /* The ledge is thirteen units of floor and then ELEVEN of wall,
+       * not five. Nothing in this height field may be finer than about
+       * twelve units (the grid pitch is four), and a five-unit inner
+       * wall is exactly the kind of feature that aliases: its gradient
+       * direction is unstable from node to node, and the shader's
+       * hatching turns that into chevrons. Round 6 of the gate was
+       * still looking at them in the bottom of the frame. */
+      const k = (1 - smoothstep(6.5, 17.5, cu.d)) * smoothstep(0.0, 0.07, cu.t);
+      h += (cutFloor(cu.t) - h) * k;
+    }
+  }
 
   return h;
 }
@@ -377,6 +658,19 @@ export function pageHeight(x: number, z: number): number {
   if (seaM > 0.001) {
     const seaBed = -0.9 - 3.0 * smoothstep(cx - 10, cx - 76, x);
     h = h * (1 - seaM) + Math.min(h, seaBed) * seaM;
+  }
+
+  /* THE SANDBAR: the dry streak where the wash never took.
+   * Applied AFTER the sea, because the bar is not a thing built on the
+   * sea floor — it is a place the sea never got to, so the page there
+   * simply never went under. It only ever raises ground that is below
+   * the bar's own crest, so where the bar's root runs up onto the beach
+   * it does nothing and there is no step. */
+  const bd = barDist(x, z);
+  if (bd < 26) {
+    const bk = 1 - smoothstep(5, 20, bd);
+    const crest = 0.55;
+    if (h < crest) h += (crest - h) * bk;
   }
 
   /* the still waters: each one level */

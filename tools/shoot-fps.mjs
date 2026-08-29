@@ -13,6 +13,9 @@ const SPOTS = [
   ['brim square', -45, -70], ['castle avenue', -45, -176], ['the bailey', -45, -222],
   ['the crease', 62, 62], ['the tear', 312, -140], ['the curled rim', 348, 44],
   ['the common', -45, 66], ['the downs', 112, 4],
+  // the coast (Session 5): the busiest coastal frames
+  ['the boardwalk', -224, 60], ['the cut', -237, -49], ['the point', -238, -70],
+  ['the sandbar', -286, 42], ['the mark', -300, -4],
 ];
 
 const url = process.env.URL ?? 'http://localhost:4173/?debug';

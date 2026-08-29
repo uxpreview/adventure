@@ -49,8 +49,10 @@ title poster (WOWED, critique-art-1); THE KINGDOM OF BRIM interior +
 CASTLE GREYWEATHER (WOWED, critique-art-2); the sheet's ELEVATION, the
 redesigned camera, and all four of those lands re-audited on the new
 ground with Greyweather moved onto a real ridge (WOWED,
-critique-art-3 — the first sheet judged in both viewports). Every other
-land is a scatter draft and is presumed NOT YET.
+critique-art-3 — the first sheet judged in both viewports); LONGSHORE
+and THE WIDE BLUE, the first two lands authored ON that ground (WOWED,
+critique-art-4). Every other land is a scatter draft and is presumed
+NOT YET.
 
 ## 3. The permanent constraints
 
