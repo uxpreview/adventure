@@ -182,11 +182,12 @@ export class App {
     this.audio.muted = this.save.data.muted;
     this.ui.setSoundLabel(this.audio.muted);
 
-    this.ui.onOpenMap = () =>
+    this.ui.onOpenMap = (width) =>
       renderMap({
         discovered: this.save.data.discovered,
         here: this.started ? [this.char.pos.x, this.char.pos.z] : null,
         walked: this.save.data.walked,
+        width,
       });
 
     this.ui.onBegin = () => this.start(true);
@@ -330,10 +331,14 @@ export class App {
     const newLand = this.save.discover(this.region.id);
     this.ui.showRegionCard(this.region.kicker, this.region.name);
     if (fresh || newLand) {
+      /* The hint IS the control list, and running is a control now
+       * (WORLD-SYSTEMS §0 rule 1 forbids UI where the world can say
+       * it — the world says how FAST you are going, in the trail, but
+       * it cannot say which gesture produces it). */
       this.ui.showHint(
         'ontouchstart' in window
-          ? 'drag to walk — tap things to look'
-          : 'wasd to walk — E to look — M for the map',
+          ? 'drag to walk, further to run — tap things to look'
+          : 'wasd to walk — shift to run — E to look — M for the map',
         6000
       );
     }
@@ -823,6 +828,8 @@ export class App {
     }
 
     if (this.started) {
+      // a card is up: the world's own writing stays behind it
+      this.poi.suppressed = this.ui.noteOpen || this.ui.mapOpen;
       this.activePoi = this.poi.update(this.char.pos);
       this.persistAcc += dt;
       if (this.persistAcc > 4) {

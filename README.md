@@ -118,6 +118,7 @@ node tools/shoot-coast.mjs      # LONGSHORE + THE WIDE BLUE
 node tools/shoot-traversal.mjs # the ink weight, the roads, the boat, the day
 HOUR=19.6 node tools/shoot-first-minute.mjs   # any sheet, at any hour
 node tools/shoot.mjs           # all twelve lands, walkability smoke test
+node tools/shoot-mobile.mjs    # the CHROME, at 320/360/390/430 points
 node tools/shoot-fps.mjs       # frame cost, draw calls, triangles
 ```
 

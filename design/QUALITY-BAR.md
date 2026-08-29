@@ -128,6 +128,16 @@ regression check it always was.
   shot in portrait (390×844) as well as desktop (1280×720), and the art
   director reviews both. A composition that only works in landscape is
   not done.
+- **AND THE CHROME IS SHOT TOO** (added after Session 6, when a player's
+  phone screenshot found a note card whose text had been running off the
+  side of the screen since Session 1). Everything the player READS — the
+  note card, the region card, the hint, the interact prompt, the map —
+  is hand-lettered onto a CANVAS, and a canvas does not reflow: every
+  one of them needs a width measured at the size it will be delivered
+  at. `node tools/shoot-mobile.mjs` shoots all of it at 320, 360, 390
+  and 430 points, with the longest note and the longest land name in the
+  game. Five sessions of world screenshots could not have caught it,
+  because not one of them ever opened a card.
 - **Inherited rules must be re-ratified or dropped.** This engine was
   ported whole from margins, and some of its laws are margins' story
   rather than our design — the flat ground was one, and it cost us a

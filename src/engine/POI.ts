@@ -96,10 +96,38 @@ export class POIManager {
     }
   }
 
+  /**
+   * A CARD IS OPEN AND THE WORLD IS BEHIND IT.
+   *
+   * Set while a note or the map has the screen. Labels and the interact
+   * prompt live in the DOM over the canvas, and they were being drawn
+   * straight through the veil: a phone screenshot of a note card had
+   * CRANE YOUR NECK lettered across the walker underneath it. When a
+   * card is up, the world's own writing is behind it and stays behind
+   * it.
+   */
+  suppressed = false;
+
   /** Returns the active interactable POI (for the interact key). */
   update(charPos: THREE.Vector3): POI | null {
     let active: POI | null = null;
     let best = Infinity;
+
+    if (this.suppressed) {
+      for (const p of this.pois) p.labelEl?.classList.remove('show');
+      this.promptEl.classList.remove('show');
+      // the nearest POI is still returned, so closing the card and
+      // pressing E does what the player expects
+      for (const p of this.pois) {
+        if (!p.enabled || !p.def.onInteract) continue;
+        const d = Math.hypot(charPos.x - p.def.x, charPos.z - p.def.z);
+        if (d < p.def.radius && d < best) {
+          best = d;
+          active = p;
+        }
+      }
+      return active;
+    }
 
     for (const p of this.pois) {
       if (!p.enabled) continue;
@@ -148,12 +176,27 @@ export class POIManager {
     const hh = el.offsetHeight;
     const pad = 10;
     sx = Math.min(Math.max(sx, hw + pad), window.innerWidth - hw - pad);
-    // Session 4, portrait as a first-class viewport: a tappable prompt
-    // that lands in the top half of a tall screen is out of thumb reach.
-    // Labels float where their place is; the PROMPT comes to the hand.
     const tall = window.innerWidth / window.innerHeight < 0.8;
-    const floor = tall && el === this.promptEl ? window.innerHeight * 0.42 : hh + pad;
-    sy = Math.min(Math.max(sy, floor), window.innerHeight - pad);
+    /* ON A PHONE THE PROMPT IS PINNED, NOT FLOATED.
+     *
+     * Session 4 floored it at 42% of a tall screen because a tappable
+     * thing in the top half is out of thumb reach. That was half the
+     * problem. The other half only shows on a real device: the walker
+     * sits around two thirds down a tall frame and a POI you are
+     * STANDING ON projects to exactly there — so the prompt lands on
+     * the walker's head, and when a label is up too, on the label. Both
+     * were in the first phone screenshot anybody took of this game.
+     *
+     * So on a tall screen it goes where a thumb already is and stays
+     * there: centred, low, always the same place. Labels still float
+     * where their place is — a label is a caption on the world, and it
+     * is the PROMPT that is a control. */
+    if (tall && el === this.promptEl) {
+      sx = window.innerWidth * 0.5;
+      sy = window.innerHeight - Math.max(96, window.innerHeight * 0.13);
+    } else {
+      sy = Math.min(Math.max(sy, hh + pad), window.innerHeight - pad);
+    }
     el.style.left = `${sx}px`;
     el.style.top = `${sy}px`;
   }

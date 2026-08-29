@@ -93,7 +93,64 @@ full record — this is the handoff.*
 - New: `src/world/daylight.ts`, `src/engine/Boat.ts`,
   `design/specs/traversal.md`, `tools/shoot-traversal.mjs`.
 
+### Session 6.1 — mobile QA (same day, after a player's phone screenshot)
+
+*The owner opened a note card on an actual phone and the text ran off
+the side of the screen. It had been doing that since Session 1.*
+
+**The gap it exposed is the important part: NO SHOOT SCRIPT HAD EVER
+OPENED A NOTE CARD.** Five sessions of contact sheets photograph the
+WORLD; the note, the region card, the hint and the interact prompt are
+the half of this game the player READS, and they were being judged by
+nobody. `tools/shoot-mobile.mjs` is the fix — the chrome, at 320, 360,
+390 and 430 points, with the longest note and the longest land name in
+the game — and it found six more defects on its first run.
+
+- **The note card's text is wrapped to the CARD, measured.** It was
+  lettered to a constant 380 points; `max-width: min(460px, 92vw)` on a
+  390-point phone is 359 less padding, so every line but the last ran
+  off the screen mid-word. Hand-lettering is drawn to a canvas and a
+  canvas does not reflow, so the wrap width is a MEASUREMENT, not a
+  style — and it must measure the space available, not the card, which
+  is a flex item that shrinks to its contents (measuring the card wrapped
+  every note to the width of the words "put it back").
+- **And the type is sized so the longest note fits the narrowest phone
+  without scrolling.** Wrapping alone just turned the overflow
+  vertical: at 320 the same note became eleven lines and ran off the
+  bottom. A note is one card you read at a glance; the moment it needs
+  a scrollbar it is a document.
+- **Nothing from the world draws through an open card.** `POI.suppressed`:
+  the interact prompt was being lettered across the walker *underneath*
+  the note veil — it is in the owner's screenshot.
+- **On a tall screen the interact prompt is PINNED low and centred**,
+  not floated over its subject. Session 4 floored it at 42% for thumb
+  reach; the other half only shows on a device — the walker sits two
+  thirds down a tall frame and a POI you are standing on projects to
+  exactly there, so the prompt landed on the walker's head and on the
+  POI's own label. Labels still float; a label is a caption, the prompt
+  is a control.
+- **The region card and the hint wrap to the viewport.** CASTLE
+  GREYWEATHER in 24pt display caps is wider than a 320-point phone.
+- **The map's lettering is sized for its DELIVERED size.** The map is
+  drawn at 940 and CSS-scaled to `min(92vw, …)`; at 320 that is a 3.2×
+  reduction and eleven-point land names arrived at three and a half.
+  Capped at 2.2× — writing bigger than the geography is a legend, not a
+  map — and the boast line is clamped to the sheet it is written on.
+- **The title gets a margin**, the note card a `max-height`, and the
+  joystick's RUN state now reads on the ring rather than by inking the
+  nub, because the nub is under the thumb and the thumb drags up toward
+  the walker.
+- **`showTitle` no longer fires over a game already begun.** A loader
+  tween that finishes late (this sandbox, at 3.5fps) lettered the title
+  back over a running game.
+
 ### Gotchas (new; Sessions 1–5 all still apply)
+- **THE CHROME IS HALF THE GAME AND IT WAS NEVER IN A CONTACT SHEET.**
+  Everything the player reads — note, region card, hint, prompt, map —
+  lives in the DOM as lettered canvases, and a canvas does not reflow.
+  Every one of them needs a width that is MEASURED at the size it will
+  be delivered at. Shoot them (`tools/shoot-mobile.mjs`) or they break
+  in silence.
 - **THIS SANDBOX RENDERS AT ABOUT 3.5 FRAMES A SECOND** (no GPU, 213k
   terrain triangles), and App clamps `dt` at 0.05 — so **one second of
   wall clock is about a sixth of a second of GAME time**. Any harness
