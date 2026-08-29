@@ -17,10 +17,11 @@ five lands still to be built, not in the polish pass at the end. It sat
 at Session 11; it is Session 8. Nothing else moved, and the story stays
 at Session 7 where the owner put it.
 
-**And one standing rule now governs Session 7** (owner direction,
-2026-08-29): *the medium is the style, never the subject.* No story
-about the paper, the pen or the drawing — see DIRECTION.md, where every
-pre-2026-08-29 candidate was one and all of them are retired.
+**And one standing rule governs everything from here** (owner
+direction, 2026-08-29): *the medium is the style, never the subject.*
+No story about the paper, the pen or the drawing. Every candidate
+DIRECTION.md carried before that date was one, and all of them are
+retired; the chosen story is **THE 8:15** (`design/STORY.md`).
 
 | # | Session | Scope |
 |---|---------|-------|
@@ -29,7 +30,7 @@ pre-2026-08-29 candidate was one and all of them are retired.
 | 4 | **The paper has a shape** ✓ 2026-08-28 | **Foundations.** Terrain elevation (crease / curl / buckle / tear / what's under the sheet) in `elevation.ts`, routed through the build context; a fold DRAWN rather than shaded; the camera redesigned around it; footprints, collision and the character lifted; steep made impassable. Portrait made a gated viewport. The margins inheritance audit executed. Greyweather rebuilt on a real ridge. Gate to WOWED (`critique-art-3.md`). |
 | 5 | **The coast** ✓ 2026-08-29 | LONGSHORE + THE WIDE BLUE, the first lands authored *with* elevation. THE HOLDFAST (a headland the tear went round, authored as a polygon so its faces are planar), THE CUT (a ledge graded out of the page — the only way up), SHELTER COVE, and THE SANDBAR, which is what makes open water a land you can walk. Four new audio voices and two new instruments. Gate to WOWED (`critique-art-4.md`). |
 | 6 | **Traversal & time** | Sprint as ink weight, roads that carry, the river as a route (the rowboat), and the day cycle. Every land already built improves. The rowboat's quadrant is now built: LONGSHORE's cove and the river mouth are where it lives (WORLD-SYSTEMS §4). |
-| 7 | **The story** | Pick from DIRECTION.md (**THE 8:15** recommended — the world is full of people waiting for something, and one of the things they are waiting for has a timetable), write STORY.md, and build the content system around KNOWLEDGE rather than collection (WORLD-SYSTEMS §6): what you learn is the inventory, and the map is the record of it. From here every land session ships places **and** its evidence **and** one named inhabitant with a routine. |
+| 7 | **The stories** | The story is LOCKED (**THE 8:15** — `design/STORY.md`) and its architecture written (`design/QUESTS.md`, six tiers). This session **maps all of them**: THE LINE's four acts beat by beat, the twelve WAITS, the eight STRANGERS, and the errand/encounter/unmarked inventories — then builds the content system around KNOWLEDGE rather than collection (WORLD-SYSTEMS §6), makes the map the record, and does the voice pass the story requires (STORY.md §8 rule 7). From here every land session ships places **and** its wait **and** its named inhabitant. |
 | 8 | **The score** | Owner direction, 2026-08-29: each land gets its own music, not the same music box in a different mode. One synthesised instrument per land, a bed per land, borders that crossfade, and a mix that answers the hour and how you are moving. See `design/WORLD-SYSTEMS.md` §9. |
 | 9 | **Farm & forest** | THE HARROW DOWNS + THE PENWOOD: field patchwork vs pine dark; the tarn; the forest track. |
 | 10 | **The dry lands** | SPLITROCK CANYON (a tear in the page) + THE BLEACH FLATS: corridor drama, the oasis as reward. |

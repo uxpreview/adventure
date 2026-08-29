@@ -91,6 +91,16 @@ out to be one answer.
 
 ---
 
+## LOCKED: THE 8:15
+
+**Owner decision, 2026-08-29.** The pick is made and the bible is
+written: **`design/STORY.md`**, with its content architecture in
+**`design/QUESTS.md`**. Those two files are now binding and this
+section is history — kept because knowing what was rejected, and why,
+is what stops it coming back.
+
+The reasoning below stands as the record of how it was chosen.
+
 ## The candidates
 
 *Everything this file carried before 2026-08-29 was a story about
@@ -105,7 +115,7 @@ three hours and teaches nothing cumulative, so it is texture rather than
 spine — one good errand per land is exactly what an hours-long game
 wants underneath something else.*
 
-### 1. THE 8:15 *(recommended)*
+### 1. THE 8:15 — **CHOSEN** *(see `design/STORY.md`)*
 
 **In the far south-east corner of the world there is a stop with a
 timetable on it. The timetable says the 8:15 is coming. There is no
@@ -235,10 +245,11 @@ spectacle; and it needs nothing we have not already planned to build.
 3. **NPCs with one want each, and a name** — the doodle-folk field
    graduates a few instances into placed characters with a routine
    (§5) and a two-line note economy.
-4. **Story pick** — ideation opened 2026-08-29 at the owner's request
-   and redone on the right premise. The pick is the owner's and is
-   **scheduled for Session 7**; STORY.md gets written before a line of
-   it is built, the way margins did.
+4. ~~**Story pick**~~ — **done, 2026-08-29: THE 8:15.** See
+   `design/STORY.md` (the bible) and `design/QUESTS.md` (the six
+   tiers). Session 7's job is no longer to pick; it is to **map all the
+   stories** against that architecture and build the knowledge content
+   system.
 
 Note: blots-as-caves (the `BLOT` inverted palette) stay parked until a
 story needs them — a cave system with no reason to exist is Skyrim's

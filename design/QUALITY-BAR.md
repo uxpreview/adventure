@@ -17,11 +17,24 @@ that feels authored in every frame.
 
 **The world comes first, then the systems, then the story.** Owner
 decision, 2026-08-28: the foundations that change how a land is authored
-(elevation, camera, traversal, time) land before the remaining lands do,
-and the story is picked at Session 7 — see `PLAN.md`. Until then
-DIRECTION.md holds the candidates; do not start one without the owner.
-`design/WORLD-SYSTEMS.md` is the standing plan for everything that is
-not a land.
+(elevation, camera, traversal, time) land before the remaining lands do.
+
+**The story is now PICKED** (owner, 2026-08-29): **THE 8:15**, and it is
+binding. `design/STORY.md` is the bible and `design/QUESTS.md` is its
+content architecture — read both before authoring anything with a person
+or a place-name in it. Two standing rules come out of them and apply to
+every session, not only story ones:
+
+- **The medium is the STYLE. It is never the SUBJECT.** No content about
+  the paper, the pen, the drawing or whoever drew it. The ballpoint and
+  the sheet's terrain vocabulary are CRAFT and stay exactly as they are.
+- **Nobody crosses a border but the walker.** It is the engine of the
+  whole story, so it constrains every land: no inhabitant may ever be
+  placed, animated or written as leaving their own land.
+
+`design/WORLD-SYSTEMS.md` remains the standing plan for everything that
+is not a land, and `DIRECTION.md` is now the record of how the story was
+chosen rather than an open question.
 
 ## 2. The verdict gates
 

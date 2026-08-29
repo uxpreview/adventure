@@ -3,12 +3,22 @@
 You are continuing INKLANDS in `uxpreview/adventure` on `main` — the
 default branch, and what Vercel project `adventure` deploys to
 production (https://adventure.ryankm.com). Read, in order:
-`design/QUALITY-BAR.md` (binding), `design/WORLD-SYSTEMS.md`, `PLAN.md`,
-`README.md`, `SESSIONS.md` — **Session 5's gotchas especially**, because
-that session found two laws the hard way that will bite this one:
-*the camera only ever looks north, and that is a LAYOUT constraint*, and
-*a flat quad that runs away from the camera is invisible*. Story stays
-parked until Session 7.
+`design/QUALITY-BAR.md` (binding), `design/STORY.md`,
+`design/WORLD-SYSTEMS.md`, `PLAN.md`, `README.md`, `SESSIONS.md` —
+**Session 5's gotchas especially**, because that session found two laws
+the hard way that will bite this one: *the camera only ever looks north,
+and that is a LAYOUT constraint*, and *a flat quad that runs away from
+the camera is invisible*.
+
+**The story is now LOCKED and it is binding: THE 8:15**
+(`design/STORY.md`, architecture in `design/QUESTS.md`). This session
+does not write story content — Session 7 maps the stories — but two of
+its four items are now load-bearing for it, and one standing rule
+applies to every line of code and every word you write:
+
+> **The medium is the STYLE. It is never the SUBJECT.** Nothing about
+> the paper, the pen, the drawing or whoever drew it. The ballpoint and
+> the sheet's terrain vocabulary are CRAFT and stay exactly as they are.
 
 **This is a SYSTEMS session.** Nothing here adds a land. Everything here
 changes how all six built lands feel, and two of the four items change
@@ -38,14 +48,24 @@ exists and nothing in this game has ever called it** (WORLD-SYSTEMS §9,
 move 4). Running should lean the score in; standing still should let it
 thin. Session 8 builds the score proper — leave it that seam.
 
-### 2. Roads that carry
+### 2. Roads that carry — *and this one is now the story's spine*
 
 `terrain.roadAt` is already a CPU-readable mask, and the road web is
 already nine authored roads that the terrain paints and the map draws.
 Today it is decoration. Make a road **carry**: faster along it, and
-gently auto-steering, *because a pen likes following a line it already
-drew.* That single change turns the whole web into infrastructure and
-makes the crossroads mean something.
+gently auto-steering. That single change turns the whole web into
+infrastructure and makes the crossroads mean something.
+
+**Read STORY.md §4 Act III before you tune it.** The king's road leaves
+Greyweather's gate, comes down through Brim, crosses the Common, runs
+up Maple Court as main street and ends, as the commuter spur, in a car
+park: **twelve names, one road, castle to car park — and Act III's
+reveal is that it was surveyed as a railway.** The player will walk
+that line for fifteen hours before anybody tells them what it is, so
+this session's job is to make walking it *feel* like following
+something that was laid down on purpose. Carry hardest along the
+king's road / main street / commuter spur chain; let the side roads be
+gentler. The feeling to author is **a line you are already on**.
 
 It has to be **felt, not fought**. If a player ever notices they are
 being steered, it is wrong; if they walk off the road and the game
@@ -59,6 +79,13 @@ WORLD-SYSTEMS §4 is explicit and the rules are not negotiable: **every
 mount is fast on its own ground and refuses every other ground**, and it
 is *found in the world and left in the world* — yours is where you left
 it. Walking stays the universal verb. No menu, ever.
+
+**And STORY.md §8 adds one that is not negotiable either: mounts are
+the PLAYER'S ALONE.** Nobody crosses a border but the walker — it is
+the engine of the whole story — so no inhabitant may ever be shown
+using a boat, or a horse, or anything else, to leave their own land.
+The boats already drawn up on the coast belong to people who row out
+and come back.
 
 Session 5 built this mount's whole quadrant without meaning to: there is
 a boat drawn up on the sand in SHELTER COVE, another resting on the
@@ -90,10 +117,15 @@ field rather than inventing colours; the terrain shader's lamp is
 BEHIND the page (Session 4, and the castle scarp depends on it); and a
 fold is drawn, not shaded, so dusk may not become a gradient.
 
-**Leave the score's seam in.** The hour must be a parameter the audio
-mixer can read (WORLD-SYSTEMS §9, move 5). If Session 8 has to re-open
-the day cycle to make the music answer the hour, this session did it
-wrong.
+**Leave two seams in.** The hour must be a parameter the audio mixer
+can read (WORLD-SYSTEMS §9, move 5) — if Session 8 has to re-open the
+day cycle to make the music answer the hour, this session did it wrong.
+And it must be readable by the world builders, because **the story runs
+on routine**: people are somewhere at a given hour (STORY.md §7), the
+belfry clock's two hands disagree and one of them is right
+(QUESTS.md, Tier 5), and Brim's shutters open in the morning. Session 7
+should be able to ask what time it is and get an answer, without
+touching this code.
 
 ### 5. Traversal may not break the world's gates
 
@@ -126,7 +158,9 @@ is and water may never climb a hill; layout rects move only with a
 layout-wide audit; standees stay vertical, decals follow the surface;
 a fold is drawn, not shaded; hatching is for cliffs; the camera only
 ever looks north and that decides layout; author landforms with planar
-faces; 60fps mobile with DPR capped at 2; build green before every push;
+faces; the medium is the style and never the subject; nobody crosses a
+border but the walker; 60fps mobile with DPR capped at 2; build green
+before every push;
 the walker has two dots and nobody else has a face; nothing reads as an
 array; portrait is judged, not checked. End the session: pushed,
 `SESSIONS.md` handoff updated, verdicts logged.
