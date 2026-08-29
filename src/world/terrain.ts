@@ -4,7 +4,7 @@ import {
   paperGrainTexture, paperSheetTexture, deskGrainTexture, paperSpec,
 } from '../engine/paper';
 import {
-  WORLD, REGION_SPECS, ROADS, RIVER, RIVER_WIDTH, BRIDGES, PLANKS, PONDS, coastX, seaAt,
+  WORLD, REGION_SPECS, ROADS, BRIDGES, PLANKS, coastX, seaAt, waterFieldAt,
   barDist,
   type Rect,
 } from './layout';
@@ -58,14 +58,6 @@ function mixHex(a: string, b: string, t: number): [number, number, number] {
   const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16));
   const pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16));
   return [0, 1, 2].map((i) => Math.round(pa[i] + (pb[i] - pa[i]) * t)) as [number, number, number];
-}
-
-function distToSeg(px: number, pz: number, a: [number, number], b: [number, number]): number {
-  const dx = b[0] - a[0];
-  const dz = b[1] - a[1];
-  const len2 = dx * dx + dz * dz || 1;
-  const t = Math.max(0, Math.min(1, ((px - a[0]) * dx + (pz - a[1]) * dz) / len2));
-  return Math.hypot(px - (a[0] + dx * t), pz - (a[1] + dz * t));
 }
 
 export class Terrain {
@@ -712,9 +704,6 @@ function paintWorld(): { data: Uint8Array; water: Uint8Array; road: Uint8Array }
   /* -- the water, per texel, analytically ----------------------------- */
   const water = new Uint8Array(TEX_W * TEX_H);
   const road = new Uint8Array(TEX_W * TEX_H);
-  const riverSegs: [[number, number], [number, number]][] = [];
-  for (let i = 0; i < RIVER.length - 1; i++) riverSegs.push([RIVER[i], RIVER[i + 1]]);
-
   for (let ty = 0; ty < TEX_H; ty++) {
     const wz = WORLD.minZ + ((ty + 0.5) / TEX_H) * SPAN_Z;
     for (let tx = 0; tx < TEX_W; tx++) {
@@ -722,35 +711,20 @@ function paintWorld(): { data: Uint8Array; water: Uint8Array; road: Uint8Array }
       const idx = ty * TEX_W + tx;
       road[idx] = roadData[idx * 4];
 
-      // the sea: deepens west of the coastline, EXCEPT on the sandbar,
-      // where the wash never took. layout.seaAt is the one authority on
-      // both facts, so the pixels the walker collides with and the
-      // numbers tools/check-terrain.mjs walks off-screen are the same
-      // numbers (Session 5).
-      let w = seaAt(wx, wz);
-      // the river: width swells from source to mouth
-      let best = 1e9;
-      let bestT = 0;
-      for (let i = 0; i < riverSegs.length; i++) {
-        const dd = distToSeg(wx, wz, riverSegs[i][0], riverSegs[i][1]);
-        if (dd < best) {
-          best = dd;
-          bestT = i / riverSegs.length;
-        }
-      }
-      const halfW = (RIVER_WIDTH * (0.55 + bestT * 0.65)) / 2;
-      if (best < halfW + 4) {
-        const rw = 1 - smoothstep(halfW * 0.55, halfW + 3, best);
-        w = Math.max(w, rw * 0.85);
-      }
-      // still waters
-      for (const p of PONDS) {
-        const dp = Math.hypot(wx - p.x, wz - p.z);
-        if (dp < p.r + 4) w = Math.max(w, (1 - smoothstep(p.r * 0.45, p.r + 3, dp)) * 0.7);
-      }
-      // a road is never underwater unless the river takes it (bridges
-      // are exempt from collision separately)
-      water[idx] = Math.round(Math.max(0, Math.min(1, w)) * 255);
+      /* The sea, the river and the still waters, in one call.
+       *
+       * Session 5 moved the SEA into layout.ts so the pixels the walker
+       * collides with and the numbers tools/check-terrain.mjs walks
+       * off-screen could not disagree about the sandbar. Session 6 moved
+       * the river and the ponds for exactly the same reason, and the
+       * reason has a boat in it: the rowboat's ground is water, so
+       * "where is there water" is now a question the proof has to be
+       * able to answer with no canvas and no renderer. layout.ts is the
+       * one authority; this loop paints what it says.
+       *
+       * A road is never underwater unless the river takes it — bridges
+       * are exempt from collision separately. */
+      water[idx] = Math.round(waterFieldAt(wx, wz) * 255);
     }
   }
 

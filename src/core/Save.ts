@@ -11,6 +11,19 @@ export type SaveData = {
   muted: boolean;
   /** Total walked distance, in world units — the map brags with it. */
   walked: number;
+  /**
+   * WHERE THE ROWBOAT IS. Mounts are found in the world and left in the
+   * world (WORLD-SYSTEMS §4) — yours is where you left it, which is a
+   * promise that only means anything if it survives closing the tab.
+   * Null until the first walk touches it.
+   */
+  boat: { x: number; z: number } | null;
+  /**
+   * WHAT TIME IT IS. The day cycle runs while you play and stops when
+   * you stop, so coming back tomorrow morning does not mean coming back
+   * to the middle of last night's dusk.
+   */
+  hour: number | null;
 };
 
 const KEY = 'inklands-save-v1';
@@ -22,6 +35,8 @@ const DEFAULTS: SaveData = {
   skin: 'pip',
   muted: false,
   walked: 0,
+  boat: null,
+  hour: null,
 };
 
 export class Save {

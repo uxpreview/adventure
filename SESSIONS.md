@@ -1,5 +1,155 @@
 # SESSIONS — the handoff log
 
+## Session 6 — 2026-08-29 — traversal & time
+
+*A systems session. Nothing here adds a land; everything here changes
+how all six built lands FEEL, and two of the four items change how the
+remaining five will be authored. `design/specs/traversal.md` is the
+full record — this is the handoff.*
+
+### Shipped
+
+- **SPRINT AS INK WEIGHT** (WORLD-SYSTEMS §3). One continuous scalar,
+  `Character.effort`, and there is no sprint state anywhere in the game:
+  speed, stride, the print's ink, the step's level and the score's
+  intensity are all readouts of it. **The middle of its range is the
+  shipped mark** — at press 0.5 the print's gamma is 1.0 and its weight
+  is 1.0, so a walk lays exactly the print four lands earned a WOWED
+  with, and the system spends its range either side and never through
+  it. A run's print is darker, wider and **dragged out 1.4× along the
+  line of travel**, which is the part that actually reads at this
+  camera. Damp paper (which is not wet paper — wet still refuses the
+  print outright) lets it bloom, so running the tide line leaves a
+  heavier trail than running the king's road, for one line of code.
+  **No button and no stamina**: Shift, ramped, on a keyboard; on a
+  phone, HOW FAR PAST THE RING YOU DRAGGED — the stick reaches a full
+  walk at forty-eight pixels and the next forty are the run.
+- **ROADS THAT CARRY** (§3, and STORY §4 is what authors the numbers).
+  Nine roads that had been decoration since Session 1 are infrastructure.
+  The carry **BENDS**: it takes a fixed share of the angle between where
+  you are pointed and where the road goes, and there is no term anywhere
+  in it that points at the centreline — so walking off a road is exactly
+  as free as it was, and crossing one is free. Gated on alignment
+  (56°–23°), so it can only tidy a walk that was already down the road.
+  **Authored per road**: the king's road / main street / commuter spur
+  chain carries 1.0, because STORY §4 makes them one road under twelve
+  names surveyed as a railway; the canyon trail carries 0.3, because a
+  trail does.
+- **THE ROWBOAT — the first mount** (§4). Drawn up at THE RIVER MOUTH,
+  found in the world and left in the world (saved), taken with one
+  prompt and no menu ever. Fast on water, **refuses every other ground**.
+  It turns the river — a wall along its whole length except at three
+  bridges since Session 1 — into the only east–west road in the world,
+  navigable from the salt to the source under all three bridges. And
+  **where she STOPS is a decision, written down**: she does not leave
+  the shore (34 units off dry paper), because a boat that goes anywhere
+  wet would delete the sandbar Session 5 spent a session earning, and
+  because the torn west edge is not this session's to spend. The bar
+  counts as shore — its crest is dry paper — so the boat works the shelf
+  either side of it.
+- **THE DAY CYCLE** (§7). Forty minutes; one hundred seconds an hour;
+  a fresh page starts at nine in the morning. `src/world/daylight.ts` is
+  the clock and the one authority on the hour. **Eight in the morning to
+  four in the afternoon is BIT-FOR-BIT the shipped page** — the neutral
+  tint is pure white and the neutral haze is `PAPER_HEX`, so the grade
+  is provably a no-op and six earned verdicts cannot be re-graded. The
+  hour's colour lives at the HORIZON (the fog and clear colour); the
+  paper takes a little of it weighted by its own brightness; **the ink
+  takes none**. The horizon goes DARKER than the page does, which is the
+  whole difference between a filter and a desk lamp. Brim's four square
+  lamps light, its high-street windows come on (a third of them stay
+  dark), and two braziers burn at Greyweather's gate — the castle's only
+  lit things, for a road nobody rides up.
+- **`Audio.setMoodIntensity` is called for the first time in this
+  game's life** (§9 move 4), and `Audio.setHour` / `Audio.hour` are the
+  seam §9 move 5 asked for. Session 8 will not have to re-open the day
+  cycle. Two new voices: `oar` (a dip, a rowlock, and a pull, built out
+  of the coast's own `surge`) and `oar-ship`.
+- **The proof grew two whole sections** (`tools/check-terrain.mjs`):
+  the carry is bounded and zero outside the roads' band, **the line
+  carries hardest** (asserted, so nobody can quietly flatten STORY §4's
+  spine), and a full-speed carried step lands on walkable ground at
+  every point on every road and both shoulders in both directions; the
+  boat floats where she is left, the river is rowable end to end, the
+  open sea and the torn west margin refuse, and — the strongest one —
+  **every place the boat can put you ashore is already reachable on
+  foot**, checked by flooding the whole water and trying a landing from
+  every square unit of it against the walker's own flood fill.
+- **Gate: WOWED** after 4 rounds — `design/critiques/critique-art-5.md`
+  (verbatim). All six protected lands re-shot at TWO hours and intact.
+
+### State
+- Build green. **Frame cost and draw counts unchanged.** THE COMMON is
+  still the worst frame in the game at 293 draws / 214k triangles,
+  exactly as Session 5 left it; Brim Square is 217. The day cycle is
+  five instructions in a post-pass that already existed, the carry is
+  one polyline query per frame, and every lit drawing is
+  `visible = false` for sixteen hours a day.
+- `node tools/check-terrain.mjs` passes, with the two new sections.
+- **A protected framing is now protected at TWO HOURS** (QUALITY-BAR §2).
+  `HOUR=19.6 node tools/shoot-first-minute.mjs` pins the clock; the
+  neutral pass is the same regression check it always was, because the
+  neutral hours are bit-identical.
+- New: `src/world/daylight.ts`, `src/engine/Boat.ts`,
+  `design/specs/traversal.md`, `tools/shoot-traversal.mjs`.
+
+### Gotchas (new; Sessions 1–5 all still apply)
+- **THIS SANDBOX RENDERS AT ABOUT 3.5 FRAMES A SECOND** (no GPU, 213k
+  terrain triangles), and App clamps `dt` at 0.05 — so **one second of
+  wall clock is about a sixth of a second of GAME time**. Any harness
+  that drives the walker must hold six times as long as it looks like it
+  should. A 2.4-second hold walks two units and lays four footprints,
+  which is exactly why the first contact sheet of "sprint as ink weight"
+  showed a walk and a run that were identical. `frameCost` is still the
+  right way to measure cost; rAF cadence is still meaningless here.
+- **A ROTATION APPLIED TO AN INPUT THAT IS RE-READ EVERY FRAME DOES NOT
+  ACCUMULATE.** The road carry was first written as a per-second turn
+  rate applied to the raw input vector; measured, it deflected a walk by
+  **half a degree** and the whole feature was switched off. Anything
+  that steers a player must take a SHARE OF THE ANGLE, not a rate.
+- **Instrument the things the eye cannot judge.** The carry cost two
+  rounds — a rate that did nothing, then a sign that steered people into
+  the verge — and neither would ever have been found by looking at a
+  screenshot. `window.__inklands.drive(mx, mz, run)` / `carryAt` /
+  `release` exist for this; the measured table is in the spec.
+- **A DAY CYCLE THAT MULTIPLIES THE WHOLE FRAME BY THE LIGHT'S COLOUR IS
+  A SEPIA FILTER**, and it takes the LINE WORK with it. The hour belongs
+  at the HORIZON (fog + clear colour), on the paper weighted by its own
+  luminance, and on the ink not at all. Then it went the other way and
+  the haze at full tint was a tangerine slab; `Key.sky` in daylight.ts
+  is that round written down as a number.
+- **Make the neutral hours the IDENTITY, not "close to it."** `#ffffff`
+  and `PAPER_HEX` mean the grade is provably a no-op for eight hours a
+  day, which turns "did the day cycle regress anything?" from a
+  screenshot diff into arithmetic.
+- **A generated overlay cannot guess where a drawing put its windows.**
+  Brim's lit windows were first a separately generated run of panes hung
+  in front of each terrace, and they floated over roofs and party walls.
+  `townRowTexture` now RECORDS its own casements as it draws them and
+  `townRowLitTexture` reads the record.
+- **A boat is a cutout like everything else on this sheet.** A hull lying
+  flat on the water is Session 5's invisible quad; a hull drawn broadside
+  and mirrored by travel direction is the house style. It must sit HALF
+  A UNIT SOUTH of whoever is in it (the camera only looks north, so
+  south is toward the lens) or the hull does not hide their legs and
+  they read as standing ON the boat — and nobody walks in a boat, so the
+  walk cycle is held and the stroke goes into a lean.
+- **A dinghy is short and DEEP.** The first redraw was long, shallow and
+  pointed at both ends and came out a gondola; the freeboard is most of
+  what you see of a small boat and it is what hides the legs.
+- **The harness must put the walker ashore between framings**, or the
+  boat follows them across the world — the first contact sheet had a
+  rowboat parked in the middle of THE COMMON, in Session 2's protected
+  composition.
+- **A GLSL comment inside a JS template literal still may not contain a
+  backtick.** Session 5 wrote this down and Session 6 did it again.
+- `layout.ts` gained `Road.carry` (a number per road, authored),
+  `roadCarryAt`, `riverAt` / `pondAt` / `waterFieldAt` (the river and
+  the ponds moved out of `terrain.ts` for the same reason the sea moved
+  in Session 5 — the proof has to be able to walk them off-screen),
+  `rowableAt` / `offshoreDist` / `ROW_REACH`, and `BOAT_HOME`. No rect,
+  road geometry, river, bridge, mood or step-zone change.
+
 ## Session 5 — 2026-08-29 — the coast
 
 *The first land session authored on real ground, and the test of whether

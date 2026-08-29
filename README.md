@@ -47,13 +47,35 @@ and deals a region card — nothing else, because the sheet is continuous.
 
 ## What's here so far
 
-- **Walking is drawing.** Footprints are ink; wet paper refuses them.
+- **Walking is drawing, and your speed is in the ink.** Footprints are
+  ink; wet paper refuses them; damp paper lets them bloom. Run and the
+  print presses darker, wider and dragged out along the line of travel;
+  walk and it feathers. It is one continuous number — the walk cycle,
+  the step and the score all read the same one. Shift on a keyboard;
+  on a phone, drag past the ring.
 - **The land inks itself in.** Each region's furniture is born as faint
   pencil under-drawing and re-inks in a radial wave from wherever you
   first cross its border.
 - **Vistas.** The camera sits low enough that the keep reads from the
   meadow and the city towers from across the downs; the fog is a
   horizon, not a curtain.
+- **Roads that carry.** The nine authored roads are infrastructure now:
+  a little faster along them, and they take a share of the angle off a
+  walk that is already going their way. The king's road, main street and
+  the commuter spur carry hardest, because they are one road under
+  twelve names. Crossing a road costs nothing and walking off one is
+  free — it bends you, it never pulls you.
+- **The rowboat**, drawn up at the river mouth, and the first mount:
+  fast on water, refuses dry land, found in the world and left where you
+  leave it. The river crosses the whole sheet and has been a wall its
+  whole length except at three bridges; under oar it is the only
+  east–west road in the world. She does not go past the shallows —
+  the open sea is not a rowboat's business.
+- **A day**, forty minutes long. The washes warm, the haze takes the
+  hour, Brim's lamps and windows come on, two fires are lit at
+  Greyweather's gate, and the horizon goes darker than the page does,
+  because the world is a sheet of paper on a desk and at night **the
+  desk lamp comes on**.
 - **A hand-drawn map** (`M`) that only names the lands you have walked.
 - **35 places worth a look**, each with a note in the world's voice.
 - **All-procedural audio**: paper-room ambience, pen-scratch steps in
@@ -79,9 +101,10 @@ npm run dev      # http://localhost:5173
 npm run build    # type-check + production build in dist/
 ```
 
-Desktop: WASD or arrows, `E` to look, `M` for the map. Mobile: drag in
-the lower part of the screen to steer (the top is the vista and the
-joystick is kept off it), tap to interact.
+Desktop: WASD or arrows, **hold Shift to run**, `E` to look, `M` for the
+map. Mobile: drag in the lower part of the screen to steer (the top is
+the vista and the joystick is kept off it), **drag further past the ring
+to run**, tap to interact.
 
 Append `?debug` to expose `window.__inklands` (teleport, region query,
 terrain probes, frame cost, audio) for testing.
@@ -92,13 +115,17 @@ node tools/shoot-shape.mjs     # every landform, both viewports
 node tools/shoot-first-minute.mjs
 node tools/shoot-oldworld.mjs
 node tools/shoot-coast.mjs      # LONGSHORE + THE WIDE BLUE
+node tools/shoot-traversal.mjs # the ink weight, the roads, the boat, the day
+HOUR=19.6 node tools/shoot-first-minute.mjs   # any sheet, at any hour
 node tools/shoot.mjs           # all twelve lands, walkability smoke test
 node tools/shoot-fps.mjs       # frame cost, draw calls, triangles
 ```
 
 Every shoot script renders **desktop (1280×720) and portrait (390×844)**
 through `tools/shoot-lib.mjs`; portrait is a gated viewport, not a
-courtesy check.
+courtesy check. Since Session 6 every protected framing is also judged
+at **two hours of the day** (`HOUR=`), because the day cycle is not done
+until dusk is as good as noon.
 
 ## How it's made
 
@@ -125,6 +152,13 @@ cycle, the paper post-pass, the audio engine. New for the open world:
   of the light, ink pooled down the bottom of a crease, pen hatching
   down the fall line of anything that is genuinely a cliff. Plus CPU
   queries for collision, step timbre and height.
+- `src/world/daylight.ts` — **what time it is.** One clock, module
+  scope, readable by anything (`import { clock }`) — the story runs on
+  routine, so a region builder that wants to know whether the shutters
+  are open asks in one import. A day is forty minutes. The hour never
+  touches the wash field: it grades the finished frame once, in the
+  paper post-pass, and sets the colour of the haze. Eight in the morning
+  to four in the afternoon is bit-for-bit the shipped page.
 - `src/world/regions/` — a builder per land placing instanced standee
   fields and one-off drawings; streaming keeps first-visit cost off
   the walk.

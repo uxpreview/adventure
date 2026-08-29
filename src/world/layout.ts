@@ -192,31 +192,147 @@ export function seaAt(x: number, z: number): number {
  * the map draws them, bridges sit where they cross the river.
  * ------------------------------------------------------------------ */
 
-export type Road = { pts: [number, number][]; width: number };
+export type Road = {
+  pts: [number, number][];
+  width: number;
+  /**
+   * HOW HARD THIS ROAD CARRIES (Session 6). 1 is the line; the side
+   * roads are gentler and one of them is barely a road at all.
+   *
+   * WORLD-SYSTEMS §3: "a pen likes following a line it already drew."
+   * The road web has been decoration since Session 1 — nine authored
+   * roads the terrain paints and the map draws and the walker crosses
+   * without noticing. A road that CARRIES turns the whole web into
+   * infrastructure at the cost of two numbers per road, and it makes
+   * the crossroads a decision instead of a picture of one.
+   *
+   * The weights are not uniform, and STORY.md §4 is why. The king's
+   * road leaves Greyweather's gate, comes down through Brim, crosses
+   * the Common, runs up Maple Court as MAIN STREET and ends, as the
+   * COMMUTER SPUR, in a car park: twelve names, one road, castle to car
+   * park, and Act III's reveal is that it was surveyed as a railway.
+   * The player walks that line for fifteen hours before anybody tells
+   * them what it is, so it has to FEEL like following something that
+   * was laid down on purpose — and the only way this session can say
+   * that without saying it is to make those three roads carry hardest
+   * and let the others be tracks.
+   */
+  carry: number;
+};
 
 export const ROADS: Road[] = [
   // the king's road: castle gate → kingdom square → the meadow → Maple Court
   // Session 4: the road now climbs the castle ramp and goes through the
   // barbican, because the avenue IS the way up the ridge and a bare
   // pale slope read as nothing. Terrain and map pick it up for free.
-  { width: 5, pts: [[-45, -218], [-45, -206], [-45, -195], [-45, -120], [-48, -60], [-45, -15], [-45, 58], [-42, 130], [-45, 200], [-45, 262]] },
+  // THE LINE, first of three: castle gate to the far side of Maple Court.
+  { width: 5, carry: 1, pts: [[-45, -218], [-45, -206], [-45, -195], [-45, -120], [-48, -60], [-45, -15], [-45, 58], [-42, 130], [-45, 200], [-45, 262]] },
   // the coast road: meadow west over the dune line to the boardwalk
-  { width: 4, pts: [[-45, 58], [-110, 62], [-165, 60], [-205, 58], [-219, 58]] },
+  { width: 4, carry: 0.5, pts: [[-45, 58], [-110, 62], [-165, 60], [-205, 58], [-219, 58]] },
   // the east road: meadow → the downs → bridge → desert edge
-  { width: 5, pts: [[-45, 58], [10, 50], [60, 46], [110, 45], [160, 22], [225, 8], [290, 12], [345, 18]] },
+  { width: 5, carry: 0.55, pts: [[-45, 58], [10, 50], [60, 46], [110, 45], [160, 22], [225, 8], [290, 12], [345, 18]] },
   // the mill lane: east road south through the downs into the city
-  { width: 4, pts: [[145, 28], [148, 90], [150, 150], [148, 205], [150, 262]] },
+  { width: 4, carry: 0.5, pts: [[145, 28], [148, 90], [150, 150], [148, 205], [150, 262]] },
   // main street: neighborhood → the river bridge → downtown
-  { width: 4.5, pts: [[-45, 200], [-8, 202], [40, 198], [90, 200], [148, 205]] },
+  // THE LINE, second: the same road under a different name.
+  { width: 4.5, carry: 1, pts: [[-45, 200], [-8, 202], [40, 198], [90, 200], [148, 205]] },
   // commuter spur: city → office park
-  { width: 4.5, pts: [[148, 205], [210, 208], [268, 205], [330, 202]] },
+  // THE LINE, third and last: and it ends in a car park.
+  { width: 4.5, carry: 1, pts: [[148, 205], [210, 208], [268, 205], [330, 202]] },
   // the forest track: kingdom east gate into the Penwood
-  { width: 3.2, pts: [[55, -110], [95, -130], [130, -160], [150, -195], [160, -230]] },
+  { width: 3.2, carry: 0.34, pts: [[55, -110], [95, -130], [130, -160], [150, -195], [160, -230]] },
   // the market lane: Brim Square east to the Wood Gate (Session 3)
-  { width: 3.4, pts: [[-40, -86], [-12, -96], [18, -104], [42, -109], [55, -110]] },
+  { width: 3.4, carry: 0.42, pts: [[-40, -86], [-12, -96], [18, -104], [42, -109], [55, -110]] },
   // canyon trail: downs NE corner up the canyon mouth
-  { width: 3, pts: [[225, 8], [255, -40], [280, -85], [300, -130], [305, -175]] },
+  // barely a road: a trail carries you the way a trail does, which is
+  // hardly at all
+  { width: 3, carry: 0.3, pts: [[225, 8], [255, -40], [280, -85], [300, -130], [305, -175]] },
 ];
+
+/* ------------------------------------------------------------------ *
+ * A ROAD THAT CARRIES (Session 6).
+ *
+ * Everything the walker needs to know about the road under their feet,
+ * answered analytically from the authored polylines rather than from
+ * the painted mask. The mask is a boolean at one-unit texels and it
+ * cannot say which WAY the road runs, which is the half that matters:
+ * a road carries you ALONG itself, and along has a direction.
+ *
+ * THE ONE RULE THIS HAS TO OBEY, and it is the hardest thing in the
+ * session to get right: **it has to be FELT, not fought.** If a player
+ * ever notices they are being steered it is wrong, and if they walk off
+ * the road and the game tugs them back it is very wrong. So:
+ *
+ *   · the carry never pulls SIDEWAYS. It rotates the direction you are
+ *     already going toward the direction the road goes, and it never
+ *     once moves you toward the centreline. Walking off a road is
+ *     therefore free, always, and stepping across one is free too;
+ *   · it is gated on ALIGNMENT. Cross the king's road at right angles
+ *     and there is no carry at all — the gate opens over about thirty
+ *     degrees, so what it can do is tidy a walk that was already down
+ *     the road, and what it cannot do is turn a walk that was not;
+ *   · and it dies at the road's own painted edge, so the thing that
+ *     carries you is the thing you can see.
+ * ------------------------------------------------------------------ */
+
+export type RoadCarry = {
+  /** 0 off the road .. 1 dead centre of the line. */
+  k: number;
+  /** Unit tangent, pointing the way the polyline was authored. */
+  tx: number;
+  tz: number;
+};
+
+const NO_CARRY: RoadCarry = { k: 0, tx: 0, tz: 0 };
+
+/**
+ * How much the road at (x, z) carries, and which way it runs.
+ *
+ * The band is the painted road's own width plus a unit and a half of
+ * shoulder, and the falloff starts at just under half of it: full carry
+ * down the middle of the line, nothing at all off the edge of the
+ * drawing. A road you can see is a road that carries, and there is no
+ * invisible corridor either side of it.
+ */
+export function roadCarryAt(x: number, z: number): RoadCarry {
+  let bestK = 0;
+  let bestTx = 0;
+  let bestTz = 0;
+  for (const road of ROADS) {
+    /* The paint plus a shoulder. Round 2 measured the first version and
+     * found the band was the problem as much as the strength was: at a
+     * run, four units of half-width is under a second of walking, so a
+     * player angling onto a road left it again before the carry could
+     * do anything at all. A road is wider than its metalling — the
+     * verge is part of the road — so the carry is FULL over the paint
+     * and lets go across the four units of shoulder either side. */
+    const band = road.width * 0.5 + 4.2;
+    for (let i = 0; i < road.pts.length - 1; i++) {
+      const [ax, az] = road.pts[i];
+      const [bx, bz] = road.pts[i + 1];
+      const dx = bx - ax;
+      const dz = bz - az;
+      const len2 = dx * dx + dz * dz || 1;
+      const u = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / len2));
+      const px = ax + dx * u;
+      const pz = az + dz * u;
+      const d = Math.hypot(x - px, z - pz);
+      if (d > band) continue;
+      const k = road.carry * (1 - csmooth(road.width * 0.5, band, d));
+      if (k > bestK) {
+        bestK = k;
+        const l = Math.hypot(dx, dz) || 1;
+        bestTx = dx / l;
+        bestTz = dz / l;
+      }
+    }
+  }
+  return bestK > 0 ? { k: bestK, tx: bestTx, tz: bestTz } : NO_CARRY;
+}
+
+/** The widest band any road carries over — the proof in
+ *  tools/check-terrain.mjs walks this to show the carry is bounded. */
+export const ROAD_BAND_MAX = Math.max(...ROADS.map((r) => r.width * 0.5 + 4.2));
 
 /* ------------------------------------------------------------------ *
  * THE RIVER INK. Rises in the canyon, crosses the whole sheet, meets
@@ -273,3 +389,137 @@ export const PONDS: { x: number; z: number; r: number }[] = [
   { x: 305, z: 55, r: 10 },    // the oasis
   { x: -100, z: -215, r: 8 },  // the castle moat pool
 ];
+
+/* ------------------------------------------------------------------ *
+ * WHERE THE WATER IS — and, from Session 6, where an oar has anything
+ * to pull against.
+ *
+ * `waterFieldAt` is what terrain.ts paints into the wash field's alpha
+ * channel and what the walker then collides with. It moved here for the
+ * same reason `seaAt` did in Session 5: the height field, the wash
+ * field, the collision queries and `tools/check-terrain.mjs` all need
+ * it and none of them may depend on each other. The numbers the proof
+ * walks off-screen are now the numbers the game floats on.
+ * ------------------------------------------------------------------ */
+
+const RIVER_SEGS: [[number, number], [number, number]][] = [];
+for (let i = 0; i < RIVER.length - 1; i++) RIVER_SEGS.push([RIVER[i], RIVER[i + 1]]);
+
+function segDist(px: number, pz: number, a: [number, number], b: [number, number]): number {
+  const dx = b[0] - a[0];
+  const dz = b[1] - a[1];
+  const len2 = dx * dx + dz * dz || 1;
+  const t = Math.max(0, Math.min(1, ((px - a[0]) * dx + (pz - a[1]) * dz) / len2));
+  return Math.hypot(px - (a[0] + dx * t), pz - (a[1] + dz * t));
+}
+
+/** Waterness of the RIVER alone at (x, z): 0 dry .. 0.85 mid-stream.
+ *  Its width swells from source to mouth, which is why the boat gets
+ *  more room the further down it goes. */
+export function riverAt(x: number, z: number): number {
+  let best = 1e9;
+  let bestT = 0;
+  for (let i = 0; i < RIVER_SEGS.length; i++) {
+    const d = segDist(x, z, RIVER_SEGS[i][0], RIVER_SEGS[i][1]);
+    if (d < best) {
+      best = d;
+      bestT = i / RIVER_SEGS.length;
+    }
+  }
+  const halfW = (RIVER_WIDTH * (0.55 + bestT * 0.65)) / 2;
+  if (best >= halfW + 4) return 0;
+  return (1 - csmooth(halfW * 0.55, halfW + 3, best)) * 0.85;
+}
+
+/** Waterness of the still waters — the tarn, the oasis, the moat. */
+export function pondAt(x: number, z: number): number {
+  let w = 0;
+  for (const p of PONDS) {
+    const d = Math.hypot(x - p.x, z - p.z);
+    if (d < p.r + 4) w = Math.max(w, (1 - csmooth(p.r * 0.45, p.r + 3, d)) * 0.7);
+  }
+  return w;
+}
+
+/** Everything blue on the sheet, in one number. 0 dry .. 1 open sea. */
+export function waterFieldAt(x: number, z: number): number {
+  const w = Math.max(seaAt(x, z), riverAt(x, z), pondAt(x, z));
+  return w < 0 ? 0 : w > 1 ? 1 : w;
+}
+
+/* ------------------------------------------------------------------ *
+ * THE ROWBOAT'S GROUND.
+ *
+ * WORLD-SYSTEMS §4: every mount is fast on its own ground and refuses
+ * every other ground. The rowboat's ground is WATER — and water is the
+ * one thing on this sheet that has only ever said no. The river crosses
+ * the entire page and is a wall along its whole length except at three
+ * bridges. Under oar it is a road, and it is the only road in the world
+ * that runs east–west across every land at once.
+ *
+ * AND WHERE THE BOAT STOPS IS A DESIGN DECISION, not an oversight.
+ *
+ * The open sea past the shallows is the question — "you can row to the
+ * torn west edge of the page" is either the best reward in the world or
+ * the thing that breaks it. It is the thing that breaks it, for two
+ * reasons that have nothing to do with implementation cost:
+ *
+ *   1. THE WIDE BLUE is a land because the sandbar makes it walkable
+ *      (Session 5, and it took a whole session to earn). A boat that
+ *      goes anywhere wet deletes that: the bar stops being a route and
+ *      becomes a strip of sand you could have rowed past. The mount has
+ *      to open a route the walk did not have, not repeal one the walk
+ *      worked for.
+ *   2. The torn west edge is the biggest reward the sheet has left. It
+ *      is not this session's to spend on a rowboat found beside a
+ *      footbridge in the first ten minutes.
+ *
+ * So the rule is the one a rowboat has anyway: **it does not leave the
+ * shore.** The river, wherever the river is; the water within thirty-
+ * four units of dry paper — which is the whole coast, the bight, the
+ * cove, the river mouth and the long shallow water either side of the
+ * bar. Past that the sea gets up and a rowboat's business is over. It
+ * is a boundary the player never has to be told, because they can see
+ * exactly where it is: it is wherever they can still see the sand.
+ * ------------------------------------------------------------------ */
+
+/** Deep enough to float a boat. */
+export const ROW_MIN_WATER = 0.42;
+/** How far off dry paper an oar will go. */
+export const ROW_REACH = 34;
+
+/** How far (x, z) is from dry paper, out on the open sea. Two shores
+ *  count and the bar is one of them: the crest is paper, so a boat can
+ *  work the whole length of it. */
+export function offshoreDist(x: number, z: number): number {
+  const fromCoast = Math.max(0, coastX(z) - x);
+  const fromBar = Math.max(0, barDist(x, z) - 9);
+  return Math.min(fromCoast, fromBar);
+}
+
+/** Can an oar work here? The one authority; App floats on it and
+ *  tools/check-terrain.mjs walks it off-screen. */
+export function rowableAt(x: number, z: number): boolean {
+  if (x < WORLD.minX || x > WORLD.maxX || z < WORLD.minZ || z > WORLD.maxZ) return false;
+  if (riverAt(x, z) >= ROW_MIN_WATER) return true;
+  return seaAt(x, z) >= ROW_MIN_WATER && offshoreDist(x, z) < ROW_REACH;
+}
+
+/**
+ * WHERE THE BOAT IS, ON A PAGE NOBODY HAS TOUCHED YET.
+ *
+ * THE RIVER MOUTH (Session 5's sixth place on LONGSHORE): the river
+ * crosses the whole sheet and ends here in salt, under the plank
+ * footbridge that has been on the map since Session 1, with groynes
+ * holding the sand against it and a mooring post already standing.
+ * A river boat lives where the river is, and this is the one place on
+ * the coast a walker arrives at with the whole river behind them.
+ *
+ * It is emphatically NOT the boat in Shelter Cove and NOT the one
+ * resting on the south beach. STORY §8 rule 1: mounts are the PLAYER'S
+ * ALONE, and no inhabitant may ever be shown leaving their own land by
+ * boat. Those two belong to people who row out and come back — Pye
+ * keeps pots off the cove and has never once been past the point — and
+ * they stay exactly what they are, drawn up on their own sand.
+ */
+export const BOAT_HOME = { x: -206, z: 205.5 };

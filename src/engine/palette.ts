@@ -78,3 +78,54 @@ export const WASH_HEX = {
   seaShallow: 0x8fb3bd,
   seaDeep: 0x5c86a0,
 } as const;
+
+/* ------------------------------------------------------------------ *
+ * THE LIGHT ON THE PAGE — the day cycle's colour box (Session 6).
+ *
+ * WORLD-SYSTEMS §7 gives time of day the highest return of anything in
+ * the file, and the constraint that decides how it is built is already
+ * law: **washes come only from palette.ts**. So the hour does not
+ * invent a colour and does not touch the wash field — it MODULATES the
+ * finished page with one of these, and every one of them lives here
+ * with every other colour in the game.
+ *
+ * They are used as MULTIPLIERS over the whole frame, so each is
+ * normalised to its own brightest channel before it is applied and the
+ * darkening is carried separately (see `world/daylight.ts`). What each
+ * one encodes is therefore the light's COLOUR, never its strength.
+ *
+ * And one rule sets the whole curve: **eight in the morning to three in
+ * the afternoon is the shipped look, exactly.** Four lands earned a
+ * WOWED under a neutral page and a day cycle that re-graded them would
+ * be a regression wearing a feature's clothes. The day departs from
+ * neutral at the two ends and nowhere else.
+ */
+export const LIGHT = {
+  /** Before the sun: the page is lit by the sky and nothing else. */
+  earlyDawn: '#8f9cc0',
+  /** The one warm minute at the top of the morning. */
+  dawn: '#e7bda6',
+  /** Neutral, and EXACTLY neutral: pure white is the identity for a
+   *  multiplier, so between eight in the morning and four in the
+   *  afternoon the grade is a no-op and the page is bit-for-bit the
+   *  page four lands earned their WOWED on. That is not a rounding
+   *  convenience, it is the promise this whole file makes. */
+  day: '#ffffff',
+  /** The afternoon leans a quarter-step warm and no further. */
+  afternoon: '#fff6e6',
+  /** Dusk, which is the hour this whole system is for. Warm, and no
+   *  more saturated than a wash in `WASH` is: the sheet is paper and a
+   *  page under evening light goes cream-gold, not tangerine. */
+  dusk: '#e8b184',
+  /** After it. The sky after sunset goes blue-violet, not brown — the
+   *  first pass had a mauve here and eight in the evening came out
+   *  muddy, which is the one thing an evening must not be. */
+  lateDusk: '#9a95bb',
+  /** Night, away from the lamp — a page in a room, not a page in a cave. */
+  night: '#7e8bb2',
+  /** THE DESK LAMP. The middle of its pool, and the cold outside it. */
+  lampPool: '#ffe3b4',
+  lampEdge: '#8592b8',
+  /** What a lit window or a lamp flame is, on paper, at night. */
+  flame: '#ffd79a',
+} as const;

@@ -189,6 +189,49 @@ export class Audio {
     this.echo = Math.max(0, Math.min(1, t));
   }
 
+  /* ================================================================ *
+   * WHAT TIME IT IS — the seam WORLD-SYSTEMS §9 move 5 asks for.
+   *
+   * Session 6 builds the day cycle; Session 8 builds the score. The
+   * whole point of writing this now is that the score session must not
+   * have to re-open the day cycle to make the music answer the hour, so
+   * the hour arrives here as a plain number and the mixer decides what
+   * to do with it.
+   *
+   * What it does with it TODAY is deliberately small, and small on
+   * purpose rather than by omission: the room tone thins after dark and
+   * the melody's phrases come further apart, because a quiet page at
+   * two in the morning that sounds exactly like a bright one at noon is
+   * a day cycle with its sound turned off. The per-land instruments,
+   * the per-land beds and the crossfades are Session 8's, and they will
+   * find `this.hour` already here and already correct.
+   * ================================================================ */
+  /** 0..24. Read by anything in this file that wants to know. */
+  hour = 12;
+
+  setHour(h: number) {
+    this.hour = h;
+    if (!this.ctx || !this.ambient) return;
+    // the room after dark: quieter, and it takes a while to get there
+    const night = this.nightness();
+    if (!this.tacet) {
+      this.ambient.gain.linearRampToValueAtTime(
+        this.lastAmbient * (1 - 0.32 * night), this.ctx.currentTime + 4
+      );
+    }
+  }
+
+  /** 0 in broad daylight .. 1 in the middle of the night. The same
+   *  shape `world/daylight.ts` grades the page with, kept here rather
+   *  than imported so nothing outside Audio.ts can reach into the mix. */
+  private nightness(): number {
+    const h = this.hour;
+    if (h >= 8 && h <= 16.5) return 0;
+    if (h > 16.5 && h < 21) return (h - 16.5) / 4.5;
+    if (h >= 21 || h < 4.6) return 1;
+    return Math.max(0, 1 - (h - 4.6) / 3.4);
+  }
+
   /** Macro intensity for within-chapter ramps; survives chapter select. */
   setMoodIntensity(k: number) {
     this.intensity = k;
@@ -317,6 +360,35 @@ export class Audio {
         this.knock(140 * j, 0.012);
         this.tone(437 * j, back, 1.9, 0.008);
         this.tone(219 * j, back + 0.01, 2.4, 0.010);
+        break;
+      }
+
+      /* ---- THE OARS (Session 6) ------------------------------------ *
+       * The first mount's voice, and it is built out of the coast's own
+       * instrument: a stroke is a DIP and a PULL, so it is two surges
+       * with a gap in them. The dip is short, bright and wet — a blade
+       * going in; the pull is long, low and broad — a boat moving. In
+       * between, the one detail that makes it a rowboat and not a
+       * paddle: the rowlock. */
+
+      case 'oar': {
+        const j = 0.9 + Math.random() * 0.24;
+        // the blade in: a small, bright catch
+        this.surge(0.02, 0.16, 1500 * j, 620, 0.020);
+        // wood turning in wood, a beat later — irregular, because a
+        // rowlock is worn and it never sits the same way twice
+        this.knock(210 * j, 0.011);
+        // and the pull: the hull actually moving through water
+        this.surge(0.34, 0.72, 420, 150, 0.017, 0.10, 'lowpass');
+        break;
+      }
+
+      case 'oar-ship': {
+        // shipping the oars and standing up out of her: two knocks of
+        // loom on gunwale and the hull rocking off the last of it
+        this.knock(190, 0.016);
+        this.knock(164, 0.012);
+        this.surge(0.1, 0.9, 300, 120, 0.012, 0.16, 'lowpass');
         break;
       }
 
@@ -512,7 +584,8 @@ export class Audio {
   }
 
   private scheduleMusic() {
-    const wait = this.mood.gap * (0.6 + Math.random() * 0.8);
+    // phrases come further apart after dark (see setHour)
+    const wait = this.mood.gap * (1 + 0.45 * this.nightness()) * (0.6 + Math.random() * 0.8);
     this.musicTimer = window.setTimeout(() => {
       this.playPhrase();
       this.scheduleMusic();

@@ -242,6 +242,18 @@ body {
 #joy.active {
   opacity: 1;
 }
+/* Past the ring is the run (Input.ts). The only thing the UI says
+   about it is that the pen presses harder — the ring inks up, and the
+   nub fills. No label, no button: the trail behind you is the readout
+   (WORLD-SYSTEMS §0 rule 1). */
+#joy.running {
+  border-color: rgba(35, 38, 51, 0.5);
+  border-width: 2.2px;
+}
+#joy.running .nub {
+  background: rgba(35, 38, 51, 0.42);
+  border-color: rgba(35, 38, 51, 0.7);
+}
 
 /* ---------- note card ---------- */
 .note-veil {

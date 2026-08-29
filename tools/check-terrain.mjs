@@ -310,6 +310,256 @@ console.log('\nthe holdfast — the cut is the ONLY way onto the point:');
   console.log('  Shelter Cove is still reachable the landward way \u2713');
 }
 
+/* ================================================================== *
+ * 4c. TRAVERSAL MAY NOT BREAK THE WORLD'S GATES (Session 6).
+ *
+ * Steep ground and deep water are this world's ONLY traversal gating,
+ * and two proofs above already stand on them: Greyweather's south scarp
+ * refuses everywhere off the banner avenue, and with the ledge fenced
+ * the Holdfast is unreachable. This session adds a road that carries
+ * and a boat that goes where the page used to say no, and either one
+ * could delete both of those silently — a carry that flings the walker
+ * off the cut, a boat that goes anywhere wet.
+ *
+ * So the two new systems get proofs of their own, off-screen, before
+ * anything is rendered.
+ * ================================================================== */
+
+console.log('\nthe carry — a road may not carry a walker off the page:');
+{
+  // The same numbers Character.applyCarry uses. If these drift the
+  // proof stops proving anything, so they are named here on purpose.
+  const CARRY_GAIN = 0.2;
+  const WALK = 4.1;
+  const RUN = 1.5;
+  const DT = 0.05; // App clamps the frame at this
+
+  // 1. the carry is BOUNDED and it is LOCAL. Off the road it is zero,
+  //    which is what makes walking off one free.
+  let maxK = 0;
+  let leaked = 0;
+  for (let z = L.WORLD.minZ; z <= L.WORLD.maxZ; z += 5) {
+    for (let x = L.WORLD.minX; x <= L.WORLD.maxX; x += 5) {
+      const c = L.roadCarryAt(x, z);
+      if (c.k > maxK) maxK = c.k;
+      if (c.k > 0) {
+        // it may only be non-zero within the widest authored band
+        let near = false;
+        for (const road of L.ROADS) {
+          const band = road.width * 0.5 + 4.2;
+          for (let i = 0; i < road.pts.length - 1 && !near; i++) {
+            const [ax, az] = road.pts[i];
+            const [bx, bz] = road.pts[i + 1];
+            const dx = bx - ax, dz = bz - az;
+            const u = Math.max(0, Math.min(1,
+              ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
+            if (Math.hypot(x - (ax + dx * u), z - (az + dz * u)) <= band + 0.001) near = true;
+          }
+        }
+        if (!near) leaked++;
+      }
+    }
+  }
+  console.log(`  strongest carry on the sheet: ${maxK.toFixed(2)} (must be <= 1)`);
+  if (maxK > 1.0001) fail('a road carries harder than 1');
+  if (leaked) fail(`the carry is non-zero ${leaked} places off every road's band`);
+  else console.log(`  zero everywhere outside the roads' own width \u2713`);
+
+  // 2. THE LINE carries hardest. STORY §4: king's road + main street +
+  //    commuter spur are one road under twelve names, and this session's
+  //    job is to make walking it feel like following something laid down
+  //    on purpose.
+  const LINE = [0, 4, 5];
+  const lineK = LINE.map((i) => L.ROADS[i].carry);
+  const restK = L.ROADS.filter((_, i) => !LINE.includes(i)).map((r) => r.carry);
+  console.log(`  the line carries ${lineK.join('/')}; every other road ${restK.join('/')}`);
+  if (Math.min(...lineK) <= Math.max(...restK)) {
+    fail('a side road carries as hard as the line');
+  }
+
+  // 3. AND THE CARRIED STEP LANDS ON THE PAGE. This is the one that
+  //    matters: at every point along every road, take the biggest step
+  //    the carry can produce — a full run, the full speed bonus, a
+  //    whole clamped frame — along the road's own tangent, and it must
+  //    land somewhere a walker could have walked to anyway.
+  let flung = 0;
+  let flungAt = null;
+  for (const road of L.ROADS) {
+    for (let i = 0; i < road.pts.length - 1; i++) {
+      const [ax, az] = road.pts[i];
+      const [bx, bz] = road.pts[i + 1];
+      const seg = Math.hypot(bx - ax, bz - az);
+      const n = Math.max(2, Math.round(seg / 1.5));
+      for (let k = 0; k <= n; k++) {
+        const t = k / n;
+        // check the road's shoulders too — a walker wanders
+        for (const o of [0, road.width * 0.4, -road.width * 0.4]) {
+          const nx = (bz - az) / seg;
+          const nz = -(bx - ax) / seg;
+          const x = ax + (bx - ax) * t + o * nx;
+          const z = az + (bz - az) * t + o * nz;
+          const c = L.roadCarryAt(x, z);
+          if (c.k <= 0) continue;
+          const step = WALK * RUN * (1 + CARRY_GAIN * c.k) * DT;
+          for (const dir of [1, -1]) {
+            const px = x + c.tx * dir * step;
+            const pz = z + c.tz * dir * step;
+            if (S(px, pz) > MAX) {
+              flung++;
+              if (!flungAt) flungAt = [Math.round(px), Math.round(pz)];
+            }
+          }
+        }
+      }
+    }
+  }
+  if (flung) fail(`the carry steps into unwalkable ground in ${flung} places (first ${flungAt})`);
+  else console.log('  a full-speed carried step lands on walkable ground everywhere \u2713');
+}
+
+console.log('\nthe rowboat — its ground is water, and it refuses every other:');
+{
+  // 1. it floats where it is meant to and nowhere else
+  const HOME = L.BOAT_HOME;
+  const launch = (() => {
+    for (let rad = 1.5; rad <= 16; rad += 1) {
+      for (let k = 0; k < 28; k++) {
+        const a = (k / 28) * Math.PI * 2;
+        const x = HOME.x + Math.cos(a) * rad;
+        const z = HOME.z + Math.sin(a) * rad;
+        if (L.rowableAt(x, z)) return [x, z];
+      }
+    }
+    return null;
+  })();
+  if (!launch) fail('the boat cannot be shoved off from where it is left');
+  else console.log(`  she is drawn up at ${HOME.x},${HOME.z} and floats at ` +
+    `${launch.map((v) => v.toFixed(0))} \u2713`);
+
+  // 2. THE RIVER IS A ROUTE. It crosses the whole sheet and has been a
+  //    wall its whole length except at three bridges; under oar it must
+  //    be continuous from the mouth to the source, bridges included.
+  const G = 2;
+  const rw = Math.round((L.WORLD.maxX - L.WORLD.minX) / G) + 1;
+  const rh = Math.round((L.WORLD.maxZ - L.WORLD.minZ) / G) + 1;
+  function rowFlood(from) {
+    const seen = new Uint8Array(rw * rh);
+    const at = (gx, gz) => [L.WORLD.minX + gx * G, L.WORLD.minZ + gz * G];
+    const sx = Math.round((from[0] - L.WORLD.minX) / G);
+    const sz = Math.round((from[1] - L.WORLD.minZ) / G);
+    const stack = [sz * rw + sx];
+    seen[stack[0]] = 1;
+    while (stack.length) {
+      const c = stack.pop();
+      const cx = c % rw;
+      const cz = (c - cx) / rw;
+      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = cx + dx, nz = cz + dz;
+        if (nx < 0 || nz < 0 || nx >= rw || nz >= rh) continue;
+        const ni = nz * rw + nx;
+        if (seen[ni]) continue;
+        const [wx, wz] = at(nx, nz);
+        if (!L.rowableAt(wx, wz)) continue;
+        seen[ni] = 1;
+        stack.push(ni);
+      }
+    }
+    return (x, z) =>
+      !!seen[Math.round((z - L.WORLD.minZ) / G) * rw + Math.round((x - L.WORLD.minX) / G)];
+  }
+  const afloat = rowFlood(launch ?? [-200, 210]);
+  const UP = [
+    ['under the boardwalk bridge', -200, 210], ['the long reach', -108, 192],
+    ["the king's road bridge", -45, 170], ['the meadow bend', 52, 100],
+    ['the east road bridge', 110, 45], ['the downs', 168, 8],
+    ['the canyon mouth', 285, -70], ['the source', 318, -108],
+  ];
+  for (const [n, x, z] of UP) if (!afloat(x, z)) fail(`the river is not rowable at ${n}`);
+  console.log('  the river carries an oar from the sea to the source, under all three bridges \u2713');
+
+  // 3. AND IT STOPS. The open sea past the shallows refuses, which is
+  //    what keeps THE WIDE BLUE a land you WALK (Session 5's sandbar)
+  //    and keeps the torn west edge unspent.
+  //
+  //    THE SANDBAR COUNTS AS SHORE, deliberately: its crest is dry
+  //    paper (that is the whole of what it is), so an oar works either
+  //    side of it and the boat can run the shelf between the beach and
+  //    the bar. That is the reverse of deleting Session 5's work — the
+  //    bar is the ONLY reason a boat can be out there at all, exactly
+  //    as it is the only reason a walker can.
+  const OFF = [
+    ['deep water off the huts', -300, 130], ['the far west', -370, -40],
+    ['past the bar', -350, 10], ['the north sea', -320, -160],
+    ['the south sea', -330, 240],
+  ];
+  for (const [n, x, z] of OFF) {
+    if (L.rowableAt(x, z)) fail(`the boat can row out to ${n} — the open sea does not refuse`);
+    if (afloat(x, z)) fail(`the boat can REACH ${n}`);
+  }
+  // and the torn west edge itself, which stays unspent
+  let edge = 0;
+  for (let z = L.WORLD.minZ; z <= L.WORLD.maxZ; z += 4) {
+    for (let x = L.WORLD.minX; x <= -345; x += 4) if (afloat(x, z)) edge++;
+  }
+  if (edge) fail(`the boat reaches the torn west margin in ${edge} places`);
+  console.log(`  the open sea refuses past ${L.ROW_REACH} units off dry paper, ` +
+    'and the torn west edge stays unspent \u2713');
+
+  // 4. THE GATES STILL HOLD. The strongest claim in this block, and the
+  //    one the whole session is judged on: a boat may not put anybody
+  //    ashore anywhere the WALK could not already reach. Flood the
+  //    water, then step ashore everywhere it touches land, and check
+  //    every one of those landings against the walker's own flood fill
+  //    from the spawn.
+  let smuggled = 0;
+  let smuggledAt = null;
+  for (let z = L.WORLD.minZ; z <= L.WORLD.maxZ; z += G) {
+    for (let x = L.WORLD.minX; x <= L.WORLD.maxX; x += G) {
+      if (!afloat(x, z)) continue;
+      // App.landingNear: rings outward to fifteen units, first dry
+      // walkable square wins
+      for (let rad = 2.4; rad <= 15 && !smuggledAt; rad += 1.2) {
+        for (let k = 0; k < 24; k++) {
+          const a = (k / 24) * Math.PI * 2;
+          const px = x + Math.cos(a) * rad;
+          const pz = z + Math.sin(a) * rad;
+          if (L.waterFieldAt(px, pz) > 0.3) continue;
+          if (S(px, pz) > MAX) continue;
+          if (!open(px, pz)) {
+            smuggled++;
+            if (!smuggledAt) smuggledAt = [Math.round(px), Math.round(pz)];
+          }
+          break;
+        }
+      }
+    }
+  }
+  if (smuggled) {
+    fail(`the boat lands the walker in ${smuggled} places the walk cannot reach ` +
+      `(first ${smuggledAt}) — the world's gating is deleted`);
+  } else {
+    console.log('  every place the boat can put you ashore is already reachable on foot \u2713');
+  }
+
+  // 5. and the two gates that have their own proofs above, restated
+  //    against the water: no oar goes near either.
+  const NEAR_GATES = [
+    ['the holdfast plateau', -212, -88], ['the point', -236, -78],
+    ['the castle ridge', -45, -234], ['the bailey', -45, -222],
+  ];
+  for (const [n, x, z] of NEAR_GATES) {
+    let wet = false;
+    for (let rad = 0; rad <= 15 && !wet; rad += 2) {
+      for (let k = 0; k < 16; k++) {
+        const a = (k / 16) * Math.PI * 2;
+        if (afloat(x + Math.cos(a) * rad, z + Math.sin(a) * rad)) { wet = true; break; }
+      }
+    }
+    if (wet) fail(`the boat can reach within fifteen units of ${n}`);
+  }
+  console.log('  neither gated place has navigable water within fifteen units \u2713');
+}
+
 /* ---- 5. the tear must not sever the canyon trail ------------------ */
 console.log('\nthe tear:');
 let deepest = 0, deepAt = null;

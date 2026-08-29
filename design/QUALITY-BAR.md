@@ -72,8 +72,19 @@ redesigned camera, and all four of those lands re-audited on the new
 ground with Greyweather moved onto a real ridge (WOWED,
 critique-art-3 — the first sheet judged in both viewports); LONGSHORE
 and THE WIDE BLUE, the first two lands authored ON that ground (WOWED,
-critique-art-4). Every other land is a scatter draft and is presumed
+critique-art-4); TRAVERSAL AND TIME — sprint as ink weight, roads that
+carry, the rowboat, and the day cycle, with all six built lands judged
+at **two hours of the day** and none of them regressed (WOWED,
+critique-art-5). Every other land is a scatter draft and is presumed
 NOT YET.
+
+**And from Session 6 on, a protected framing is protected at TWO HOURS.**
+The day cycle is not done until dusk is as good as noon, so every
+contact sheet shoots its protected framings at a neutral hour and at
+one of the two ends (`HOUR=19.6 node tools/shoot-first-minute.mjs`).
+Eight in the morning to four in the afternoon is bit-for-bit the
+shipped page by construction, so the neutral pass is the same
+regression check it always was.
 
 ## 3. The permanent constraints
 
