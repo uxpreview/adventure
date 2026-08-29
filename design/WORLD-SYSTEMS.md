@@ -21,6 +21,9 @@ that is CRAFT, and craft is where the medium belongs. The story is
 about the world — its history, its regions, its people, and what they
 want.
 
+*(Every work named in this file is scoped and credited in
+`design/INSPIRATION.md`, which is the canonical list.)*
+
 The bar names *Alto's Odyssey*, *Journey*, *Sable* and *A Short Hike*.
 Those are **small open worlds**, and they shine for nearly the opposite
 reasons Skyrim and GTA do: no quest log, no markers, no urgency, and a
@@ -364,6 +367,8 @@ an instrument, exactly as nothing outside `palette.ts` invents a colour.
 ---
 
 ## 10. What we take from Fallout, and what we refuse
+
+*(Summarised with every other reference in `design/INSPIRATION.md`.)*
 
 *Owner direction, 2026-08-29. Fallout is a strange benchmark for a game
 with no combat — which is the point. It is on this list for exactly one

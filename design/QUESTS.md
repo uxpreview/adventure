@@ -32,6 +32,10 @@ them — and we get to make the whole game out of those.
 
 ## 1. What each benchmark actually contributes
 
+*All six named by the owner, 2026-08-29. The standing record of every
+reference this project uses — these plus Calvino, the small open worlds
+and the knowledge games — is `design/INSPIRATION.md`.*
+
 | game | what we take | what we refuse |
 |---|---|---|
 | **RDR2** | Strangers: multi-part, self-contained, tonally distinct from the main story. And roadside encounters, the cheapest magic in open worlds | its mission design — scripted corridors with a fail state |

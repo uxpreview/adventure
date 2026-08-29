@@ -63,7 +63,9 @@ had.
 
 ## 2. THE SHAPE — twelve waits, one wait
 
-*Owner reference, 2026-08-29: Calvino's* **Invisible Cities**.
+*Owner reference, 2026-08-29: Calvino's* **Invisible Cities** *(1972).
+Scoped and credited, with everything else this project learns from, in
+`design/INSPIRATION.md`.*
 
 Marco Polo describes fifty-five cities to Kublai Khan. They are sorted
 into eleven categories of five — Cities & Memory, Cities & Desire,

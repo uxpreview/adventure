@@ -15,6 +15,14 @@ and to be the walk people send each other the way they send *Alto's
 Odyssey*, *Journey*, *Sable*, and *A Short Hike* — a drawn open world
 that feels authored in every frame.
 
+**Every work this project is learning from is listed, scoped and
+credited in `design/INSPIRATION.md`** — the small open worlds above, the
+six big ones the owner named (RDR2, GTA, Fallout, Skyrim, The Witcher 3,
+Goat Simulator), the knowledge games behind the hours argument, and
+Calvino's *Invisible Cities*, which is the story's structure. Each entry
+names the one thing we take and the one thing we refuse. Read it before
+citing anything as a model.
+
 **The world comes first, then the systems, then the story.** Owner
 decision, 2026-08-28: the foundations that change how a land is authored
 (elevation, camera, traversal, time) land before the remaining lands do.

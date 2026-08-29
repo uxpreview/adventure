@@ -5,6 +5,9 @@ default branch, and what Vercel project `adventure` deploys to
 production (https://adventure.ryankm.com). Read, in order:
 `design/QUALITY-BAR.md` (binding), `design/STORY.md`,
 `design/WORLD-SYSTEMS.md`, `PLAN.md`, `README.md`, `SESSIONS.md` —
+plus `design/INSPIRATION.md` whenever you are about to cite another
+game as a model, because every entry there is scoped to one thing we
+take and one thing we refuse —
 **Session 5's gotchas especially**, because that session found two laws
 the hard way that will bite this one: *the camera only ever looks north,
 and that is a LAYOUT constraint*, and *a flat quad that runs away from

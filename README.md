@@ -64,8 +64,12 @@ and deals a region card — nothing else, because the sheet is continuous.
   the water.
 - Position, discovered lands and strides walked saved to `localStorage`.
 
-The story layer is deliberately not started yet — see `DIRECTION.md`
-for where it could go.
+The story is **THE 8:15** — see `design/STORY.md` for the bible and
+`design/QUESTS.md` for how content is tiered in a game with no quest
+log. `design/INSPIRATION.md` credits everything this project is
+learning from, from Calvino to Goat Simulator, and scopes each to the
+one thing it contributes. `DIRECTION.md` is the record of how the story
+was chosen.
 
 ## Run it
 

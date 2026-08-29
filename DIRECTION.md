@@ -70,6 +70,8 @@ log, no dialogue trees and no faces** is not a small ask. It has been
 done repeatedly, and not the same way twice. Sorted by what actually
 keeps a person walking:
 
+*(Every game named below is scoped in `design/INSPIRATION.md`.)*
+
 | engine | who proves it | what it costs us | hours it buys |
 |---|---|---|---|
 | **knowledge** — you get better at understanding, the world was always open | Outer Wilds, Obra Dinn, Tunic, Chants of Sennaar | **no new system class**: the verb is looking | scales with authored instances; this is the one that goes long |
