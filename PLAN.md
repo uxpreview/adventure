@@ -30,7 +30,7 @@ retired; the chosen story is **THE 8:15** (`design/STORY.md`).
 | 4 | **The paper has a shape** ✓ 2026-08-28 | **Foundations.** Terrain elevation (crease / curl / buckle / tear / what's under the sheet) in `elevation.ts`, routed through the build context; a fold DRAWN rather than shaded; the camera redesigned around it; footprints, collision and the character lifted; steep made impassable. Portrait made a gated viewport. The margins inheritance audit executed. Greyweather rebuilt on a real ridge. Gate to WOWED (`critique-art-3.md`). |
 | 5 | **The coast** ✓ 2026-08-29 | LONGSHORE + THE WIDE BLUE, the first lands authored *with* elevation. THE HOLDFAST (a headland the tear went round, authored as a polygon so its faces are planar), THE CUT (a ledge graded out of the page — the only way up), SHELTER COVE, and THE SANDBAR, which is what makes open water a land you can walk. Four new audio voices and two new instruments. Gate to WOWED (`critique-art-4.md`). |
 | 6 | **Traversal & time** ✓ 2026-08-29 | **Foundations.** Sprint as INK WEIGHT (one continuous scalar: speed, stride, the print's ink, the step's level and the score's intensity are all readouts of it, and the middle of its range is the shipped mark). Roads that CARRY, authored per road and *measured* — the king's road / main street / commuter spur chain carries hardest, because STORY §4 makes it one road under twelve names. THE ROWBOAT, the first mount: found at the river mouth, left where you leave it, the river turned from a wall into the only east–west road in the world, and the open sea authored to refuse. And THE DAY CYCLE — forty minutes, graded in one place, with eight in the morning to four in the afternoon bit-for-bit the shipped page, plus Brim's lamps, its windows and two fires at Greyweather's gate. Gate to WOWED (`critique-art-5.md`). See `design/specs/traversal.md`. |
-| 7 | **The stories** | The story is LOCKED (**THE 8:15** — `design/STORY.md`) and its architecture written (`design/QUESTS.md`, six tiers). This session **maps all of them**: THE LINE's four acts beat by beat, the twelve WAITS, the eight STRANGERS, and the errand/encounter/unmarked inventories — then builds the content system around KNOWLEDGE rather than collection (WORLD-SYSTEMS §6), makes the map the record, and does the voice pass the story requires (STORY.md §8 rule 7). From here every land session ships places **and** its wait **and** its named inhabitant. |
+| 7 | **The stories** ✓ 2026-08-30 | THE LINE mapped beat by beat with Act III's standing place solved and **THE ENDING SETTLED** (`design/THE-LINE.md`); the twelve WAITS, each with its person, its places, its TURN and its visible permanent change (`design/THE-WAITS.md`); the eight STRANGERS and the errand / encounter / unmarked inventories (`design/THE-STRANGERS.md`). **KNOWLEDGE** built as the content system (`src/world/knowledge.ts` — a NAME, a FACT, a ROUTE, a REASON, and no count anywhere), the **MAP MADE THE RECORD** in three registers with the line inked once you have walked it, and **BRIM'S WAIT AUTHORED END TO END**: Marget, her routine off the clock, the belfry's two hands, and a market that opens and stays open. Plus the voice pass — **24 of 34 notes**, the premise line included. Gate to WOWED (`critique-story-1.md`). From here every land session ships places **and** its wait **and** its named inhabitant. |
 | 8 | **The score** | Owner direction, 2026-08-29: each land gets its own music, not the same music box in a different mode. One synthesised instrument per land, a bed per land, borders that crossfade, and a mix that answers the hour and how you are moving. See `design/WORLD-SYSTEMS.md` §9. |
 | 9 | **Farm & forest** | THE HARROW DOWNS + THE PENWOOD: field patchwork vs pine dark; the tarn; the forest track. |
 | 10 | **The dry lands** | SPLITROCK CANYON (a tear in the page) + THE BLEACH FLATS: corridor drama, the oasis as reward. |
@@ -51,6 +51,13 @@ all twelve lands. They are deliberately NOT numbered here: the story
 pick at Session 7 decides what they contain, and putting numbers on them
 before that is planning fiction.
 
+**Session 7 has now itemised what they contain**, so the sizing above
+is no longer an estimate: `design/THE-WAITS.md` (twelve waits, four of
+which stand entirely on ground that is already built),
+`design/THE-STRANGERS.md` (eight strangers, ~20 errands, ~28
+encounters, 31 unmarked) and `design/THE-LINE.md` (the four acts, and
+the ending) are the authoring queue. Numbers still wait on the owner.
+
 Rules of the ladder:
 
 - A session may swap scope up the ladder, never skip the gate.
@@ -70,6 +77,14 @@ Rules of the ladder:
   of where they stand. Session 5 lost rounds to a boardwalk laid
   east–west and a regatta staged west of its viewpoint. Check the
   bearing before placing, not after.
+- **THE LINE'S SIGHTLINE IS A PROTECTED CORRIDOR** (Session 7,
+  `design/THE-LINE.md` §3.2). Act III is a two-hundred-unit look north
+  up an empty straight road from the world's south rim, so **nothing
+  tall may stand within about eight units of x = −45 between z = 120 and
+  z = 278.** Maple Court's houses, trees, cars and hedges go beside main
+  street, never on the king's road's own axis. Session 5 lost two rounds
+  to a boardwalk laid east–west; this is the same mistake available one
+  more time, in the one composition that cannot afford it.
 - **Author landforms with PLANAR FACES.** The terrain draws a cliff in
   strokes down its fall line, and a doubly-curved landform has no
   constant fall line to draw down — it comes out as a thumb print. Paper

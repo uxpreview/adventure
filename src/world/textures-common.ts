@@ -347,10 +347,21 @@ export function crossroadsSignTexture(seed: number): THREE.CanvasTexture {
       letteringFit(ctx, label, tx, y + 4 + tilt * 0.5, w - 26, 11, r,
         { width: 1.5, alpha: 0.8, crooked: 0.55, passes: 1 });
     };
+    /* FOUR ARMS. THREE OF THEM ARE PLACES.
+     *
+     * STORY §4: the Common's crossroads signpost has four names on it
+     * and one of them is not a place — it is a TIME, and it is the
+     * hinge Act II turns on. The fourth arm said HOME until Session 7,
+     * which was a nice line and was not the story that got picked.
+     *
+     * It is drawn EXACTLY like the other three: same board, same hand,
+     * same nail, no emphasis of any kind. Nobody in this world finds it
+     * odd and nothing in the game will ever point at it. A player
+     * either reads all four or does not, and both are fine. */
     arm(34, 1, 84, 'BRIM', -2);
     arm(64, -1, 88, 'THE SEA', 3);
     arm(96, 1, 90, 'DOWNS', 2);
-    arm(128, -1, 82, 'HOME', -3);
+    arm(128, -1, 82, '8:15', -3);
     // grass at the foot
     for (let i = 0; i < 4; i++) {
       const x = 82 + r() * 28;

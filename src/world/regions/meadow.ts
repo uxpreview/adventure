@@ -220,7 +220,7 @@ export const MEADOW_POIS: WorldPOI[] = [
     prompt: 'READ THE SIGNPOST',
     note: {
       title: 'the crossroads',
-      body: 'brim, to the north. the sea, west. the downs, east. and one arm pointing south that says 8:15, which is not a place. every road in the world starts here, which is another way of saying you are nowhere in particular.',
+      body: 'brim, to the north. the sea, west. the downs, east. and one that says 8:15, which is not a place. every road in the world starts here, which is another way of saying you are nowhere in particular.',
       /* THREE LANDS GO INTO PENCIL ON THE MAP FROM THE FIRST NOTE IN
        * THE GAME. The signpost has named them since Session 1 and it
        * has never been worth anything, because the map had nothing to
