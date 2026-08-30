@@ -107,6 +107,25 @@ project, which is WORKING OUT HOW ANYBODY KNOWS.*
 - **Gate: WOWED** after 3 rounds on the sound sheet
   (`design/critiques/critique-score-1.md`, verbatim), plus the machine
   gate, and the ear gate **handed to the owner unperformed**.
+- **AND THE STORY GATE RAN, beside this session, because there was room
+  at the end and it needs no build** (`critique-story-2.md`). It
+  returned **NOT YET** with two mandatory findings, and both are about
+  delivery rather than about the story: **Act I's second and third facts
+  have one teacher between them and it is optional and directional**
+  (everything downstream of *nobody can leave* and *you can* hangs on
+  Nell stopping at the Brim border, which only happens to a player who
+  walks north having met her — the co-walker wants to be a rule of the
+  world on any road, not a scripted beat on one); and **the ending's
+  default witness sees exactly one of the twelve stops**, with nothing
+  guaranteeing it is a land they answered, so the likeliest single
+  ending in the game is a train stopping at an empty platform. The
+  8:15 stops in ORDER from the north, so it can arrive already carrying
+  the lands above you, visible through the windows — no new content, no
+  clause of `THE-LINE.md` §5 touched. Three more findings are
+  recommended rather than mandatory, including that **§3.2's rim
+  composition is the riskiest un-shot frame in the game and Session 11
+  should shoot it FIRST, not last.** The critic is a proposal until the
+  owner rules, like the STORY EDITOR before it.
 
 ### Gotchas (new; Sessions 1–7 all still apply)
 - **AN OFFLINE CONTEXT RENDERS A GRAPH, NOT A SYSTEM.** Anything that

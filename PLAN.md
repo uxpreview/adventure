@@ -80,13 +80,31 @@ and both want a decision before they are:**
   to due north**, because a standee is a flat cutout and at 45° off-axis
   this world is a stack of card seen sideways. If it is taken, it is
   taken BEFORE the five remaining lands, not after.
-- **A STORY GATE** (`QUALITY-BAR` §2). Every gate this project has run
-  has judged pictures. THE LINE was mapped in one session and read by
-  nobody. It wants an adversarial read: does Act I teach its three facts
-  without stating them, does the turn survive not being said, and does
-  the ending land or is it a shrug — which `STORY.md` §6 flagged as the
-  risk in the file itself. It is cheap, it needs no build, and it can
-  run beside any session.
+- **A STORY GATE** (`QUALITY-BAR` §2). **Run once, beside Session 8,
+  and it returned NOT YET** (`design/critiques/critique-story-2.md`).
+  The spine is sound and the ending is not a shrug — but Act I's second
+  and third facts have a single optional teacher between them, and the
+  likeliest single ending in the game is a train stopping at an empty
+  platform, because the default witness sees exactly one of its twelve
+  stops. Both fixes are cheap and neither re-opens `THE-LINE.md` §5;
+  both are authoring notes for the sessions that build Acts I and IV.
+  **What is still the owner's:** whether this critic becomes standing,
+  and whether its NOT YET blocks those acts or annotates them.
+
+**STANDING DEBTS, and they are written here because they have been
+carried in PROMPT.md alone and PROMPT.md is overwritten every session**
+(recorded Session 8). None of them is urgent; all of them are real, and
+each has now survived at least two sessions being handed forward in a
+file that does not persist.
+
+- **POI labels have no collision logic.** "THE CROSSROADS" prints across
+  the signpost it names — and that signpost now carries the story's
+  hinge. **The oldest visible defect in the game**, and it wants its own
+  slice rather than a corner of somebody else's session.
+- **The rowboat's first-meeting composition at THE RIVER MOUTH** is a
+  lot of sand. Two gates have passed it and pointedly not praised it.
+- **Brim Square is full.** Session 7 fitted Marget in. The next authored
+  thing in that plaza displaces something Session 3 earned.
 
 Rules of the ladder:
 

@@ -138,6 +138,28 @@ looks:
 **Run it as an adversarial read, not a review.** A critic who is trying
 to find the shrug is worth ten who are trying to enjoy it.
 
+**IT HAS NOW RUN ONCE, and it returned NOT YET**
+(`design/critiques/critique-story-2.md`, Session 8, beside the score
+because it needs no build). Two mandatory findings and three
+recommended, none of which re-open `THE-LINE.md` §5:
+- **Act I's second and third facts have one teacher between them**, and
+  it is optional and directional — everything downstream of *nobody can
+  leave* and *you can* hangs on Nell stopping at the Brim border, which
+  only happens to a player who walks north having met her. The
+  co-walker wants to be a rule of the world on any road out of any
+  land, rather than a scripted beat on one.
+- **The ending's default witness sees one stop**, and nothing
+  guarantees it is a land they answered — so the likeliest single
+  ending in the game is a train stopping at an empty platform, which is
+  the shrug arrived at from a direction `STORY.md` §6 did not consider.
+  The 8:15 stops in order from the north, so it can **arrive already
+  carrying the lands above you**, visible through the windows, for no
+  new content and no change to the ending.
+Like the STORY EDITOR, this critic is **a proposal until the owner says
+otherwise** — unlike the art director it judges something that does not
+exist yet, and whether NOT YET blocks the acts or merely annotates them
+is the owner's call.
+
 **A third critic is PROPOSED and awaiting the owner** (Session 7): the
 **STORY EDITOR**, who reads a wait blind — the person, the places, the
 turn, the change, nothing else — and has to be able to say what that
