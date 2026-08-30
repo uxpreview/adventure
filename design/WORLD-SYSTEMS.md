@@ -438,18 +438,43 @@ cross a border blind and hear the footstep change; they cannot hear the
      `bell-buoy` (Session 5) is already this instrument;
    - **air** — filtered noise with a moving resonant peak. `surge`
      (Session 5) is already this instrument.
-   Two of the five are therefore already written; the score session
-   builds the other three and gives each land a voice.
-2. **A bed per land, not one room tone everywhere.** `startAmbient` is
-   currently a single lowpass noise loop and it is identical in the
-   canyon and the office park. It should be per-land and it should be
-   the quietest thing in the mix: the sea's hush, the pines' hush, the
-   city's hum, the office park's air handling, the canyon's near-silence
-   with a long tail on everything else.
-3. **A border is a CROSSFADE, not a cut.** `setMood` already ramps the
-   melody's level; the instrument and the bed need an equal-power
-   crossfade of three or four seconds so a border is a place you pass
-   through rather than a switch you flip.
+   Two of the five were therefore already written, and **this section's
+   own arithmetic was off by one**: what was left was the plucked
+   string and the bowed voice, which is TWO, not three. ✓ *Session 8*
+   — both built, the count corrected, and the assignment authored as a
+   table beside `MOODS` (`LAND_VOICE`: instrument, register, loudness
+   trim, and the REASON, one line per land). The doubling is by family:
+   what you wake to (box), what grows (string), what was cast and hung
+   up (bell), what stands still (bowed), and what moves without being
+   touched (air).
+
+   One thing found in the building of it, and it is why the string is
+   rendered into a buffer rather than wired: **a feedback cycle in Web
+   Audio is floored at one render quantum**, 128 samples, so a
+   DelayNode Karplus–Strong cannot play a note above about 340 Hz —
+   and half this world's scales live above that.
+2. **A bed per land, not one room tone everywhere.** ✓ *Session 8.*
+   `BEDS`, twelve rooms, each with what it is made of (the filter),
+   whether it breathes (a slow LFO on the cutoff — the sea does, a
+   machine does not) and how much of it there is. Every one of them
+   measured BELOW the land it is the room of, which is what "the
+   quietest thing in the mix" has to mean if it is to mean anything;
+   the canyon is 14 dB under the sea.
+   The long tail is not a bed, it is what a place does to a sound after
+   you have made it, so it is `TAILS` — one delay with feedback, shared,
+   mixed per land. Two lands answer back: the cut and the empty keep.
+3. **A border is a CROSSFADE, not a cut.** ✓ *Session 8.* Equal power
+   (cos/sin of the quarter circle) over three and a half seconds, on the
+   bed AND on the instrument: for those seconds the phrase is played on
+   BOTH lands' instruments at the crossfade's own weights, which is a
+   crossfade of instruments rather than of tunes. Two tunes at once is a
+   mistake; one tune changing what it is played on is a border.
+   **And the thing that would have shipped un-noticed:** two beds built
+   from the same noise buffer at the same offset are the same SIGNAL,
+   and an equal-power fade between two identical signals swells 3 dB in
+   the middle. Every border in the game had a bump in it until the
+   renderer was pointed at one. Each bed now enters the world's noise
+   at its own offset.
 4. **The score answers the player.** ✓ *Session 6.* `setMoodIntensity`
    had existed since the port and nothing in this game had ever called
    it; traversal calls it now, twice a second and only when the number
@@ -533,6 +558,42 @@ is the sea. Nothing is scored. You are hearing where you are.
 **Law, unchanged:** zero assets, so every voice is synthesis; the whole
 graph stays a handful of nodes; and nothing outside `Audio.ts` invents
 an instrument, exactly as nothing outside `palette.ts` invents a colour.
+
+### And how anybody knows — BUILT, Session 8 ✓
+
+*The part of this section nobody had written down, because it is the
+first product in this project that cannot be screenshotted.*
+
+- **`tools/check-audio.mjs`** renders every land offline through an
+  `OfflineAudioContext` and asserts what a listener would notice:
+  twelve lands are twelve sounds (pairwise spectral distance, closest
+  pair reported and it is always a family); each land renders at the
+  level `MOODS` says (all twelve within 1.07× of one another); the bed
+  is under the land; the fade follows its own curve and never leaves it
+  by more than the rooms' own weather; the mix is monotone in both the
+  walk and the hour; the cut answers and the field does not; and
+  nothing clips, with 22 dB of headroom left for the steps.
+  **The enabling move is that every voice is a FUNCTION of the context
+  it is built in** — `(ctx, dest, freq, t0, opts)` — because an
+  OfflineAudioContext renders a graph and not a system: anything that
+  waits on `setTimeout` or on `currentTime` advancing renders silence.
+  The melody is driven from a clock passed in, so what is asserted is
+  the phrase the player hears and not a stand-in for it.
+- **`tools/verify-score.mjs`** does the half that cannot be rendered:
+  the class's own wiring, in the running game, with a real context —
+  fifteen crossings, and then five crossings inside one three-and-a-half
+  second fade, which is the case that puts an AudioParam into a state
+  Web Audio refuses.
+- **`tools/shoot-sound.mjs`** is the contact sheet: every land's
+  waveform and spectrum drawn with `src/engine/ink.ts`, on one shared
+  decibel window so a quiet land looks quiet, with the room in pencil
+  under the land in ink. **Twelve lands are visibly twelve sounds**, and
+  if they ever stop being, the sheet says so in one glance.
+- **`tools/render-wavs.mjs`** hands over the gate this project cannot
+  run. Nineteen files at one uniform gain — twelve lands, three
+  borders, one land at four hours — because **a session that claims a
+  sound is good is lying, and a session that hands over the evidence is
+  not.**
 
 ---
 

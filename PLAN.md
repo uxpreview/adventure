@@ -31,7 +31,7 @@ retired; the chosen story is **THE 8:15** (`design/STORY.md`).
 | 5 | **The coast** ✓ 2026-08-29 | LONGSHORE + THE WIDE BLUE, the first lands authored *with* elevation. THE HOLDFAST (a headland the tear went round, authored as a polygon so its faces are planar), THE CUT (a ledge graded out of the page — the only way up), SHELTER COVE, and THE SANDBAR, which is what makes open water a land you can walk. Four new audio voices and two new instruments. Gate to WOWED (`critique-art-4.md`). |
 | 6 | **Traversal & time** ✓ 2026-08-29 | **Foundations.** Sprint as INK WEIGHT (one continuous scalar: speed, stride, the print's ink, the step's level and the score's intensity are all readouts of it, and the middle of its range is the shipped mark). Roads that CARRY, authored per road and *measured* — the king's road / main street / commuter spur chain carries hardest, because STORY §4 makes it one road under twelve names. THE ROWBOAT, the first mount: found at the river mouth, left where you leave it, the river turned from a wall into the only east–west road in the world, and the open sea authored to refuse. And THE DAY CYCLE — forty minutes, graded in one place, with eight in the morning to four in the afternoon bit-for-bit the shipped page, plus Brim's lamps, its windows and two fires at Greyweather's gate. Gate to WOWED (`critique-art-5.md`). See `design/specs/traversal.md`. |
 | 7 | **The stories** ✓ 2026-08-30 | THE LINE mapped beat by beat with Act III's standing place solved and **THE ENDING SETTLED** (`design/THE-LINE.md`); the twelve WAITS, each with its person, its places, its TURN and its visible permanent change (`design/THE-WAITS.md`); the eight STRANGERS and the errand / encounter / unmarked inventories (`design/THE-STRANGERS.md`). **KNOWLEDGE** built as the content system (`src/world/knowledge.ts` — a NAME, a FACT, a ROUTE, a REASON, and no count anywhere), the **MAP MADE THE RECORD** in three registers with the line inked once you have walked it, and **BRIM'S WAIT AUTHORED END TO END**: Marget, her routine off the clock, the belfry's two hands, and a market that opens and stays open. Plus the voice pass — **24 of 34 notes**, the premise line included. Gate to WOWED (`critique-story-1.md`). From here every land session ships places **and** its wait **and** its named inhabitant. |
-| 8 | **The score** | Owner direction, 2026-08-29: each land gets its own music, not the same music box in a different mode. One synthesised instrument per land, a bed per land, borders that crossfade, and a mix that answers the hour and how you are moving. See `design/WORLD-SYSTEMS.md` §9. |
+| 8 | **The score** ✓ 2026-08-30 | Five synthesised instruments over twelve lands, doubled by FAMILY (music box, plucked string — Karplus–Strong, rendered rather than wired — bowed voice, struck metal, air), each land's assignment authored with its register and its one-line reason; a BED per land, and it is the quietest thing in the mix; a border that is a three-and-a-half second EQUAL-POWER crossfade of both the room and the instrument; and a mix that answers the walk and the hour. **And the proof, which was the hard half:** `check-audio.mjs` renders the score offline and asserts it, `verify-score.mjs` proves the wiring in the running game, `shoot-sound.mjs` draws it in ink, and `render-wavs.mjs` hands the ear gate to the owner — because it is the first product in this project that cannot be screenshotted. Gate to WOWED (`critique-score-1.md`). See `WORLD-SYSTEMS.md` §9. |
 | 9 | **Farm & forest** | THE HARROW DOWNS + THE PENWOOD: field patchwork vs pine dark; the tarn; the forest track. |
 | 10 | **The dry lands** | SPLITROCK CANYON (a tear in the page) + THE BLEACH FLATS: corridor drama, the oasis as reward. |
 | 11 | **The now** | MAPLE COURT + GREYLINE CITY + THE CUBICLE MILE: street rhythm, lit windows at dusk, the junction — and the 8:15 drawn into existence. |
@@ -80,13 +80,43 @@ and both want a decision before they are:**
   to due north**, because a standee is a flat cutout and at 45° off-axis
   this world is a stack of card seen sideways. If it is taken, it is
   taken BEFORE the five remaining lands, not after.
-- **A STORY GATE** (`QUALITY-BAR` §2). Every gate this project has run
-  has judged pictures. THE LINE was mapped in one session and read by
-  nobody. It wants an adversarial read: does Act I teach its three facts
-  without stating them, does the turn survive not being said, and does
-  the ending land or is it a shrug — which `STORY.md` §6 flagged as the
-  risk in the file itself. It is cheap, it needs no build, and it can
-  run beside any session.
+- **A STORY GATE** (`QUALITY-BAR` §2). **Run once, beside Session 8,
+  and it returned NOT YET** (`design/critiques/critique-story-2.md`).
+  The spine is sound and the ending is not a shrug — but Act I's second
+  and third facts have a single optional teacher between them, and the
+  likeliest single ending in the game is a train stopping at an empty
+  platform, because the default witness sees exactly one of its twelve
+  stops. Both fixes are cheap and neither re-opens `THE-LINE.md` §5;
+  both are authoring notes for the sessions that build Acts I and IV.
+  **What is still the owner's:** whether this critic becomes standing,
+  and whether its NOT YET blocks those acts or annotates them.
+
+**AND THE SESSION 9 PROMPT IS WRITTEN FOR THE BEARING, NOT FOR FARM &
+FOREST** (Session 8, and it is a proposal the owner can decline in one
+line). The ordering rule displaces the lands: the camera's bearing is
+the **last foundations item on the board**, `WORLD-SYSTEMS` §2 has said
+since 2026-08-30 that if it is taken it is taken BEFORE the five
+remaining lands, and building five lands on a bearing that changes
+afterwards is the elevation mistake a second time. **If it is taken,
+every row below 9 shifts by one** and the five land sessions then run
+with nothing structural left to interrupt them. If the owner would
+rather have THE HARROW DOWNS and THE PENWOOD now, the table above is
+already correct and `PROMPT.md` is the thing to replace.
+
+**STANDING DEBTS, and they are written here because they have been
+carried in PROMPT.md alone and PROMPT.md is overwritten every session**
+(recorded Session 8). None of them is urgent; all of them are real, and
+each has now survived at least two sessions being handed forward in a
+file that does not persist.
+
+- **POI labels have no collision logic.** "THE CROSSROADS" prints across
+  the signpost it names — and that signpost now carries the story's
+  hinge. **The oldest visible defect in the game**, and it wants its own
+  slice rather than a corner of somebody else's session.
+- **The rowboat's first-meeting composition at THE RIVER MOUTH** is a
+  lot of sand. Two gates have passed it and pointedly not praised it.
+- **Brim Square is full.** Session 7 fitted Marget in. The next authored
+  thing in that plaza displaces something Session 3 earned.
 
 Rules of the ladder:
 

@@ -78,12 +78,22 @@ and deals a region card — nothing else, because the sheet is continuous.
   desk lamp comes on**.
 - **A hand-drawn map** (`M`) that only names the lands you have walked.
 - **35 places worth a look**, each with a note in the world's voice.
-- **All-procedural audio**: paper-room ambience, pen-scratch steps in
-  six surface timbres (sand, grass, stone, planks, water, paper), a
-  music-box melody that wanders a different scale in every land, and a
-  handful of voices the lands own — a lark, a bell, rooks, and, on the
-  coast, surf that comes at shorter intervals the nearer you stand to
-  the water.
+- **All-procedural audio**: pen-scratch steps in six surface timbres
+  (sand, grass, stone, planks, water, paper) and a handful of voices the
+  lands own — a lark, a bell, rooks, and, on the coast, surf that comes
+  at shorter intervals the nearer you stand to the water.
+- **And every land has its own VOICE and its own ROOM.** Five
+  synthesised instruments across twelve lands — a music box, a plucked
+  string, a bowed voice, struck metal and moving air — and the
+  instrument is a thing that is actually there: Brim's is the belfry,
+  Greyweather's is wind in a stone building with nobody in it, the
+  office park's is two notes of hold music, the coast's is the sea.
+  Under each of them a room you notice only when it stops, and a border
+  is a three-and-a-half second equal-power crossfade rather than a cut.
+  The mix answers how hard you are walking and what time it is: after
+  dark the room thins, the phrases come further apart, and every
+  instrument's top closes. **Nothing announces a land's voice and
+  nothing lists it** — it arrives because you are standing there.
 - **A map that is the record of your own walk**, in three hands: a
   question mark for a place you have never heard of, its name in pencil
   for one somebody named to you, its name in ink for one you stood in.
@@ -133,7 +143,22 @@ HOUR=19.6 node tools/shoot-first-minute.mjs   # any sheet, at any hour
 node tools/shoot.mjs           # all twelve lands, walkability smoke test
 node tools/shoot-mobile.mjs    # the CHROME, at 320/360/390/430 points
 node tools/shoot-fps.mjs       # frame cost, draw calls, triangles
+
+node tools/check-audio.mjs     # RENDER THE SCORE OFFLINE AND ASSERT IT
+node tools/verify-score.mjs    # the same score, wired, in the running game
+node tools/shoot-sound.mjs     # the sound sheet: twelve lands, plotted in ink
+node tools/render-wavs.mjs     # nineteen WAVs, for the one gate a tool cannot run
 ```
+
+**The score is the first thing in this project that cannot be
+screenshotted**, so it is measured instead: `check-audio.mjs` renders
+every land through an `OfflineAudioContext` and asserts that twelve
+lands are twelve sounds, that a border never leaves its equal-power
+curve, that the mix is monotone in the hour and in the walk, and that
+nothing clips. `shoot-sound.mjs` draws the result with the same
+ballpoint everything else in this world is drawn with. And
+`render-wavs.mjs` exists because **a session that claims a sound is
+good is lying, and a session that hands over the evidence is not.**
 
 Every shoot script renders **desktop (1280×720) and portrait (390×844)**
 through `tools/shoot-lib.mjs`; portrait is a gated viewport, not a

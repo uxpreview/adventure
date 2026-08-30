@@ -338,7 +338,6 @@ export class App {
   }
 
   private start(fresh: boolean) {
-    this.audio.init();
     this.ui.hideTitle();
     if (fresh) {
       this.char.teleport(SPAWN.x, SPAWN.z);
@@ -346,7 +345,14 @@ export class App {
     }
     this.started = true;
     this.region = regionAt(this.char.pos.x, this.char.pos.z);
+    /* THE MOOD BEFORE THE CONTEXT, and the order matters from Session 8.
+     * `setMood` with no context yet just records which land this is;
+     * `init` then builds THAT land's room. The other way round, a save
+     * loaded in Greyweather opens with three and a half seconds of the
+     * Common's room fading out — a place the player is not in, as the
+     * first thing they hear. */
     this.audio.setMood(this.region.id);
+    this.audio.init();
     const newLand = this.save.discover(this.region.id);
     knowledge.learn(`name:${this.region.id}`);
     this.ui.showRegionCard(this.region.kicker, this.region.name);

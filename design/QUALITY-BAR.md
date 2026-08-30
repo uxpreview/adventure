@@ -88,8 +88,23 @@ critique-art-5); **THE STORIES** — knowledge as the content system, the
 map made the record in three registers with the line inked once you have
 walked it, Brim's wait authored end to end, and the voice pass over all
 thirty-four notes including the premise line itself (WOWED,
-critique-story-1, and the same file logs a new critic — see below).
+critique-story-1, and the same file logs a new critic — see below);
+**THE SCORE** — five instruments over twelve lands with a bed apiece and
+an equal-power border, proved by a renderer instead of a camera and
+drawn as a contact sheet in ink (WOWED, critique-score-1, and see the
+gate below that this project could not run).
 Every other land is a scatter draft and is presumed NOT YET.
+
+**AND ONE GATE IS THE OWNER'S, because no tool in this repository can
+run it** (Session 8). The score can be rendered, measured, plotted and
+asserted, and not one of those is a listen. `tools/check-audio.mjs`
+proves that twelve lands are twelve sounds, that a border does not dip
+and that nothing clips; it cannot say whether any of it is any good.
+So a system whose product is not a picture ships with its evidence
+handed over — `tools/render-wavs.mjs` writes nineteen files — and the
+session states in its log that it could not perform the gate. **A
+session that claims a sound is good is lying; a session that hands over
+the evidence is not.**
 
 **AND THE MAIN STORYLINE HAS NEVER BEEN READ BY A CRITIC** (owner,
 2026-08-30). Every gate this project has run has judged **pictures**.
@@ -122,6 +137,28 @@ looks:
 
 **Run it as an adversarial read, not a review.** A critic who is trying
 to find the shrug is worth ten who are trying to enjoy it.
+
+**IT HAS NOW RUN ONCE, and it returned NOT YET**
+(`design/critiques/critique-story-2.md`, Session 8, beside the score
+because it needs no build). Two mandatory findings and three
+recommended, none of which re-open `THE-LINE.md` §5:
+- **Act I's second and third facts have one teacher between them**, and
+  it is optional and directional — everything downstream of *nobody can
+  leave* and *you can* hangs on Nell stopping at the Brim border, which
+  only happens to a player who walks north having met her. The
+  co-walker wants to be a rule of the world on any road out of any
+  land, rather than a scripted beat on one.
+- **The ending's default witness sees one stop**, and nothing
+  guarantees it is a land they answered — so the likeliest single
+  ending in the game is a train stopping at an empty platform, which is
+  the shrug arrived at from a direction `STORY.md` §6 did not consider.
+  The 8:15 stops in order from the north, so it can **arrive already
+  carrying the lands above you**, visible through the windows, for no
+  new content and no change to the ending.
+Like the STORY EDITOR, this critic is **a proposal until the owner says
+otherwise** — unlike the art director it judges something that does not
+exist yet, and whether NOT YET blocks the acts or merely annotates them
+is the owner's call.
 
 **A third critic is PROPOSED and awaiting the owner** (Session 7): the
 **STORY EDITOR**, who reads a wait blind — the person, the places, the
@@ -222,9 +259,18 @@ The margins environment bar, promoted to law for an open world:
 - **Motion is life.** Each land has at least two idle motions (banners,
   gulls, smoke, sails, weeds, water) and one that responds to the
   player. A still frame should still imply the wind.
-- **Sound is place.** Crossing a border must be audible blind: mood,
-  step timbre, and at least one land-specific ambient event
-  (`Audio.event`) per land.
+- **Sound is place.** Crossing a border must be audible blind, and from
+  Session 8 that is four things and not one: the land's **instrument**
+  and **register** (`LAND_VOICE`, with the reason written in one line —
+  a land whose voice cannot be justified in a line has not been given
+  one), its **bed** (`BEDS` — the room, and the quietest thing in the
+  mix), its **step timbre**, and at least one land-specific ambient
+  event (`Audio.event`). Five instruments cover twelve lands and the
+  doubling is by FAMILY: two lands on the plucked string in different
+  registers is a family, twelve lands on twelve unrelated instruments is
+  a sound library. **Nothing announces a land's voice and nothing lists
+  it** (INSPIRATION, RuneScape §6): there is no track name anywhere in
+  this game.
 - **The seams are art.** Border zones, road junctions, bridge
   approaches and the coastline are compositions of their own — the
   places players actually linger.

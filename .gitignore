@@ -2,5 +2,6 @@ node_modules/
 dist/
 shots/
 shots-*/
+out/
 .tmp/
 .DS_Store
