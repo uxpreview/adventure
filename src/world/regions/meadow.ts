@@ -220,7 +220,12 @@ export const MEADOW_POIS: WorldPOI[] = [
     prompt: 'READ THE SIGNPOST',
     note: {
       title: 'the crossroads',
-      body: 'brim, to the north. the sea, west. the downs, east. home, in whatever direction home was. every road in the world starts here, which is another way of saying you are nowhere in particular.',
+      body: 'brim, to the north. the sea, west. the downs, east. and one arm pointing south that says 8:15, which is not a place. every road in the world starts here, which is another way of saying you are nowhere in particular.',
+      /* THREE LANDS GO INTO PENCIL ON THE MAP FROM THE FIRST NOTE IN
+       * THE GAME. The signpost has named them since Session 1 and it
+       * has never been worth anything, because the map had nothing to
+       * do with what the walker had been told. Now it has. */
+      learns: ['name:kingdom', 'name:beach', 'name:downs'],
     },
   },
   {
@@ -228,7 +233,7 @@ export const MEADOW_POIS: WorldPOI[] = [
     prompt: 'LOOK DOWN THE WELL',
     note: {
       title: 'the old well',
-      body: 'you look down. the dark looks back, politely. somewhere below, a splash the pen never bothered to draw.',
+      body: 'you look down. the dark looks back, politely. a long way below, something lands in water, and it takes longer to do it than it should.',
     },
   },
   {
@@ -244,7 +249,7 @@ export const MEADOW_POIS: WorldPOI[] = [
     prompt: 'LEAN ON THE STILE',
     note: {
       title: 'the long fence',
-      body: 'a fence with one stile, one gate, and several strong opinions about which side is the field. the hay cart has been almost done being loaded since it was drawn.',
+      body: 'a fence with one stile, one gate, and several strong opinions about which side is the field. the hay cart has been almost done being loaded for as long as anyone at this gate can remember.',
     },
   },
   {

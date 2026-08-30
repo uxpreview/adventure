@@ -205,17 +205,20 @@ export const buildKingdom: RegionBuilder = (ctx) => {
    * game set — it is whether the walker has worked out why the market
    * never opened (`reason:brim`), asked in the present tense, every
    * frame. That is WORLD-SYSTEMS §6 stated as five lines of code.        */
-  const stallShut = ctx.standee(margetStallTexture(1484, false), 4.6, 4.6, -44, -94.5);
-  const stallOpen = ctx.standee(margetStallTexture(1485, true), 4.6, 4.6, -44, -94.5);
-  const marget = ctx.standee(margetTexture(1486), 1.35, 2.4, -48.8, -93.4);
+  const stallShut = ctx.standee(margetStallTexture(1484, false), 5.4, 5.4, -40.5, -75.5);
+  const stallOpen = ctx.standee(margetStallTexture(1485, true), 5.4, 5.4, -40.5, -75.5);
+  // at the stall's west post and half a unit in front of it, so she
+  // reads as the person behind the counter and not as one more figure
+  // standing about in a square that already has sixteen of them
+  const marget = ctx.standee(margetTexture(1486), 1.45, 2.6, -43.1, -75.0);
   for (const m of [stallShut, stallOpen, marget]) {
     (m.material as THREE.MeshBasicMaterial).transparent = true;
   }
   /* THE BOARD. Chalked at the cross the day the market is called, and
    * never taken down: the permanent half of the change, standing at
    * every hour including the sixteen the stall is packed away for. */
-  const marketBoard = ctx.standee(marketBoardTexture(1487), 3.0, 2.15, -32.4, -70.2,
-    { rotY: -0.22 });
+  const marketBoard = ctx.standee(marketBoardTexture(1487), 3.2, 2.3, -38.6, -69.6,
+    { rotY: -0.16 });
   (marketBoard.material as THREE.MeshBasicMaterial).transparent = true;
   marketBoard.visible = false;
 
@@ -385,6 +388,16 @@ export const buildKingdom: RegionBuilder = (ctx) => {
       Math.max(0, Math.min(1, (clock.hour - 5.5) / 0.9)),
       Math.max(0, Math.min(1, (20.4 - clock.hour) / 0.9))
     );
+    /* AND SO DOES EVERYBODY ELSE. Marget's routine only reads as a
+     * routine if the town keeps one too: a square with sixteen people
+     * standing in it at three in the morning makes her going home look
+     * like a bug rather than a day. They leave a little later than she
+     * does and come back a little later, because she is the one who is
+     * always first. */
+    folk.setDim(Math.min(
+      Math.max(0, Math.min(1, (clock.hour - 6.1) / 1.0)),
+      Math.max(0, Math.min(1, (21.2 - clock.hour) / 1.0))
+    ));
     for (const m of [stallShut, stallOpen, marget]) {
       (m.material as THREE.MeshBasicMaterial).opacity = outNow;
     }
@@ -489,14 +502,14 @@ export const KINGDOM_POIS: WorldPOI[] = [
     prompt: 'LISTEN TO THE FOUNTAIN',
     note: {
       title: 'brim square',
-      body: 'the fountain has run since the town was six lines old. the stalls sell whatever a scribble can be argued into being: apples, or cannonballs, or very patient hedgehogs.',
+      body: 'the fountain has run since before the walls did. the stalls are set out, the bunting is up, and there is nothing on any of the counters, because market day here has been next week for a long time.',
     },
   },
   {
     x: -45, z: -14, radius: 8, label: 'THE SOUTH GATE',
     note: {
       title: 'the south gate',
-      body: 'the portcullis is drawn raised and always has been. either the kingdom has no enemies, or its enemies are also drawings, and everyone has agreed to be civil.',
+      body: 'the portcullis has been up so long the chain has gone stiff in its housing. either the kingdom has no enemies, or its enemies have given it up too, and everyone has agreed to be civil about it.',
     },
   },
   {
@@ -504,7 +517,7 @@ export const KINGDOM_POIS: WorldPOI[] = [
     prompt: 'WAIT FOR THE BELL',
     note: {
       title: 'the belfry',
-      body: 'the clock\'s two hands were drawn at different times of day and have refused to discuss it since. the bell splits the difference and rings when it feels the hour has been earned.',
+      body: 'the clock\'s two hands have disagreed for as long as anybody can remember and neither will give ground. the bell splits the difference and rings when it judges the hour has been earned. brim has been taking the bell\'s word for it ever since.',
     },
   },
   {
@@ -518,7 +531,7 @@ export const KINGDOM_POIS: WorldPOI[] = [
     prompt: 'READ THE CROSS',
     note: {
       title: 'the market cross',
-      body: 'a market is called from here, at the hour the bell strikes, and there is a step worn into the base from the calling. the stalls are set and the bunting is up. nobody in brim has been able to agree what hour the bell struck for a very long time.',
+      body: 'a market is called from here, at the hour the bell strikes, and there is a step worn into the base from the calling. nobody in brim has been able to agree what hour the bell struck for a very long time. the step has not been stood on in living memory.',
     },
   },
   {
@@ -526,7 +539,7 @@ export const KINGDOM_POIS: WorldPOI[] = [
     prompt: 'SCRUMP AN APPLE',
     note: {
       title: 'the orchard close',
-      body: 'twelve trees inside the walls, counted twice a day by a warden nobody has drawn yet. the apples are red because the pen only brought one other color, and it was needed for the flags.',
+      body: 'twelve trees inside the walls, counted twice a day by a warden who has never once come back with a different number. they are all the same tree, grafted off itself for as long as the walls have been up, and all going the same way at the same rate.',
     },
   },
   { x: 50, z: -110, radius: 7, label: 'THE WOOD GATE' },
@@ -792,7 +805,7 @@ export const CASTLE_POIS: WorldPOI[] = [
     prompt: 'CRANE YOUR NECK',
     note: {
       title: 'castle greyweather',
-      body: 'the tallest drawing on the sheet. the banners are mid-snap in a wind nothing else on the page can feel. whoever lives here is never home, or is the wind.',
+      body: 'the tallest thing anybody in this world has stood under. the banners are mid-snap in a wind nothing at ground level can feel. whoever lives here is never home, or is the wind.',
     },
   },
   {
@@ -885,7 +898,7 @@ export const NEIGHBORHOOD_POIS: WorldPOI[] = [
     prompt: 'SIT A WHILE',
     note: {
       title: 'the green',
-      body: 'a swing set drawn mid-sway. somewhere a sprinkler the pen only wrote the sound of. it is always almost dinnertime here.',
+      body: 'a swing set moving, gently, with nobody on it. somewhere behind a hedge a sprinkler is going, and you never do find the lawn it is on. it is always almost dinnertime here.',
     },
   },
   { x: -45, z: 170, radius: 7, label: 'THE RIVER BRIDGE' },
@@ -960,7 +973,7 @@ export const CITY_POIS: WorldPOI[] = [
     prompt: 'WAIT FOR THE LIGHT',
     note: {
       title: 'the junction',
-      body: 'four traffic lights, all drawn green. the city has never once had to stop, and looks a little tired about it.',
+      body: 'four traffic lights, and all four of them are green. the city has never once had to stop, and looks a little tired about it.',
     },
   },
   { x: 100, z: 205, radius: 8, label: 'MAIN STREET' },
@@ -1013,14 +1026,14 @@ export const OFFICE_POIS: WorldPOI[] = [
     prompt: 'CHECK THE TIMETABLE',
     note: {
       title: 'the 8:15 stop',
-      body: 'the timetable says the 8:15 is coming. the 8:15 is drawn nowhere on this sheet. everyone waiting knows both of these things and has made their peace.',
+      body: 'the timetable says the 8:15 is coming. there is no track here, and there is no track anywhere. everyone waiting knows both of these things and has made their peace.',
     },
   },
   {
     x: 300, z: 200, radius: 10, label: 'THE CUBICLE MILE',
     note: {
       title: 'the cubicle mile',
-      body: 'towers of ruled glass, the only part of the world drawn with a straightedge. your footsteps go glossy here, like the floor is proud of itself.',
+      body: 'towers of ruled glass, and the only corner of the world anybody ever laid out with a straightedge. your footsteps go glossy here, like the floor is proud of itself.',
     },
   },
 ];

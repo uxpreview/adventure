@@ -44,6 +44,9 @@ export class StandeeField {
   private count: number;
   private ground: ((x: number, z: number) => number) | null;
   private isDecal: boolean;
+  /** The authored opacities, so setDim can be a multiply and not a set. */
+  private base: number;
+  private ghost: number;
 
   constructor(tex: THREE.Texture, capacity: number, opts: StandeeFieldOpts) {
     const {
@@ -57,6 +60,8 @@ export class StandeeField {
       ground,
     } = opts;
     this.count = capacity;
+    this.base = baseOpacity;
+    this.ghost = ghost;
     this.ground = ground ?? null;
     this.isDecal = decal;
 
@@ -229,6 +234,23 @@ export class StandeeField {
 
   setOvershoot(v: number) {
     this.mat.uniforms.uOvershoot.value = v;
+  }
+
+  /**
+   * DIM THE WHOLE FIELD (Session 7). One multiply over both the inked
+   * and the ghost opacity, so a field can be taken off the page without
+   * touching a single instance — which is how Brim's folk go home.
+   *
+   * The day cycle multiplies every land already built for free
+   * (WORLD-SYSTEMS §7), and Session 6 spent that on lamps. This is the
+   * other half of the same argument: a walled town at three in the
+   * morning has nobody standing in its square, and a routine that only
+   * one named person keeps is not a routine, it is an exception.
+   */
+  setDim(k: number) {
+    this.mat.uniforms.uBase.value = this.base * k;
+    this.mat.uniforms.uGhost.value = this.ghost * k;
+    this.mesh.visible = k > 0.02;
   }
 
   update(time: number) {

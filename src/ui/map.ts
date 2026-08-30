@@ -193,23 +193,35 @@ export function renderMap(state: {
       hatch(ctx, X(cx) - 26, Z(cz) + 10, 52, 14, 0.4, 6, r, { alpha: 0.1, color: PENCIL });
       continue;
     }
+    /* TWO HANDS, AND THEY HAVE TO READ AS TWO HANDS AT THE SIZE THE MAP
+       IS ACTUALLY DELIVERED AT. The first build of this separated them
+       by alpha alone and the registers were indistinguishable on the
+       contact sheet — the map is drawn at 940 and shown at about 690,
+       and a 1.6× alpha difference does not survive that. So the ink
+       goes HEAVIER (a name you earned is written firmly) and the pencil
+       goes lighter, greyer AND thinner, which is three signals instead
+       of one. */
     const heard = reg === 'heard';
     const label = letterCanvas(s.name, {
       ...S.quiet(11 * ink),
       align: 'center',
+      alpha: heard ? 0.8 : 0.96,
+      weightScale: heard ? 0.85 : 1.25,
       ...(heard ? { color: PENCIL } : {}),
     });
-    // pencil is lighter than ink on the page as well as greyer
-    ctx.globalAlpha = heard ? 0.62 : 1;
-    ctx.drawImage(label, X(cx) - label.width / 4, Z(cz) - label.height / 4,
-      label.width / 2, label.height / 2);
+    const lw = label.width / 2;
+    const lh = label.height / 2;
+    ctx.globalAlpha = heard ? 0.66 : 1;
+    ctx.drawImage(label, X(cx) - lw / 2, Z(cz) - lh / 2, lw, lh);
     ctx.globalAlpha = 1;
     /* and a place you have only HEARD of does not get its border drawn
        around it — you know the name, not the shape. One underline, the
-       way a hand marks a thing it has been told. */
+       way a hand marks a thing it has been told, clear of the letters'
+       own descenders. */
     if (heard) {
-      line(ctx, X(cx) - 30, Z(cz) + 9, X(cx) + 30, Z(cz) + 9, r,
-        { width: 1.1, alpha: 0.3, color: PENCIL, passes: 1, jitter: 1.6 });
+      const uy = Z(cz) + lh / 2 - 1;
+      line(ctx, X(cx) - lw * 0.42, uy, X(cx) + lw * 0.42, uy, r,
+        { width: 1.1, alpha: 0.32, color: PENCIL, passes: 1, jitter: 1.6 });
     }
   }
 

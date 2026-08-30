@@ -381,10 +381,25 @@ export function brimBelfryTexture(seed: number): THREE.CanvasTexture {
     // string courses
     line(ctx, 60, 262, 132, 260, r, { width: 1.4, alpha: 0.45, passes: 1 });
     line(ctx, 58, 350, 134, 348, r, { width: 1.4, alpha: 0.45, passes: 1 });
-    // the clock: a scratched circle with two hands that disagree
+    /* THE CLOCK: a scratched circle with two hands that disagree, and
+     * from Session 7 they disagree about something SPECIFIC.
+     *
+     * They are stopped, and a stopped clock is right twice a day. One
+     * of these two points at eight, which is the hour Brim's lamps
+     * actually come on (`daylight.ts`); the other points at eleven and
+     * is simply wrong. Nobody in this town can tell which, because
+     * nobody in this town has anything to check a clock against — but
+     * the walker has watched the light go all the way round, and can
+     * stand in this yard while the lamps are lit and see that one of
+     * the two hands agrees with them.
+     *
+     * That is the whole of Brim's wait (design/THE-WAITS.md §2) and it
+     * is two lines of geometry. Do not "fix" these angles. */
     scribbleCircle(ctx, 96, 300, 17, r, { width: 1.8, alpha: 0.8 }, 1.1);
-    line(ctx, 96, 300, 96 + 9, 293, r, { width: 1.6, alpha: 0.8, passes: 1 }, 2);
-    line(ctx, 96, 300, 96 - 4, 289, r, { width: 1.3, alpha: 0.7, passes: 1 }, 2);
+    // eight o'clock: down and to the left, and it is the right one
+    line(ctx, 96, 300, 96 - 12.1, 300 + 7.0, r, { width: 1.7, alpha: 0.82, passes: 1 }, 2);
+    // eleven: up and to the left, and it has never given ground
+    line(ctx, 96, 300, 96 - 7.0, 300 - 12.1, r, { width: 1.4, alpha: 0.72, passes: 1 }, 2);
     // the bell stage: paired arches, the bell a dark bulb in the left
     for (const bx of [72, 104]) {
       stroke(ctx, [[bx, 220], [bx, 172], [bx + 8, 160], [bx + 16, 172], [bx + 16, 220]], r,

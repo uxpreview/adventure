@@ -23,9 +23,15 @@ const PHONES = [
   { name: '430-max', width: 430, height: 932 },
 ];
 
-// the longest note in the game, and one of the shortest, so the card is
-// judged at both ends of its range
-const LONG = 'THE KEEP';
+// THE LONGEST NOTE IN THE GAME, and one of the shortest, so the card is
+// judged at both ends of its range.
+//
+// Session 7 re-wrote every note in the world and moved the ceiling: the
+// longest is now THE BOARDWALK at 253 characters (it was THE CUT at
+// 252). Anybody who rewrites a note re-checks this — the note card is
+// hand-lettered onto a canvas, a canvas does not reflow, and the widest
+// line in the game is the only one that proves the wrap.
+const LONG = 'THE BOARDWALK';
 const SHORT = 'THE MOAT POOL';
 
 const out = process.env.OUT ?? 'shots-mobile';
@@ -76,7 +82,7 @@ for (const vp of PHONES) {
   // teleported past: the prompt has to be reachable by a thumb and the
   // card has to hold its own text.
   for (const [file, label, x, z] of [
-    ['04-note-long', LONG, -45, -234],
+    ['04-note-long', LONG, -224, 58],
     ['05-note-short', SHORT, -100, -215],
   ]) {
     await page.evaluate(([tx, tz]) => window.__inklands.goto(tx, tz), [x, z]);
