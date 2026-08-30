@@ -91,6 +91,38 @@ thirty-four notes including the premise line itself (WOWED,
 critique-story-1, and the same file logs a new critic — see below).
 Every other land is a scatter draft and is presumed NOT YET.
 
+**AND THE MAIN STORYLINE HAS NEVER BEEN READ BY A CRITIC** (owner,
+2026-08-30). Every gate this project has run has judged **pictures**.
+Session 7 mapped THE LINE — four acts, the ending settled, the whole
+spine of the game — and the only thing that read it was the session
+that wrote it. The twelve WAITS at least got a blind read (§3 of
+`critique-story-1.md`); **the acts got nothing.**
+
+So a story gate is owed, and it is not the same job as the art
+director's. What it should ask, and none of it is about how anything
+looks:
+
+- **Does Act I teach its three facts without stating them** — everybody
+  is waiting, nobody can leave, you can?
+- **Does the turn survive not being said?** Read the twelve waits'
+  contributions cold (`THE-WAITS.md` §13) and see whether a reader
+  assembles *they were all waiting for each other* — and whether they
+  can do it WITHOUT having been told there is something to assemble.
+- **Does the ending land, or is it a shrug?** `STORY.md` §6 flagged
+  that risk in the file itself and `THE-LINE.md` §5 settled the beat;
+  neither has been tested on anybody.
+- **Is Act III a reveal or an anticlimax?** The player cannot see the
+  whole line — 480 units against 201 units of haze — and that was
+  argued as a strength. It has never been checked against a reader who
+  did not make the argument.
+- **And does any of it work if the player does the acts out of order?**
+  Nothing is gated. A player who walks straight to the Cubicle Mile in
+  the first ten minutes is supposed to find that none of it means
+  anything yet, and that is either the game working or a hole.
+
+**Run it as an adversarial read, not a review.** A critic who is trying
+to find the shrug is worth ten who are trying to enjoy it.
+
 **A third critic is PROPOSED and awaiting the owner** (Session 7): the
 **STORY EDITOR**, who reads a wait blind — the person, the places, the
 turn, the change, nothing else — and has to be able to say what that

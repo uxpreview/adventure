@@ -271,6 +271,31 @@ handoff updated, verdicts logged.
 - **Brim Square is full.** Session 7 fitted Marget in. The next authored
   thing in that plaza displaces something Session 3 earned.
 
+## Two things the owner raised on 2026-08-30 — NOT this session's job
+
+Both are written up properly. Do not start either one inside a score
+session; do not let either one rot, either.
+
+- **THE CAMERA'S BEARING** — *can the camera shift, on desktop and
+  mobile, so the player can always see where they are headed?*
+  (`WORLD-SYSTEMS` §2, rewritten, with the four candidates and the
+  recommendation.) The complaint is exact: walking south you are walking
+  backwards out of the frame, and the line runs north–south for four
+  hundred and eighty units, so **Act III's whole walk is done facing
+  away from it.** It is a FOUNDATIONS item by the ordering rule and it
+  belongs BEFORE the five remaining lands. The number that decides the
+  shape of any answer: **a standee is a flat cutout with a fixed
+  rotation, so at 30° off-axis it is 87% as wide and at 45° it is 71%
+  and the world reads as card.** Bounded yaw, not a free orbit.
+- **A STORY GATE** (`QUALITY-BAR` §2). Every gate this project has ever
+  run has judged **pictures**. THE LINE was mapped in one session and
+  read by nobody. It is cheap, it needs no build, and it can run beside
+  any session including this one **if there is room at the end and only
+  then** — an adversarial read asking whether Act I teaches its three
+  facts without stating them, whether the turn survives not being said,
+  and whether the ending lands or is the shrug `STORY.md` §6 flagged in
+  its own file.
+
 ## Four things are waiting on the owner, and none of them blocks you
 
 Recorded so the next session does not re-decide them by accident:

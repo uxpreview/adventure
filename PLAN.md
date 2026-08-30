@@ -66,6 +66,28 @@ which stand entirely on ground that is already built),
 encounters, 31 unmarked) and `design/THE-LINE.md` (the four acts, and
 the ending) are the authoring queue. Numbers still wait on the owner.
 
+**Two things the owner raised on 2026-08-30 are not on this ladder yet
+and both want a decision before they are:**
+
+- **THE CAMERA'S BEARING** (`WORLD-SYSTEMS` §2, rewritten). *Can the
+  camera shift so the player can always see where they are headed?*
+  Walking south you are walking backwards out of the frame, and the
+  king's road runs north–south for four hundred and eighty units, so
+  **Act III's entire walk is done facing away from it.** It is a
+  FOUNDATIONS item by the ordering rule — the layout law is what decides
+  how a land is authored — and the standing recommendation is a
+  **bounded yaw of about ±30° that eases toward travel and springs back
+  to due north**, because a standee is a flat cutout and at 45° off-axis
+  this world is a stack of card seen sideways. If it is taken, it is
+  taken BEFORE the five remaining lands, not after.
+- **A STORY GATE** (`QUALITY-BAR` §2). Every gate this project has run
+  has judged pictures. THE LINE was mapped in one session and read by
+  nobody. It wants an adversarial read: does Act I teach its three facts
+  without stating them, does the turn survive not being said, and does
+  the ending land or is it a shrug — which `STORY.md` §6 flagged as the
+  risk in the file itself. It is cheap, it needs no build, and it can
+  run beside any session.
+
 Rules of the ladder:
 
 - A session may swap scope up the ladder, never skip the gate.

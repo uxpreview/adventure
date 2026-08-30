@@ -130,19 +130,99 @@ camera and the character controller each need one lift.
 **This must land before any more lands are authored.** Every land built
 flat is a land re-opened later.
 
-## 2. The camera — due a real design pass
+## 2. The camera — the height pass is DONE; the BEARING question is open
+
+### The first pass — BUILT, Session 4 ✓
 
 Session 3 established the **frame-top ceiling**: the shipping camera
 shows roughly 10 world units of height at 33 units out and 16 at 82, so
 any tall near object fills the upper frame and hides everything behind
 it. That is why Greyweather's keep is drawn wide (640×320) and its
-gatehouse is only 9.5 units.
+gatehouse is only 9.5 units. That ceiling was a camera constant nobody
+chose on purpose.
 
-That ceiling is a camera constant nobody chose on purpose. With terrain
-height arriving, the camera has to change anyway (it must follow the
-ground, and rising ground must actually reveal more). Treat the camera
-as a designed system with elevation, pitch and fog as its parameters —
-not as three magic numbers in `cameraOffset()`.
+*Session 4 fixed it. The camera is a designed system now — `back`,
+`up`, `look`, the three `rise*` terms and `fogPerUnit`, each a decision
+with a reason, all documented in `App.CAM`. Rising ground reveals more
+by RETREATING rather than by pitching, because pitching throws the
+walker out of the bottom of the frame. Height buys distance. All three
+rise terms are zero on flat ground, which is what protected the WOWED
+compositions of Sessions 2 and 3.*
+
+### The second question — OPEN, and the owner named it *(2026-08-30)*
+
+> **Can the camera shift, on desktop and on mobile, so the player can
+> always see where they are headed?**
+
+**The complaint is exact and it is real.** The camera only ever looks
+north. Walk north and you are walking into the frame; walk EAST or WEST
+and you are crossing it; **walk SOUTH and you are walking backwards out
+of it, into ground you cannot see.** That is not an edge case: the
+king's road runs north–south for four hundred and eighty units and
+**Act III's whole walk — the castle gate down to the car park — is done
+facing away from where you are going** (`design/THE-LINE.md` §3).
+
+And it collides head-on with a law: **the camera only ever looks north,
+and that decides LAYOUT** (QUALITY-BAR). Six lands were authored on it.
+Session 5 lost two rounds to a boardwalk laid east–west and a regatta
+staged west of its viewpoint. So this is a foundations question, not a
+polish one, and it wants its own session.
+
+#### The technical fact that decides the shape of the answer
+
+**Standees are not billboards.** `makeStandee` builds a `PlaneGeometry`
+with a fixed `rotation.y`; nothing in this engine turns to face the
+camera. At the shipped bearing every cutout is square to the lens, and
+that is the entire reason the paper metaphor reads.
+
+Rotate the camera and they are seen off-axis. The arithmetic is the
+whole design constraint:
+
+| yaw | a standee's apparent width | verdict |
+|---|---|---|
+| 0° | 100% | the shipped page |
+| 20° | 94% | free |
+| 30° | 87% | survivable |
+| 45° | 71% | visibly card |
+| 90° | 0% | the world is edges |
+
+**So a free camera is fatal and a bounded one is not.** Anything past
+about thirty-five degrees turns this world into a stack of paper seen
+sideways, which is a bug that looks exactly like the metaphor failing.
+
+#### The four candidates, and the standing recommendation
+
+1. **A free orbit.** Refused. It re-opens every land, breaks the layout
+   law, and hits the standee wall above.
+2. **BOUNDED YAW THAT EASES TOWARD TRAVEL** — the camera swings a
+   limited amount toward the direction the walker is actually going,
+   inside an authored envelope of roughly ±30°, and eases back to due
+   north whenever they stop. Walking south you get enough of a turn to
+   see what is coming; standing still you are always in the shipped
+   composition. **This is the recommendation.**
+3. **A PEEK GESTURE** — hold a key, or two-finger drag on a phone, to
+   look, springing back on release. Bearing is a gesture and never a
+   state. Cheap, honest, and it does nothing for the player who does not
+   know the control exists.
+4. **A LEAD OFFSET rather than a rotation** — aim further along the
+   direction of travel without changing bearing. Costs nothing and helps
+   east–west travel, **and cannot help south at all**, because south is
+   behind the lens. Worth doing anyway; not an answer on its own.
+
+Two and three are complementary and probably ship together.
+
+#### What any version of this must not break
+
+- **The resting bearing is due north**, and a stopped walker is always
+  in the composition the land was authored for.
+- **Every protected framing must be reproducible exactly.** The shoot
+  harness pins yaw to zero, every existing contact sheet re-shoots
+  unchanged, and a regression is a diff and not an opinion.
+- **The envelope is authored, not free** — one number, in `App.CAM`,
+  with the standee table above written beside it as the reason.
+- **Portrait gets its own envelope.** A tall frame has less horizontal
+  room to spend on a turn, and the joystick must never sit under the
+  thing the player is steering toward (§8).
 
 ## 3. Traversal — BUILT, Session 6 ✓
 
