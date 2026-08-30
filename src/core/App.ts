@@ -1069,6 +1069,51 @@ export class App {
             this.audio.event('surf-break');
             this.ambientAcc = 9 + Math.random() * 9;
           }
+        } else if (this.region.id === 'downs') {
+          /* THE HARROW DOWNS. Everything this land makes is a machine, an
+           * animal, or a tool going into the ground, and the mill's
+           * creak is louder the nearer you are to it, the way the sea
+           * is on the coast. NO VOICES anywhere in it: nobody in the
+           * Downs is talking, and that is the loudest thing about the
+           * land. */
+          const toMill = Math.hypot(this.char.pos.x - 150, this.char.pos.z + 8);
+          const toDrove = Math.hypot(this.char.pos.x - 100, this.char.pos.z - 76);
+          const roll = Math.random();
+          if (toMill < 42 && roll > 0.34) {
+            this.audio.event('mill-creak');
+            this.ambientAcc = 11 + (toMill / 42) * 9 + Math.random() * 5;
+          } else if (toDrove < 34 && roll > 0.3) {
+            this.audio.event('sheep');
+            this.ambientAcc = 6 + Math.random() * 8;
+          } else {
+            this.audio.event('field-work');
+            this.ambientAcc = 13 + Math.random() * 13;
+          }
+        } else if (this.region.id === 'forest') {
+          /* THE PENWOOD, and its one silence.
+           *
+           * Everything the wood makes comes from above you or from a
+           * long way off. **Inside twenty units of Brack nothing fires
+           * but the bed** — it is the only place in the game where the
+           * ambient stops, it is not stated anywhere, and a player who
+           * notices it has noticed the same thing the road is saying. */
+          const toTarn = Math.hypot(this.char.pos.x - 150, this.char.pos.z + 195);
+          const toBrack = Math.hypot(this.char.pos.x - 150, this.char.pos.z + 153);
+          if (toBrack < 20) {
+            this.ambientAcc = 2.5;
+          } else {
+            const roll = Math.random();
+            if (toTarn < 30 && roll > 0.45) {
+              this.audio.event('tarn-drip');
+              this.ambientAcc = 9 + Math.random() * 7;
+            } else if (roll > 0.6) {
+              this.audio.event('axe-far');
+              this.ambientAcc = 16 + Math.random() * 14;
+            } else {
+              this.audio.event('pine-tick');
+              this.ambientAcc = 5 + Math.random() * 6;
+            }
+          }
         } else {
           this.ambientAcc = 5;
         }

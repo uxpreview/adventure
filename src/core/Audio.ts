@@ -1094,6 +1094,81 @@ export class Audio {
         }
         break;
       }
+
+      /* ---- FARM & FOREST (Session 10) ------------------------------ *
+       * Six voices for two lands, and between them they say the one
+       * thing the beds cannot: that the Downs are WORKED and that the
+       * Penwood is not. Everything the Downs make is a machine or an
+       * animal or a tool going into the ground. Everything the Penwood
+       * makes comes from above you or from a long way off, and it is
+       * the only land besides the canyon that answers you. */
+
+      case 'mill-creak': {
+        // the shaft taking the load: a low knock, the wood complaining
+        // as it comes round, and the second knock a beat and a half
+        // later. The only sound in the Downs made by a machine.
+        const j = 0.93 + Math.random() * 0.15;
+        this.knock(96 * j, 0.019);
+        this.glide(96 * j, 74 * j, 0.02, 0.52, 0.013, 'triangle');
+        this.surge(0.06, 0.5, 300, 130, 0.008, 0.05, 'lowpass');
+        this.knock(88 * j, 0.012, 1.4 + Math.random() * 0.5);
+        break;
+      }
+
+      case 'sheep': {
+        // two notes a tone apart, the second falling further than it
+        // should, thin and nasal, with the breath under it
+        const j = 0.9 + Math.random() * 0.22;
+        this.glide(486 * j, 452 * j, 0, 0.20, 0.016, 'sawtooth');
+        this.glide(432 * j, 336 * j, 0.23, 0.34, 0.013, 'sawtooth');
+        this.surge(0.03, 0.4, 1700, 900, 0.005, 0.02);
+        break;
+      }
+
+      case 'field-work': {
+        // a tool going into the ground a long way off: one soft knock
+        // and its dry answer. NO VOICES — nobody in the Downs is
+        // talking, and that is the loudest thing about the land.
+        const j = 0.88 + Math.random() * 0.26;
+        this.knock(210 * j, 0.011);
+        this.surge(0.01, 0.14, 700 * j, 260, 0.007, 0.01);
+        if (Math.random() > 0.55) this.knock(186 * j, 0.007, 0.42);
+        break;
+      }
+
+      case 'axe-far': {
+        /* Hallows, a long way off — and THE WOOD ANSWERS. Two knocks
+         * and then the same pair again at a tenth the level, 340 ms
+         * behind: the Penwood is the only land besides the canyon that
+         * repeats you, and nothing anywhere says so. */
+        const j = 0.94 + Math.random() * 0.14;
+        this.knock(300 * j, 0.017);
+        this.knock(250 * j, 0.012, 0.19);
+        this.knock(300 * j, 0.0022, 0.34);
+        this.knock(250 * j, 0.0016, 0.53);
+        break;
+      }
+
+      case 'tarn-drip': {
+        // something small landing on flat water, and the whole pond
+        // taking a moment about it
+        const j = 0.9 + Math.random() * 0.2;
+        this.tone(700 * j, 0, 0.06, 0.014);
+        this.tone(262 * j, 0.03, 2.1, 0.011);
+        this.tone(196 * j, 0.06, 2.6, 0.007);
+        break;
+      }
+
+      case 'pine-tick': {
+        // a cone coming down through the branches: three knocks
+        // falling and getting quieter, which is the cheapest possible
+        // proof that there is something above you
+        const j = 0.85 + Math.random() * 0.3;
+        this.knock(1500 * j, 0.008);
+        this.knock(1100 * j, 0.006, 0.07 + Math.random() * 0.05);
+        this.knock(800 * j, 0.004, 0.16 + Math.random() * 0.08);
+        break;
+      }
     }
   }
 
@@ -1200,20 +1275,24 @@ export class Audio {
     }
   }
 
-  /** Short dry knock (woodblock family). */
-  private knock(freq: number, vol = 0.045) {
+  /** Short dry knock (woodblock family). `at` schedules it forward, which
+   *  is what lets a mill's shaft answer itself and a wood repeat an axe
+   *  without either of them needing a second event (Session 10). */
+  private knock(freq: number, vol = 0.045, at = 0) {
     if (!this.ctx) return;
     const ctx = this.ctx;
+    const t0 = ctx.currentTime + at;
     const o = ctx.createOscillator();
     o.type = 'sine';
-    o.frequency.setValueAtTime(freq, ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(freq * 0.6, ctx.currentTime + 0.06);
+    o.frequency.setValueAtTime(freq, t0);
+    o.frequency.exponentialRampToValueAtTime(freq * 0.6, t0 + 0.06);
     const g = ctx.createGain();
-    g.gain.setValueAtTime(vol, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.setValueAtTime(vol, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
     o.connect(g).connect(this.master!);
-    o.start();
-    o.stop(ctx.currentTime + 0.12);
+    o.start(t0);
+    o.stop(t0 + 0.12);
   }
 
   /* ---------- the score ---------- */

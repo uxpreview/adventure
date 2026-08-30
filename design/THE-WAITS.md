@@ -616,13 +616,25 @@ the player is the only one who ever gets to.
 | LONGSHORE | Pye + seven pots + the chain; an eighth pot | 9–12 (all its places exist) |
 | WIDE BLUE | Wren + the second mark | 9–12 (all its places exist) |
 | THE COMMON | Nell straightening; the cart loaded and turned | inhabitants pass |
-| PENWOOD | Brack, and one quarter turn | 9 (with the land) |
-| HARROW DOWNS | Joan; the picnic; the sitting | 9 (with the land) |
+| PENWOOD | **shipped** — Brack, the two postures, and the road that is his circle | **10** ✓ |
+| HARROW DOWNS | **shipped** — Joan, her day, the picnic, and the sitting | **10** ✓ |
 | SPLITROCK | Holt; the marks; the boat off its trestles | 10 (with the land) |
 | BLEACH FLATS | Amos; the catch; the lid | 10 (with the land) |
 | MAPLE COURT | Val; the porch light; the hedge cut back | 11 (with the land) |
 | GREYLINE CITY | the man; the worn paths; the bench | 11 (with the land) |
 | CUBICLE MILE | Dennis; the timetable; the shelter light | 11 (with the land) |
+
+**AND SESSION 10 FOUND THE THING THIS FILE DID NOT KNOW ABOUT ITSELF.**
+Brack's entry above describes a fear, a job and a road, and every
+session before Session 10 would have shipped that as a note. It is a
+POLYLINE instead: `layout.ROADS` carries BRACK'S ROUND, a closed circle
+at forty-two units about the tarn, and the track from Brim runs in and
+stops at it, and there is no other road in the Penwood at all. The map
+draws roads, so **the map says the whole wait**, and nothing else in the
+game does — no note, no label, no line of prose. The lesson generalises
+past this one land: *a turn that can be built into the geography should
+never be written into a note*, and four of the eleven remaining waits
+have a place in them that could carry theirs the same way.
 
 Four of the twelve stand entirely on ground that is already built and
 already WOWED, and could be authored in any session from here without

@@ -29,18 +29,20 @@ here, what a footstep sounds like, whether the page takes your ink.
 | THE KINGDOM OF BRIM | the walled town | cottages, Brim Square, the market |
 | THE COMMON | where you woke | the crossroads, the old well, three oaks |
 | MAPLE COURT | the neighborhood | porch lights, picket fences, the green |
-| THE PENWOOD | under the pines | pine dark, mushrooms, the tarn |
+| THE PENWOOD | under the pines | the tarn, the round, the deep pines |
 | SPLITROCK CANYON | the deep cut | striated walls, the Needle Arch |
-| THE HARROW DOWNS | farm country | wheat, hay bales, the mill, a scarecrow |
+| THE HARROW DOWNS | farm country | the mill, the headland, the ford, the drove |
 | THE BLEACH FLATS | the desert | dune script, saguaros, tumbleweeds, the oasis |
 | GREYLINE CITY | downtown | hatched towers, lit windows, the Junction |
 | THE CUBICLE MILE | the office park | ruled glass, hedges, the 8:15 stop |
 
 A river rises in the canyon, crosses the whole sheet and meets the sea
-past the boardwalk; three plank bridges carry the roads over it. On the
-coast, a strip the wash never took runs a hundred and eighty units out
-into the sea — dry paper, so you can walk it, out past the surf and back
-ashore at the foot of the cliff path.
+past the boardwalk; three plank bridges carry the roads over it, and one
+farm lane simply goes through it at a ford, where the water shallows and
+goes light over a gravel bar. On the coast, a strip the wash never took
+runs a hundred and eighty units out into the sea — dry paper, so you can
+walk it, out past the surf and back ashore at the foot of the cliff
+path. And in the pine dark there is a road that goes round.
 
 Every border crossing changes the music's mood, the footstep underfoot,
 and deals a region card — nothing else, because the sheet is continuous.
@@ -108,6 +110,11 @@ and deals a region card — nothing else, because the sheet is continuous.
 - **A market that opens**, once you have worked out what the belfry
   clock actually says — the first piece of this world that changes
   because of something the walker knows.
+- **A table laid for two on the edge of a field.** The second setting is
+  put away every evening and laid out again every morning. Sit down
+  once and it stays out, at every hour, in every save.
+- **A wood with one road in it, and the road is a circle.** Nothing
+  anywhere says why. The map draws roads.
 - Position, discovered lands, strides walked, the boat, the hour and
   what you know saved to `localStorage`.
 

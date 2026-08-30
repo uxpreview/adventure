@@ -52,7 +52,7 @@ if (hi > 24 || lo < -18) fail('amplitude outside the authored envelope');
 console.log('\nroads — max gradient along the centreline (walk limit ' + MAX + '):');
 const ROAD_NAMES = [
   "king's road", 'coast road', 'east road', 'mill lane', 'main street',
-  'commuter spur', 'forest track', 'market lane', 'canyon trail',
+  'commuter spur', 'forest track', "brack's round", 'market lane', 'canyon trail',
 ];
 L.ROADS.forEach((road, ri) => {
   let worst = 0, worstAt = null, blocked = 0;
@@ -103,6 +103,11 @@ const SPOTS = [
   ['shelter cove', -212, -134], ['cove back', -190, -150],
   ['sandbar root', -256, 76], ['sandbar mid', -290, 30],
   ['the long water', -299, 16], ['the mark', -300, -8], ['seaward face', -277, -32],
+  // FARM & FOREST (Session 10)
+  ['the mill', 150, -8], ['the headland', 136, 8], ['the home field', 176, -2],
+  ['the ford', 147, 19], ['the drove', 96, 76], ['the scarecrow', 122, 84],
+  ['the wood road', 78, -124], ['the oars', 100, -158], ['the round', 150, -153],
+  ['the tarn shore', 150, -176], ['the deep pines', 188, -246],
 ];
 console.log('\nstanding places — height / slope:');
 for (const [name, x, z] of SPOTS) {
@@ -561,6 +566,89 @@ console.log('\nthe rowboat — its ground is water, and it refuses every other:'
 }
 
 /* ---- 5. the tear must not sever the canyon trail ------------------ */
+/* ---- 4d. THE FORD, AND BRACK'S ROUND (Session 10) ------------------ *
+ * Two claims THE HARROW DOWNS and THE PENWOOD make in their geometry
+ * rather than in a note, so they are asserted rather than trusted:
+ *
+ *   1. THE FORD is the only place a walker crosses the river between
+ *      the east road's bridge and the sea, and the river is still wet
+ *      enough there to float an oar — because `route:the-river` runs
+ *      salt to source and a shallow that stopped a rowboat would sever
+ *      it in the middle of the Downs.
+ *   2. BRACK'S ROUND never comes within forty units of the tarn, at any
+ *      point on it, and it goes all the way round. THE-WAITS §7 is a
+ *      behaviour and a road, and this is the road half.
+ */
+console.log('\nthe ford — the mill lane crosses, and the oar still passes:');
+{
+  const F = L.FORDS[0];
+  const wet = L.waterFieldAt(F.x, F.z);
+  const k = L.fordAt(F.x, F.z);
+  const blocked = (x, z) =>
+    L.waterFieldAt(x, z) > WET && L.fordAt(x, z) < 0.45;
+  console.log(`  at the crossing: water ${wet.toFixed(2)}, ford ${k.toFixed(2)}, bed lifted to y=${H(F.x, F.z).toFixed(1)}`);
+  let walk = 0;
+  for (let z = F.z - 12; z <= F.z + 12; z += 0.5) if (!blocked(F.x, z)) walk++;
+  if (blocked(F.x, F.z)) fail('the ford does not let a walker across');
+  else console.log('  a walker crosses the mill lane at the ford \u2713');
+  if (!L.rowableAt(F.x, F.z)) fail('the ford has run the rowboat aground');
+  else console.log('  and an oar still works in it, so the river is not severed \u2713');
+  // and it is the ONLY dry-shod crossing on this stretch. The river runs
+  // diagonally here, so the transect has to be long enough to actually
+  // meet it: sixty units of north–south at each x, which crosses the
+  // channel wherever it has wandered to.
+  let leaks = 0;
+  for (let d = 14; d < 46; d += 1) {
+    for (const sgn of [-1, 1]) {
+      const x = F.x + sgn * d;
+      let crossed = true;
+      for (let z = -30; z <= 30; z += 0.5) {
+        if (blocked(x, F.z + z)) { crossed = false; break; }
+      }
+      if (crossed) leaks++;
+    }
+  }
+  if (leaks) fail(`the river is fordable in ${leaks} places off the ford`);
+  else console.log('  and it is the only dry-shod crossing for forty units either way \u2713');
+}
+
+console.log("\nbrack's round — the road keeps his forty units:");
+{
+  const ring = L.ROADS[7];
+  const C = { x: 150, z: -195 };
+  let near = 1e9;
+  let nearAt = null;
+  for (let i = 0; i < ring.pts.length - 1; i++) {
+    const [ax, az] = ring.pts[i];
+    const [bx, bz] = ring.pts[i + 1];
+    for (let t = 0; t <= 1; t += 0.02) {
+      const x = ax + (bx - ax) * t;
+      const z = az + (bz - az) * t;
+      const d = Math.hypot(x - C.x, z - C.z);
+      if (d < near) { near = d; nearAt = [Math.round(x), Math.round(z)]; }
+    }
+  }
+  const closed =
+    ring.pts[0][0] === ring.pts[ring.pts.length - 1][0] &&
+    ring.pts[0][1] === ring.pts[ring.pts.length - 1][1];
+  console.log(`  nearest the water: ${near.toFixed(1)} units at ${nearAt}`);
+  console.log(`  and it closes: ${closed ? 'yes — the wood has one road and it is a circle' : 'NO'}`);
+  if (near < 40) fail(`the round comes within ${near.toFixed(1)} units of the tarn`);
+  if (!closed) fail('the round does not close');
+  // the bowl: you can see down it, and you can walk down it
+  const prof = [];
+  for (let d = 42; d >= 14; d -= 4) prof.push(H(C.x, C.z + d).toFixed(1));
+  console.log(`  the bowl, ring to water: ${prof.join(' \u2192 ')}`);
+  let steep = 0;
+  for (let d = 14; d <= 44; d += 1) {
+    for (let a = 0; a < 6.28; a += 0.2) {
+      if (S(C.x + Math.cos(a) * d, C.z + Math.sin(a) * d) > MAX) steep++;
+    }
+  }
+  if (steep) fail(`the tarn's bowl refuses a walker in ${steep} places`);
+  else console.log('  and it is walkable all the way down, from every side \u2713');
+}
+
 console.log('\nthe tear:');
 let deepest = 0, deepAt = null;
 for (let z = -280; z <= -100; z += 4) {

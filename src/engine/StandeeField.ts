@@ -19,6 +19,24 @@ export type StandeeFieldOpts = {
    */
   wind?: { amp: number; freq: number };
   /**
+   * ONE GUST CROSSING A WHOLE FIELD (Session 10, THE HARROW DOWNS).
+   *
+   * `wind` above is per-instance sway on a phase hashed off world
+   * position, and its coefficients are large on purpose — neighbouring
+   * blades are uncorrelated, which is what grass does. A field of corn
+   * does the opposite: it moves in one piece, in a wave you can watch
+   * arrive. That is the same term with a SMALL spatial coefficient and
+   * a one-sided envelope, so the gust passes rather than oscillating.
+   *
+   *   amp    how far the heads go over at the peak of it
+   *   speed  radians a second — one gust every 2π/speed
+   *   len    world units per radian across the field; the wave travels
+   *          along +x, which in the Downs is the wind off the wood
+   *
+   * Requires `wind` to be set: it rides in the same vertex term.
+   */
+  wave?: { amp: number; speed: number; len: number };
+  /**
    * The ground under an instance (Session 4). Set once by ctx.field, so
    * the twelve region builders never have to think about height: every
    * f.set(i, x, z, ...) call already written stands the instance on the
@@ -57,6 +75,7 @@ export class StandeeField {
       overshoot = 0.12,
       decal = false,
       wind,
+      wave,
       ground,
     } = opts;
     this.count = capacity;
@@ -81,6 +100,7 @@ export class StandeeField {
         uBase: { value: baseOpacity },
         uOvershoot: { value: overshoot },
         uWind: { value: new THREE.Vector2(wind?.amp ?? 0, wind?.freq ?? 0) },
+        uWave: { value: new THREE.Vector3(wave?.amp ?? 0, wave?.speed ?? 0, wave?.len ?? 0) },
         uQuadH: { value: h },
         uPlayer: { value: new THREE.Vector2(1e6, 1e6) },
       },
@@ -89,6 +109,7 @@ export class StandeeField {
         uniform float uTime;
         uniform float uOvershoot;
         uniform vec2 uWind;
+        uniform vec3 uWave;
         uniform float uQuadH;
         uniform vec2 uPlayer;
         varying vec2 vUv;
@@ -109,7 +130,14 @@ export class StandeeField {
             float phase = origin.x * 1.7 + origin.y * 2.3;
             float sway = sin(uTime * uWind.y + phase)
                        + 0.5 * sin(uTime * uWind.y * 2.7 + phase * 1.3);
-            wp.x += sway * uWind.x * hFac * hFac;
+            // THE GUST: one wave crossing the whole field, one-sided so
+            // it arrives, passes, and leaves the corn standing again
+            float g = 0.0;
+            if (uWave.x > 0.0) {
+              float w = sin(uTime * uWave.y - origin.x * uWave.z);
+              g = max(0.0, w) * max(0.0, w) * uWave.x;
+            }
+            wp.x += (sway * uWind.x + g) * hFac * hFac;
             vec2 away = origin - uPlayer;
             float d = length(away);
             if (d < 1.7 && d > 1e-4) {

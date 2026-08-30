@@ -16,6 +16,10 @@ const SPOTS = [
   // the coast (Session 5): the busiest coastal frames
   ['the boardwalk', -224, 60], ['the cut', -237, -49], ['the point', -238, -70],
   ['the sandbar', -286, 42], ['the mark', -300, -4],
+  // FARM & FOREST (Session 10): the wood is the heaviest instanced land
+  // in the game and the drove is the densest hedge in it
+  ['the downs shot', 145, 34], ['the drove', 101, 108], ['the mill', 148, 6],
+  ['the round', 150, -146], ['the deep pines', 188, -240], ['the thicket', 108, -180],
 ];
 
 const url = process.env.URL ?? 'http://localhost:4173/?debug';
