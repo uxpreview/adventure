@@ -257,12 +257,17 @@ export class POIManager {
         this.ground(px, pz) + 0.35,
         pz + rz * side * out
       );
-      // and the anchor is its INNER edge, so the lettering runs away
-      // from the thing rather than back across it
-      this.promptEl.style.left = `${
-        parseFloat(this.promptEl.style.left)
-        + side * Math.min(this.promptEl.offsetWidth * 0.5, 56)
-      }px`;
+      /* And the anchor is its INNER edge, so the lettering runs away
+       * from the thing rather than back across it — on a WIDE screen
+       * only. On a tall one the prompt is pinned centre-bottom in thumb
+       * reach (see `place`) and is not beside anything; nudging a pinned
+       * control sideways is just a control that moved. */
+      if (window.innerWidth / window.innerHeight >= 0.8) {
+        this.promptEl.style.left = `${
+          parseFloat(this.promptEl.style.left)
+          + side * Math.min(this.promptEl.offsetWidth * 0.5, 56)
+        }px`;
+      }
       this.taken.push(this.boxOf(this.promptEl));
     } else {
       this.promptEl.classList.remove('show');

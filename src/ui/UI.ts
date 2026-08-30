@@ -191,6 +191,17 @@ export class UI {
     this.cardTimer = window.setTimeout(() => this.card.classList.remove('show'), 3400);
   }
 
+  /** THE HARNESS'S BROOM. A contact sheet driven by teleport raises a
+   *  region card at every jump, and a card that is only on screen
+   *  because the shutter cut in front of it is not in the picture a
+   *  player sees. Sheets that are photographing a WALK sweep it. */
+  quiet() {
+    window.clearTimeout(this.cardTimer);
+    window.clearTimeout(this.hintTimer);
+    this.card.classList.remove('show');
+    this.hintEl.classList.remove('show');
+  }
+
   showHint(text: string, holdMs = 4200) {
     /* The hint is the control list and the control list got longer when
      * running arrived. It is one lettered line on a canvas, which does

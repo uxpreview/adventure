@@ -404,6 +404,8 @@ export class App {
             this.camAstern = 0;
           }
         },
+        /** Sweep the transient chrome — see UI.quiet. */
+        quiet: () => this.ui.quiet(),
         /** Hold a peek, for the bearing sheet: −1 hard left, +1 right. */
         peek: (v: number | null) => {
           this.input.holdPeek = v;

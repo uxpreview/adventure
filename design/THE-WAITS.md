@@ -188,7 +188,7 @@ north, in frame, for the first time — and it stays cut.
 **Never says:** who left, or where they went, or that they are not
 coming. Nobody in Maple Court would be so rude.
 
-**Authoring note for Session 11:** the chairs face **north**, because the
+**Authoring note for Session 12:** the chairs face **north**, because the
 camera only ever looks north and the whole beat is a sightline. The
 castle is 300 units up the sheet on the same axis as the line. Do not
 put the gap on the east side toward the city, however much the fiction
@@ -626,6 +626,6 @@ the player is the only one who ever gets to.
 
 Four of the twelve stand entirely on ground that is already built and
 already WOWED, and could be authored in any session from here without
-opening a land. **From Session 9 on, every land session ships its
+opening a land. **From Session 10 on, every land session ships its
 places AND its wait AND its named inhabitant** (PLAN.md, Session 7's
 line), and this file is what it ships.

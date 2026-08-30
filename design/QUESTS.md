@@ -61,7 +61,7 @@ and the knowledge games — is `design/INSPIRATION.md`.*
 
 **Total ≈ 93 authored pieces**, which is roughly what twelve to sixteen
 hours costs at this bar, and which is why DIRECTION.md says the ladder
-needs about five sessions beyond Session 13.
+needs about five sessions beyond Session 14.
 
 Two properties of that table matter more than the numbers:
 

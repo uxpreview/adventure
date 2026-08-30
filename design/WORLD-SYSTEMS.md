@@ -130,7 +130,7 @@ camera and the character controller each need one lift.
 **This must land before any more lands are authored.** Every land built
 flat is a land re-opened later.
 
-## 2. The camera — the height pass is DONE; the BEARING question is open
+## 2. The camera — the height pass is DONE, and so is the BEARING
 
 ### The first pass — BUILT, Session 4 ✓
 
@@ -149,24 +149,26 @@ walker out of the bottom of the frame. Height buys distance. All three
 rise terms are zero on flat ground, which is what protected the WOWED
 compositions of Sessions 2 and 3.*
 
-### The second question — OPEN, and the owner named it *(2026-08-30)*
+### The second question — BUILT, Session 9 ✓
+
+The owner asked it on 2026-08-30:
 
 > **Can the camera shift, on desktop and on mobile, so the player can
 > always see where they are headed?**
 
-**The complaint is exact and it is real.** The camera only ever looks
+**The complaint was exact and it was real.** The camera only ever looked
 north. Walk north and you are walking into the frame; walk EAST or WEST
 and you are crossing it; **walk SOUTH and you are walking backwards out
 of it, into ground you cannot see.** That is not an edge case: the
 king's road runs north–south for four hundred and eighty units and
-**Act III's whole walk — the castle gate down to the car park — is done
-facing away from where you are going** (`design/THE-LINE.md` §3).
+**Act III's whole walk — the castle gate down to the car park — was done
+facing away from where you were going** (`design/THE-LINE.md` §3).
 
-And it collides head-on with a law: **the camera only ever looks north,
-and that decides LAYOUT** (QUALITY-BAR). Six lands were authored on it.
-Session 5 lost two rounds to a boardwalk laid east–west and a regatta
-staged west of its viewpoint. So this is a foundations question, not a
-polish one, and it wants its own session.
+*What follows is the section as it was written before the session, and
+then what the session actually found — because the recommendation below
+was right about half the question and wrong about the half it was
+written for, and a plan that gets corrected is worth more written down
+than quietly replaced.*
 
 #### The technical fact that decides the shape of the answer
 
@@ -181,8 +183,11 @@ whole design constraint:
 | yaw | a standee's apparent width | verdict |
 |---|---|---|
 | 0° | 100% | the shipped page |
+| 12° | 98% | **portrait's envelope** |
 | 20° | 94% | free |
+| 26° | 90% | **desktop's envelope** |
 | 30° | 87% | survivable |
+| 35° | 82% | the wall |
 | 45° | 71% | visibly card |
 | 90° | 0% | the world is edges |
 
@@ -197,32 +202,118 @@ sideways, which is a bug that looks exactly like the metaphor failing.
 2. **BOUNDED YAW THAT EASES TOWARD TRAVEL** — the camera swings a
    limited amount toward the direction the walker is actually going,
    inside an authored envelope of roughly ±30°, and eases back to due
-   north whenever they stop. Walking south you get enough of a turn to
-   see what is coming; standing still you are always in the shipped
-   composition. **This is the recommendation.**
+   north whenever they stop. *This was the recommendation.*
 3. **A PEEK GESTURE** — hold a key, or two-finger drag on a phone, to
    look, springing back on release. Bearing is a gesture and never a
-   state. Cheap, honest, and it does nothing for the player who does not
-   know the control exists.
+   state.
 4. **A LEAD OFFSET rather than a rotation** — aim further along the
-   direction of travel without changing bearing. Costs nothing and helps
-   east–west travel, **and cannot help south at all**, because south is
-   behind the lens. Worth doing anyway; not an answer on its own.
+   direction of travel without changing bearing.
 
-Two and three are complementary and probably ship together.
+#### AND WHAT SESSION 9 FOUND, WHICH CORRECTS THIS SECTION
 
-#### What any version of this must not break
+**A bounded yaw cannot help the walk south, and the geometry is not
+close.** This section said candidate 2 would mean that "walking south
+you get enough of a turn to see what is coming". It does not. The
+camera trails the walker on the +Z side; yawing the rig twenty-six
+degrees about the walker leaves it on the +Z side. **Southward travel is
+travel AT THE LENS, and no bounded rotation puts a lens behind itself.**
+Only a free orbit does, and a free orbit is refused.
+
+So the shipped answer is TWO components, split by what the walker's
+travel is actually doing to the frame — and the split is not tidiness,
+it is what removes the wobble:
+
+> **The part of your travel that CROSSES the frame turns the camera.
+> The part that comes AT THE LENS opens the ground at your feet.**
+
+- **THE YAW** runs off the crossing component of travel, inside an
+  envelope of **26° on desktop and 12° in portrait**. Full deflection by
+  due east or west; nothing at all due north — *and nothing at all due
+  south either*, which is the point below.
+- **THE ASTERN OPENING** runs off the toward-the-lens component: the
+  camera **gives ground**, trailing 5.5 units further back and dropping
+  its aim by 1.6, which pitches the page up and lays the road the walker
+  is entering out below them. It is `riseBack`'s trick — reveal by
+  DISTANCE, never by pitching the subject out of frame — pointed the
+  other way.
+
+**The defect, and the fix, in units of page.** With the camera 6 up and
+13 back aiming at 3.4, the bottom edge of the frame meets the ground 9.5
+units in front of the lens, which is **three and a half units in front
+of the walker** — eight tenths of a second of warning about the ground
+you are walking into. Live, that is **17.5 units**, or three and a half
+seconds. That number is what the session is for, and
+`tools/check-camera.mjs` measures it by firing the frame's own bottom
+edge at the terrain rather than by asserting the arithmetic that
+produced it.
+
+**And why there is no coin toss at due south.** The obvious way to build
+"ease toward travel" is to point the camera at the travel bearing and
+clamp it — and then due south is a fifty-fifty between +26° and −26°,
+and a walker weaving either side of the king's road flips a
+fifty-two-degree pan back and forth. That is not a tuning problem, it is
+a discontinuity, and no spring constant fixes it. Splitting travel into
+its two components removes it outright: both terms are continuous
+everywhere on the circle, and both are **exactly zero for a walker
+standing still**.
+
+**Portrait's envelope is half of desktop's, and not because of the
+standees** — 12° costs a cutout two per cent. Because the two viewports
+have different frames to spend a turn in: desktop is 42° vertical at
+16:9, which is **68.6° across**; portrait is 54° vertical at 390×844,
+which is **26.5° across**. A yaw of φ slides a distant thing across the
+page by tan φ / tan(½ hfov) — so 26° is a third of desktop's width and
+the whole of portrait's. §8's rule closes it: the joystick must never
+sit under the thing the player is steering toward, and neither may the
+turn carry that thing off the page.
+
+**The peek shipped too** — `,` and `.` held on a keyboard, two fingers
+dragged on a phone, springing back on release. It **takes the yaw over
+rather than adding to it**, so nothing in this game — travel, gesture,
+a road that carries, all at once — can put the camera past its rig's
+envelope. **The lead shipped too**, capped in units per rig rather than
+held at a number of seconds, because portrait's frame is three and a
+half units wide where the walker stands.
+
+#### What any version of this must not break — and what proves it
 
 - **The resting bearing is due north**, and a stopped walker is always
-  in the composition the land was authored for.
-- **Every protected framing must be reproducible exactly.** The shoot
-  harness pins yaw to zero, every existing contact sheet re-shoots
-  unchanged, and a regression is a diff and not an opinion.
-- **The envelope is authored, not free** — one number, in `App.CAM`,
-  with the standee table above written beside it as the reason.
-- **Portrait gets its own envelope.** A tall frame has less horizontal
-  room to spend on a turn, and the joystick must never sit under the
-  thing the player is steering toward (§8).
+  in the composition the land was authored for. Shipped as an ARRIVAL
+  and not an asymptote: under a sixth of a degree of ask, the bearing is
+  set to exactly zero. Measured at **2.5 game seconds** from full
+  deflection to exact zero.
+- **Every protected framing must be reproducible exactly.** ✓ The shoot
+  harness pins the bearing (`shoot({ bearing: true })` is opt-in and
+  every existing sheet gets the pin), and **`tools/diff-sheets.mjs`
+  is the diff**: it builds a base git ref and the working tree, shoots
+  the twenty-three framings that carry the six WOWED verdicts at two
+  hours in both viewports through an identical protocol, and counts the
+  pixels that moved.
+- **The envelope is authored, not free** — one number per rig in
+  `App.CAM`, with the standee table written beside it as the reason.
+- **Portrait gets its own envelope.** ✓ 12°, for the reason above.
+
+*The whole system, with its arithmetic, its second-order effects and the
+harness clock that proves it, is `design/specs/camera.md`.*
+
+#### AND THE LAW THIS DOES NOT TOUCH, WHICH THE NEXT SESSION WILL BE TEMPTED BY
+
+**THE CAMERA'S RESTING BEARING IS STILL DUE NORTH, AND IT STILL DECIDES
+LAYOUT.** A thing the player walks ALONG runs north–south; a thing they
+LOOK at is north of where they stand. Nothing in Session 9 licenses a
+land to be laid out east–west, and the arithmetic says why:
+
+- a stopped walker is at yaw zero, always, by contract — so **every
+  composition in this game is still judged due north**;
+- the envelope is 26° and 12°, so the most a *moving* walker ever sees
+  is a quarter-turn's worth of lean. A place staged to the east of its
+  viewpoint is still 64° out of frame;
+- and past 35° the standees fail, so the envelope cannot grow.
+
+Session 5 lost two rounds to a boardwalk laid east–west and a regatta
+staged west of its viewpoint. **The turning camera does not buy those
+rounds back**, and the first land session after this one is exactly
+where somebody will assume it does.
 
 ## 3. Traversal — BUILT, Session 6 ✓
 
@@ -404,6 +495,14 @@ Portrait implications to design for, not patch later: less horizontal
 frame means vistas must be *taller* compositions; touch targets and POI
 prompts need thumb-reach placement; the joystick must never sit under
 the thing it is steering toward.
+
+**And the number behind all three of those** (Session 9, while sizing
+the camera's envelope): portrait's frame is **26.5° wide** and desktop's
+is **68.6°**. Not "less horizontal frame" — *a third of it*. Every rule
+in this section is a consequence of that one figure, and any future
+system that spends horizontal frame — a turn, a lead, a lean, a
+shoulder-cam — needs its own portrait number rather than a scaled
+desktop one.
 
 ---
 

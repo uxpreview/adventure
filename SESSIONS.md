@@ -1,5 +1,201 @@
 # SESSIONS — the handoff log
 
+## Session 9 — 2026-08-30 — the bearing
+
+*The last foundations item on the board, taken before the five remaining
+lands because building them on a camera you are going to change
+afterwards is the elevation mistake a second time. It shipped a camera
+that answers travel — and it spent its other half building the thing
+`WORLD-SYSTEMS` §2 asked for two sessions ago and nobody had built: a
+way to know, by a number, that a protected framing has not moved.*
+
+### The owner's question, and the answer that is not the one on the board
+
+> **Can the camera shift, on desktop and on mobile, so the player can
+> always see where they are headed?**
+
+`WORLD-SYSTEMS` §2's standing recommendation was a **bounded yaw easing
+toward travel**. It is right about east and west and **wrong about
+south, which is the case it was written for**, and the geometry is not
+close: the camera trails the walker on the +Z side, and yawing the rig
+twenty-six degrees about the walker leaves it on the +Z side. Southward
+travel is travel **at the lens**, and no bounded rotation puts a lens
+behind itself. Only a free orbit does, and a free orbit is refused
+because a paper cutout seen forty-five degrees off-axis is 71% of its
+width and this world stops being paper.
+
+So the shipped answer is two components, split by what the walker's
+travel is doing to the frame:
+
+> **The part of your travel that CROSSES the frame turns the camera.
+> The part that comes AT THE LENS opens the ground at your feet.**
+
+And the split is not tidiness — **it is what removes the wobble.** Point
+a camera at the travel bearing and clamp it and due south is a coin toss
+between +26° and −26°: a walker weaving either side of the king's road
+flips a fifty-two-degree pan back and forth, and no spring constant
+fixes a discontinuity. Both components here are continuous everywhere on
+the circle, and both are exactly zero for a walker standing still —
+which is the clause six WOWED verdicts hang on.
+
+### Shipped
+
+- **THE YAW, and its envelope, which is a number with a reason beside
+  it.** 26° desktop, 12° portrait, in `App.CAM` with the standee table
+  written above it: a cutout narrows by its cosine, 26° is 90%, 30° is
+  survivable, and past about 35° the paper metaphor does not degrade, it
+  FAILS, and it fails looking exactly like a bug. **Portrait's is half
+  for a different reason** — its frame is **26.5° wide across** against
+  desktop's **68.6°**, so the same yaw slides the page nearly three
+  times as far. That figure is now written into §8, because every
+  portrait rule in this project is a consequence of it and none of them
+  had ever stated it.
+- **THE ASTERN OPENING, which is what actually answers the walk south.**
+  Travel toward the lens makes the camera **give ground**: 5.5 units
+  further back and 1.6 lower on the aim, which pitches the page up and
+  lays the road the walker is entering out below them. It is
+  `riseBack`'s own trick — reveal by DISTANCE, never by pitching the
+  subject out of frame — pointed the other way. **The defect in units of
+  page:** the bottom edge of the shipped frame meets the ground three
+  and a half units in front of the walker, which is eight tenths of a
+  second of warning. Live it is **17.5 units**, or three and a half
+  seconds.
+- **THE PEEK** — `,` and `.` held (the only pair on a keyboard already
+  engraved as left and right, and clear of the walking hand, so E stays
+  interact), two fingers dragged on a phone, springing back on release.
+  **It takes the yaw over rather than adding to it**, so nothing in this
+  game — travel, gesture, a road that carries, all at once — can put the
+  camera past its rig's envelope. A second finger on the glass cancels
+  the walk outright: two fingers are a look, one is a walk, and nothing
+  on screen has to say so.
+- **THE LEAD**, capped in UNITS per rig rather than held at a number of
+  seconds, because portrait's frame is three and a half units wide where
+  the walker stands and a lead written in seconds walks them off the
+  side of it at a run.
+- **`riseAhead` now probes up the LENS's bearing**, which is the first
+  session in which "ahead" and "north" are different questions. Probe up
+  the walker's travel instead and somebody crossing a valley sideways
+  retreats from a hill that is off-camera.
+- **AND THE OLDEST VISIBLE DEFECT IN THE GAME IS CLOSED.** It landed
+  here because a turning camera moves every label relative to the thing
+  it labels: fix it anywhere else and you are fixing it against a
+  relationship that is about to change.
+  - **THE SKYLINE.** Every standee records its top into a four-unit grid
+    as it is built — `ctx.standee` is the single choke point all 163
+    one-off stand-ups in this game go through — so a name is written
+    above the tallest thing under it instead of at a flat 3.4 units over
+    the dirt. "THE CROSSROADS" had been printing across the middle of
+    its own 4.7-unit signpost since Session 1. **It is a system and not
+    thirty authored numbers**, so it fixes the labels five unbuilt lands
+    have not authored yet.
+  - **And a screen-space pass.** Labels never land on each other, on the
+    prompt, or on the chrome (the HUD buttons and the region card, which
+    the world's writing had never heard of — in portrait THE MARKET
+    CROSS was lettered straight through `map` and `sound: on`). When two
+    collide the FARTHER one goes **up, never sideways**: a caption slid
+    sideways is a caption on a different place. And **a name with
+    nowhere legible to go is not written at all**, which is the right
+    answer and also the honest one.
+  - **The prompt moved too** — beside the thing, past its edge as the
+    skyline reports it, on whichever side the walker is not. Not toward
+    the lens: the thing between the lens and a place you are interacting
+    with is usually the walker, and the first version of the fix
+    lettered LOOK DOWN THE WELL across their chest.
+
+### And the proof, which was the other half of the session
+
+- **`tools/diff-sheets.mjs` — A REGRESSION IS A DIFF AND NOT AN
+  OPINION.** §2 has asked for this since 2026-08-30 and it is a tooling
+  requirement nobody had built. It builds a base git ref and the working
+  tree, serves both, shoots the twenty-three framings that carry the six
+  WOWED verdicts at two hours in both viewports through an identical
+  protocol, and counts the pixels that moved — **separating THE PAGE,
+  which may not move at all, from THE WRITING OVER IT**, which moves
+  whenever a label is deliberately re-placed. One run says both "nothing
+  in the world moved" and "these names moved, on purpose, and here they
+  are".
+- **THE HARNESS OWNS THE CLOCK, and that is the part that makes it
+  work.** Two shots of one framing in this project were never the same
+  picture, and the reason is not the renderer. FOUR clocks move between
+  two shutter presses and every one of them is in every pixel: the paper
+  pass's grain and its hand-drawn wobble (hashed off `uTime`, re-seeded
+  three times a second — **a one-pixel random resample of every ink edge
+  in the frame**), the standee wind, the ink-in cascade at 34 units a
+  second, and — found by the first diff this file ever ran — **the
+  walker's own quiet breath**, eight parts in a thousand of its height,
+  a third of a pixel, and exactly enough to redraw an outline. All four
+  are pinned by `__inklands.setTime`, and `__inklands.step` runs a stated
+  number of fixed ticks and renders only the last.
+  **The settle is now stated in GAME SECONDS and costs one frame**:
+  twelve game seconds takes 130–400 ms instead of seventy seconds of
+  wall clock, and two runs of a framing come back **bit-identical**.
+  That single change is worth more to this project than the camera is:
+  every sheet from here can settle past the ink-in cascade, drive the
+  walker hundreds of units, and still be repeatable.
+- **`tools/check-camera.mjs`** asserts what a photograph cannot: the
+  envelope never leaks (72 readings per viewport, travel and peek
+  together); the bearing is continuous round the whole circle of travel;
+  due south picks no side; a stopped walker reaches **exactly** zero in
+  2.5 game seconds; the walk south is measured **in units of page**, by
+  firing the frame's own bottom edge at the terrain; and
+  `setBearing(false)` pins everything, which is what keeps every
+  protected sheet reproducible.
+- **`tools/shoot-bearing.mjs`** — the first contact sheet in this
+  project that is not a set of stand-stills. Every walk is shot TWICE
+  from the same start: PINNED, which is the page as it shipped, then
+  LIVE. The pairs sit next to each other in the listing on purpose.
+
+### State
+- Build green. `check-terrain` passes, unchanged. `check-audio` passes,
+  unchanged. `check-camera` passes (new). `diff-sheets` — see the
+  numbers in `critique-camera-1.md`.
+- **No geometry, no layout, no elevation, no texture, no region file was
+  touched**, except `regions/index.ts` gaining the skyline recorder.
+- `shoot-lib.mjs` now **pins the bearing by default**; a sheet opts in
+  with `shoot({ bearing: true })`.
+- **Gate: see `design/critiques/critique-camera-1.md`.**
+- **AND ONE GATE IS THE OWNER'S, and this session could not run it.**
+  A camera is not a picture. Every number above can be asserted and not
+  one of them is the question, which is **whether it helps or whether
+  the world wobbles** — a thing a person feels over minutes of walking.
+  The walk-south capture is the evidence, every station shot twice so it
+  is a comparison rather than a cold judgement. QUALITY-BAR §2 now
+  carries this as a standing rule beside the ear gate.
+
+### Gotchas (new; Sessions 1–8 all still apply)
+- **THE GRAIN IS A CLOCK.** `PaperPass`'s `uTime` drives a per-pixel
+  hash that resamples the frame by up to a pixel and re-seeds three
+  times a second. Any pixel comparison between two frames is meaningless
+  until it is pinned. It is the single largest source of noise in this
+  renderer and nothing had ever noticed, because nothing had ever
+  compared two frames.
+- **AND SO IS THE WALKER.** `Character.idleT` accumulates from page
+  load, not from anything the harness controls. Anything that has to be
+  reproducible resets it (`Character.setClock`).
+- **A SETTLE IN MILLISECONDS IS A LIE IN THIS SANDBOX.** Three and a
+  half frames a second with `dt` clamped at 0.05 means a 900 ms settle
+  is four frames — a sixth of a second of game time, against an ink-in
+  cascade that takes eight seconds to cross a land. Every framing shot
+  before Session 9 was shot on a page that was still drawing itself.
+- **`check-terrain.mjs` DELETES `.tmp/` WHEN IT FINISHES.** Anything
+  else keeping scratch files there loses them mid-session. (The
+  `.tmp/`-can-vanish note in Session 8 was this, and now it has a
+  cause.)
+- **A CAMERA THAT EASES TOWARD A BEARING HAS A DISCONTINUITY AT THE
+  ANTIPODE**, and it is not a tuning problem. If a later session ever
+  reopens this: the fix is not a spring, a deadband or hysteresis, it is
+  not asking the question that way.
+- **AN EXPONENTIAL EASE NEVER ARRIVES**, and neither does a
+  decelerating walker: the snap-to-zero has to test what the camera is
+  being ASKED for, not whether the ask is exactly nothing, or it never
+  fires and a stopped walker is never quite in the shipped composition.
+- **A PINNED CONTROL MUST NOT BE NUDGED.** The interact prompt is
+  floated on a wide screen and PINNED centre-bottom on a tall one; the
+  first version of the prompt-placement fix applied its screen-space
+  offset to both, and moved a thumb target.
+- **`getComputedStyle(el).opacity` is how you ask whether a faded-out
+  overlay is really there.** A hidden HUD still has a bounding box.
+
 ## Session 8 — 2026-08-30 — the score
 
 *A systems session, and the first one whose product cannot be

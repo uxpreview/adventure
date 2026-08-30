@@ -32,15 +32,21 @@ retired; the chosen story is **THE 8:15** (`design/STORY.md`).
 | 6 | **Traversal & time** ✓ 2026-08-29 | **Foundations.** Sprint as INK WEIGHT (one continuous scalar: speed, stride, the print's ink, the step's level and the score's intensity are all readouts of it, and the middle of its range is the shipped mark). Roads that CARRY, authored per road and *measured* — the king's road / main street / commuter spur chain carries hardest, because STORY §4 makes it one road under twelve names. THE ROWBOAT, the first mount: found at the river mouth, left where you leave it, the river turned from a wall into the only east–west road in the world, and the open sea authored to refuse. And THE DAY CYCLE — forty minutes, graded in one place, with eight in the morning to four in the afternoon bit-for-bit the shipped page, plus Brim's lamps, its windows and two fires at Greyweather's gate. Gate to WOWED (`critique-art-5.md`). See `design/specs/traversal.md`. |
 | 7 | **The stories** ✓ 2026-08-30 | THE LINE mapped beat by beat with Act III's standing place solved and **THE ENDING SETTLED** (`design/THE-LINE.md`); the twelve WAITS, each with its person, its places, its TURN and its visible permanent change (`design/THE-WAITS.md`); the eight STRANGERS and the errand / encounter / unmarked inventories (`design/THE-STRANGERS.md`). **KNOWLEDGE** built as the content system (`src/world/knowledge.ts` — a NAME, a FACT, a ROUTE, a REASON, and no count anywhere), the **MAP MADE THE RECORD** in three registers with the line inked once you have walked it, and **BRIM'S WAIT AUTHORED END TO END**: Marget, her routine off the clock, the belfry's two hands, and a market that opens and stays open. Plus the voice pass — **24 of 34 notes**, the premise line included. Gate to WOWED (`critique-story-1.md`). From here every land session ships places **and** its wait **and** its named inhabitant. |
 | 8 | **The score** ✓ 2026-08-30 | Five synthesised instruments over twelve lands, doubled by FAMILY (music box, plucked string — Karplus–Strong, rendered rather than wired — bowed voice, struck metal, air), each land's assignment authored with its register and its one-line reason; a BED per land, and it is the quietest thing in the mix; a border that is a three-and-a-half second EQUAL-POWER crossfade of both the room and the instrument; and a mix that answers the walk and the hour. **And the proof, which was the hard half:** `check-audio.mjs` renders the score offline and asserts it, `verify-score.mjs` proves the wiring in the running game, `shoot-sound.mjs` draws it in ink, and `render-wavs.mjs` hands the ear gate to the owner — because it is the first product in this project that cannot be screenshotted. Gate to WOWED (`critique-score-1.md`). See `WORLD-SYSTEMS.md` §9. |
-| 9 | **Farm & forest** | THE HARROW DOWNS + THE PENWOOD: field patchwork vs pine dark; the tarn; the forest track. |
-| 10 | **The dry lands** | SPLITROCK CANYON (a tear in the page) + THE BLEACH FLATS: corridor drama, the oasis as reward. |
-| 11 | **The now** | MAPLE COURT + GREYLINE CITY + THE CUBICLE MILE: street rhythm, lit windows at dusk, the junction — and the 8:15 drawn into existence. |
-| 12 | **Motion & life** | Systems pass: wind everywhere, sails and windmills turning, NPC routines, road encounters. (The score moved out of this session to 8 — see the ordering rule.) |
-| 13 | **The juror** | Awwwards pass on the whole build: title, first minute, map, UI feel, mobile portrait, performance audit, then the full-gauntlet critique. |
+| 9 | **The bearing** ✓ 2026-08-30 | **Foundations, and the last of them.** The camera answers TRAVEL, in two components: the part that CROSSES the frame turns it (26° on desktop, 12° in portrait, the envelope authored off the standee table), and the part that comes AT THE LENS opens the ground at the walker's feet (the astern terms) — because a bounded yaw cannot help the walk south and `WORLD-SYSTEMS` §2 was wrong to say it could. Plus the PEEK (a gesture, never a state) and a lead capped per rig. **And the proof, which was half the session:** `tools/diff-sheets.mjs` — a regression is a diff and not an opinion — standing on a harness that pins all four of the game's clocks so two shots of one framing are one picture, and `tools/check-camera.mjs`, which asserts the envelope, the continuity and the walk south in units of page. **And the oldest visible defect closed:** THE SKYLINE, so a name is written over the thing it names instead of across it. Gate to WOWED (`critique-camera-1.md`). |
+| 10 | **Farm & forest** | THE HARROW DOWNS + THE PENWOOD: field patchwork vs pine dark; the tarn; the forest track. |
+| 11 | **The dry lands** | SPLITROCK CANYON (a tear in the page) + THE BLEACH FLATS: corridor drama, the oasis as reward. |
+| 12 | **The now** | MAPLE COURT + GREYLINE CITY + THE CUBICLE MILE: street rhythm, lit windows at dusk, the junction — and the 8:15 drawn into existence. |
+| 13 | **Motion & life** | Systems pass: wind everywhere, sails and windmills turning, NPC routines, road encounters. (The score moved out of this session to 8 — see the ordering rule.) |
+| 14 | **The juror** | Awwwards pass on the whole build: title, first minute, map, UI feel, mobile portrait, performance audit, then the full-gauntlet critique. |
+
+**FIVE LAND SESSIONS NOW RUN IN A ROW WITH NOTHING STRUCTURAL LEFT TO
+INTERRUPT THEM.** Session 9 took the last foundations item on the board;
+everything below it shifted by one, and from Session 10 on every land
+session ships its places **and** its wait **and** its named inhabitant.
 
 **This ladder does not reach the owner's target yet, and it should say
 so.** The target is now HOURS of play, not a short walk
-(`design/WORLD-SYSTEMS.md` §0). Sessions 2–13 build a world that is
+(`design/WORLD-SYSTEMS.md` §0). Sessions 2–14 build a world that is
 complete, beautiful and roughly four to six hours deep. Getting to
 twelve-plus needs about five more, and they are the ones DIRECTION.md
 sizes: **interiors** (they multiply the map without expanding the
@@ -66,20 +72,19 @@ which stand entirely on ground that is already built),
 encounters, 31 unmarked) and `design/THE-LINE.md` (the four acts, and
 the ending) are the authoring queue. Numbers still wait on the owner.
 
-**Two things the owner raised on 2026-08-30 are not on this ladder yet
-and both want a decision before they are:**
+**One thing the owner raised on 2026-08-30 is still open, and one is
+now built:**
 
-- **THE CAMERA'S BEARING** (`WORLD-SYSTEMS` §2, rewritten). *Can the
-  camera shift so the player can always see where they are headed?*
-  Walking south you are walking backwards out of the frame, and the
-  king's road runs north–south for four hundred and eighty units, so
-  **Act III's entire walk is done facing away from it.** It is a
-  FOUNDATIONS item by the ordering rule — the layout law is what decides
-  how a land is authored — and the standing recommendation is a
-  **bounded yaw of about ±30° that eases toward travel and springs back
-  to due north**, because a standee is a flat cutout and at 45° off-axis
-  this world is a stack of card seen sideways. If it is taken, it is
-  taken BEFORE the five remaining lands, not after.
+- **THE CAMERA'S BEARING** — **BUILT, Session 9** (`WORLD-SYSTEMS` §2).
+  Taken before the five remaining lands, as the ordering rule required.
+  **The one thing a later session should know about it:** the standing
+  recommendation in §2 — a bounded yaw easing toward travel — was right
+  about east and west and **wrong about south**, which is the case it
+  was written for. A camera that trails the walker on the +Z side is
+  still on the +Z side after a twenty-six-degree yaw; southward travel
+  is travel AT THE LENS and no bounded rotation puts a lens behind
+  itself. What answers it is a RETREAT AND A DROP, not a turn. §2
+  records both the recommendation and the correction, on purpose.
 - **A STORY GATE** (`QUALITY-BAR` §2). **Run once, beside Session 8,
   and it returned NOT YET** (`design/critiques/critique-story-2.md`).
   The spine is sound and the ending is not a shrug — but Act I's second
@@ -91,28 +96,22 @@ and both want a decision before they are:**
   **What is still the owner's:** whether this critic becomes standing,
   and whether its NOT YET blocks those acts or annotates them.
 
-**AND THE SESSION 9 PROMPT IS WRITTEN FOR THE BEARING, NOT FOR FARM &
-FOREST** (Session 8, and it is a proposal the owner can decline in one
-line). The ordering rule displaces the lands: the camera's bearing is
-the **last foundations item on the board**, `WORLD-SYSTEMS` §2 has said
-since 2026-08-30 that if it is taken it is taken BEFORE the five
-remaining lands, and building five lands on a bearing that changes
-afterwards is the elevation mistake a second time. **If it is taken,
-every row below 9 shifts by one** and the five land sessions then run
-with nothing structural left to interrupt them. If the owner would
-rather have THE HARROW DOWNS and THE PENWOOD now, the table above is
-already correct and `PROMPT.md` is the thing to replace.
-
 **STANDING DEBTS, and they are written here because they have been
 carried in PROMPT.md alone and PROMPT.md is overwritten every session**
 (recorded Session 8). None of them is urgent; all of them are real, and
 each has now survived at least two sessions being handed forward in a
 file that does not persist.
 
-- **POI labels have no collision logic.** "THE CROSSROADS" prints across
-  the signpost it names — and that signpost now carries the story's
-  hinge. **The oldest visible defect in the game**, and it wants its own
-  slice rather than a corner of somebody else's session.
+- ~~**POI labels have no collision logic.**~~ **CLOSED, Session 9**, in
+  the session that was already perturbing exactly that relationship —
+  a turning camera moves every label relative to the thing it labels, so
+  it was the cheapest it was ever going to be. THE SKYLINE: every
+  standee records its top into a four-unit grid as it is built, so a
+  name is written above the tallest thing under it rather than 3.4 units
+  over the dirt; plus a screen-space pass in which labels never land on
+  each other, on the prompt or on the chrome, the farther one goes UP
+  and never sideways, and a name with nowhere legible to go is not
+  written at all.
 - **The rowboat's first-meeting composition at THE RIVER MOUTH** is a
   lot of sand. Two gates have passed it and pointedly not praised it.
 - **Brim Square is full.** Session 7 fitted Marget in. The next authored
@@ -132,11 +131,24 @@ Rules of the ladder:
   other file may invent a height.
 - **Both viewports, every sheet.** `tools/shoot-lib.mjs` does it for
   free; there is no excuse left for judging landscape only.
-- **The camera only ever looks north, and that decides LAYOUT.** A thing
-  the player walks ALONG runs north–south; a thing they LOOK at is north
-  of where they stand. Session 5 lost rounds to a boardwalk laid
+- **The camera's RESTING bearing is due north, and that decides LAYOUT.**
+  A thing the player walks ALONG runs north–south; a thing they LOOK at
+  is north of where they stand. Session 5 lost rounds to a boardwalk laid
   east–west and a regatta staged west of its viewpoint. Check the
   bearing before placing, not after.
+  **AND SESSION 9 DID NOT CHANGE THIS, WHICH IS THE THING THE NEXT LAND
+  SESSION WILL ASSUME IT DID.** The camera turns now, and it turns 26°
+  on desktop and 12° in portrait, only while the walker is MOVING, and
+  it is at exactly zero the moment they stop — by contract, asserted in
+  `tools/check-camera.mjs`. Every composition in this game is still
+  judged due north, a place staged east of its viewpoint is still
+  sixty-four degrees out of frame, and the envelope cannot grow because
+  past 35° a paper cutout stops reading as paper. **Nothing licenses a
+  land to be laid out east–west.**
+- **A protected land is unregressed when `node tools/diff-sheets.mjs`
+  says so**, not when a session says so (Session 9). It builds a base
+  git ref and the working tree and counts the pixels that moved, with
+  every clock in the game pinned so the comparison means something.
 - **THE LINE'S SIGHTLINE IS A PROTECTED CORRIDOR** (Session 7,
   `design/THE-LINE.md` §3.2). Act III is a two-hundred-unit look north
   up an empty straight road from the world's south rim, so **nothing
