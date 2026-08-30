@@ -371,6 +371,7 @@ export class App {
           this.elapsed = t;
           this.fx.setTime(t);
           this.char.setClock(t);
+          this.terrain.setTime(t);
         },
         /** Step the world `n` times at a fixed dt, rendering only the
          *  last. The animation loop holds the frame afterwards. */

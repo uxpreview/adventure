@@ -12,7 +12,7 @@ const LABEL_GAP = 6;
 /** How far beside a place its prompt is written: at least this, and
  *  never further than a place is wide. */
 const PROMPT_SIDE = 2.2;
-const PROMPT_SIDE_MAX = 4.4;
+const PROMPT_SIDE_MAX = 5.5;
 
 export type POIDef = {
   x: number;
@@ -251,23 +251,25 @@ export class POIManager {
         const qz = pz + rz * side * d;
         if (!this.skylineAt || this.skylineAt(qx, qz, 1.2) === -Infinity) break;
       }
-      this.place(
-        this.promptEl,
-        px + rx * side * out,
-        this.ground(px, pz) + 0.35,
-        pz + rz * side * out
-      );
       /* And the anchor is its INNER edge, so the lettering runs away
        * from the thing rather than back across it — on a WIDE screen
        * only. On a tall one the prompt is pinned centre-bottom in thumb
        * reach (see `place`) and is not beside anything; nudging a pinned
-       * control sideways is just a control that moved. */
-      if (window.innerWidth / window.innerHeight >= 0.8) {
-        this.promptEl.style.left = `${
-          parseFloat(this.promptEl.style.left)
-          + side * Math.min(this.promptEl.offsetWidth * 0.5, 56)
-        }px`;
-      }
+       * control sideways is just a control that moved.
+       *
+       * It is handed to `place` rather than applied after it, because
+       * `place` is where the viewport clamp lives: the first version
+       * nudged the element AFTER clamping and pushed READ THE SIGNPOST
+       * off the left edge of the frame, where it read "D THE SIGNPOST". */
+      const tall = window.innerWidth / window.innerHeight < 0.8;
+      const nudge = tall ? 0 : side * Math.min(this.promptEl.offsetWidth * 0.5, 56);
+      this.place(
+        this.promptEl,
+        px + rx * side * out,
+        this.ground(px, pz) + 0.35,
+        pz + rz * side * out,
+        nudge
+      );
       this.taken.push(this.boxOf(this.promptEl));
     } else {
       this.promptEl.classList.remove('show');
@@ -280,8 +282,10 @@ export class POIManager {
       const gx = this.ground(p.def.x, p.def.z);
       const sky = this.skylineAt ? this.skylineAt(p.def.x, p.def.z, LABEL_CLEAR_R) : -Infinity;
       const over = sky > -Infinity ? sky - gx + LABEL_CLEAR : 0;
-      this.place(p.labelEl!, p.def.x, gx + Math.max(p.def.labelHeight!, over), p.def.z);
-      if (this.avoid(p.labelEl!)) this.taken.push(this.boxOf(p.labelEl!));
+      const on = this.place(
+        p.labelEl!, p.def.x, gx + Math.max(p.def.labelHeight!, over), p.def.z
+      );
+      if (on && this.avoid(p.labelEl!)) this.taken.push(this.boxOf(p.labelEl!));
       else p.labelEl!.classList.remove('show');
     }
     return active;
@@ -327,9 +331,24 @@ export class POIManager {
     return this.groundAt ? this.groundAt(x, z) : 0;
   }
 
-  private place(el: HTMLElement, x: number, y: number, z: number) {
+  /**
+   * Project a world point and put `el` there, clamped into the frame.
+   * Returns false when the point is not really in the picture at all.
+   *
+   * THE CLAMP IS A NUDGE AND NOT A PARKING SPACE. It has been here since
+   * Session 4 (a juror fix: world labels clipped at the portrait edge),
+   * and on its own it will take a place that is BEHIND THE CAMERA and
+   * letter its name into the corner of the frame — THE CUT was written
+   * across the bottom-right of the coast sheet like a watermark. A name
+   * pinned to a corner is a caption on nothing, so a caller that cares
+   * (a label does; the prompt is a control and stays where a thumb can
+   * find it) is told and can decline to write it.
+   */
+  private place(el: HTMLElement, x: number, y: number, z: number, nudge = 0) {
     this.v.set(x, y, z).project(this.camera);
-    let sx = (this.v.x * 0.5 + 0.5) * window.innerWidth;
+    const inFrame =
+      this.v.z < 1 && Math.abs(this.v.x) < 1.12 && Math.abs(this.v.y) < 1.2;
+    let sx = (this.v.x * 0.5 + 0.5) * window.innerWidth + nudge;
     let sy = (-this.v.y * 0.5 + 0.5) * window.innerHeight;
     // Clamp into the viewport (juror Fix 2: world labels clipped at the
     // portrait edge). The element is centred on sx and sits above sy, so
@@ -361,5 +380,6 @@ export class POIManager {
     }
     el.style.left = `${sx}px`;
     el.style.top = `${sy}px`;
+    return inFrame;
   }
 }

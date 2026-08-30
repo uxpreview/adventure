@@ -407,6 +407,15 @@ export const buildBeach: RegionBuilder = (ctx) => {
   let flockUp = 0;      // 0 down .. 1 fully up
   let flockFired = false;
   let flockHome = 0;    // how far along the beach they have shifted
+  /* HOW MANY TIMES THEY HAVE BEEN PUT UP, and it is a COUNTER rather
+   * than a call to Math.random for one reason: this is the only
+   * unseeded randomness left anywhere in the drawn world, and it made
+   * LONGSHORE the one land whose contact sheet could not be compared
+   * with itself (Session 9, tools/diff-sheets.mjs). Every flight still
+   * carries them a different distance down the beach; it is now the
+   * same different distance every time you walk it, which is what
+   * everything else in this world already does. */
+  let flockPuts = 0;
 
   /* ---- the boardwalk's rope and rail motion ------------------------ */
   const sockMat = sock.material as THREE.MeshBasicMaterial;
@@ -422,7 +431,7 @@ export const buildBeach: RegionBuilder = (ctx) => {
     for (const g of gulls) near = Math.min(near, Math.hypot(g.hx - px, g.hz - pz));
     if (!flockFired && near < 7) {
       flockFired = true;
-      flockHome += 30 + Math.random() * 22;
+      flockHome += 30 + (Math.sin(flockPuts++ * 12.9898) * 0.5 + 0.5) * 22;
       say('gull-cry');
     }
     if (flockFired && near > 34) flockFired = false;

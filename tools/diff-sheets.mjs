@@ -247,7 +247,18 @@ async function shootSide(port, vp) {
         document.getElementById('inklands-nowrite')?.remove();
         const st = document.createElement('style');
         st.id = 'inklands-nowrite';
-        st.textContent = '#labels,#prompt,.hint{display:none !important}';
+        /* The world's own writing, and the two transients. `.labels` is
+         * a CLASS and not an id — the first version of this line said
+         * `#labels`, matched nothing, and quietly scored every
+         * deliberately re-placed label as a regression of the page.
+         * The region card and the hint are hidden here because both are
+         * real-time transients (a 3.4-second setTimeout): whether one is
+         * still up when the shutter fires depends on wall-clock jitter,
+         * which is exactly the kind of noise this pass exists to
+         * exclude. They are still in the full-frame pass below, which is
+         * where QUALITY-BAR's "the chrome is shot too" lives. */
+        st.textContent =
+          '.labels,#labels,#prompt,.hint,.region-card{display:none !important}';
         document.head.appendChild(st);
       });
       bare[key] = (await page.screenshot()).toString('base64');

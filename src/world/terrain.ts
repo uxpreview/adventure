@@ -498,6 +498,17 @@ export class Terrain {
     this.mat.uniforms.uTime.value += dt;
   }
 
+  /** THE WATER IS A CLOCK TOO, and it was the fifth one found (Session
+   *  9). It accumulates from page load, it is not reset by anything, and
+   *  it drives the only animation in the sheet's own shader — so the
+   *  four coast framings were the only ones in the regression sheet that
+   *  could not be reproduced, and it took a diff to notice. Pinned by
+   *  `__inklands.setTime` along with the world's, the paper's and the
+   *  walker's. */
+  setTime(t: number) {
+    this.mat.uniforms.uTime.value = t;
+  }
+
   setFogCap(v: number) {
     this.mat.uniforms.uFogCap.value = v;
   }

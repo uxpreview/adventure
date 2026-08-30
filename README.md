@@ -241,8 +241,16 @@ cycle, the paper post-pass, the audio engine. New for the open world:
   to four in the afternoon is bit-for-bit the shipped page.
 - `src/world/regions/` — a builder per land placing instanced standee
   fields and one-off drawings; streaming keeps first-visit cost off
-  the walk.
+  the walk. It also keeps **the skyline**: every stand-up records its
+  top into a four-unit grid as it is built, which is how a place's name
+  knows to be written above the thing it names rather than across it.
 - `src/world/textures.ts` — the prop box: forty-odd seeded drawings,
   ink outline over a light wash stain. `textures-common.ts`,
   `textures-oldworld.ts` and `textures-coast.ts` add a box per session,
   each with its own stated ink technique.
+- `src/core/App.ts` — the loop, and **the camera**, which is a designed
+  system rather than a pile of constants: the resting framing, the rise
+  terms that reveal a landform by RETREATING instead of pitching the
+  walker out of frame, and since Session 9 the bearing — a yaw off the
+  crossing part of your travel, an astern opening off the part that
+  comes at the lens, both zero when you stand still.

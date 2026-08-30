@@ -96,7 +96,12 @@ const PEEK = [
 const LABELS = [
   ['a-crossroads', -44.5, 57],
   ['b-well', -56.5, 48],
-  ['c-market-cross', -45, -70],
+  /* NOT at (−45, −70): Brim has three runs of bunting at z −65, −81 and
+   * −96, and a camera trailing thirteen units from there hangs two
+   * enormous translucent triangles down the middle of the frame. This
+   * stands south-east of the cross, close enough for its name and far
+   * enough for the lens. */
+  ['c-market-cross', -38, -60],
   ['d-crossroads-east', -50, 57, E],
 ];
 
