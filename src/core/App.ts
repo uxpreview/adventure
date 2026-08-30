@@ -78,6 +78,11 @@ export class App {
   private camGround = 0;
   /** How much higher the ground ahead is than the ground here, damped. */
   private camRise = 0;
+  /* ---- the harness's clock (see __inklands.step) ------------------- *
+   * Null in the shipping game: `held` is only ever set from `?debug`. */
+  private held = false;
+  private forceDt = 0;
+  private noRender = false;
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -315,6 +320,60 @@ export class App {
           return { ms, calls: r.calls, tris: r.triangles };
         },
         begin: () => this.start(this.save.data.pos === null),
+
+        /* ================================================================ *
+         * THE HARNESS OWNS THE CLOCK (Session 9).
+         *
+         * Every contact sheet in this project has been shot by waiting a
+         * number of MILLISECONDS and pressing the shutter, and that was
+         * always a lie: this sandbox renders at about three and a half
+         * frames a second, so a 650 ms settle is four frames, and four
+         * frames is a tenth of a second of game time. Two shots of the
+         * same framing a week apart were never the same picture, which is
+         * exactly why "unregressed" has meant a person looking at two
+         * pictures rather than a number.
+         *
+         * Three things move on their own between two shutter presses and
+         * every one of them is in every pixel:
+         *   · the paper pass's grain and its hand-drawn wobble, which are
+         *     hashed off `uTime` and re-seeded three times a second — a
+         *     one-pixel random resample of every ink edge in the frame;
+         *   · the standee wind, which is `sin(uTime · f)` in the vertex
+         *     stage of every field in the world;
+         *   · the ink-in cascade, which travels 34 units a second from
+         *     wherever the walker first stood in a land, so a frame shot
+         *     early catches the page half drawn.
+         *
+         * So the harness stops asking for wall clock and asks for GAME
+         * TIME instead: pin the clock to a stated instant, step the
+         * simulation a stated number of fixed ticks, and render only the
+         * last one. The settle costs one frame instead of hundreds — a
+         * twelve-second settle is now cheaper than the old 650 ms one —
+         * and, far more usefully, two runs of the same framing on two
+         * builds are the SAME PICTURE, which is what makes
+         * `tools/diff-sheets.mjs` a gate instead of an opinion.
+         * ================================================================ */
+        setTime: (t: number) => {
+          this.elapsed = t;
+          this.fx.setTime(t);
+          this.char.setClock(t);
+        },
+        /** Step the world `n` times at a fixed dt, rendering only the
+         *  last. The animation loop holds the frame afterwards. */
+        step: (dt: number, n: number) => {
+          this.held = true;
+          for (let i = 0; i < n; i++) {
+            this.noRender = i < n - 1;
+            this.forceDt = dt;
+            this.tick();
+          }
+          this.noRender = false;
+        },
+        /** Give the clock back to the animation loop. */
+        resume: () => {
+          this.held = false;
+          this.clock.getDelta();
+        },
       };
     }
 
@@ -635,7 +694,17 @@ export class App {
   }
 
   private tick() {
-    const dt = Math.min(this.clock.getDelta(), 0.05);
+    const real = Math.min(this.clock.getDelta(), 0.05);
+    /* THE HARNESS'S CLOCK, and nothing else may touch it. Held, the
+     * animation loop re-presents the frame it already drew rather than
+     * advancing anything: a screenshot taken between two `step` calls is
+     * the frame the last step produced, to the pixel. */
+    if (this.held && this.forceDt <= 0) {
+      this.fx.render(0);
+      return;
+    }
+    const dt = this.forceDt > 0 ? this.forceDt : real;
+    this.forceDt = 0;
     this.elapsed += dt;
 
     /* ---- THE HOUR --------------------------------------------------- *
@@ -918,6 +987,6 @@ export class App {
     );
     this.applyFog();
 
-    this.fx.render(dt);
+    if (!this.noRender) this.fx.render(dt);
   }
 }

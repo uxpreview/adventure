@@ -208,6 +208,26 @@ export class Character {
     this.shadow.visible = !v;
   }
 
+  /**
+   * THE HARNESS PINS EVERY CLOCK, AND THE WALKER HAS THREE OF ITS OWN.
+   *
+   * Session 9: the first regression diff of two identical framings came
+   * back with fifty-three differing pixels in a fourteen-by-thirty-seven
+   * box in the middle of the frame, and that box was the walker. The
+   * world's clock and the paper pass's clock were both pinned; `idleT`
+   * was not, and the quiet breath it drives is eight parts in a thousand
+   * of the figure's height — a third of a pixel, which is exactly enough
+   * to redraw an outline. A regression harness that cannot reproduce a
+   * standing figure cannot be trusted about a moving one.
+   *
+   * Never called from the shipping game.
+   */
+  setClock(t: number) {
+    this.idleT = t;
+    this.walkPhase = 0;
+    this.stepAcc = 0;
+  }
+
   teleport(x: number, z: number, heading = 0) {
     this.pos.set(x, this.groundY, z);
     this.vel.set(0, 0, 0);

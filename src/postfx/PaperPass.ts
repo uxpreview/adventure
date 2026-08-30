@@ -230,4 +230,14 @@ export class PaperFX {
     this.pass.uniforms.uTime.value += dt;
     this.composer.render();
   }
+
+  /** THE GRAIN IS A CLOCK. The pen-and-page shimmer and the hand-drawn
+   *  wobble are both hashed off `uTime` — a one-pixel random resample of
+   *  every ink edge in the frame, re-seeded three times a second. Two
+   *  screenshots taken at two different `uTime`s therefore differ in
+   *  every line in the picture, which is why the regression harness pins
+   *  this as well as the world's own clock (see `__inklands.setTime`). */
+  setTime(t: number) {
+    this.pass.uniforms.uTime.value = t;
+  }
 }
