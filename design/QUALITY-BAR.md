@@ -265,6 +265,16 @@ regression check it always was.
   stops a walker weaving either side of due south from flipping a
   fifty-two-degree pan back and forth; and a stopped walker arrives at
   EXACTLY zero rather than approaching it.
+- **`node tools/check-fields.mjs` whenever anything is drawn as an
+  instanced field, and especially anything that MOVES.** The owner
+  found, after nine sessions, that every animal in the game went
+  invisible the moment it changed posture — a hidden pose was parked
+  four thousand units away and the ink wave scheduled its birth ninety-
+  seven seconds out, so it drew at ghost opacity. **No contact sheet in
+  this project could ever have caught it**, because a contact sheet
+  photographs a walker standing still and the bug only fires when a
+  creature changes pose. The check drives the walker AT the animals and
+  asserts that no field is half inked in.
 - **`node tools/check-terrain.mjs` before you look at anything.** It
   bundles the height field and asserts the amplitude envelope, that no
   road is severed, that every standing place is reachable on foot from

@@ -437,7 +437,7 @@ export const buildForest: RegionBuilder = (ctx) => {
         { w: 9 + v, h: 3.6 + v * 0.35 });
       sub.forEach(([x, z, rot], i) => g.set(i, x, z, 0.75 + r() * 0.5, rot, r() > 0.5));
       // and the same instances are hidden in the base field
-      downSpots.forEach(([x, z], i) => { if (i % 4 === v) f.set(i, x, -4000, 0.001, 0, false); });
+      downSpots.forEach(([x, z], i) => { if (i % 4 === v) f.hide(i, x, z); });
     }
   }
 
@@ -627,8 +627,22 @@ export const buildForest: RegionBuilder = (ctx) => {
     goat.hold -= dt;
     if (d < 16 && goat.hold <= 0) {
       const away = Math.atan2(goat.hz - pz, goat.hx - px);
-      goat.x = goat.hx + Math.cos(away) * 20;
-      goat.z = goat.hz + Math.sin(away) * 20;
+      /* IT MOVES OFF, AND IT STAYS IN THE WOOD. Twenty units per
+       * approach with nothing bounding it means a determined player can
+       * herd it across a border, and nothing in this world crosses a
+       * border but the walker. It keeps to the Penwood with a margin,
+       * and it will not walk into the water. */
+      let nx = goat.hx + Math.cos(away) * 20;
+      let nz = goat.hz + Math.sin(away) * 20;
+      nx = Math.max(rect.minX + 12, Math.min(rect.maxX - 12, nx));
+      nz = Math.max(rect.minZ + 12, Math.min(rect.maxZ - 12, nz));
+      if (tarnD(nx, nz) < 17) {
+        const out = Math.atan2(nz - TARN.z, nx - TARN.x);
+        nx = TARN.x + Math.cos(out) * 17;
+        nz = TARN.z + Math.sin(out) * 17;
+      }
+      goat.x = nx;
+      goat.z = nz;
       goat.hold = 5.5;
       goat.pose = 1;
     }
@@ -644,7 +658,7 @@ export const buildForest: RegionBuilder = (ctx) => {
     const facing = goat.x < goat.hx + 0.01 && goat.pose === 1;
     for (let p = 0; p < 4; p++) {
       if (p === goat.pose) goatPoses[p].set(0, goat.hx, goat.hz, 0.9, 0, facing);
-      else goatPoses[p].set(0, goat.hx, -4000, 0.001, 0, false);
+      else goatPoses[p].hide(0, goat.hx, goat.hz);
     }
   };
 };
@@ -1237,7 +1251,7 @@ export const buildDowns: RegionBuilder = (ctx) => {
       const pose = w > 0.72 ? 2 : w > 0.34 ? 1 : 0;
       for (let p = 0; p < 3; p++) {
         if (p === pose && outNow > 0.4) handFields[p].set(i, hx, hz, 0.95, 0, i % 2 === 0);
-        else handFields[p].set(i, hx, -4000, 0.001, 0, false);
+        else handFields[p].hide(i, hx, hz);
       }
     }
 
@@ -1273,7 +1287,7 @@ export const buildDowns: RegionBuilder = (ctx) => {
       const pose = s.stub ? (i % 2 as 0 | 1) : moving ? 3 : ((i % 3) as 0 | 1 | 2);
       for (let p = 0; p < 4; p++) {
         if (p === pose) sheepFields[p].set(i, s.hx, s.hz, 0.85 + (i % 4) * 0.06, 0, s.side < 0);
-        else sheepFields[p].set(i, s.hx, -4000, 0.001, 0, false);
+        else sheepFields[p].hide(i, s.hx, s.hz);
       }
     }
   };

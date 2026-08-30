@@ -140,7 +140,8 @@ does the opposite and moves in one piece.
   crosses, an oar still passes, and it is the only dry-shod crossing for
   forty units either way; and **BRACK'S ROUND** — nearest the water 40.6
   units, it closes, and the bowl is walkable from every side)
-- `check-audio.mjs` ✓ · `check-camera.mjs` ✓
+- `check-audio.mjs` ✓ · `check-camera.mjs` ✓ · `check-fields.mjs` ✓ (new —
+  see the owner's bug below)
 - `diff-sheets.mjs` — see below, and read it before you assume anything
 - **critique-art-6: WOWED at round 5.**
 
@@ -213,6 +214,52 @@ no person comparing two contact sheets a week apart would ever have
 found it. **Bound every term in `elevation.ts` on all four sides**, and
 run the tool BEFORE you think you are finished, not after.
 
+### AND ONE BUG THE OWNER FOUND THAT NINE SESSIONS OF CONTACT SHEETS COULD NOT
+
+> *"The animals in other locations disappear when you approach them.
+> The only ones that seem to be working are in Brim."*
+
+Correct, and it had been true since Session 5.
+
+**Every creature with more than one posture is drawn as one instanced
+field per pose with a single instance showing at a time**, and the way
+the world hid the other poses was `set(i, x, -4000, 0.001)` — park it
+four thousand units away at a thousandth of its size. But `set` RECORDS
+the position, `positions` is the field's answer to *where is instance
+i*, and `cascadeFrom` reads it to decide when the ink wave gets there.
+Four thousand units at the wave's thirty-four a second is a birth
+**ninety-seven seconds in the future**, and until its birth the shader
+draws an instance at `uGhost` — sixteen per cent — which against paper
+is nothing at all.
+
+So every animal in the game went invisible the moment it changed
+posture, for the first hundred seconds in each land, which is all the
+time anybody spends near one. **Brim's pigeons, Brim's swallows and
+Greyweather's rooks were immune only because they are one-off
+`ctx.standee` meshes with no birth attribute to get wrong** — which is
+exactly the shape of the report.
+
+Nothing in this project could have caught it. A contact sheet
+photographs a walker standing still; the bug only fires when a creature
+changes pose, and a creature changes pose because you walked at it. It
+was found by asking the running page what its births actually were.
+
+**The fix is `StandeeField.hide(i, x, z)`** — drop the instance straight
+down under its own feet at zero scale and keep telling the truth about
+where it is. Five call sites: the gulls (Longshore), the sheep, the
+goat, the field hands and the fallen pines. Plus two things that made
+the invariant exact rather than nearly true: unused field capacity is
+parked at zero scale instead of merely a thousand units down, and
+`cascadeFrom` births the seats nobody sits in.
+
+**And it ships with an assertion, because a bug that survives nine
+sessions gets a check and not a comment:** `tools/check-fields.mjs`
+drives the walker AT the animals in seven lands and asserts that **no
+field is half inked in** — a field is cascaded all at once, so after
+thirteen game seconds one with some instances born and some stranded is
+the bug itself, wherever it is. Verified both ways: green on the fix,
+red at ninety-five seconds on the old idiom.
+
 ### For the next land session — read this part
 
 - **AUTHOR THE GROUND FIRST AND THE PROPS SECOND.** THE HARROW took
@@ -245,6 +292,11 @@ run the tool BEFORE you think you are finished, not after.
   and a run of them is a row of cards until you fade forty pixels off
   each end with `destination-out`. The same trick fixed the near trunk,
   which was reading as a dark board with a straight top.
+- **A HIDDEN INSTANCE MUST STILL SAY WHERE IT IS.** Use
+  `StandeeField.hide(i, x, z)`, never `set(i, x, -4000, …)`. And place
+  every instance of a field at least once — an instance that has never
+  been placed has no position, and anything that reasons about position
+  (the cascade, `wakeNear`, `awakeCount`) skips it.
 - **AND THE CAMERA'S LAW IS STILL THE LAW.** Every framing that failed
   in this session failed it: a hedge five units in front of the lens, a
   drove laid across a river, a label at a ford printed on a mill forty

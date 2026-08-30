@@ -461,7 +461,7 @@ export const buildBeach: RegionBuilder = (ctx) => {
           gullFields[p].mesh.setMatrixAt(i, _m);
           gullFields[p].mesh.instanceMatrix.needsUpdate = true;
         } else {
-          gullFields[p].set(i, g.hx, -4000, 0.001, 0, false);
+          gullFields[p].hide(i, g.hx, g.hz);
         }
       }
     }
