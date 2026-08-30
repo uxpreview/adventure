@@ -140,10 +140,27 @@ now the claim, and a sag would be visible.
 > breathing, your own checker measures it at 3.69 dB, and it is in the
 > caption. Fine.
 >
-> And the regression: **the world did not change and the sheets prove
-> it.** Six protected lands, two hours, both viewports, and there is
-> nothing new drawing anywhere. Which is what a score session's second
-> half should look like.
+> And the regression is the right kind of boring. **One hundred and
+> fifty-four frames** — six protected lands, two hours, both viewports —
+> and there is nothing new drawing anywhere: the Common's well and
+> poppies and the signpost with the time on it, Brim's square and its
+> belfry with the lamps lit at dusk, Greyweather's avenue and gatehouse,
+> the Cut with its chain and its chisel marks, the Mark with the regatta
+> rounding it. The diff is one file that draws nothing, and the sheets
+> agree with the diff.
+>
+> **Two honest notes, because I would rather say them than have them
+> found later.** Frames shot at short settle in this sandbox catch the
+> ink-in cascade mid-wave — Brim Square arrives half in pencil at three
+> and a half frames a second — which is the streaming mechanic and not
+> this session's doing, but it means a frame is not a fixed thing to
+> compare against. And that is the second note: **this pass was a person
+> looking at pictures, which is what "unregressed" has meant in this
+> project every time it has been said.** A score session got away with
+> it because its diff is one file that cannot draw. **The next session
+> touches the camera, and it will not get away with it** — which is why
+> the Session 9 prompt asks for `tools/diff-sheets.mjs` before it asks
+> for a bearing.
 
 **Verdict: WOWED** (round 3).
 
