@@ -91,6 +91,18 @@ and both want a decision before they are:**
   **What is still the owner's:** whether this critic becomes standing,
   and whether its NOT YET blocks those acts or annotates them.
 
+**AND THE SESSION 9 PROMPT IS WRITTEN FOR THE BEARING, NOT FOR FARM &
+FOREST** (Session 8, and it is a proposal the owner can decline in one
+line). The ordering rule displaces the lands: the camera's bearing is
+the **last foundations item on the board**, `WORLD-SYSTEMS` §2 has said
+since 2026-08-30 that if it is taken it is taken BEFORE the five
+remaining lands, and building five lands on a bearing that changes
+afterwards is the elevation mistake a second time. **If it is taken,
+every row below 9 shifts by one** and the five land sessions then run
+with nothing structural left to interrupt them. If the owner would
+rather have THE HARROW DOWNS and THE PENWOOD now, the table above is
+already correct and `PROMPT.md` is the thing to replace.
+
 **STANDING DEBTS, and they are written here because they have been
 carried in PROMPT.md alone and PROMPT.md is overwritten every session**
 (recorded Session 8). None of them is urgent; all of them are real, and

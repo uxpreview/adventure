@@ -1,312 +1,262 @@
-# PROMPT — Session 8: THE SCORE
+# PROMPT — Session 9: THE BEARING
 
 You are continuing INKLANDS in `uxpreview/adventure`. Read, in order:
-`design/QUALITY-BAR.md` (binding), **`design/WORLD-SYSTEMS.md` §9
-(binding, and this session is the one it was written for)**,
-`design/INSPIRATION.md` — **read the RuneScape entry, it is new and it
-is the largest on the list** — then `design/STORY.md`, `PLAN.md`,
-`README.md`, `SESSIONS.md`.
+`design/QUALITY-BAR.md` (binding), **`design/WORLD-SYSTEMS.md` §2
+(binding, and the second half of it was written for this session)**,
+`design/critiques/critique-art-3.md` (**the camera you are about to
+change, and why every number in it is the number it is**), then
+`design/THE-LINE.md` §3, `PLAN.md`, `README.md`, `SESSIONS.md`.
 
-**Session 7's handoff especially.** It shipped the story's whole
-architecture and one system, and it left this session two things:
-a seam that is already open, and a decision it does not have to make.
-
-Six lands hold the bar: THE COMMON, the Brim south face, the Brim
-interior, CASTLE GREYWEATHER, LONGSHORE, THE WIDE BLUE. **None of them
-may regress.** This session touches no geometry at all — but a land's
-VOICE is part of what a land IS, and that is precisely why the score
-was moved ahead of the five lands still to be built.
+**Session 8's handoff especially**, and not for the score: for the
+shape of its second half. It shipped a system whose product could not
+be screenshotted and spent half itself building the proof instead of
+asserting the result, and **that is the shape this session needs too**,
+for a completely different reason.
 
 ---
 
-## The standing rule, which applies here too
+## Why this session is not Farm & Forest
 
-> **The medium is the STYLE. It is never the SUBJECT.**
+The ladder said Session 9 was THE HARROW DOWNS and THE PENWOOD.
+**The ordering rule displaces it** — *systems that change how a land is
+authored land before the lands are authored* (owner, 2026-08-28) — and
+the camera's bearing is the last foundations item on the board.
+`PLAN.md` has said since 2026-08-30 that if it is taken, **it is taken
+BEFORE the five remaining lands, not after.** Take it. Everything below
+Session 9 shifts by one, and after this it is five land sessions in a
+row with nothing structural left to interrupt them.
 
-WORLD-SYSTEMS §9 already lost one idea to this rule — *"the music is
-playing in the room where the page is"* — and it was retired the same
-day it was proposed, in the one system where it would have been hardest
-to take back out. Do not re-propose it. **Nothing about the paper, the
-pen, the desk or the room.**
+**If the owner would rather have lands**, the alternative is on the
+ladder unchanged and this file is wrong; ask, do not assume. But
+building five lands on a bearing you are going to change afterwards is
+the elevation mistake again, and that one cost a whole critique round.
 
 ---
 
-## What you are inheriting
+## The question, in the owner's words
 
-Session 6 opened two seams and Session 7 built the story that decides
-the third. **You are not designing the score's architecture. §9 is it.**
+> **Can the camera shift, on desktop and on mobile, so the player can
+> always see where they are headed?**
 
-- **`Audio.setMoodIntensity` is already called**, twice a second and
-  only when the number has moved (§9 move 4 ✓). Standing still is 0.45,
-  flat out is 1.35. **The mixer is already told how hard the player is
-  going.** Do not re-plumb it; decide what to do with it.
-- **`Audio.setHour` / `Audio.hour` are already correct** (§9 move 5 ✓).
-  Today the hour thins the room tone after dark and lengthens the
-  melody's gaps. **You do not have to re-open the day cycle**, and you
-  must not: eight in the morning to four in the afternoon is
-  bit-for-bit the shipped page and six verdicts depend on it.
-- **Twelve moods already exist** in `Audio.MOODS`, each with a `scale`,
-  a `gap` and a `level`. That is real — the melody genuinely wanders a
-  different mode in every land — and it is **all played on the same
-  instrument over the same room tone.** A player can cross a border
-  blind and hear the footstep change. They cannot hear the *music*
-  change. **That is the gap and it is the whole session.**
-- **Two of the five voices are already written.** `bell-buoy` is struck
-  metal (an inharmonic partial stack with a long tail) and `surge` is
-  air (filtered noise with a moving resonant peak), both from Session 5.
-  The music box is the third. **§9 says "the score session builds the
-  other three" and its own arithmetic is off by one** — there are two
-  left: **the plucked string** (Karplus–Strong: a noise burst into a
-  short delay line with a lowpass in its feedback, about twenty lines,
-  and it sounds *nothing* like a sine) and **the bowed/held voice** (a
-  saw through a resonant lowpass with a slow attack, for the ceremonial
-  lands). Fix the count in §9 while you are there.
-- **And Session 7 killed one of §9's two open questions for you.**
-  See "the source", below. It is decided. Do not re-litigate it.
+The complaint is exact. The camera only ever looks north. Walk north
+and you walk into the frame; walk east or west and you cross it; **walk
+south and you walk backwards out of it, into ground you cannot see.**
+The king's road runs north–south for four hundred and eighty units, so
+**Act III's entire walk is done facing away from the thing it is
+about.**
+
+---
+
+## What you are inheriting, and what will kill you
+
+- **`App.CAM` is a designed system, not a pile of constants.** Session 4
+  built it and `critique-art-3.md` is where its numbers were solved.
+  `back`, `up`, `look`, `fov`, the three `rise*` terms, the fog. **All
+  three rise terms are zero on flat ground**, and that is the single
+  clause that protected Sessions 2 and 3's WOWED compositions through a
+  camera rebuild. Whatever you add, add it with the same property: **at
+  rest it must be the shipped page, exactly.**
+- **STANDEES ARE NOT BILLBOARDS, and this is the whole design
+  constraint.** `makeStandee` builds a plane with a fixed `rotation.y`;
+  nothing in this engine turns to face the camera. Off-axis, a cutout
+  narrows: **20° is 94% and free, 30° is 87% and survivable, 45° is 71%
+  and the world reads as a stack of card.** Past about thirty-five
+  degrees the paper metaphor does not degrade, it FAILS, and it fails
+  looking exactly like a bug.
+- **The recommendation is already written** (§2, four candidates, with
+  the reasoning): a **bounded yaw of about ±30° that eases toward
+  travel and springs back to due north**, plus a **peek gesture** that
+  is a gesture and never a state, plus a **lead offset**, which is free,
+  helps east–west, and cannot help south at all because south is behind
+  the lens. Two and three probably ship together. **A free orbit is
+  refused and you do not get to re-open that.**
+- **And the law you are standing on:** *the camera only ever looks
+  north, and that decides LAYOUT.* Six lands were authored on it.
+  **Nothing in this session licenses a land to be laid out east–west**,
+  and the very first thing a turning camera will tempt the NEXT session
+  into is exactly that. Say so in the docs, in writing, where a land
+  session will read it.
 
 ---
 
 ## The job
 
-### 0. SCOPE FIRST, AND BE HONEST ABOUT IT
+### 0. SCOPE FIRST, AND THE PROOF IS NOT THE OPTIONAL PART
 
-Twelve instruments, twelve beds, crossfades, a mix that answers two
-inputs, and a way to judge any of it — that is a lot, and one part of
-it is genuinely novel work (item 4). The ladder rule is *a session may
-swap scope up the ladder, never skip the gate.*
+The ladder rule is *a session may swap scope up the ladder, never skip
+the gate.* If you run out of session, **ship the peek gesture and the
+lead offset and no yaw at all** — both are honest, both are small, and
+neither can regress a composition. What you may not ship is a bearing
+nobody proved.
 
-The shape: **build the two missing voices, give all twelve lands a
-voice and a bed, make the border a crossfade, and then solve the
-problem of how anybody knows whether it worked.** If you run out of
-session, ship fewer lands' beds — never a shakier proof.
+### 1. THE ENVELOPE, AUTHORED
 
-### 1. A LAND'S MUSIC IS ITS INSTRUMENT, NOT ITS SCALE
+One number in `App.CAM`, **with the standee table written beside it as
+the reason**, the way `riseBack` carries its reason. Not a tuning
+constant somebody can nudge later without knowing what it costs.
 
-§9 move 1, and it is nine-tenths of the effect.
+**Portrait gets its own envelope.** A tall frame has less horizontal
+room to spend on a turn, and the joystick must never sit under the
+thing the player is steering toward (§8).
 
-Five voices cover twelve lands with deliberate doubling. Build the two
-that are missing, then **author the assignment as a table beside
-`MOODS`** — instrument, register, and the reason, one line each. A land
-whose voice you cannot justify in one line has not been given one.
+### 2. BOUNDED YAW THAT EASES TOWARD TRAVEL
 
-Doubling is not a failure. *Two lands on the plucked string in
-different registers is a family; twelve lands on twelve unrelated
-instruments is a sound library.*
+Swings a limited amount toward where the walker is actually going;
+**eases back to due north whenever they stop.** A stopped walker is
+always in the composition the land was authored for. That is not a nice
+property, it is the contract that keeps six WOWED verdicts valid.
 
-### 2. A BED PER LAND, AND IT IS THE QUIETEST THING IN THE MIX
+Watch the second-order effects, because they are where this gets away
+from you: the fog, the rise terms (which read ground AHEAD — ahead of
+what, once there is a bearing?), the standee wind and player-bend, the
+footprint decals, and the POI labels, which are the next item.
 
-§9 move 2. `startAmbient` is currently a single lowpass noise loop at
-220Hz and **it is identical in the canyon and the office park.** It
-should be per-land and it should be the thing you notice only when it
-stops: the sea's hush, the pines' hush, the city's hum, the office
-park's air handling, the canyon's near-silence with a long tail on
-everything else.
+### 3. THE PEEK, AND THE LEAD
 
-### 3. A BORDER IS A CROSSFADE, NOT A CUT
+A held key on a keyboard and a two-finger drag on a phone, springing
+back on release. And the lead offset: aim further along the direction
+of travel without changing bearing at all.
 
-§9 move 3. `setMood` already ramps the melody's level. The instrument
-and the bed need an **equal-power** crossfade of three or four seconds,
-so a border is a place you pass through rather than a switch you flip.
+### 4. THE OLDEST DEFECT IN THE GAME IS NOW IN YOUR WAY
 
-Nothing else about a border changes. The card, the footstep and the
-mood all fire exactly as they do now.
+**POI labels have no collision logic** — "THE CROSSROADS" prints across
+the signpost it names, and that signpost carries the story's hinge. It
+has been the oldest visible defect for six sessions and it has always
+wanted its own slice.
 
-### 4. AND THE HARD PART, WHICH IS NEW: **HOW DOES ANYBODY KNOW?**
+**A turning camera moves every label relative to the thing it labels.**
+So either it gets fixed here, where you are already perturbing exactly
+that relationship and can see it move, or the session ships a bearing
+that makes it worse. **Fix it here.** It is the cheapest it will ever
+be and it is the last moment it is free.
 
-**This is the first session in this project whose product cannot be
-screenshotted, and you should treat that as the interesting problem
-rather than as an excuse.**
+### 5. AND THE PROOF, WHICH IS THIS SESSION'S REAL WORK
 
-Five sessions of contact sheets photograph the world. Session 6.1 found
-that nobody had ever photographed the *chrome*, and it cost a player's
-phone to notice. **Nobody has ever measured the sound**, and this
-session ships almost nothing else.
+§2 says *every protected framing must be reproducible exactly: the
+shoot harness pins yaw to zero, every existing contact sheet re-shoots
+unchanged, and **a regression is a diff and not an opinion.*** That
+sentence is a tooling requirement and nobody has built it.
 
-So build the proof, the way `tools/check-terrain.mjs` is the proof for
-the ground. Three parts, and the third one matters most:
-
-- **`tools/check-audio.mjs` — render it offline and assert it.** An
-  `OfflineAudioContext` renders deterministically in headless Chromium,
-  with no audio device and no user gesture, faster than real time.
-  Render each land's voice and bed to a buffer and assert what a
-  listener would notice: that no two lands' spectra land in the same
-  place, that the melody's level is where `MOODS` says, that a border
-  crossfade is equal-power (the sum never dips or peaks), that the mix
-  answers `setMoodIntensity` and `setHour` monotonically, and that
-  nothing clips.
-  **This has one architectural consequence and you should take it
-  first: the instrument box has to be renderable offline**, which means
-  a voice is a function that takes an `AudioContext` rather than one
-  that closes over `this.ctx`. That refactor is the enabling move for
-  the whole item and it is small if you do it before you write the two
-  new voices, and horrible if you do it after.
-- **SHOOT THE SOUND.** Plot each land's rendered buffer — waveform and
-  spectrum — as one contact sheet, drawn with `src/engine/ink.ts`
-  because everything in this project is drawn with it. **Twelve lands
-  should be visibly twelve sounds.** If the sheet shows twelve nearly
-  identical smears, you have shipped one instrument in twelve modes
-  again, and you will be able to see it.
-- **AND SAY PLAINLY THAT YOU CANNOT HEAR IT.** You cannot. A measured
-  spectrum is not a judgement and a plot is not a listen. Render the
-  twelve voices and the border crossings to **WAV files the owner can
-  actually play**, put them somewhere the owner can get at them, and
-  hand the ear gate to the owner. **A session that claims a sound is
-  good is lying; a session that hands over the evidence is not.**
-
-### 5. THE SOURCE — decided, by the story, and not yours to re-open
-
-§9 parked "where the music comes from" until the story was picked. It
-is picked and mapped, and it has settled the question:
-
-- ***"somebody is playing it"* — one instrument, carried, moving around
-  the world on its own schedule — IS DEAD.** `STORY.md` §8 rule 1:
-  **nobody crosses a border but the walker.** A musician who moves land
-  to land is the one thing this fiction cannot contain, and it would
-  break the engine of the whole story in exchange for a nice touch.
-- ***"the world plays it"* stands, and it is now the true option rather
-  than merely the cheap one.** Each land's instrument is a thing that is
-  actually there. **Brim's is the belfry and a market that finally
-  opened.** Greyweather's is wind in a stone building with nobody in it.
-  The office park's is two notes of hold music. The coast's is the sea.
-  Nothing is scored — you are hearing where you are.
-
-Both of those are already written into `WORLD-SYSTEMS.md` §9. Build to
-them.
-
-### 6. WHAT RUNESCAPE ADDS, AND WHAT IT WARNS YOU OFF
-
-New on the list this session (`design/INSPIRATION.md`, and read the
-whole entry — it settles interiors, the map, the endgame and a proposed
-seventh content tier as well).
-
-**Its soundtrack is the most-remembered thing about it after the map.**
-Short, strange, per-area tracks on a handful of voices, and a player who
-has not opened the game in a decade can name the area from four bars.
-**Hearing it IS knowing where you are** — the map-as-record, in sound.
-That is the bar for this session and it is a high one.
-
-**And it names the thing to refuse, from the same game.** RuneScape
-posts *"You have unlocked a new music track"* and keeps a music player
-with a list in it, which turns a soundtrack into a collection with a
-count — the exact thing Session 7 spent itself refusing
-(`src/world/knowledge.ts`, and QUESTS §7). **A land's voice arrives
-because you are standing there. Nothing announces it. Nothing lists
-it. There is no track name anywhere in this game.**
+- **`tools/diff-sheets.mjs`.** Shoot every protected framing on the
+  current build, keep it, shoot it again after the change with yaw
+  pinned to zero, and **diff the pixels**. Report the worst frames by
+  difference and fail on anything over a stated threshold. Six lands,
+  two hours, two viewports — that is the set that carries five WOWED
+  verdicts, and until now "unregressed" has meant a person looking at
+  two pictures a week apart.
+  **Mind the ink-in cascade:** frames shot at short settle in this
+  sandbox catch the world mid-wave, so two shots of the same frame are
+  not identical unless both are settled long enough or both are settled
+  the same. Solve that before you trust a single number it prints.
+- **AND SHOOT THE WALK SOUTH.** The whole reason this session exists is
+  a walk the contact sheets have never contained, because every framing
+  in this project is a stand-still. Drive the walker **south down the
+  king's road** — Greyweather's gate to the Common and on to the road
+  head — and shoot it, with the bearing live, in both viewports. If
+  that sequence is not obviously better than the same walk today, the
+  session has not earned its scope, whatever the numbers say.
 
 ---
 
-## The constraint that will bite you, and it is not the one you expect
-
-**`Audio.init()` needs a user gesture and the harness already handles
-it; the OFFLINE renderer does not, and that is the whole reason item 4
-is possible.** The trap is different: **an `OfflineAudioContext` renders
-a graph, not a system.** Anything that reads `performance.now()`,
-schedules off `setTimeout`, or waits on `ctx.currentTime` advancing in
-real time will render silence and you will spend an hour deciding your
-synth is broken. The melody's phrase scheduler is one of these. Render
-*voices*, deterministically, from an explicit start time — and if you
-want to prove the melody, drive its scheduler from a clock you pass in.
-
-Two smaller ones, both already written down and both still true:
+## The constraints that will bite you
 
 - **This sandbox renders at about 3.5 frames a second**, and App clamps
   `dt` at 0.05, so one second of wall clock is about a sixth of a second
-  of game time. Anything timed against the game clock holds six times as
-  long as it looks like it should.
-- **A GLSL comment inside a JS template literal still may not contain a
-  backtick.** Sessions 5 and 6 both did it.
+  of game time. **A session about MOTION pays this tax on every frame it
+  shoots.** Budget for it: the Session 8 regression pass alone was six
+  sheets and the better part of half an hour.
+- **A camera that eases has a time constant, and everything above is
+  measured in game time.** Do not tune a spring by watching a headless
+  browser at 3.5 fps.
+- **Brim Square has three runs of bunting and the camera trails
+  thirteen units.** Any framing standing within about eight units of
+  z −65, −81 or −96 hangs two enormous translucent triangles down the
+  middle of the frame. A turning camera changes which framings do that.
+- **A backtick inside a JS template literal ends it.** Sessions 5 and 6
+  did it in shaders; Session 8 did it in a render harness, in a file
+  whose own header warned about it. **Three times.**
+- **`.tmp/` can vanish mid-session.** Tools that `mkdir` it are fine; a
+  shell redirect into it is not.
 
 ---
 
 ## The gate
 
-Three parts, and the shape is different from every previous session
-because the product is.
-
-1. **`node tools/check-audio.mjs` passes**, and it asserts the things a
-   listener would notice rather than the things that are easy to
-   measure.
-2. **The art director on the SOUND SHEET** (the plotted voices) and on a
-   full regression pass of the six protected lands at two hours
-   (`HOUR=12`, `HOUR=19.6`, both viewports). The world did not change,
-   so the second half should be boring, and if it is not, something
-   ambient is drawing.
-3. **The owner listens.** Hand over WAVs: twelve land voices, three
-   border crossings, and one land at four hours of the day. **State in
-   the log that the ear gate is the owner's and that you could not
-   perform it.**
+1. **`node tools/check-terrain.mjs` and `node tools/check-audio.mjs`
+   both pass**, and both should be boring: this session touches neither
+   the ground nor the score, and if either moves, something is wired to
+   the camera that should not be.
+2. **`node tools/diff-sheets.mjs` — every protected framing at yaw zero
+   is unchanged**, to a stated threshold, in both viewports at both
+   hours. This is the new gate and it is the one that makes the other
+   two cheap forever.
+3. **The art director**, on a new sheet: the six protected lands with
+   the bearing LIVE and the walker MOVING, both viewports, two hours —
+   plus the south walk, which is the composition the session is for.
+4. **The owner**, on the feel. A camera is not a picture and this is the
+   second gate in two sessions that a tool cannot perform: **does it
+   help, or does the world wobble?** Hand over the walk-south capture
+   and say plainly that you could not judge it.
 
 Iterate to WOWED on what you can judge. Log the verdicts verbatim in
-`design/critiques/critique-score-1.md`.
+`design/critiques/critique-camera-1.md`.
 
 ---
 
 ## Law (short form — QUALITY-BAR.md is the long form)
 
-Zero image assets and **zero audio assets** — every voice is synthesis;
+Zero image assets and zero audio assets; every voice is synthesis and
 nothing outside `Audio.ts` invents an instrument, exactly as nothing
-outside `palette.ts` invents a colour; the whole graph stays a handful
-of nodes; all marks via `src/engine/ink.ts`; `elevation.ts` is the only
-authority on where the ground is; the camera only ever looks north; the
-medium is the style and never the subject; **nobody crosses a border but
-the walker**; 60fps mobile with DPR capped at 2; the chrome is shot too;
-build green before every push; `node tools/check-terrain.mjs` before you
-look at anything; the walker has two dots and nobody else has a face;
-nothing reads as an array; **nothing is generated, ever**; no fifth
-reward; no count, no list, no percentage, anywhere, for anything;
-portrait is judged, not checked. End the session: pushed, `SESSIONS.md`
-handoff updated, verdicts logged.
+outside `palette.ts` invents a colour; all marks via `src/engine/ink.ts`;
+`elevation.ts` is the only authority on where the ground is; **the
+resting bearing is due north and a stopped walker is always in the
+shipped composition**; the medium is the style and never the subject;
+nobody crosses a border but the walker; 60fps mobile with DPR capped at
+2; the chrome is shot too; build green before every push; the walker has
+two dots and nobody else has a face; nothing reads as an array; nothing
+is generated, ever; no fifth reward; no count, no list, no percentage,
+anywhere, for anything; portrait is judged, not checked. End the
+session: pushed, `SESSIONS.md` handoff updated, verdicts logged.
 
 ---
 
-## Standing debts, carried forward — fix if convenient, do not derail
+## Standing debts, carried forward — and one of them is now item 4
 
-- **POI labels have no collision logic.** "THE CROSSROADS" prints across
-  the signpost it names, and the signpost now has the story's hinge
-  written on it. **Oldest visible defect in the game** and it wants its
-  own slice.
+They live in `PLAN.md` from Session 8 on, because they had been carried
+in this file alone and this file is overwritten every session.
+
+- **POI label collision.** See item 4. This is its session.
 - **The rowboat's first-meeting composition at THE RIVER MOUTH** is a
-  lot of sand. Two gates have now passed it and pointedly not praised
-  it.
-- **Brim Square is full.** Session 7 fitted Marget in. The next authored
-  thing in that plaza displaces something Session 3 earned.
+  lot of sand. Two gates have passed it and pointedly not praised it.
+- **Brim Square is full.** The next authored thing in that plaza
+  displaces something Session 3 earned.
 
-## Two things the owner raised on 2026-08-30 — NOT this session's job
+## Not this session's job, and recorded so nobody re-derives them
 
-Both are written up properly. Do not start either one inside a score
-session; do not let either one rot, either.
+- **The story gate returned NOT YET** (`critique-story-2.md`), with two
+  mandatory findings that belong to the sessions that build Acts I and
+  IV: Act I's second and third facts have one optional teacher between
+  them, and the ending's default witness sees one of twelve stops. Both
+  fixes are cheap. Neither is a camera.
+- **§3.2's rim composition is the riskiest un-shot frame in the game**
+  and Session 11 shoots it FIRST, not last. **If this session ships a
+  bearing, re-read that section before believing its numbers** — 201
+  units of haze up a straight road was reasoned on a camera that only
+  looked north.
+- The twelve WAITS, the eight STRANGERS and the three inventories are
+  the authoring queue (`THE-WAITS.md`, `THE-STRANGERS.md`), and from
+  Session 10 on **every land session ships its places AND its wait AND
+  its named inhabitant.**
 
-- **THE CAMERA'S BEARING** — *can the camera shift, on desktop and
-  mobile, so the player can always see where they are headed?*
-  (`WORLD-SYSTEMS` §2, rewritten, with the four candidates and the
-  recommendation.) The complaint is exact: walking south you are walking
-  backwards out of the frame, and the line runs north–south for four
-  hundred and eighty units, so **Act III's whole walk is done facing
-  away from it.** It is a FOUNDATIONS item by the ordering rule and it
-  belongs BEFORE the five remaining lands. The number that decides the
-  shape of any answer: **a standee is a flat cutout with a fixed
-  rotation, so at 30° off-axis it is 87% as wide and at 45° it is 71%
-  and the world reads as card.** Bounded yaw, not a free orbit.
-- **A STORY GATE** (`QUALITY-BAR` §2). Every gate this project has ever
-  run has judged **pictures**. THE LINE was mapped in one session and
-  read by nobody. It is cheap, it needs no build, and it can run beside
-  any session including this one **if there is room at the end and only
-  then** — an adversarial read asking whether Act I teaches its three
-  facts without stating them, whether the turn survives not being said,
-  and whether the ending lands or is the shrug `STORY.md` §6 flagged in
-  its own file.
+## Waiting on the owner, and none of it blocks you
 
-## Four things are waiting on the owner, and none of them blocks you
-
-Recorded so the next session does not re-decide them by accident:
-
-1. **The premise line's rewrite** — *"there is no track here, and there
-   is no track anywhere"* (`critique-story-1.md` has the defence).
-2. **Two surviving similes**, kept on an assertion-versus-simile
-   distinction: riverbend's *"practices its cursive"* and the tarn's
-   *"black as the good ink"*. One-line changes if the ruling goes the
-   other way.
-3. **The STORY EDITOR**, proposed as a third standing critic
-   (QUALITY-BAR §2, run once and logged).
-4. **A seventh content tier, THE LOCAL RULE** (`QUESTS.md` §8), proposed
-   off the RuneScape entry and explicitly not ratified.
+1. **THE EAR GATE on the score.** Nineteen WAVs were handed over
+   unperformed (`critique-score-1.md` §4). Nobody has heard the game.
+2. **Whether the STORY GATE becomes a standing critic**, and whether its
+   NOT YET blocks Acts I and IV or merely annotates them.
+3. **The STORY EDITOR**, proposed as a third standing critic and run
+   once (`critique-story-1.md` §3).
+4. **The premise line's rewrite** and **two surviving similes**, kept on
+   an assertion-versus-simile distinction.
+5. **A seventh content tier, THE LOCAL RULE** (`QUESTS.md` §8),
+   proposed off the RuneScape entry and explicitly not ratified.
