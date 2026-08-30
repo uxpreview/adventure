@@ -51,6 +51,14 @@ all twelve lands. They are deliberately NOT numbered here: the story
 pick at Session 7 decides what they contain, and putting numbers on them
 before that is planning fiction.
 
+**And RuneScape is now on the list** (owner, 2026-08-30 —
+`design/INSPIRATION.md`, the largest entry on it). It changes the sizing
+of exactly one un-numbered session and settles its model: **interiors**
+are the roofless cutaway, three or four objects per room, and a camera
+problem before an art problem (`WORLD-SYSTEMS` §11). It also puts one
+question to the owner — a **seventh content tier, THE LOCAL RULE**
+(`QUESTS.md` §8, proposed, not ratified).
+
 **Session 7 has now itemised what they contain**, so the sizing above
 is no longer an estimate: `design/THE-WAITS.md` (twelve waits, four of
 which stand entirely on ground that is already built),

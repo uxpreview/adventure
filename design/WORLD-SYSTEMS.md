@@ -412,6 +412,44 @@ holding on to for whoever picks:
   score in one object, and it would be the best use of the mount system
   nobody has thought of yet.
 
+### The proof that this is worth a whole session
+
+*Added 2026-08-30 with the RuneScape entry (`INSPIRATION.md`).*
+
+**RuneScape's soundtrack is the most-remembered thing about it after
+the map.** Every area has its own short, strange track played on a
+handful of voices, and a player who has not opened the game in a decade
+can name the area from four bars. **Hearing it IS knowing where you
+are** — which is the map-as-record, in sound, and it is the exact gap
+this section identifies in our own mix. Twelve moods on one instrument
+is a world with one voice; twelve instruments is a world with twelve
+places.
+
+**And it names the thing to refuse, from the same game.** RuneScape
+posts *"You have unlocked a new music track"* and keeps a music player
+with a list in it, which turns a soundtrack into a collection with a
+count. Session 7 spent itself refusing exactly that
+(`src/world/knowledge.ts`). **A land's voice arrives because you are
+standing there. Nothing announces it and nothing lists it.**
+
+### And the source is decided by the story now
+
+The two candidates parked above were *the world plays it* and *somebody
+is playing it — one instrument, carried, moving around the world on its
+own schedule*.
+
+**The second one is dead, and the story killed it.** `STORY.md` §8 rule
+1: *nobody crosses a border but the walker.* A musician who moves from
+land to land is the one thing this fiction cannot contain, and it would
+break the engine of the whole story in the service of a nice touch.
+
+So it is **the world plays it**, and that is now the cheapest and
+truest option rather than merely the cheaper one: each land's instrument
+is a thing that is actually there. Brim's is the belfry and a market
+that finally opened; Greyweather's is wind in a stone building with
+nobody in it; the office park's is two notes of hold music; the coast's
+is the sea. Nothing is scored. You are hearing where you are.
+
 **Law, unchanged:** zero assets, so every voice is synthesis; the whole
 graph stays a handful of nodes; and nothing outside `Audio.ts` invents
 an instrument, exactly as nothing outside `palette.ts` invents a colour.
@@ -497,6 +535,50 @@ diegetic menu is still a menu, and rule 1 of §0 is that the world says
 it or it does not get said. And the ash: Fallout is post-apocalyptic
 and this is a sheet of paper with a lark on it. **We take the
 archaeology and the deadpan. We do not take the apocalypse.**
+
+---
+
+## 11. Interiors — the roofless cutaway
+
+*Added 2026-08-30. `DIRECTION.md` has had interiors on the un-numbered
+queue since before the story was picked, with the right argument and no
+model. RuneScape is the model (`INSPIRATION.md`).*
+
+**Interiors are the cheapest square footage in games.** They multiply
+the map without expanding the sheet — which matters here more than
+almost anywhere, because expanding the sheet is parked (see the audit)
+and gets more expensive every session, while a doorway costs a drawing.
+
+### What RuneScape settles
+
+- **You walk in, and the roof comes off.** No loading screen, no door
+  transition, no separate scene. On a sheet of paper that is not a
+  camera trick — **it is a drawing convention.** A plan and an elevation
+  on the same page is what a draughtsman does, which puts the cutaway
+  squarely in CRAFT and nowhere near SUBJECT (§0).
+- **An interior is three or four objects, not a simulated room.** A
+  table, a range, a bed, a person. That is Fallout's vignette (§10) at
+  domestic scale, and it is the same rule the cast already runs on: a
+  person is a posture, a place, a routine and a name (STORY §7), and a
+  ROOM is a place and two or three objects.
+- **And it is where the waits live indoors.** Wick's banner loft. Teg's
+  sealed complaint. Val's lit window seen from inside it. Half of
+  `THE-WAITS.md` and most of `THE-STRANGERS.md` want a doorway.
+
+### What it must not become
+
+**Construction** — RuneScape's player-owned house, the building skill,
+and every decorating menu attached to it. *A room you furnish is an
+inventory wearing wallpaper*, there is no crafting in this game, and
+rule 1 of §0 forbids the menu it would need.
+
+### What it costs, honestly
+
+The camera. Everything else here is a texture and a collision edit, but
+the camera only ever looks north (QUALITY-BAR) and it trails thirteen
+units, which is wider than most rooms. **A cutaway interior is a camera
+problem before it is an art problem**, and any session that takes this
+on budgets for that first.
 
 ---
 
