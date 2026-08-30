@@ -113,7 +113,12 @@ file that does not persist.
   and never sideways, and a name with nowhere legible to go is not
   written at all.
 - **The rowboat's first-meeting composition at THE RIVER MOUTH** is a
-  lot of sand. Two gates have passed it and pointedly not praised it.
+  lot of sand. **Three** gates have now passed it and pointedly not
+  praised it.
+- **The prompt on a very wide subject is still on the subject.** READ
+  THE PROCLAMATION is legible on Greyweather's barbican and clear of
+  anything with detail in it, but it is a compromise and Session 9 wrote
+  it down as one (`critique-camera-1.md`, round 3).
 - **Brim Square is full.** Session 7 fitted Marget in. The next authored
   thing in that plaza displaces something Session 3 earned.
 
