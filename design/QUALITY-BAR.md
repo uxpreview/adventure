@@ -72,8 +72,19 @@ redesigned camera, and all four of those lands re-audited on the new
 ground with Greyweather moved onto a real ridge (WOWED,
 critique-art-3 — the first sheet judged in both viewports); LONGSHORE
 and THE WIDE BLUE, the first two lands authored ON that ground (WOWED,
-critique-art-4). Every other land is a scatter draft and is presumed
+critique-art-4); TRAVERSAL AND TIME — sprint as ink weight, roads that
+carry, the rowboat, and the day cycle, with all six built lands judged
+at **two hours of the day** and none of them regressed (WOWED,
+critique-art-5). Every other land is a scatter draft and is presumed
 NOT YET.
+
+**And from Session 6 on, a protected framing is protected at TWO HOURS.**
+The day cycle is not done until dusk is as good as noon, so every
+contact sheet shoots its protected framings at a neutral hour and at
+one of the two ends (`HOUR=19.6 node tools/shoot-first-minute.mjs`).
+Eight in the morning to four in the afternoon is bit-for-bit the
+shipped page by construction, so the neutral pass is the same
+regression check it always was.
 
 ## 3. The permanent constraints
 
@@ -117,6 +128,16 @@ NOT YET.
   shot in portrait (390×844) as well as desktop (1280×720), and the art
   director reviews both. A composition that only works in landscape is
   not done.
+- **AND THE CHROME IS SHOT TOO** (added after Session 6, when a player's
+  phone screenshot found a note card whose text had been running off the
+  side of the screen since Session 1). Everything the player READS — the
+  note card, the region card, the hint, the interact prompt, the map —
+  is hand-lettered onto a CANVAS, and a canvas does not reflow: every
+  one of them needs a width measured at the size it will be delivered
+  at. `node tools/shoot-mobile.mjs` shoots all of it at 320, 360, 390
+  and 430 points, with the longest note and the longest land name in the
+  game. Five sessions of world screenshots could not have caught it,
+  because not one of them ever opened a card.
 - **Inherited rules must be re-ratified or dropped.** This engine was
   ported whole from margins, and some of its laws are margins' story
   rather than our design — the flat ground was one, and it cost us a

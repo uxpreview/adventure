@@ -14,11 +14,43 @@ export type FootprintOpts = {
  * Instanced footprints laid flat on the page. Fading happens entirely in the
  * shader from per-instance birth times, so a full trail costs one draw call
  * and zero per-frame CPU.
+ *
+ * SESSION 6 — INK WEIGHT AS SPEED (WORLD-SYSTEMS §3).
+ *
+ * Traversal was the game's weakest verb: twelve lands and one constant
+ * walking speed. The cheapest fix on the list is also the most on-brand
+ * one this engine could possibly have, because the walker's whole verb
+ * is that WALKING IS DRAWING — so **your speed is legible in the marks
+ * you leave behind you.** Run and the print presses darker and wetter;
+ * walk and it feathers.
+ *
+ * It is CONTINUOUS, not two-state. There is no "sprint print" texture
+ * and no threshold: every print carries the pressure of the foot that
+ * made it, in one per-instance float, and the shader spends it on the
+ * three things pressure actually does to a ballpoint mark —
+ *
+ *   DARKER   more ink goes down;
+ *   WETTER   it spreads past the nib and pools at the edge of the mark;
+ *   FEATHERED  and at LOW pressure the opposite: the mark breaks up,
+ *              because a pen barely touching paper skips.
+ *
+ * The last one is why the alpha is run through a gamma rather than just
+ * scaled. Scaling alpha makes a light print a grey print, and a grey
+ * print is a print seen through fog; a gamma above one eats the soft
+ * edge of the stamp and leaves the core, which is what a skipping pen
+ * actually looks like on tooth.
+ *
+ * A second per-instance float carries how DAMP the paper was. Wet paper
+ * refuses the print entirely (that gate is `Character.stamping` and it
+ * is older than this), but paper that is merely damp takes it and
+ * blooms — so running across the wrack line leaves a heavier, softer
+ * mark than running up the king's road does, for free.
  */
 export class Footprints {
   mesh: THREE.InstancedMesh;
   private mat: THREE.ShaderMaterial;
   private birth: THREE.InstancedBufferAttribute;
+  private press: THREE.InstancedBufferAttribute;
   private capacity: number;
   private head = 0;
   private dummy = new THREE.Object3D();
@@ -38,6 +70,13 @@ export class Footprints {
     this.birth = new THREE.InstancedBufferAttribute(births, 1);
     (geo as THREE.BufferGeometry).setAttribute('aBirth', this.birth);
 
+    // x = pressure (0 a drifting walk .. 1 flat out), y = how damp the
+    // page was under that foot
+    const press = new Float32Array(capacity * 2);
+    for (let i = 0; i < capacity; i++) press[i * 2] = 0.5;
+    this.press = new THREE.InstancedBufferAttribute(press, 2);
+    (geo as THREE.BufferGeometry).setAttribute('aPress', this.press);
+
     this.mat = new THREE.ShaderMaterial({
       uniforms: {
         uMap: { value: footprintTexture('#ffffff') },
@@ -49,11 +88,14 @@ export class Footprints {
       },
       vertexShader: /* glsl */ `
         attribute float aBirth;
+        attribute vec2 aPress;
         varying vec2 vUv;
         varying float vBirth;
+        varying vec2 vPress;
         void main() {
           vUv = uv;
           vBirth = aBirth;
+          vPress = aPress;
           gl_Position = projectionMatrix * viewMatrix * instanceMatrix * modelMatrix * vec4(position, 1.0);
         }
       `,
@@ -66,16 +108,49 @@ export class Footprints {
         uniform float uFresh;
         varying vec2 vUv;
         varying float vBirth;
+        varying vec2 vPress;
         void main() {
-          float a = texture2D(uMap, vUv).a * texture2D(uMap, vUv).r;
+          vec4 t = texture2D(uMap, vUv);
+          float a = t.a * t.r;
           float age = uTime - vBirth;
           if (age < 0.0) discard;
+
+          /* ---- INK WEIGHT (Session 6) ------------------------------
+           * How hard this foot came down, and how damp the page was
+           * under it. One gamma and one multiply; no branch, no second
+           * texture, no cost at all on a trail of seven hundred. */
+          float press = vPress.x;
+          float damp = vPress.y;
+          // a light foot SKIPS: the gamma eats the soft edge of the
+          // stamp and leaves the core, which is what a pen barely
+          // touching tooth actually does. A heavy one spreads past the
+          // nib, so the gamma goes the other way and the whole mark
+          // widens without the stamp changing size.
+          /* THE MIDDLE OF THE RANGE IS THE WALK, and the walk has to be
+           * exactly the print four lands earned a WOWED with — so at
+           * press 0.5 the gamma is 1.0 and the weight is 1.0, and this
+           * system spends its range EITHER SIDE of the shipped mark and
+           * never through it.
+           *
+           * It spends most of it upward, because that is where the gate
+           * said it was needed: round 2's contact sheet had a walk and
+           * a run that were three faint dots each and nobody could have
+           * told them apart. Above the walk the mark gets darker, wider
+           * and — the part that actually reads at this camera — LONGER,
+           * because a running foot drags the ink out behind it. */
+          a = pow(a, mix(1.60, 0.46, press) * (1.0 - 0.26 * damp));
+          // and it lays down more ink while it is at it
+          float weight = mix(0.66, 1.62, press) * (1.0 + 0.24 * damp);
+
           float life = uFade > 0.0 ? clamp(1.0 - age / uFade, 0.0, 1.0) : 1.0;
-          // fresh ink sits darker for a moment, then settles
-          float fresh = 1.0 + uFresh * exp(-age * 2.0);
-          float alpha = a * uOpacity * life * fresh;
+          /* fresh ink sits darker for a moment, then settles — and a
+           * WET print takes longer to settle than a dry one, because
+           * that is what wet ink does */
+          float fresh = 1.0 + uFresh * (0.6 + 0.9 * press) *
+                        exp(-age * mix(2.4, 1.1, press));
+          float alpha = a * uOpacity * weight * life * fresh;
           if (alpha < 0.01) discard;
-          gl_FragColor = vec4(uColor, alpha);
+          gl_FragColor = vec4(uColor, min(alpha, 1.0));
         }
       `,
       transparent: true,
@@ -124,9 +199,17 @@ export class Footprints {
    * `y` is clearance ABOVE pos.y, because since Session 4 pos.y is the
    * ground; `normal` lies the print along the page where the page folds.
    */
-  stamp(pos: THREE.Vector3, heading: number, y = 0.03, normal?: [number, number, number]) {
+  stamp(
+    pos: THREE.Vector3, heading: number, y = 0.03,
+    normal?: [number, number, number], press = 0.5, damp = 0
+  ) {
     this.stepSide *= -1;
-    const side = 0.11 * this.stepSide;
+    /* A run is not a walk done faster: the feet come further apart and
+     * the stride swings wider, so the print steps further off the
+     * centreline and the stamp itself gets bigger. Both are the same
+     * one number as the ink weight, which is the point — the print is a
+     * readout of the foot that made it, not a decoration on it. */
+    const side = (0.11 + (press - 0.5) * 0.09) * this.stepSide;
     this.dummy.position.set(
       pos.x + Math.cos(heading) * side,
       pos.y + y,
@@ -139,11 +222,24 @@ export class Footprints {
     } else {
       this.dummy.rotation.set(0, heading, 0);
     }
+    /* The stamp grows ANISOTROPICALLY: a running print drags out along
+     * the line of travel far more than it spreads across it. The
+     * geometry is a plane rotated flat with its local +Z along the
+     * heading, so z is the drag and x is the spread. At a walk both are
+     * 1 and the stamp is the stamp Sessions 2–5 were judged on. */
+    this.dummy.scale.set(
+      1 + (press - 0.5) * 0.34 + damp * 0.10,
+      1,
+      1 + (press - 0.5) * 0.88 + damp * 0.12
+    );
     this.dummy.updateMatrix();
+    this.dummy.scale.set(1, 1, 1);
     this.mesh.setMatrixAt(this.head, this.dummy.matrix);
     this.mesh.instanceMatrix.needsUpdate = true;
     this.birth.setX(this.head, this.time);
     this.birth.needsUpdate = true;
+    this.press.setXY(this.head, Math.max(0, Math.min(1, press)), Math.max(0, Math.min(1, damp)));
+    this.press.needsUpdate = true;
     this.head = (this.head + 1) % this.capacity;
     this.onStamp?.(pos, heading);
   }

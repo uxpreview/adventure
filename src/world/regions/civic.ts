@@ -6,6 +6,7 @@ import {
   streetTreeTexture, swingSetTexture, towerBlockTexture, glassTowerTexture,
   shopfrontTexture, trafficLightTexture, benchTexture, busStopTexture,
   planterTexture, doodleFolkTexture, bushTexture, signpostTexture,
+  lampGlowTexture, brazierTexture,
 } from '../textures';
 import {
   brimWallTexture, wallTowerTexture, brimGateTexture, gatePennantTexture,
@@ -13,7 +14,7 @@ import {
   hedgerowTexture, reedsTexture, swallowTexture,
 } from '../textures-common';
 import {
-  townRowTexture, brimBelfryTexture, brimStallTexture, brimFountainTexture,
+  townRowTexture, townRowLitTexture, brimBelfryTexture, brimStallTexture, brimFountainTexture,
   marketCrossTexture, buntingTexture, appleTreeTexture, pigeonTexture,
   woodGateTexture, cobblePlazaDecal, backStreetTexture, stoneWearDecal,
   crateBarrelTexture, greyweatherKeepTexture,
@@ -21,7 +22,37 @@ import {
   toppledStatueTexture, gnarledHawthornTexture, farPinesTexture, rookTexture,
   screeDecal,
 } from '../textures-oldworld';
+import { clock } from '../daylight';
 import type { RegionBuilder, WorldPOI } from './index';
+
+/* ------------------------------------------------------------------ *
+ * THE LAMPS COME ON (Session 6, WORLD-SYSTEMS §7).
+ *
+ * The day cycle's whole argument is that every land already built
+ * improves for free — and "for free" is a claim a session has to earn
+ * in at least one place or it is a promise. Brim is that place: it is
+ * a built, WOWED land with four lampposts already standing in its
+ * square and ten terraces already leaning over its high street, and
+ * lighting them costs fourteen standees and one line in an update that
+ * was already running.
+ *
+ * The region asks the clock DIRECTLY (`import { clock }`) rather than
+ * being handed the hour by App. That is the seam STORY §7 needs: the
+ * story runs on routine — people are somewhere at a given hour, the
+ * belfry's two hands disagree, the shutters open in the morning — and
+ * Session 7 must be able to ask what time it is without opening
+ * App.ts or plumbing an argument through twelve builders.
+ * ------------------------------------------------------------------ */
+
+/** Fade a set of drawings up as the lamps come on. Materials only, so
+ *  it costs nothing but an opacity write per mesh per frame. */
+function lightUp(meshes: THREE.Mesh[], k: number) {
+  for (const m of meshes) {
+    const mat = m.material as THREE.MeshBasicMaterial;
+    mat.opacity = k;
+    m.visible = k > 0.02;
+  }
+}
 
 /** Fire a named audio event up to the App without a plumbing run. */
 function say(name: string) {
@@ -95,6 +126,22 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   ];
   terraces.forEach(([x, z, w, rot], i) =>
     ctx.standee(townRowTexture(1400 + i), w, w * (288 / 512), x, z, { rotY: rot }));
+  /* THE WINDOWS COME ON. One run of panes per terrace, hung a hair in
+   * front of the row it belongs to and lit by the same clock as the
+   * lamps. Never all of them: a street where every window is lit is a
+   * street nobody lives in (`litWindowsTexture` leaves a third dark). */
+  const litWindows: THREE.Mesh[] = terraces.map(([x, z, w, rot], i) => {
+    // EXACTLY the row's own geometry, drawn from the row's own recorded
+    // casements (textures-oldworld: townRowLitTexture). A generated run
+    // of panes hung in front of a terrace lines up with nothing, and
+    // round 2 of the gate had warm rectangles floating over the roofs.
+    const m = ctx.standee(townRowLitTexture(1400 + i), w, w * (288 / 512), x, z, { rotY: rot });
+    m.position.x += Math.sin(rot) * 0.22;
+    m.position.z += Math.cos(rot) * 0.22;
+    (m.material as THREE.MeshBasicMaterial).depthWrite = false;
+    m.renderOrder = 3;
+    return m;
+  });
 
   // street wear: ruts up the king's road, worn floors at the gaps
   ctx.decal(wheelRutsDecal(1420), 12, 6, -45, -22, Math.PI / 2, 0.6);
@@ -128,6 +175,17 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   const lampSpots: [number, number][] = [[-58, -96.5], [-32, -96], [-58.5, -65], [-33, -65.5]];
   lampSpots.forEach(([x, z], i) =>
     ctx.standee(lamppostTexture(1470 + i), 1.8, 6.3, x, z));
+  /* and the four of them are LIT after dark — hung at the lantern, six
+   * units up, because the light is at the lantern and a pool painted on
+   * the ground runs away from a camera that only ever looks north */
+  const lit: THREE.Mesh[] = lampSpots.map(([x, z], i) => {
+    const g = ctx.standee(lampGlowTexture(1495 + i), 4.6, 4.6, x, z);
+    ctx.hang(g, 4.4);
+    (g.material as THREE.MeshBasicMaterial).transparent = true;
+    (g.material as THREE.MeshBasicMaterial).depthWrite = false;
+    g.renderOrder = 3;
+    return g;
+  });
   ctx.standee(benchTexture(1474), 3.4, 1.7, -51, -93, { rotY: 0.25 });
   // clutter behind the stalls: the market's working edges
   ctx.standee(crateBarrelTexture(1478), 3.6, 2.5, -60.5, -85, { rotY: 0.3 });
@@ -262,7 +320,13 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   const pLMat = pennantL.material as THREE.MeshBasicMaterial;
   const pRMat = pennantR.material as THREE.MeshBasicMaterial;
 
+  const lampsAndWindows = [...lit, ...litWindows];
+
   return (dt: number, t: number, px: number, pz: number) => {
+    // BRIM AT DUSK: the lamps in the square and the windows over the
+    // high street, straight off the clock. One number, fourteen meshes.
+    lightUp(lampsAndWindows, clock.lamp);
+
     // the gate pennants take the same wind as the meadow grass
     pennantL.scale.x = 1 + Math.sin(t * 5.1) * 0.16 + Math.sin(t * 1.3) * 0.06;
     pennantR.scale.x = 1 + Math.sin(t * 4.6 + 1.9) * 0.16 + Math.sin(t * 1.1 + 0.7) * 0.06;
@@ -484,6 +548,17 @@ export const buildCastle: RegionBuilder = (ctx) => {
    * Its height is not the point and never was — it is the FIRST of the
    * approach's three beats, and the ridge does the rest. */
   const gate = ctx.standee(greyweatherGateTexture(970), 9.5, 9.5, -45, -192);
+  /* TWO BRAZIERS AT THE GATE, and they are the castle's only lit
+   * things. Wick changes the banners on the avenue every day and
+   * nobody has told him the king is not coming back (STORY §7) — so
+   * somebody keeps a fire in at the gate, for a road nobody rides up.
+   * The whole land argues in one drawing that only exists after dark. */
+  const braziers = [-52.5, -37.5].map((x, i) => {
+    const m = ctx.standee(brazierTexture(972 + i), 2.6, 3.5, x, -189.5);
+    (m.material as THREE.MeshBasicMaterial).depthWrite = false;
+    m.renderOrder = 3;
+    return m;
+  });
 
   /* -- THE KEEP: on the plateau, where the high seat belongs --------- */
   const keep = ctx.standee(greyweatherKeepTexture(980), 34, 17, -45, -250);
@@ -566,6 +641,9 @@ export const buildCastle: RegionBuilder = (ctx) => {
   const keepMat = keep.material as THREE.MeshBasicMaterial;
 
   return (dt: number, t: number, px: number, pz: number) => {
+    // the fires at the gate, on the same clock as Brim's lamps
+    lightUp(braziers, clock.lamp);
+
     // the barbican's arch fade; the curtain wall lets go once the walker
     // is through it (the camera must never shoot the bailey through the
     // back of the wall); the keep steps aside when walked behind

@@ -64,8 +64,25 @@ function poly(
  * so the silhouette over the wall matches the Session 2 vista it
  * replaces. One house per row keeps a shopfront with a hanging sign.
  */
+/* ------------------------------------------------------------------ *
+ * WHERE THE WINDOWS ARE.
+ *
+ * The day cycle (Session 6) lights Brim's high street after dark, and
+ * the first build of that hung a generated run of panes in front of
+ * each terrace. It read exactly as badly as it sounds: warm rectangles
+ * floating over roofs and party walls, aligned with nothing, because a
+ * second drawing cannot guess where a first drawing put its windows.
+ *
+ * So the row RECORDS its own casements as it draws them, and the lit
+ * version reads the record. One drawing, two passes, and a lit window
+ * is in the window.
+ * ------------------------------------------------------------------ */
+type WinRect = { x: number; y: number; w: number; h: number };
+const ROW_WINDOWS = new Map<number, WinRect[]>();
+
 export function townRowTexture(seed: number): THREE.CanvasTexture {
-  return makeTexture(512, 288, seed, (ctx, r) => {
+  const windows: WinRect[] = [];
+  const tex = makeTexture(512, 288, seed, (ctx, r) => {
     const baseY = 282;
     const n = 3 + Math.floor(r() * 2);
     // divide the row into houses of unequal width
@@ -148,6 +165,7 @@ export function townRowTexture(seed: number): THREE.CanvasTexture {
         const wy = eaveY + 14 + r() * 8;
         poly(ctx, [[wx, wy + 20], [wx, wy], [wx + 15, wy], [wx + 15, wy + 20]], r,
           { width: 1.5, alpha: 0.85 });
+        windows.push({ x: wx, y: wy, w: 15, h: 20 });
         line(ctx, wx + 7.5, wy, wx + 7.5, wy + 20, r, { width: 0.9, alpha: 0.45, passes: 1 }, 2);
         line(ctx, wx, wy + 10, wx + 15, wy + 10, r, { width: 0.9, alpha: 0.45, passes: 1 }, 2);
         if (r() > 0.55) {
@@ -172,6 +190,7 @@ export function townRowTexture(seed: number): THREE.CanvasTexture {
         for (const wxa of [sx, sx + winW + w * 0.26]) {
           poly(ctx, [[wxa, baseY - 8], [wxa, baseY - 36], [wxa + winW, baseY - 36], [wxa + winW, baseY - 8]], r,
             { width: 1.7, alpha: 0.85 });
+          windows.push({ x: wxa, y: baseY - 36, w: winW, h: 28 });
           line(ctx, wxa + winW / 2, baseY - 36, wxa + winW / 2, baseY - 8, r,
             { width: 1, alpha: 0.45, passes: 1 }, 2);
           line(ctx, wxa, baseY - 22, wxa + winW, baseY - 22, r, { width: 1, alpha: 0.45, passes: 1 }, 2);
@@ -207,6 +226,7 @@ export function townRowTexture(seed: number): THREE.CanvasTexture {
         if (gx > x0 + 4 && gx + 14 < x1 - 4) {
           poly(ctx, [[gx, baseY - 16], [gx, baseY - 32], [gx + 14, baseY - 32], [gx + 14, baseY - 16]], r,
             { width: 1.4, alpha: 0.8 });
+          windows.push({ x: gx, y: baseY - 32, w: 14, h: 16 });
           line(ctx, gx + 7, baseY - 32, gx + 7, baseY - 16, r, { width: 0.9, alpha: 0.4, passes: 1 }, 2);
         }
       }
@@ -274,6 +294,57 @@ export function townRowTexture(seed: number): THREE.CanvasTexture {
           stroke(ctx, [[cx + 5, ct - 4], [cx + 2, ct - 16], [cx + 9, ct - 30], [cx + 4, ct - 42]], r,
             { width: 1.2, alpha: 0.26, passes: 1, color: PENCIL });
         }
+      }
+    }
+  });
+  ROW_WINDOWS.set(seed, windows);
+  return tex;
+}
+
+/**
+ * THE SAME ROW, AFTER DARK — only the windows that are lit.
+ *
+ * Hung a hair in front of its own terrace and faded up by
+ * `daylight.clock.lamp`, so a street at nine at night is the street it
+ * was at noon with the lights on in it. Never all of them: a run where
+ * every window is lit is a run nobody lives in, and the two-thirds that
+ * are on is the number that makes the other third read as somebody
+ * being out rather than as a gap.
+ *
+ * A lit window on paper is not a hole in the page. It is the sheet's
+ * own white with a wash of flame over it and the spill drawn round it,
+ * which is what a hand would do and the only thing a hand could do.
+ */
+export function townRowLitTexture(seed: number): THREE.CanvasTexture {
+  const wins = ROW_WINDOWS.get(seed) ?? [];
+  return makeTexture(512, 288, seed * 7 + 13, (ctx, r) => {
+    for (const win of wins) {
+      if (r() < 0.34) continue; // dark: somebody is out, or asleep
+      const { x, y, w, h } = win;
+      // the spill first, so the pane sits on top of its own glow
+      const g = ctx.createRadialGradient(x + w / 2, y + h / 2, 1,
+        x + w / 2, y + h / 2, Math.max(w, h) * 1.9);
+      g.addColorStop(0, 'rgba(255,222,168,0.52)');
+      g.addColorStop(1, 'rgba(255,222,168,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(x - w * 2, y - h * 2, w * 5, h * 5);
+      // the paper's own white, then the flame over it
+      ctx.save();
+      ctx.globalAlpha = 0.88;
+      ctx.fillStyle = '#fbf8ee';
+      ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+      ctx.globalAlpha = 0.62 + r() * 0.2;
+      ctx.fillStyle = '#ffcf88';
+      ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+      ctx.restore();
+      // and the shape of whatever is standing in the way of it
+      if (r() > 0.6) {
+        ctx.save();
+        ctx.globalAlpha = 0.30;
+        ctx.fillStyle = INK;
+        const bw = w * (0.2 + r() * 0.16);
+        ctx.fillRect(x + w * (0.2 + r() * 0.4), y + h * 0.35, bw, h * 0.65);
+        ctx.restore();
       }
     }
   });

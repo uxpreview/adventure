@@ -144,21 +144,34 @@ ground, and rising ground must actually reveal more). Treat the camera
 as a designed system with elevation, pitch and fog as its parameters —
 not as three magic numbers in `cameraOffset()`.
 
-## 3. Traversal — the game's weakest verb today
+## 3. Traversal — BUILT, Session 6 ✓
+
+*All three items below shipped in Session 6. `design/specs/traversal.md`
+is the record — what was built, what was measured, and the numbers.
+This section is kept as the brief it was, so a later session can see
+what was asked for.*
 
 Twelve lands connected by one constant walking speed is the likeliest
 thing to cap us at "gorgeous tech demo". Every benchmark game has a
 traversal verb with texture and mastery.
 
-- **Ink weight as speed.** Sprint and the footprints press darker and
+- **Ink weight as speed.** ✓ Sprint and the footprints press darker and
   wetter; walk and they feather. Your speed is legible in the marks you
-  leave behind you. Footprints already exist.
-- **The line pulls the pen.** Roads already exist as a mask the CPU can
-  read (`terrain.roadAt`). Make roads *carry* you — faster, gently
+  leave behind you. *Built as ONE continuous scalar (`Character.effort`)
+  which speed, stride, the print, the step and the score's intensity are
+  all readouts of — and whose MIDDLE is the shipped mark, so a walk is
+  exactly the walk four lands earned their verdicts with.*
+- **The line pulls the pen.** ✓ Roads *carry* you — faster, gently
   auto-steering — because a pen likes following a line it already drew.
-  This turns the whole road web from decoration into infrastructure.
-- **The river as a route.** It currently only says no. `rowboatTexture`
-  is already in the prop box, unused.
+  *Built as a BEND (a fixed share of the angle between where you are
+  pointed and where the road goes), never a pull toward the centreline,
+  and gated on alignment so crossing a road is free. Authored per road
+  and MEASURED: on the king's road, aimed twenty degrees off, you travel
+  eight. STORY §4's line — king's road, main street, commuter spur —
+  carries hardest.*
+- **The river as a route.** ✓ It used to only say no. *The rowboat lives
+  at THE RIVER MOUTH and the river is now the only east–west road in the
+  world, from the salt to the source, under all three bridges.*
 
 ## 4. Mounts — one per quadrant, each refusing the others
 
@@ -179,9 +192,22 @@ already established: walking east-by-south is growing up.
 |---|---|---|---|
 | **the horse** | the old world (Brim, Greyweather) | finishing the keep | the city — it is drawn in ballpoint and balks at the straightedge world |
 | **the bicycle** | Maple Court — the childhood one | finishing the neighborhood | sand, and stairs |
-| **the rowboat** | the river and the coast | finishing the coast | dry land |
+| **the rowboat** ✓ S6 | the river and the coast | *found, not earned — see below* | dry land, and the open sea |
 | **the 8:15** | GREYLINE CITY → THE CUBICLE MILE | finishing the office park | everywhere the line is not drawn |
 | **the paper plane** | the wilds | launched from height | being steered, mostly |
+
+**THE ROWBOAT SHIPPED FIRST, and it broke one line of this table on
+purpose** (Session 6). Every other mount is the reward for finishing its
+quadrant; the rowboat is simply THERE, drawn up at the river mouth, from
+the first minute. That is not a shortcut — it is what makes the rule
+above legible before anything has been earned. A player who finds a boat
+in hour one and discovers it refuses dry land has learned what a mount
+IS in this world, and every later mount inherits the lesson for free.
+The thing it opens is a route the walk did not have (the river), and
+`design/specs/traversal.md` §3 records the decision that matters: **she
+does not leave the shore**, because a boat that goes anywhere wet would
+delete the sandbar that cost Session 5 a whole session, and because the
+torn west edge is not this session's to spend.
 
 **The 8:15 is the best payoff available to us and it is already set up.**
 The existing office-park note reads: *"the timetable says the 8:15 is
@@ -256,10 +282,31 @@ up for it:
 
 ## 7. Time and weather — the world changes without you
 
+### Time — BUILT, Session 6 ✓
+
 **Time of day has the highest return of anything in this file**, because
 every land already built improves for free: washes shift, lamps light in
 Brim, the city's windows come on, moods change, routines move. The
 metaphor supports it — the desk lamp comes on.
+
+*It does. `src/world/daylight.ts` is the clock and the one authority on
+the hour; the grade is one multiply in the paper post-pass and the fog
+colour; and the whole of `design/specs/traversal.md` §4 is the record.
+Four things a later session must not undo:*
+
+- ***eight in the morning to four in the afternoon is BIT-FOR-BIT the
+  shipped page*** *(the neutral tint is pure white and the neutral haze
+  is `PAPER_HEX`), which is what makes the day cycle additive rather
+  than a re-grade of six earned verdicts;*
+- ***the haze takes the hour's colour; the paper takes a little of it,
+  weighted by its own brightness; the INK takes none.*** *Round 1 of the
+  gate rejected a flat grade in one word — SEPIA — and it was right;*
+- ***the horizon goes darker than the page does.*** *That single move is
+  the difference between a filter and a desk lamp;*
+- ***the hour is readable by anyone*** *(`import { clock }`), which is
+  the seam STORY §7's routines and §9's mixer both need.*
+
+### Weather — still to come
 
 **Rain** is nearly gift-wrapped: the ink library's smudge pass is
 already documented as weather ("her smear as weather"), so rain in this
@@ -323,13 +370,18 @@ cross a border blind and hear the footstep change; they cannot hear the
    melody's level; the instrument and the bed need an equal-power
    crossfade of three or four seconds so a border is a place you pass
    through rather than a switch you flip.
-4. **The score answers the player.** `setMoodIntensity` exists and
-   **nothing in this game calls it.** Traversal is the obvious caller:
-   run and the score leans in, stand still and it thins to almost
-   nothing. Session 6 owns traversal and must leave that seam in place.
-5. **The score answers the hour.** Same crossfade machinery as the day
-   cycle. Session 6 builds the cycle; it must expose the hour as a
-   parameter the mixer can read, or the score session has to re-open it.
+4. **The score answers the player.** ✓ *Session 6.* `setMoodIntensity`
+   had existed since the port and nothing in this game had ever called
+   it; traversal calls it now, twice a second and only when the number
+   has moved (every call schedules a 1.5-second ramp, so one a frame is
+   a mixer that never arrives anywhere). Standing still is 0.45; flat
+   out is 1.35. **The seam is open: the mixer is told how hard the
+   player is going and decides what to do about it.**
+5. **The score answers the hour.** ✓ *the seam, at least.* `Audio.hour`
+   is public and `Audio.setHour` is called from the day cycle. Today it
+   thins the room tone after dark and lengthens the melody's gaps; the
+   score session will find the number already there and correct, and
+   **does not have to re-open the day cycle.**
 
 ### Where the music comes from
 

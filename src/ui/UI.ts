@@ -26,7 +26,7 @@ export class UI {
   onBegin: (() => void) | null = null;
   onContinue: (() => void) | null = null;
   onToggleSound: (() => boolean) | null = null;
-  onOpenMap: (() => HTMLCanvasElement) | null = null;
+  onOpenMap: ((width: number) => HTMLCanvasElement) | null = null;
   onPromptClick: (() => void) | null = null;
 
   private loader: HTMLElement;
@@ -117,6 +117,14 @@ export class UI {
     const track = el('loader-track', this.loader);
     this.loaderBar = el('loader-bar', track);
 
+    /* A canvas does not reflow, so anything lettered to a measured width
+     * has to be re-lettered when that width changes — a phone rotated
+     * with a note open would otherwise keep the portrait wrap. */
+    window.addEventListener('resize', () => {
+      if (this.noteOpen) this.letterNote();
+      if (this.mapOpen) this.openMap();
+    });
+
     window.addEventListener('keydown', (e) => {
       if (e.code === 'KeyM') (this.mapOpen ? this.closeMap() : this.openMap());
       if (e.code === 'Escape') {
@@ -134,13 +142,21 @@ export class UI {
     this.loader.classList.add('gone');
   }
 
+  /** Set once the walk has begun, so a loader tween that finishes LATE
+   *  can never letter the title back over a game already in progress.
+   *  Only the shoot harness and a very slow first paint can produce
+   *  that order, and it produced it here. */
+  private begun = false;
+
   showTitle(hasSave: boolean) {
+    if (this.begun) return;
     this.continueBtn.style.display = hasSave ? '' : 'none';
     this.title.classList.remove('gone');
     this.hud.classList.remove('show');
   }
 
   hideTitle() {
+    this.begun = true;
     this.title.classList.add('gone');
     this.hud.classList.add('show');
   }
@@ -149,36 +165,119 @@ export class UI {
     letterEl(this.soundBtn, muted ? 'sound: off' : 'sound: on', S.button(11));
   }
 
-  /** The border-crossing card: kicker over name, then it lets go. */
+  /** The border-crossing card: kicker over name, then it lets go.
+   *
+   *  The NAME is set in 24pt display caps and some of these lands are
+   *  called CASTLE GREYWEATHER. On a narrow phone that is wider than
+   *  the screen, so the card is given the page to wrap in — it will
+   *  break to two lines rather than run off the side. */
   showRegionCard(kicker: string, name: string) {
-    letterEl(this.cardKicker, kicker, S.quiet(11));
-    letterEl(this.cardName, name, { ...S.display(24), px: 24 });
+    const w = Math.max(180, window.innerWidth - 36);
+    letterEl(this.cardKicker, kicker, { ...S.quiet(11), maxWidth: w, align: 'center' });
+    letterEl(this.cardName, name, { ...S.display(24), px: 24, maxWidth: w });
     this.card.classList.add('show');
     window.clearTimeout(this.cardTimer);
     this.cardTimer = window.setTimeout(() => this.card.classList.remove('show'), 3400);
   }
 
   showHint(text: string, holdMs = 4200) {
-    letterEl(this.hintEl, text, S.voice(11.5));
+    /* The hint is the control list and the control list got longer when
+     * running arrived. It is one lettered line on a canvas, which does
+     * not reflow, so at 320 points it ran off both edges of the screen. */
+    letterEl(this.hintEl, text, {
+      ...S.voice(11.5), maxWidth: Math.max(200, window.innerWidth - 32), align: 'center',
+    });
     this.hintEl.classList.add('show');
     window.clearTimeout(this.hintTimer);
     this.hintTimer = window.setTimeout(() => this.hintEl.classList.remove('show'), holdMs);
   }
 
+  /* ================================================================ *
+   * THE NOTE CARD.
+   *
+   * Hand-lettering is drawn to a CANVAS, and a canvas has a width in
+   * pixels rather than a paragraph's willingness to reflow. So the wrap
+   * width is not a style choice — it is a measurement, and it has to be
+   * taken from the card the text is actually going into.
+   *
+   * It was a constant (380) for five sessions, and on a phone that is
+   * wider than the card: `max-width: min(460px, 88vw)` on a 390-point
+   * screen is 343 points, less 60 of padding, so the body was lettered
+   * a hundred points wider than the box it lives in and every line but
+   * the last ran off the side of the screen mid-word. Nothing in five
+   * sessions of contact sheets could have caught it, because no shoot
+   * script had ever opened a note. A player on an actual phone did.
+   * ================================================================ */
+  private noteText: { title: string; body: string } | null = null;
+
+  /**
+   * The width the card can give a line.
+   *
+   * Measured as the SPACE AVAILABLE, not as the card's current width —
+   * the card is a flex item that shrinks to its contents, and at the
+   * moment of measuring its only content is the "put it back" button.
+   * Measuring the card itself therefore wrapped every note to the width
+   * of those three words, which is a narrower card than the bug it was
+   * fixing. `max-width` resolves through getComputedStyle to a real
+   * pixel value, so the stylesheet stays the single source of the
+   * number and this reads it.
+   */
+  private noteWidth(): number {
+    const card = this.noteBody.parentElement as HTMLElement;
+    const cs = getComputedStyle(card);
+    const padX = parseFloat(cs.paddingLeft || '0') + parseFloat(cs.paddingRight || '0');
+    const cap = parseFloat(cs.maxWidth);
+    const avail = Number.isFinite(cap) && cap > 0
+      ? cap
+      : Math.min(460, window.innerWidth * 0.92);
+    return Math.max(150, Math.floor(avail - (padX || 44)));
+  }
+
+  private letterNote() {
+    if (!this.noteText) return;
+    const w = this.noteWidth();
+    /* AND THE TYPE IS SIZED SO THE LONGEST NOTE IN THE GAME FITS THE
+     * NARROWEST PHONE WITHOUT SCROLLING.
+     *
+     * Wrapping to the card was the first fix and it was not the whole
+     * one: at 320 points the same note simply became eleven lines and
+     * ran off the bottom instead of off the side. A note is one card
+     * you read at a glance — the moment it needs a scrollbar it has
+     * stopped being a note and become a document. So the hand writes a
+     * little smaller and a little tighter on a small page, which is
+     * what a hand does, and `max-height` stays as a safety net rather
+     * than as the plan. */
+    const px = Math.max(11, Math.min(12.5, w / 22));
+    const lead = px < 12 ? 2.25 : 2.6;
+    const tpx = Math.max(14.5, Math.min(17, w / 16));
+    letterEl(this.noteTitle, this.noteText.title,
+      { ...S.display(tpx), px: tpx, align: 'left', maxWidth: w });
+    letterEl(this.noteBody, this.noteText.body,
+      { ...S.voice(px), maxWidth: w, leading: lead });
+  }
+
   openNote(title: string, body: string) {
-    letterEl(this.noteTitle, title, { ...S.display(17), px: 17, align: 'left' });
-    letterEl(this.noteBody, body, { ...S.voice(12.5), maxWidth: 380, leading: 2.6 });
+    this.noteText = { title, body };
+    // show first, measure second: a hidden card has no width to measure
     this.note.classList.add('show');
+    this.letterNote();
     this.noteOpen = true;
   }
 
   closeNote() {
     this.note.classList.remove('show');
     this.noteOpen = false;
+    this.noteText = null;
   }
 
   openMap() {
-    const canvas = this.onOpenMap?.();
+    /* The map's own delivered width, computed the way the stylesheet
+     * computes it, so the hand can write big enough to be read on a
+     * small one (see ui/map.ts). */
+    const w = Math.min(
+      window.innerWidth * 0.92, window.innerHeight * 0.78 * 1.2368, 940
+    );
+    const canvas = this.onOpenMap?.(w);
     if (!canvas) return;
     this.mapSlot.textContent = '';
     canvas.className = 'map-canvas';

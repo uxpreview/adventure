@@ -569,6 +569,76 @@ export function lamppostTexture(seed: number): THREE.CanvasTexture {
   });
 }
 
+/* ================================================================== *
+ * WHAT IS LIT AFTER DARK (Session 6).
+ *
+ * The day cycle grades the whole frame with one multiply (see
+ * `postfx/PaperPass.ts`), which is exactly right for the page and
+ * exactly wrong for a lamp: a warm glow multiplied by a night tint is
+ * a dark warm glow. So a light is not an exception to the grade, it is
+ * a DRAWING that is only on at night — a standee like every other
+ * standee, whose opacity is `daylight.clock.lamp`.
+ *
+ * That is also the honest answer in this medium. A page has no light
+ * sources in it; it has marks. A lit window on paper is not a hole in
+ * the page, it is a patch somebody drew with a lighter pen and left the
+ * white of the sheet showing through. So these are drawn the way a hand
+ * would draw them: the paper's own white, a wash of flame over it, and
+ * the sparest possible line to say what shape the light is coming out
+ * of. Nothing here glows. It is just brighter than the page around it,
+ * which after dark is the whole of what "lit" means.
+ * ================================================================== */
+
+/** The pool a street lamp throws — hung at the lantern, never on the
+ *  ground: a decal on the ground runs away from the camera and is
+ *  invisible (Session 5's law). */
+export function lampGlowTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(128, 128, seed, (ctx, r) => {
+    // the flame's own halo: a soft blot, because that is what a light
+    // looks like through a page
+    const g = ctx.createRadialGradient(64, 64, 2, 64, 64, 58);
+    g.addColorStop(0, 'rgba(255,247,228,0.92)');
+    g.addColorStop(0.34, 'rgba(255,215,154,0.44)');
+    g.addColorStop(1, 'rgba(255,215,154,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 128, 128);
+    // and the hand that drew it: three or four quick rays, wobbled
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2 + r() * 0.5;
+      const r0 = 20 + r() * 8;
+      const r1 = 38 + r() * 16;
+      line(ctx, 64 + Math.cos(a) * r0, 64 + Math.sin(a) * r0,
+        64 + Math.cos(a) * r1, 64 + Math.sin(a) * r1, r,
+        { width: 1.3, alpha: 0.28, color: '#ffd79a', passes: 1 });
+    }
+  });
+}
+
+/** A fire in an iron basket by a gate — the castle's one lit thing, and
+ *  it is lit because somebody is still changing the banners. */
+export function brazierTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(96, 128, seed, (ctx, r) => {
+    // the basket
+    poly(ctx, [[30, 86], [66, 86], [60, 64], [36, 64]], r, { width: 2, alpha: 0.9 });
+    for (let i = 0; i < 4; i++) {
+      line(ctx, 34 + i * 8, 64, 32 + i * 9, 86, r, { width: 1.1, alpha: 0.5, passes: 1 });
+    }
+    line(ctx, 48, 86, 48, 118, r, { width: 2.4, alpha: 0.85 });
+    line(ctx, 36, 120, 60, 120, r, { width: 2, alpha: 0.8 });
+    // the fire: white paper under a flame wash, and two licks of pen
+    const g = ctx.createRadialGradient(48, 54, 2, 48, 54, 34);
+    g.addColorStop(0, 'rgba(255,247,228,0.95)');
+    g.addColorStop(0.4, 'rgba(255,205,132,0.5)');
+    g.addColorStop(1, 'rgba(255,205,132,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 8, 96, 84);
+    for (let i = 0; i < 3; i++) {
+      stroke(ctx, [[40 + i * 7, 66], [38 + i * 8 + r() * 5, 50], [46 + i * 6, 34 - r() * 8]], r,
+        { width: 1.4, alpha: 0.4, color: '#ffd79a' });
+    }
+  });
+}
+
 export function townWallTexture(seed: number, w = 512, h = 160): THREE.CanvasTexture {
   return makeTexture(w, h, seed, (ctx, r) => {
     fillPoly(ctx, [[8, h - 8], [8, 54], [w - 8, 54], [w - 8, h - 8]], WASH.castle, 0.5);
@@ -954,13 +1024,76 @@ export function bridgeDeckDecal(seed: number): THREE.CanvasTexture {
   });
 }
 
+/**
+ * THE ROWBOAT, redrawn for Session 6 — because it stopped being a prop
+ * in the box and became the thing the player sits in.
+ *
+ * What was here was a Session 1 sketch: one filled brown polygon at
+ * half alpha with three lines over it. On this sheet that is a foreign
+ * object — it is the most saturated thing in any frame it appears in,
+ * and every other drawing in this world is a light WASH under a
+ * BALLPOINT LINE. The first contact sheet of the mount had a brown
+ * bathtub parked in the middle of THE COMMON and there was no arguing
+ * with it.
+ *
+ * Redrawn in LONGSHORE's stated technique (Session 5, textures-coast):
+ * *the waterline* — a floating drawing stops flat, with one hatch of
+ * reflection and nothing below it. So the hull is a sheer line and a
+ * keel line meeting at two points, clinker-built (a boat this size is
+ * lapstrake and the laps are what make it read as a boat rather than as
+ * a leaf), with two thwarts, a pair of rowlocks and an oar shipped
+ * across her. The wash is the sand's own, so she belongs to the coast
+ * she was found on.
+ */
 export function rowboatTexture(seed: number): THREE.CanvasTexture {
-  return makeTexture(160, 80, seed, (ctx, r) => {
-    fillPoly(ctx, [[16, 34], [46, 62], [116, 62], [146, 32]], '#8a5a3a', 0.5);
-    stroke(ctx, [[14, 32], [30, 52], [60, 62], [104, 62], [132, 50], [148, 30]], r, { width: 2.4, alpha: 0.9 });
-    stroke(ctx, [[24, 40], [80, 48], [138, 38]], r, { width: 1.4, alpha: 0.5, passes: 1 });
-    line(ctx, 60, 46, 56, 58, r, { width: 1.6, alpha: 0.7 });
-    line(ctx, 100, 46, 104, 58, r, { width: 1.6, alpha: 0.7 });
+  return makeTexture(200, 104, seed, (ctx, r) => {
+    /* Round 2 of the gate: the first redraw came out a GONDOLA — long,
+     * shallow, pointed at both ends, and the walker read as standing on
+     * it rather than sitting in it. A dinghy is short and DEEP: the
+     * freeboard is most of what you see of a small boat from the side,
+     * and it is the freeboard that hides the legs of whoever is in it. */
+    const sheer: [number, number][] = [
+      [22, 26], [38, 40], [66, 47], [104, 49], [146, 46], [172, 36], [180, 24],
+    ];
+    const keel: [number, number][] = [
+      [22, 26], [32, 46], [62, 78], [104, 82], [148, 76], [172, 44], [180, 24],
+    ];
+    fillPoly(ctx, [...sheer, ...[...keel].reverse()], WASH.sand, 0.44);
+    // the shadowed inside of her, so the hull is not a flat cutout
+    fillPoly(ctx, [[40, 42], [66, 49], [104, 51], [146, 48], [170, 38],
+      [150, 60], [104, 63], [64, 60]], WASH.castle, 0.26);
+    stroke(ctx, keel, r, { width: 2.6, alpha: 0.92 });
+    stroke(ctx, sheer, r, { width: 2.3, alpha: 0.88 });
+    // clinker: two laps following the sheer down toward the keel
+    for (let i = 1; i <= 2; i++) {
+      const k = i / 3;
+      stroke(ctx, sheer.map(([x, y], j) =>
+        [x + (keel[j][0] - x) * k, y + (keel[j][1] - y) * k] as [number, number]),
+        r, { width: 1.2, alpha: 0.32 - i * 0.07, passes: 1 });
+    }
+    // the stem, and the transom squared off at the stern
+    line(ctx, 22, 26, 26, 12, r, { width: 2.2, alpha: 0.85 });
+    line(ctx, 172, 36, 172, 44, r, { width: 1.8, alpha: 0.62 });
+    // two thwarts — a seat is a line with both ends on the sheer
+    line(ctx, 60, 48, 88, 49, r, { width: 2.2, alpha: 0.8 });
+    line(ctx, 122, 50, 150, 47, r, { width: 2.2, alpha: 0.78 });
+    // rowlocks
+    for (const x of [76, 140]) {
+      line(ctx, x, 47, x, 38, r, { width: 1.5, alpha: 0.75 });
+      line(ctx, x - 3, 38, x + 3, 38, r, { width: 1.2, alpha: 0.62 });
+    }
+    // the oar, shipped across her, blade forward
+    stroke(ctx, [[44, 44], [118, 41], [162, 37]], r, { width: 2, alpha: 0.66 });
+    fillPoly(ctx, [[30, 40], [44, 37], [46, 48], [32, 50]], WASH.sand, 0.34);
+    poly(ctx, [[30, 40], [44, 37], [46, 48], [32, 50]], r, { width: 1.5, alpha: 0.75 });
+    /* AND THE WATERLINE — LONGSHORE's stated technique (Session 5): a
+     * floating drawing stops flat, with one hatch of reflection and
+     * nothing below it. She floats; she does not stand on the sea. */
+    for (let i = 0; i < 10; i++) {
+      const x = 26 + i * 16 + r() * 6;
+      line(ctx, x, 86 + r() * 4, x + 9 + r() * 9, 86 + r() * 4, r,
+        { width: 1.2, alpha: 0.16 + r() * 0.13, passes: 1 });
+    }
   });
 }
 

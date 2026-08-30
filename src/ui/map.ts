@@ -15,9 +15,32 @@ export function renderMap(state: {
   discovered: string[];
   here: [number, number] | null;
   walked: number;
+  /**
+   * HOW BIG THE MAP WILL ACTUALLY BE, in CSS pixels.
+   *
+   * The map is drawn once at 940 across and then CSS-scaled to
+   * `min(92vw, …)`. On a 320-point phone that is 294 points — a 3.2×
+   * reduction — and eleven-point land names arrive on screen at three
+   * and a half. The geography survives being small; the WRITING does
+   * not, and a map whose names you cannot read is a decoration.
+   *
+   * So the hand writes BIGGER on a small map, which is what a hand
+   * does. The lettering is sized for the delivered size and everything
+   * else is left alone.
+   */
+  width?: number;
 }): HTMLCanvasElement {
   const W = 940;
   const H = 760;
+  /** How much to enlarge the writing so it lands at a readable size.
+   *
+   *  Capped at 2.2 rather than at the full reduction: writing the names
+   *  at their nominal size on a 294-point map makes THE KINGDOM OF BRIM
+   *  a third of the world wide, and a map whose labels are bigger than
+   *  its geography is a legend, not a map. Two-and-a-bit is the
+   *  compromise — small on the page, and about twenty device pixels of
+   *  x-height on the phone that is actually holding it. */
+  const ink = Math.max(1, Math.min(2.2, W / Math.max(1, state.width ?? W)));
   const pad = 56;
   const canvas = document.createElement('canvas');
   canvas.width = W;
@@ -124,11 +147,11 @@ export function renderMap(state: {
     const cx = (s.rect.minX + s.rect.maxX) / 2;
     const cz = (s.rect.minZ + s.rect.maxZ) / 2;
     if (state.discovered.includes(s.id)) {
-      const label = letterCanvas(s.name, { ...S.quiet(11), align: 'center' });
+      const label = letterCanvas(s.name, { ...S.quiet(11 * ink), align: 'center' });
       ctx.drawImage(label, X(cx) - label.width / 4, Z(cz) - label.height / 4,
         label.width / 2, label.height / 2);
     } else {
-      const q = letterCanvas('?', S.quiet(13));
+      const q = letterCanvas('?', S.quiet(13 * ink));
       ctx.globalAlpha = 0.6;
       ctx.drawImage(q, X(cx) - q.width / 4, Z(cz) - q.height / 4, q.width / 2, q.height / 2);
       ctx.globalAlpha = 1;
@@ -146,7 +169,7 @@ export function renderMap(state: {
     ctx.arc(X(hx), Z(hz), 2.2, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
-    const you = letterCanvas('you', S.quiet(10));
+    const you = letterCanvas('you', S.quiet(10 * ink));
     ctx.drawImage(you, X(hx) + 8, Z(hz) - 20, you.width / 2, you.height / 2);
   }
 
@@ -155,9 +178,13 @@ export function renderMap(state: {
   const walked = Math.round(state.walked);
   const boast = letterCanvas(
     `${found} of ${REGION_SPECS.length} lands walked — ${walked} strides of ink`,
-    S.quiet(10.5)
+    S.quiet(10.5 * ink)
   );
-  ctx.drawImage(boast, W / 2 - boast.width / 4, H - 44, boast.width / 2, boast.height / 2);
+  /* and the boast fits the sheet it is written on: at the small-map
+     ink scale a half-size draw is wider than the map itself */
+  const bw = Math.min(boast.width / 2, W - pad * 2);
+  const bh = (boast.height / 2) * (bw / (boast.width / 2));
+  ctx.drawImage(boast, W / 2 - bw / 2, H - 22 - bh, bw, bh);
 
   return canvas;
 }

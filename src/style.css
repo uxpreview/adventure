@@ -96,9 +96,20 @@ body {
 .title-veil.gone .title-box {
   pointer-events: none;
 }
+/* THE TITLE NEVER TOUCHES THE EDGE. At 320 points INKLANDS was set
+   edge to edge with about twelve points of air, which on a phone with
+   rounded corners is none. */
+.game-title {
+  max-width: 92vw;
+}
+.game-title canvas,
+.game-sub canvas {
+  max-width: 100%;
+  height: auto;
+}
 .game-sub {
   opacity: 0.85;
-  max-width: 94vw;
+  max-width: 92vw;
 }
 .game-sub canvas {
   max-width: 100%;
@@ -242,6 +253,24 @@ body {
 #joy.active {
   opacity: 1;
 }
+/* Past the ring is the run (Input.ts). The only thing the UI says
+   about it is that the pen presses harder — the ring inks up, and the
+   nub fills. No label, no button: the trail behind you is the readout
+   (WORLD-SYSTEMS §0 rule 1). */
+/* THE RUN READS ON THE RING, NOT ON THE NUB.
+   The nub sits under the thumb, and on a tall screen the thumb drags
+   UP toward the walker — so a nub filled with ink is a black disc over
+   the character you are steering. The ring is at the thumb's origin,
+   below the walker, and it is the thing that can afford to darken. */
+#joy.running {
+  border-color: rgba(35, 38, 51, 0.55);
+  border-width: 2.6px;
+}
+#joy.running .nub {
+  background: rgba(245, 242, 234, 0.34);
+  border-color: rgba(35, 38, 51, 0.62);
+  border-width: 2.2px;
+}
 
 /* ---------- note card ---------- */
 .note-veil {
@@ -265,12 +294,17 @@ body {
   border: 1.4px solid rgba(35, 38, 51, 0.3);
   border-radius: 4px 16px 5px 14px / 12px 5px 14px 6px;
   box-shadow: 3px 4px 0 rgba(35, 38, 51, 0.12);
-  padding: 26px 30px 20px;
-  max-width: min(460px, 88vw);
+  /* The padding is a fraction of the screen on a small one: thirty
+     points of margin each side is generous at 460 and is an eighth of
+     the whole page at 320. */
+  padding: clamp(15px, 4.6vw, 26px) clamp(17px, 5.6vw, 30px) clamp(12px, 3.8vw, 20px);
+  max-width: min(460px, 92vw);
+  max-height: 86vh;
+  overflow-y: auto;
   transform: rotate(-0.5deg);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: clamp(6px, 2vw, 12px);
 }
 .note-close {
   align-self: flex-end;
