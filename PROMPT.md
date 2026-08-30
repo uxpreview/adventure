@@ -1,205 +1,149 @@
-# PROMPT — Session 9: THE BEARING
+# PROMPT — Session 10: FARM & FOREST
 
 You are continuing INKLANDS in `uxpreview/adventure`. Read, in order:
-`design/QUALITY-BAR.md` (binding), **`design/WORLD-SYSTEMS.md` §2
-(binding, and the second half of it was written for this session)**,
-`design/critiques/critique-art-3.md` (**the camera you are about to
-change, and why every number in it is the number it is**), then
-`design/THE-LINE.md` §3, `PLAN.md`, `README.md`, `SESSIONS.md`.
+`design/QUALITY-BAR.md` (binding), `design/LAND-SPEC-TEMPLATE.md`,
+`design/WORLD-SYSTEMS.md` §1 and §5, **`design/THE-WAITS.md` §7 (BRACK)
+and §10 (JOAN HARROW), which are the two waits this session authors**,
+`design/THE-STRANGERS.md` (the errands and encounters in these two
+lands), then `PLAN.md`, `README.md`, `SESSIONS.md`.
 
-**Session 8's handoff especially**, and not for the score: for the
-shape of its second half. It shipped a system whose product could not
-be screenshotted and spent half itself building the proof instead of
-asserting the result, and **that is the shape this session needs too**,
-for a completely different reason.
-
----
-
-## Why this session is not Farm & Forest
-
-The ladder said Session 9 was THE HARROW DOWNS and THE PENWOOD.
-**The ordering rule displaces it** — *systems that change how a land is
-authored land before the lands are authored* (owner, 2026-08-28) — and
-the camera's bearing is the last foundations item on the board.
-`PLAN.md` has said since 2026-08-30 that if it is taken, **it is taken
-BEFORE the five remaining lands, not after.** Take it. Everything below
-Session 9 shifts by one, and after this it is five land sessions in a
-row with nothing structural left to interrupt them.
-
-**If the owner would rather have lands**, the alternative is on the
-ladder unchanged and this file is wrong; ask, do not assume. But
-building five lands on a bearing you are going to change afterwards is
-the elevation mistake again, and that one cost a whole critique round.
+**Session 9's handoff especially, and this time for the tools rather
+than for the camera.** It left you a harness that pins every clock in
+the game and steps the world in game seconds, and a regression gate that
+returns a number. Both change how a land session should work, and the
+second half of this file is mostly about that.
 
 ---
 
-## The question, in the owner's words
+## The good news, and it has not been true before
 
-> **Can the camera shift, on desktop and on mobile, so the player can
-> always see where they are headed?**
+**There is nothing structural left.** Elevation, the camera, traversal,
+time, the score, the story and the bearing are all built. This is the
+first of **five land sessions in a row** with nothing on the board that
+can displace them, and the ordering rule is finally satisfied: every
+system that changes how a land is authored has landed.
 
-The complaint is exact. The camera only ever looks north. Walk north
-and you walk into the frame; walk east or west and you cross it; **walk
-south and you walk backwards out of it, into ground you cannot see.**
-The king's road runs north–south for four hundred and eighty units, so
-**Act III's entire walk is done facing away from the thing it is
-about.**
-
----
-
-## What you are inheriting, and what will kill you
-
-- **`App.CAM` is a designed system, not a pile of constants.** Session 4
-  built it and `critique-art-3.md` is where its numbers were solved.
-  `back`, `up`, `look`, `fov`, the three `rise*` terms, the fog. **All
-  three rise terms are zero on flat ground**, and that is the single
-  clause that protected Sessions 2 and 3's WOWED compositions through a
-  camera rebuild. Whatever you add, add it with the same property: **at
-  rest it must be the shipped page, exactly.**
-- **STANDEES ARE NOT BILLBOARDS, and this is the whole design
-  constraint.** `makeStandee` builds a plane with a fixed `rotation.y`;
-  nothing in this engine turns to face the camera. Off-axis, a cutout
-  narrows: **20° is 94% and free, 30° is 87% and survivable, 45° is 71%
-  and the world reads as a stack of card.** Past about thirty-five
-  degrees the paper metaphor does not degrade, it FAILS, and it fails
-  looking exactly like a bug.
-- **The recommendation is already written** (§2, four candidates, with
-  the reasoning): a **bounded yaw of about ±30° that eases toward
-  travel and springs back to due north**, plus a **peek gesture** that
-  is a gesture and never a state, plus a **lead offset**, which is free,
-  helps east–west, and cannot help south at all because south is behind
-  the lens. Two and three probably ship together. **A free orbit is
-  refused and you do not get to re-open that.**
-- **And the law you are standing on:** *the camera only ever looks
-  north, and that decides LAYOUT.* Six lands were authored on it.
-  **Nothing in this session licenses a land to be laid out east–west**,
-  and the very first thing a turning camera will tempt the NEXT session
-  into is exactly that. Say so in the docs, in writing, where a land
-  session will read it.
+So the ladder is what it says it is. Build the lands.
 
 ---
 
 ## The job
 
-### 0. SCOPE FIRST, AND THE PROOF IS NOT THE OPTIONAL PART
+### 1. THE HARROW DOWNS and THE PENWOOD
 
-The ladder rule is *a session may swap scope up the ladder, never skip
-the gate.* If you run out of session, **ship the peek gesture and the
-lead offset and no yaw at all** — both are honest, both are small, and
-neither can regress a composition. What you may not ship is a bearing
-nobody proved.
+Two lands, and they are each other's opposite, which is the whole
+reason they share a session: **field patchwork against pine dark.** One
+is worked, open, in daylight, and has a date on it; the other is closed,
+still, and has a forty-year silence in the middle of it.
 
-### 1. THE ENVELOPE, AUTHORED
+The scope, from the ladder: **the field patchwork, the tarn, the forest
+track**, plus THE MILL, which is built and has a note. Read
+`design/specs/` for how the five finished lands are written up and write
+these two the same way.
 
-One number in `App.CAM`, **with the standee table written beside it as
-the reason**, the way `riseBack` carries its reason. Not a tuning
-constant somebody can nudge later without knowing what it costs.
+**And from Session 7 the shape of a land session is fixed:** every land
+ships **its places AND its wait AND its named inhabitant.** So:
 
-**Portrait gets its own envelope.** A tall frame has less horizontal
-room to spend on a turn, and the joystick must never sit under the
-thing the player is steering toward (§8).
+- **JOAN HARROW** and the picnic laid for two (`THE-WAITS.md` §10). She
+  is the counterweight of the whole story — the only person in this
+  world waiting for something that arrives — and her register is the
+  only one in the game that is not wry. **Do not be clever in the
+  Downs.** Her permanent change is that **you sit down**, and the second
+  setting stays out afterwards.
+- **BRACK** and the tarn (`THE-WAITS.md` §7). He will not go within
+  forty units of it and never has his back to it, and **the forest track
+  is his forty-year circle worn into the ground until it became a
+  road everybody else uses.** The turn is that the geography of a whole
+  land is one man's caution outliving the fear that made it. His
+  permanent change is one figure and one quarter turn.
 
-### 2. BOUNDED YAW THAT EASES TOWARD TRAVEL
+Both waits are authored *in the world*, in postures and placement and
+routine — no dialogue trees, nothing announced, no count and no list
+(QUALITY-BAR). Brack's forty units is a behaviour, not a note.
 
-Swings a limited amount toward where the walker is actually going;
-**eases back to due north whenever they stop.** A stopped walker is
-always in the composition the land was authored for. That is not a nice
-property, it is the contract that keeps six WOWED verdicts valid.
+### 2. THE THINGS THAT ARE NOW EASY AND WERE NOT
 
-Watch the second-order effects, because they are where this gets away
-from you: the fog, the rise terms (which read ground AHEAD — ahead of
-what, once there is a bearing?), the standee wind and player-bend, the
-footprint decals, and the POI labels, which are the next item.
+Take them, because they were expensive in every previous land session
+and they are nearly free now:
 
-### 3. THE PEEK, AND THE LEAD
+- **The elevation is authored, not sprinkled.** These two lands are the
+  BUCKLE (the downs roll — `WORLD-SYSTEMS` §1) and whatever the Penwood
+  needs. `src/world/elevation.ts` is the only authority; re-run
+  `node tools/check-terrain.mjs`.
+- **The voices are already assigned** (`Audio.ts`, `LAND_VOICE`): both
+  lands are the plucked string, the Penwood damped and dark and the
+  Downs the same wood out in the light. The bed and the ambient events
+  are yours to author; `node tools/check-audio.mjs` will re-measure them
+  and will fail if a level drifts.
+- **Both lands have a wait, an inhabitant, four errands and a handful
+  of encounters already written.** You are not inventing content, you
+  are staging it.
 
-A held key on a keyboard and a two-finger drag on a phone, springing
-back on release. And the lead offset: aim further along the direction
-of travel without changing bearing at all.
+### 3. AND THE TOOLING SESSION 9 LEFT YOU — USE IT, IT CHANGES THE WORK
 
-### 4. THE OLDEST DEFECT IN THE GAME IS NOW IN YOUR WAY
-
-**POI labels have no collision logic** — "THE CROSSROADS" prints across
-the signpost it names, and that signpost carries the story's hinge. It
-has been the oldest visible defect for six sessions and it has always
-wanted its own slice.
-
-**A turning camera moves every label relative to the thing it labels.**
-So either it gets fixed here, where you are already perturbing exactly
-that relationship and can see it move, or the session ships a bearing
-that makes it worse. **Fix it here.** It is the cheapest it will ever
-be and it is the last moment it is free.
-
-### 5. AND THE PROOF, WHICH IS THIS SESSION'S REAL WORK
-
-§2 says *every protected framing must be reproducible exactly: the
-shoot harness pins yaw to zero, every existing contact sheet re-shoots
-unchanged, and **a regression is a diff and not an opinion.*** That
-sentence is a tooling requirement and nobody has built it.
-
-- **`tools/diff-sheets.mjs`.** Shoot every protected framing on the
-  current build, keep it, shoot it again after the change with yaw
-  pinned to zero, and **diff the pixels**. Report the worst frames by
-  difference and fail on anything over a stated threshold. Six lands,
-  two hours, two viewports — that is the set that carries five WOWED
-  verdicts, and until now "unregressed" has meant a person looking at
-  two pictures a week apart.
-  **Mind the ink-in cascade:** frames shot at short settle in this
-  sandbox catch the world mid-wave, so two shots of the same frame are
-  not identical unless both are settled long enough or both are settled
-  the same. Solve that before you trust a single number it prints.
-- **AND SHOOT THE WALK SOUTH.** The whole reason this session exists is
-  a walk the contact sheets have never contained, because every framing
-  in this project is a stand-still. Drive the walker **south down the
-  king's road** — Greyweather's gate to the Common and on to the road
-  head — and shoot it, with the bearing live, in both viewports. If
-  that sequence is not obviously better than the same walk today, the
-  session has not earned its scope, whatever the numbers say.
+- **`node tools/diff-sheets.mjs` with no arguments** now diffs the
+  working tree against `origin/main` with every clock pinned, and says
+  in a number whether the six protected lands moved. **Run it before you
+  push, not after somebody asks.** A land session that touches
+  `elevation.ts` is exactly the kind that regresses a neighbour's
+  composition by a unit of ground, and this is the first session that
+  can catch it.
+- **The harness owns the clock.** `__inklands.setTime` pins the world's,
+  the paper's, the walker's, the water's; `__inklands.step(dt, n)` runs
+  fixed ticks and renders one frame. **A twelve-game-second settle now
+  costs a third of a second instead of seventy**, so:
+  - shoot your sheets settled PAST the ink-in cascade (it takes eight
+    seconds of game time to cross a land — every framing shot before
+    Session 9 was shot on a page still drawing itself);
+  - and drive the walker properly. `tools/shoot-bearing.mjs` walks four
+    hundred and eighty units and finishes in minutes. Copy its `frame`
+    helper rather than holding keys for fourteen seconds.
+- **Shoot at least one DRIVEN framing per land.** Session 8's pigeons
+  were wrong for four sessions because every framing this project owned
+  was a stand-still. The Downs have sails and sheep; the Penwood has a
+  man who turns.
 
 ---
 
-## The constraints that will bite you
+## The laws that will bite a land session, and one of them is new
 
-- **This sandbox renders at about 3.5 frames a second**, and App clamps
-  `dt` at 0.05, so one second of wall clock is about a sixth of a second
-  of game time. **A session about MOTION pays this tax on every frame it
-  shoots.** Budget for it: the Session 8 regression pass alone was six
-  sheets and the better part of half an hour.
-- **A camera that eases has a time constant, and everything above is
-  measured in game time.** Do not tune a spring by watching a headless
-  browser at 3.5 fps.
-- **Brim Square has three runs of bunting and the camera trails
-  thirteen units.** Any framing standing within about eight units of
-  z −65, −81 or −96 hangs two enormous translucent triangles down the
-  middle of the frame. A turning camera changes which framings do that.
-- **A backtick inside a JS template literal ends it.** Sessions 5 and 6
-  did it in shaders; Session 8 did it in a render harness, in a file
-  whose own header warned about it. **Three times.**
-- **`.tmp/` can vanish mid-session.** Tools that `mkdir` it are fine; a
-  shell redirect into it is not.
+- **THE CAMERA'S RESTING BEARING IS DUE NORTH AND IT STILL DECIDES
+  LAYOUT.** Session 9 gave the camera a bearing and **did not change
+  this.** A stopped walker is at yaw zero by contract; the envelope is
+  26° on desktop and 12° in portrait and only while MOVING; a place
+  staged east of its viewpoint is still sixty-four degrees out of frame;
+  and the envelope cannot grow, because past 35° a paper cutout stops
+  reading as paper. **A thing you walk ALONG runs north–south. A thing
+  you LOOK at is north of where you stand.** Session 5 lost two rounds
+  to this and the turning camera does not buy them back.
+- **Author landforms with PLANAR FACES.** A doubly-curved landform has
+  no constant fall line to hatch down and comes out as a thumb print.
+- **Nothing reads as an array**, and a forest is the single easiest
+  place in this project to break that rule. Authored clusters,
+  deliberate voids, occlusion layers, edges that decay.
+- **Nobody crosses a border but the walker.** Brack cannot leave the
+  Penwood; Joan cannot leave the Downs.
+- **A name is written above what it names** now (Session 9's skyline).
+  You get that for free — but if you author a tall thing that a POI sits
+  under, check the label in the sheet rather than assuming.
+- **`ctx.standee` is the choke point.** Anything hung in the air uses
+  `ctx.groundY` / `ctx.hang`; a bare `position.y` is a Session-3 bug
+  waiting to be found in Session 12.
 
 ---
 
 ## The gate
 
-1. **`node tools/check-terrain.mjs` and `node tools/check-audio.mjs`
-   both pass**, and both should be boring: this session touches neither
-   the ground nor the score, and if either moves, something is wired to
-   the camera that should not be.
-2. **`node tools/diff-sheets.mjs` — every protected framing at yaw zero
-   is unchanged**, to a stated threshold, in both viewports at both
-   hours. This is the new gate and it is the one that makes the other
-   two cheap forever.
-3. **The art director**, on a new sheet: the six protected lands with
-   the bearing LIVE and the walker MOVING, both viewports, two hours —
-   plus the south walk, which is the composition the session is for.
-4. **The owner**, on the feel. A camera is not a picture and this is the
-   second gate in two sessions that a tool cannot perform: **does it
-   help, or does the world wobble?** Hand over the walk-south capture
-   and say plainly that you could not judge it.
-
-Iterate to WOWED on what you can judge. Log the verdicts verbatim in
-`design/critiques/critique-camera-1.md`.
+1. `node tools/check-terrain.mjs`, `node tools/check-audio.mjs` and
+   `node tools/check-camera.mjs` all pass.
+2. `node tools/diff-sheets.mjs` — **the page does not move.** Session 9
+   left it at 92 of 92 framings bit-identical; anything less than that
+   is a regression and it now has a name and a number.
+3. **The art director**, on a new sheet: both lands, both viewports, two
+   hours, at least one driven framing each, and **each land's SHOT**.
+   A land with no composition people would share unprompted is not done.
+4. Iterate to WOWED. Log the verdicts verbatim in
+   `design/critiques/critique-art-6.md`.
 
 ---
 
@@ -220,43 +164,43 @@ session: pushed, `SESSIONS.md` handoff updated, verdicts logged.
 
 ---
 
-## Standing debts, carried forward — and one of them is now item 4
+## Standing debts, carried forward
 
-They live in `PLAN.md` from Session 8 on, because they had been carried
-in this file alone and this file is overwritten every session.
+They live in `PLAN.md` as well as here, because this file is overwritten
+every session.
 
-- **POI label collision.** See item 4. This is its session.
 - **The rowboat's first-meeting composition at THE RIVER MOUTH** is a
-  lot of sand. Two gates have passed it and pointedly not praised it.
+  lot of sand. **Three** gates have now passed it and pointedly not
+  praised it.
 - **Brim Square is full.** The next authored thing in that plaza
   displaces something Session 3 earned.
+- **The prompt on a very wide subject is still on the subject.** READ
+  THE PROCLAMATION is legible on Greyweather's barbican and it is a
+  compromise (`critique-camera-1.md`, round 3, noted-not-blocking).
 
 ## Not this session's job, and recorded so nobody re-derives them
 
-- **The story gate returned NOT YET** (`critique-story-2.md`), with two
-  mandatory findings that belong to the sessions that build Acts I and
-  IV: Act I's second and third facts have one optional teacher between
-  them, and the ending's default witness sees one of twelve stops. Both
-  fixes are cheap. Neither is a camera.
 - **§3.2's rim composition is the riskiest un-shot frame in the game**
-  and Session 11 shoots it FIRST, not last. **If this session ships a
-  bearing, re-read that section before believing its numbers** — 201
-  units of haze up a straight road was reasoned on a camera that only
-  looked north.
+  and **Session 12** shoots it FIRST, not last. Session 9 re-checked its
+  numbers against the new camera and none of them moved — the rim is a
+  stand-still and a stopped walker is due north.
+- **The story gate returned NOT YET** (`critique-story-2.md`), with two
+  mandatory findings belonging to the sessions that build Acts I and IV.
 - The twelve WAITS, the eight STRANGERS and the three inventories are
-  the authoring queue (`THE-WAITS.md`, `THE-STRANGERS.md`), and from
-  Session 10 on **every land session ships its places AND its wait AND
-  its named inhabitant.**
+  the authoring queue.
 
 ## Waiting on the owner, and none of it blocks you
 
-1. **THE EAR GATE on the score.** Nineteen WAVs were handed over
-   unperformed (`critique-score-1.md` §4). Nobody has heard the game.
-2. **Whether the STORY GATE becomes a standing critic**, and whether its
+1. **THE EAR GATE on the score.** Nineteen WAVs handed over unperformed
+   (`critique-score-1.md` §4). Nobody has heard the game.
+2. **THE FEEL GATE on the camera.** Session 9 shipped a bearing it could
+   measure and could not judge (`critique-camera-1.md`, and QUALITY-BAR
+   §2 now carries the rule for both gates). The evidence is `shots-s9/`:
+   the walk south, every station shot twice — the shipped page, then
+   this one. **Does it help, or does the world wobble?**
+3. **Whether the STORY GATE becomes a standing critic**, and whether its
    NOT YET blocks Acts I and IV or merely annotates them.
-3. **The STORY EDITOR**, proposed as a third standing critic and run
-   once (`critique-story-1.md` §3).
-4. **The premise line's rewrite** and **two surviving similes**, kept on
-   an assertion-versus-simile distinction.
-5. **A seventh content tier, THE LOCAL RULE** (`QUESTS.md` §8),
-   proposed off the RuneScape entry and explicitly not ratified.
+4. **The STORY EDITOR**, proposed as a third standing critic.
+5. **The premise line's rewrite** and **two surviving similes**.
+6. **A seventh content tier, THE LOCAL RULE** (`QUESTS.md` §8),
+   proposed and explicitly not ratified.

@@ -59,6 +59,12 @@ and deals a region card — nothing else, because the sheet is continuous.
 - **Vistas.** The camera sits low enough that the keep reads from the
   meadow and the city towers from across the downs; the fog is a
   horizon, not a curtain.
+- **And it answers where you are going.** Not a free camera — a paper
+  cutout seen thirty-five degrees off-axis stops reading as paper, so
+  the envelope is authored and hard: the crossing part of your travel
+  turns the frame, the toward-the-lens part makes it give ground, and a
+  stopped walker is due north to the pixel. Two fingers, or `,` and `.`,
+  lean it further, and let go and it comes home.
 - **Roads that carry.** The nine authored roads are infrastructure now:
   a little faster along them, and they take a share of the angle off a
   walk that is already going their way. The king's road, main street and
@@ -124,16 +130,30 @@ npm run dev      # http://localhost:5173
 npm run build    # type-check + production build in dist/
 ```
 
-Desktop: WASD or arrows, **hold Shift to run**, `E` to look, `M` for the
-map. Mobile: drag in the lower part of the screen to steer (the top is
-the vista and the joystick is kept off it), **drag further past the ring
-to run**, tap to interact.
+Desktop: WASD or arrows, **hold Shift to run**, `E` to look, **`,` and
+`.` to lean the camera**, `M` for the map. Mobile: drag in the lower part
+of the screen to steer (the top is the vista and the joystick is kept
+off it), **drag further past the ring to run**, **two fingers to lean**,
+tap to interact.
+
+The camera answers where you are going, inside an envelope you cannot
+leave: the part of your travel that CROSSES the frame turns it (26° on
+desktop, 12° on a phone), and the part that comes AT THE LENS makes it
+give ground — walking south it trails further back and lowers its aim,
+so the road you are walking into is laid out below you instead of
+arriving from behind. **Stand still and it is due north, exactly**, which
+is the composition every land in this world was drawn for.
 
 Append `?debug` to expose `window.__inklands` (teleport, region query,
-terrain probes, frame cost, audio) for testing.
+terrain probes, frame cost, audio, and the harness clock — `setTime`,
+`step`, `setBearing`) for testing.
 
 ```sh
 node tools/check-terrain.mjs   # assert the height field, off-screen
+node tools/check-camera.mjs    # assert the BEARING: the envelope, the
+                               #   continuity, the walk home, the walk south
+node tools/diff-sheets.mjs     # A REGRESSION IS A DIFF AND NOT AN OPINION
+node tools/shoot-bearing.mjs   # the walk south, shot twice: shipped, then now
 node tools/shoot-shape.mjs     # every landform, both viewports
 node tools/shoot-first-minute.mjs
 node tools/shoot-oldworld.mjs
@@ -149,6 +169,28 @@ node tools/verify-score.mjs    # the same score, wired, in the running game
 node tools/shoot-sound.mjs     # the sound sheet: twelve lands, plotted in ink
 node tools/render-wavs.mjs     # nineteen WAVs, for the one gate a tool cannot run
 ```
+
+`design/specs/camera.md` is the camera written up — the two components,
+the envelope's arithmetic, the walk south in units of page, every
+second-order effect checked, and the harness clock.
+
+**A regression used to mean a person looking at two contact sheets a
+week apart**, and it was never a claim anybody could check: two shots of
+one framing in this project were never the same picture. Five clocks
+move between two shutter presses and every one of them is in every pixel
+— the paper pass's grain and its hand-drawn wobble (a one-pixel random
+resample of every ink edge, re-seeded three times a second), the standee
+wind, the ink-in cascade at 34 units a second, the walker's own quiet
+breath (a third of a pixel, and exactly enough to redraw an outline) and
+the water. The last two were found BY the diff and by nothing else.
+Since Session 9 the harness pins all five and steps the
+world in GAME seconds instead of waiting in milliseconds, so twelve
+seconds of settle costs a third of a second instead of seventy and two
+runs of a framing come back **bit-identical**. `diff-sheets.mjs` builds
+a base git ref and the working tree, shoots the framings that carry the
+verdicts through the same protocol on both, and counts the pixels that
+moved — separating THE PAGE, which may not move at all, from THE WRITING
+OVER IT, which moves when a label is deliberately re-placed.
 
 **The score is the first thing in this project that cannot be
 screenshotted**, so it is measured instead: `check-audio.mjs` renders
@@ -200,8 +242,16 @@ cycle, the paper post-pass, the audio engine. New for the open world:
   to four in the afternoon is bit-for-bit the shipped page.
 - `src/world/regions/` — a builder per land placing instanced standee
   fields and one-off drawings; streaming keeps first-visit cost off
-  the walk.
+  the walk. It also keeps **the skyline**: every stand-up records its
+  top into a four-unit grid as it is built, which is how a place's name
+  knows to be written above the thing it names rather than across it.
 - `src/world/textures.ts` — the prop box: forty-odd seeded drawings,
   ink outline over a light wash stain. `textures-common.ts`,
   `textures-oldworld.ts` and `textures-coast.ts` add a box per session,
   each with its own stated ink technique.
+- `src/core/App.ts` — the loop, and **the camera**, which is a designed
+  system rather than a pile of constants: the resting framing, the rise
+  terms that reveal a landform by RETREATING instead of pitching the
+  walker out of frame, and since Session 9 the bearing — a yaw off the
+  crossing part of your travel, an astern opening off the part that
+  comes at the lens, both zero when you stand still.

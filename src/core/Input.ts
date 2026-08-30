@@ -36,10 +36,33 @@ const WALK_BAND_TOP = 0.38;
 /** Where the stick reaches a full walk, and where it reaches a run. */
 const JOY_WALK = 48;
 const JOY_RUN = 88;
+/** How far two fingers travel for a full peek. About a thumb's width
+ *  either side of where they went down on a 390-wide screen. */
+const PEEK_PX = 90;
 export class Input {
   move = new THREE.Vector2();
   /** 0 walking .. 1 flat out. Continuous; never a state. */
   run = 0;
+  /**
+   * THE PEEK — −1 hard left, +1 hard right, and it is a GESTURE AND
+   * NEVER A STATE (WORLD-SYSTEMS §2, candidate 3). It springs back the
+   * moment it is let go, so there is no bearing anybody can leave the
+   * camera in and no composition in this game that a player can park
+   * askew.
+   *
+   * On a keyboard it is `,` and `.` — the two keys already engraved `<`
+   * and `>`, which is the only pair on a keyboard that reads as left and
+   * right without being told. They are also well clear of the walking
+   * hand, so a peek can never be mistaken for a step, and E stays
+   * INTERACT, because "E to look" is the sentence this game has shipped
+   * since Session 2 and a camera is not worth breaking it for.
+   *
+   * On a phone it is TWO FINGERS DRAGGED, the way you want to look —
+   * the same direction-you-want metaphor the walk stick already uses.
+   * A second finger cancels the walk outright: two fingers are a look,
+   * one finger is a walk, and nothing on screen has to say so.
+   */
+  peek = 0;
   enabled = true;
   /**
    * THE HARNESS'S HANDS. `tools/shoot-*.mjs` has always pressed real
@@ -50,12 +73,20 @@ export class Input {
    * Null in the shipping game and never set from anywhere but `?debug`.
    */
   hold: { x: number; y: number; run: number } | null = null;
+  /** And the harness's other hand: a held peek, for the bearing sheet. */
+  holdPeek: number | null = null;
   private keys = new Set<string>();
   private pointerId: number | null = null;
   private origin = new THREE.Vector2();
   private joyVec = new THREE.Vector2();
   private joyRun = 0;
   private interactCbs: (() => void)[] = [];
+  /** Every pointer currently down on the canvas, so a second finger can
+   *  be recognised as a second finger. */
+  private pts = new Map<number, { x: number; y: number }>();
+  private peekIds: number[] = [];
+  private peekBase = 0;
+  private peekRaw = 0;
 
   constructor(private canvas: HTMLElement, private joyEl: HTMLElement) {
     window.addEventListener('keydown', (e) => {
@@ -69,7 +100,21 @@ export class Input {
     window.addEventListener('blur', () => this.keys.clear());
 
     canvas.addEventListener('pointerdown', (e) => {
-      if (!this.enabled || this.pointerId !== null) return;
+      this.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (!this.enabled) return;
+      /* TWO FINGERS ARE A LOOK, NOT A WALK. The second one down ends
+       * whatever walk the first one was asking for — a thumb and a
+       * finger on the glass at once is somebody looking around, and a
+       * stick that kept steering underneath it would walk them off the
+       * road they were trying to see. */
+      if (this.pts.size === 2 && this.peekIds.length === 0) {
+        this.peekIds = [...this.pts.keys()];
+        this.peekBase = this.peekX();
+        this.peekRaw = 0;
+        this.dropStick();
+        return;
+      }
+      if (this.pointerId !== null) return;
       const tall = window.innerWidth / window.innerHeight < 0.8;
       if (tall && e.clientY < window.innerHeight * WALK_BAND_TOP) return;
       this.pointerId = e.pointerId;
@@ -82,6 +127,17 @@ export class Input {
       canvas.setPointerCapture(e.pointerId);
     });
     canvas.addEventListener('pointermove', (e) => {
+      const p = this.pts.get(e.pointerId);
+      if (p) {
+        p.x = e.clientX;
+        p.y = e.clientY;
+      }
+      if (this.peekIds.length === 2) {
+        if (!this.peekIds.includes(e.pointerId)) return;
+        const d = (this.peekX() - this.peekBase) / PEEK_PX;
+        this.peekRaw = Math.max(-1, Math.min(1, d));
+        return;
+      }
       if (e.pointerId !== this.pointerId) return;
       const dx = e.clientX - this.origin.x;
       const dy = e.clientY - this.origin.y;
@@ -104,16 +160,34 @@ export class Input {
       this.joyEl.classList.toggle('running', this.joyRun > 0.45);
     });
     const release = (e: PointerEvent) => {
+      this.pts.delete(e.pointerId);
+      if (this.peekIds.includes(e.pointerId)) {
+        // a gesture and never a state: lift a finger and it springs back
+        this.peekIds = [];
+        this.peekRaw = 0;
+      }
       if (e.pointerId !== this.pointerId) return;
-      this.pointerId = null;
-      this.joyVec.set(0, 0);
-      this.joyRun = 0;
-      this.joyEl.classList.remove('active', 'running');
-      const nub = this.joyEl.firstElementChild as HTMLElement;
-      nub.style.transform = '';
+      this.dropStick();
     };
     canvas.addEventListener('pointerup', release);
     canvas.addEventListener('pointercancel', release);
+  }
+
+  /** Where the two peeking fingers are, between them. */
+  private peekX() {
+    let sum = 0;
+    for (const id of this.peekIds) sum += this.pts.get(id)?.x ?? 0;
+    return sum / Math.max(1, this.peekIds.length);
+  }
+
+  /** Let go of the walk stick, wherever it was. */
+  private dropStick() {
+    this.pointerId = null;
+    this.joyVec.set(0, 0);
+    this.joyRun = 0;
+    this.joyEl.classList.remove('active', 'running');
+    const nub = this.joyEl.firstElementChild as HTMLElement;
+    if (nub) nub.style.transform = '';
   }
 
   onInteract(cb: () => void) {
@@ -124,6 +198,7 @@ export class Input {
   }
 
   update(dt = 1 / 60) {
+    this.peekTick(dt);
     if (this.hold) {
       this.move.set(this.hold.x, this.hold.y);
       const rate = this.hold.run > this.run ? 3.0 : 5.0;
@@ -160,5 +235,19 @@ export class Input {
       : this.joyRun;
     const rate = wantRun > this.run ? 3.0 : 5.0;
     this.run += (wantRun - this.run) * (1 - Math.exp(-dt * rate));
+  }
+
+  /** The peek, ramped like the run and for the same reason: a body
+   *  turns its head over about a fifth of a second, and a tapped key
+   *  must never be able to snap the whole world sideways for one frame. */
+  private peekTick(dt: number) {
+    let want = 0;
+    if (this.holdPeek !== null) want = this.holdPeek;
+    else if (this.enabled) {
+      const k = (this.keys.has('Period') ? 1 : 0) - (this.keys.has('Comma') ? 1 : 0);
+      want = k !== 0 ? k : this.peekRaw;
+    }
+    this.peek += (want - this.peek) * (1 - Math.exp(-dt * 6));
+    if (want === 0 && Math.abs(this.peek) < 0.002) this.peek = 0;
   }
 }

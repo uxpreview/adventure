@@ -92,8 +92,27 @@ critique-story-1, and the same file logs a new critic — see below);
 **THE SCORE** — five instruments over twelve lands with a bed apiece and
 an equal-power border, proved by a renderer instead of a camera and
 drawn as a contact sheet in ink (WOWED, critique-score-1, and see the
-gate below that this project could not run).
+gate below that this project could not run); **THE BEARING** — the
+camera answers travel inside an authored envelope, the walk south has
+ground in front of it for the first time, and the oldest visible defect
+in the game (a name printed across the thing it names) is closed
+(WOWED, critique-camera-1 — and see the second owner's gate below).
 Every other land is a scatter draft and is presumed NOT YET.
+
+**AND FROM SESSION 9 A REGRESSION IS A DIFF AND NOT AN OPINION.**
+"Unregressed" has meant a person looking at two contact sheets a week
+apart, and it was never a claim anybody could check — two shots of one
+framing in this project were never the same picture, because **five
+clocks** (the paper grain, the standee wind, the ink-in cascade, the
+walker's own breath and the water) move between two shutter presses and
+every one of them is in every pixel. The last two were found BY the
+diff, not before it. `tools/diff-sheets.mjs` pins all five, builds a
+base git ref and the working tree, shoots the framings that carry the
+verdicts through an identical protocol, and counts the pixels that
+moved — separating THE PAGE (which may not move at all) from THE
+WRITING OVER IT (which moves when a label is deliberately re-placed).
+**A session that says a protected land is unregressed now says it with
+a number.**
 
 **AND ONE GATE IS THE OWNER'S, because no tool in this repository can
 run it** (Session 8). The score can be rendered, measured, plotted and
@@ -105,6 +124,20 @@ handed over — `tools/render-wavs.mjs` writes nineteen files — and the
 session states in its log that it could not perform the gate. **A
 session that claims a sound is good is lying; a session that hands over
 the evidence is not.**
+
+**AND A SECOND GATE IS THE OWNER'S, FOR THE SAME REASON** (Session 9).
+A camera is not a picture. The bearing can be asserted — the envelope
+never leaks, the bearing is continuous round the whole circle of travel,
+a stopped walker comes home to exactly zero in 2.5 game seconds, the
+walk south sees three times the page it did — and **not one of those is
+the question, which is whether it HELPS or whether the world wobbles.**
+That is a thing a person feels over minutes of walking and no tool in
+this repository can perform it. So the rule Session 8 wrote for the ear
+generalises: **a system whose product is not a picture ships with its
+evidence handed over and the session states plainly that it could not
+run the gate.** For the score that was nineteen WAVs; for the camera it
+is the walk-south capture, every station shot twice — the shipped page,
+then this one — so the owner is comparing rather than judging cold.
 
 **AND THE MAIN STORYLINE HAS NEVER BEEN READ BY A CRITIC** (owner,
 2026-08-30). Every gate this project has run has judged **pictures**.
@@ -203,11 +236,33 @@ regression check it always was.
 - **Water cannot climb a hill.** The river, the sea and the ponds have
   BEDS (elevation.ts), and the river's falls monotonically from source
   to mouth. Anything blue that goes uphill is a bug, always.
+- **`node tools/check-camera.mjs` whenever the camera is touched.** The
+  envelope is the one number standing between this world and a stack of
+  card seen sideways, so it is asserted rather than trusted: nothing —
+  travel, a peek, a road that carries, all at once — gets past it; the
+  bearing is continuous round the whole circle of travel, which is what
+  stops a walker weaving either side of due south from flipping a
+  fifty-two-degree pan back and forth; and a stopped walker arrives at
+  EXACTLY zero rather than approaching it.
 - **`node tools/check-terrain.mjs` before you look at anything.** It
   bundles the height field and asserts the amplitude envelope, that no
   road is severed, that every standing place is reachable on foot from
   the spawn, and that Greyweather's south face still refuses. Cheaper
   than a screenshot and it catches what a screenshot cannot.
+- **THE CAMERA'S RESTING BEARING IS DUE NORTH, AND IT DECIDES LAYOUT.**
+  A thing the player walks ALONG runs north–south; a thing they LOOK at
+  is north of where they stand. Session 5 lost two rounds to a boardwalk
+  laid east–west and a regatta staged west of its viewpoint: check the
+  bearing before placing, not after.
+  **Session 9 gave the camera a bearing and did NOT change this law.**
+  A stopped walker is at yaw zero by contract, so every composition in
+  this game is still judged due north; the envelope is 26° on desktop
+  and 12° in portrait, so the most a *moving* walker ever gets is a
+  quarter-turn's lean, and a place staged east of its viewpoint is still
+  sixty-four degrees out of frame. The envelope cannot grow, either —
+  past about 35° a paper cutout seen off-axis stops reading as paper
+  (`WORLD-SYSTEMS` §2 has the table). **Nothing licenses a land to be
+  laid out east–west.**
 - **60fps on mid-range mobile**, portrait playable, DPR capped at 2.
   A land that cannot hold frame rate is redesigned, not shipped slow.
 - **The build stays green.** `npm run build` (tsc + vite) passes before

@@ -138,7 +138,7 @@ from the car park would have answered the question; this one leaves it
 open at exactly the distance a survey line disappears at.
 
 **THE END OF THE SURVEY** *(new place, MAPLE COURT, to be built at
-Session 11 — this is its authoring brief)*
+Session 12 — this is its authoring brief)*
 
 | | |
 |---|---|
@@ -148,7 +148,21 @@ Session 11 — this is its authoring brief)*
 | **says** | nothing. **There is no note at the end of the survey.** It is the one place in the game important enough to leave unlettered |
 | **DOES NOT SAY** | that it is a railway. That it is the same road as the castle's. That anything is coming |
 
-**The authoring constraint this puts on Session 11, written down now
+**AND THE BEARING DOES NOT MOVE ANY OF THESE NUMBERS** *(checked in
+Session 9, because the camera changed under this section and every
+figure above was reasoned on a camera that only looked north).* The rim
+composition is a STAND-STILL, and a stopped walker is at yaw zero by
+contract — so the two hundred units of haze, the seven-point-three
+metres of ground and the dead-straight road are exactly the frame this
+section argued for. Two things did change, and both are in its favour:
+**the approach is a walk south**, so a player coming down the road to
+the rim now has ten units of page in front of their feet instead of
+three and a half, and the astern rig eases off over the two seconds they
+stand still, which lands them in this composition rather than snapping
+them into it. **It is still the riskiest un-shot frame in the game and
+Session 12 still shoots it first.**
+
+**The authoring constraint this puts on Session 12, written down now
 because later is too late:** the line's sightline from the rim is a
 **protected corridor**. Nothing tall may stand within about eight units
 of x = −45 anywhere between z = 120 and z = 278. Maple Court's houses,
@@ -307,8 +321,8 @@ build it; no session may re-open it without the owner.
 |---|---|---|
 | I | Nell (a standee that straightens); the **co-walker**; the signpost's fourth name lettered legibly | inhabitants pass — I.1 is already on the sheet |
 | II | the twelve waits, one per land session | now (Brim shipped this session) |
-| III | the road head at the south rim, kept clear; the map's inked line | the map's line **this session**; the rim with Maple Court, Session 11 |
-| IV | the 8:15 itself: one drawing, one route, twelve stops | Session 11, with the office park |
+| III | the road head at the south rim, kept clear; the map's inked line | the map's line **this session**; the rim with Maple Court, Session 12 |
+| IV | the 8:15 itself: one drawing, one route, twelve stops | Session 12, with the office park |
 
 Everything in Act III's map beat is built and shipped in Session 7. Act
 I's beats I.1, I.4, I.5 and I.6 stand on the sheet today. **Nothing in

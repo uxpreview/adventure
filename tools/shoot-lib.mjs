@@ -49,6 +49,16 @@ const ONLY = process.env.VIEWPORT;
  * Plus `opts.boat` / `opts.aboard`, which put the rowboat somewhere and
  * put the walker in it.
  *
+ * SESSION 9 adds `bearing`. The camera can turn now, and WORLD-SYSTEMS
+ * §2 is explicit about what that costs a contact sheet: "the shoot
+ * harness pins yaw to zero, every existing contact sheet re-shoots
+ * unchanged, and a regression is a diff and not an opinion." So the
+ * bearing is PINNED for every sheet unless the sheet asks for it —
+ * `shoot({ bearing: true })` — which keeps every framing this project
+ * has ever protected reproducible for as long as the pin exists,
+ * whatever a later session does to the camera. It is a stand-still
+ * harness anyway: a walker who is not moving has no bearing to pin.
+ *
  * SESSION 7 adds one more, and the gate needs it: `opts.learn` — a list
  * of knowledge ids to hand the walker before the frame. A wait has to
  * be photographed at BOTH its states and the map at all three of its
@@ -64,9 +74,10 @@ const ONLY = process.env.VIEWPORT;
  * @param {string} [o.url]
  * @param {boolean} [o.map]           also shoot the map screen
  * @param {number} [o.hour]           hold the whole sheet at this hour
+ * @param {boolean} [o.bearing]       let the camera turn (default: pinned)
  * @param {(page, dir) => Promise<void>} [o.extra]  per-viewport extras
  */
-export async function shoot({ out, framings, url, map = false, hour, extra }) {
+export async function shoot({ out, framings, url, map = false, hour, extra, bearing = false }) {
   // HOUR=19.6 node tools/shoot-first-minute.mjs — every protected
   // framing is judged at two hours of the day from Session 6 on: the
   // day cycle is not done until dusk is as good as noon.
@@ -104,6 +115,8 @@ export async function shoot({ out, framings, url, map = false, hour, extra }) {
     }
 
     await page.evaluate(() => window.__inklands.begin());
+    // the pin, before a single framing is driven
+    await page.evaluate((b) => window.__inklands.setBearing?.(b), bearing);
     await page.waitForTimeout(1500);
     // the title poster is shot before begin(); re-pin the hour, because
     // begin() lets the clock run

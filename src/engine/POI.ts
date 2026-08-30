@@ -1,6 +1,19 @@
 import * as THREE from 'three';
 import { letterEl, S } from '../ui/lettering';
 
+/** How far around a place to look for something a name must clear, and
+ *  how much air to leave over it. Three and a half units is a signpost,
+ *  a stall or a milestone — the thing the label is FOR — and not the
+ *  oak forty feet behind it. */
+const LABEL_CLEAR_R = 3.5;
+const LABEL_CLEAR = 0.9;
+/** Air between two pieces of hand-lettering before they read as one. */
+const LABEL_GAP = 6;
+/** How far beside a place its prompt is written: at least this, and
+ *  never further than a place is wide. */
+const PROMPT_SIDE = 2.2;
+const PROMPT_SIDE_MAX = 5.5;
+
 export type POIDef = {
   x: number;
   z: number;
@@ -51,7 +64,15 @@ export class POIManager {
   /** The ground under a world point — labels are written over places,
    *  and since Session 4 places have a height. */
   groundAt: ((x: number, z: number) => number) | null = null;
+  /** And since Session 9, how tall the page is there: see below. */
+  skylineAt: ((x: number, z: number, r: number) => number) | null = null;
   private v = new THREE.Vector3();
+  /** Screen boxes already spoken for this frame: the chrome, then the
+   *  prompt, then every label that has already found a home. */
+  private taken: { l: number; r: number; t: number; b: number }[] = [];
+  /** Elements the world's writing may not be written across — the HUD
+   *  buttons and the region card. Set by App from `UI.chrome`. */
+  reserved: HTMLElement[] = [];
 
   constructor(
     private camera: THREE.PerspectiveCamera,
@@ -112,6 +133,7 @@ export class POIManager {
   update(charPos: THREE.Vector3): POI | null {
     let active: POI | null = null;
     let best = Infinity;
+    const shown: { p: POI; d: number }[] = [];
 
     if (this.suppressed) {
       for (const p of this.pois) p.labelEl?.classList.remove('show');
@@ -143,7 +165,7 @@ export class POIManager {
       if (p.labelEl) {
         const show = d < p.def.radius * 1.6;
         p.labelEl.classList.toggle('show', show);
-        if (show) this.place(p.labelEl, p.def.x, this.ground(p.def.x, p.def.z) + p.def.labelHeight!, p.def.z);
+        if (show) shown.push({ p, d });
       }
       if (inR && p.def.onInteract && d < best) {
         best = d;
@@ -151,23 +173,182 @@ export class POIManager {
       }
     }
 
+    /* ================================================================ *
+     * WHAT IS WRITTEN OVER A PLACE, AND WHAT IT MAY NOT BE WRITTEN OVER.
+     *
+     * The oldest visible defect in this game (Session 9): a label was
+     * projected wherever its POI happened to land and drawn there, over
+     * whatever was already in that part of the frame. "THE CROSSROADS"
+     * printed across the signpost it names, and nothing anywhere ever
+     * looked to see whether two names landed on each other.
+     *
+     * Two rules, and the ORDER of them is the design:
+     *
+     *   1. A LABEL CLEARS WHAT IT NAMES. It is written above the tallest
+     *      thing standing under it (the world's skyline, built as the
+     *      world is — src/world/regions/index.ts) and not above the
+     *      dirt, so a four-and-a-half-unit signpost gets a label at five
+     *      and a half and a stall gets one just over its awning.
+     *   2. A LABEL NEVER LANDS ON ANOTHER, OR ON THE PROMPT — and when
+     *      two collide the FARTHER one goes UP, never sideways. A label
+     *      is a caption on a place: slide it sideways and it is a
+     *      caption on a different place, which is a worse bug than the
+     *      one being fixed. The prompt is placed first and holds its
+     *      ground, because the prompt is a CONTROL and the player is
+     *      reaching for it.
+     *
+     * And this is the session it lands in because a turning camera moves
+     * every label relative to the thing it labels: fixing it anywhere
+     * else means fixing it against a relationship that is about to
+     * change. Here it can be watched moving.
+     * ================================================================ */
+    this.taken.length = 0;
+    for (const c of this.reserved) {
+      const r = c.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0 && getComputedStyle(c).opacity !== '0') {
+        this.taken.push({ l: r.left, r: r.right, t: r.top, b: r.bottom });
+      }
+    }
+
     if (active) {
       letterEl(this.promptEl, active.def.prompt ?? 'look', S.voice(11.5));
       this.promptEl.classList.add('show');
-      this.place(this.promptEl, active.def.x, this.ground(active.def.x, active.def.z) + 0.55, active.def.z);
+      /* AND THE PROMPT IS WRITTEN BESIDE THE THING, ON THE OPEN PAGE.
+       *
+       * Anchored at the POI it printed READ THE SIGNPOST straight down
+       * the signpost's own post — the same defect as the label, one and
+       * a half units lower. It cannot go UP, because a prompt is a
+       * CONTROL and Session 4 already floored it into thumb reach; and
+       * it cannot come toward the lens, because the thing between the
+       * lens and a place you are interacting with is USUALLY THE WALKER
+       * — the first version of this fix lettered LOOK DOWN THE WELL
+       * across the walker's chest.
+       *
+       * So it goes sideways, a stride and a half along the camera's own
+       * right, on whichever side the walker is not: lettering on the
+       * grass next to the thing, where there is nothing to print over.
+       * Along the CAMERA'S right rather than due east, because the
+       * camera can turn now — the prompt stays beside the thing from
+       * every bearing the envelope allows. */
+      const px = active.def.x;
+      const pz = active.def.z;
+      const dx = px - this.camera.position.x;
+      const dz = pz - this.camera.position.z;
+      const dl = Math.hypot(dx, dz) || 1;
+      const rx = -dz / dl;
+      const rz = dx / dl;
+      const walkerSide = (charPos.x - px) * rx + (charPos.z - pz) * rz;
+      const side = walkerSide > 0.15 ? -1 : 1;
+      /* AND IT GOES PAST THE EDGE OF THE THING, not a fixed stride from
+       * its middle: a milestone is a unit wide and the market cross is
+       * eight, and one number cannot serve both. The skyline knows where
+       * each of them stops, so walk out along the camera's right until
+       * there is nothing standing, and write it there. */
+      let out = PROMPT_SIDE;
+      for (let d = PROMPT_SIDE; d <= PROMPT_SIDE_MAX; d += 1.1) {
+        out = d;
+        const qx = px + rx * side * d;
+        const qz = pz + rz * side * d;
+        if (!this.skylineAt || this.skylineAt(qx, qz, 1.2) === -Infinity) break;
+      }
+      /* And the anchor is its INNER edge, so the lettering runs away
+       * from the thing rather than back across it — on a WIDE screen
+       * only. On a tall one the prompt is pinned centre-bottom in thumb
+       * reach (see `place`) and is not beside anything; nudging a pinned
+       * control sideways is just a control that moved.
+       *
+       * It is handed to `place` rather than applied after it, because
+       * `place` is where the viewport clamp lives: the first version
+       * nudged the element AFTER clamping and pushed READ THE SIGNPOST
+       * off the left edge of the frame, where it read "D THE SIGNPOST". */
+      const tall = window.innerWidth / window.innerHeight < 0.8;
+      const nudge = tall ? 0 : side * Math.min(this.promptEl.offsetWidth * 0.5, 56);
+      this.place(
+        this.promptEl,
+        px + rx * side * out,
+        this.ground(px, pz) + 0.35,
+        pz + rz * side * out,
+        nudge
+      );
+      this.taken.push(this.boxOf(this.promptEl));
     } else {
       this.promptEl.classList.remove('show');
     }
+
+    // nearest first: the place you are standing in keeps its name where
+    // its name belongs, and the distance behind it moves
+    shown.sort((a, b) => a.d - b.d);
+    for (const { p } of shown) {
+      const gx = this.ground(p.def.x, p.def.z);
+      const sky = this.skylineAt ? this.skylineAt(p.def.x, p.def.z, LABEL_CLEAR_R) : -Infinity;
+      const over = sky > -Infinity ? sky - gx + LABEL_CLEAR : 0;
+      const on = this.place(
+        p.labelEl!, p.def.x, gx + Math.max(p.def.labelHeight!, over), p.def.z
+      );
+      if (on && this.avoid(p.labelEl!)) this.taken.push(this.boxOf(p.labelEl!));
+      else p.labelEl!.classList.remove('show');
+    }
     return active;
+  }
+
+  private boxOf(el: HTMLElement) {
+    const x = parseFloat(el.style.left);
+    const y = parseFloat(el.style.top);
+    const hw = el.offsetWidth * 0.5;
+    return { l: x - hw, r: x + hw, t: y - el.offsetHeight, b: y };
+  }
+
+  /** Lift `el` until it is clear of everything already placed. Up only
+   *  (see rule 2 above), and false if there was nowhere to put it. */
+  private avoid(el: HTMLElement) {
+    const h = el.offsetHeight;
+    /* AND IT MAY NOT WANDER. A caption lifted far enough stops being a
+     * caption on anything; a fifth of the frame is as far as a name can
+     * travel and still read as belonging to the thing under it. */
+    const floor0 = parseFloat(el.style.top) - window.innerHeight * 0.2;
+    for (let pass = 0; pass < 8; pass++) {
+      const b = this.boxOf(el);
+      let hit = null;
+      for (const t of this.taken) {
+        if (b.r + LABEL_GAP > t.l && b.l - LABEL_GAP < t.r
+          && b.b + LABEL_GAP > t.t && b.t - LABEL_GAP < t.b) { hit = t; break; }
+      }
+      if (!hit) return true;
+      const top = hit.t - LABEL_GAP;
+      /* AND IF IT WILL NOT FIT, IT IS NOT WRITTEN. There is nowhere left
+       * to put it: sideways is a caption on the wrong place, down is
+       * under the thing, and off the top of the page is not writing at
+       * all. A name the player cannot read is worse than no name — and
+       * they are already a proximity fade, so it goes the way it always
+       * goes, and comes back when there is room. */
+      if (top - h < 8 || top < floor0) return false;
+      el.style.top = `${top}px`;
+    }
+    return false;
   }
 
   private ground(x: number, z: number) {
     return this.groundAt ? this.groundAt(x, z) : 0;
   }
 
-  private place(el: HTMLElement, x: number, y: number, z: number) {
+  /**
+   * Project a world point and put `el` there, clamped into the frame.
+   * Returns false when the point is not really in the picture at all.
+   *
+   * THE CLAMP IS A NUDGE AND NOT A PARKING SPACE. It has been here since
+   * Session 4 (a juror fix: world labels clipped at the portrait edge),
+   * and on its own it will take a place that is BEHIND THE CAMERA and
+   * letter its name into the corner of the frame — THE CUT was written
+   * across the bottom-right of the coast sheet like a watermark. A name
+   * pinned to a corner is a caption on nothing, so a caller that cares
+   * (a label does; the prompt is a control and stays where a thumb can
+   * find it) is told and can decline to write it.
+   */
+  private place(el: HTMLElement, x: number, y: number, z: number, nudge = 0) {
     this.v.set(x, y, z).project(this.camera);
-    let sx = (this.v.x * 0.5 + 0.5) * window.innerWidth;
+    const inFrame =
+      this.v.z < 1 && Math.abs(this.v.x) < 1.12 && Math.abs(this.v.y) < 1.2;
+    let sx = (this.v.x * 0.5 + 0.5) * window.innerWidth + nudge;
     let sy = (-this.v.y * 0.5 + 0.5) * window.innerHeight;
     // Clamp into the viewport (juror Fix 2: world labels clipped at the
     // portrait edge). The element is centred on sx and sits above sy, so
@@ -199,5 +380,6 @@ export class POIManager {
     }
     el.style.left = `${sx}px`;
     el.style.top = `${sy}px`;
+    return inFrame;
   }
 }
