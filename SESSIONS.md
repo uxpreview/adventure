@@ -128,6 +128,22 @@ Session 1.*
 
 ### State
 - Build green. `node tools/check-terrain.mjs` passes, unchanged.
+- **`node tools/verify-story.mjs` — twenty checks, and it PLAYS the
+  wait rather than poking it.** The contact sheet reaches both of a
+  wait's states with `__inklands.learn(...)`, which is legitimate for
+  photography and proves nothing about the game; this walks the chain a
+  player walks. A fresh page knows only where it is standing; reading
+  the signpost puts three lands into pencil and standing in one puts it
+  into ink; the belfry yard at NOON teaches nothing and at DUSK teaches
+  the hour; carrying that to the cross calls the market, and exactly one
+  of the two stalls is on the page, and the board is chalked, and Marget
+  is at her counter; **and all of it survives a reload.** Plus the line,
+  walked post by post, because a route is the one kind of knowledge
+  nobody can be told.
+- **Frame cost unchanged.** Brim Square is 210 draws / 214k triangles
+  with four more standees in it than Session 6 left (Session 6 recorded
+  217 from a slightly different stand). THE COMMON is still the worst
+  frame in the game.
 - **No layout change**: no rect, no road geometry, no river, no bridge,
   no mood, no step zone. `Road` gained one authored flag (`line?: true`)
   on the three roads STORY §4 makes one road.
