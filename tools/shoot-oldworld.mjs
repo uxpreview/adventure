@@ -18,6 +18,14 @@ await shoot({
     ['05-square-wide', -45, -62, 1200],
     ['06-square-mid', -45, -70, 1000],
     ['07-square-detail', -47, -76, 900],
+    /* THE PIGEONS PUT UP — driven, not tapped, because a bird scattering
+     * is MOTION and a photograph of a bird standing still proves nothing
+     * about it. Session 3 shipped the scatter; Session 4 gave the page a
+     * shape and left the flight arc keyed to y = 0, three and a half
+     * units under the square, so for four sessions the birds vanished
+     * instead of flying (owner, 2026-08-30). This is the frame that
+     * would have caught it. */
+    ['07b-pigeons-put-up', -44, -74, 700, { hold: [0, -1, 0], holdMs: 6000 }],
     ['08-belfry-yard', -68, -34, 1000],
     ['09-orchard', -103, -52, 1200],
     ['10-market-lane', 8, -88, 1000],

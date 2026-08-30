@@ -484,7 +484,17 @@ export const buildKingdom: RegionBuilder = (ctx) => {
         const u = Math.min(1, p.ft / 1.5);
         p.x = p.fx + (p.tx - p.fx) * u;
         p.z = p.fz + (p.tz - p.fz) * u;
-        p.m.position.set(p.x, Math.sin(u * Math.PI) * 2.3, p.z);
+        /* THE ARC IS ABOVE THE GROUND, not above zero. This animation
+         * was written in Session 3, when the sheet was flat and y = 0
+         * was the flagstones; Session 4 gave the page a shape and Brim
+         * Square went up to y ≈ 3.55, and from that session on every
+         * pigeon put up has dropped three and a half units THROUGH the
+         * square, flown its whole arc underneath it — the peak of the
+         * arc is 2.3, which never reaches the paving — and popped back
+         * up on landing. Read from the shipping camera that is not a
+         * bird flying away, it is a bird vanishing.
+         * (Owner, 2026-08-30. Four sessions in the game.) */
+        p.m.position.set(p.x, ctx.groundY(p.x, p.z) + Math.sin(u * Math.PI) * 2.3, p.z);
         p.m.scale.x = (p.tx > p.fx ? -1 : 1) * Math.abs(p.m.scale.x);
         if (u >= 1) {
           p.flying = false;
