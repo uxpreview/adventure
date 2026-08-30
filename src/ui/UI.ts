@@ -46,6 +46,16 @@ export class UI {
   private soundBtn: HTMLElement;
   private hintEl: HTMLElement;
   private hintTimer = 0;
+  /**
+   * THE CHROME IS ALSO IN THE PICTURE (Session 9). The world's own
+   * writing floats over the canvas and the chrome sits on top of it, and
+   * until now neither knew about the other: in portrait "THE MARKET
+   * CROSS" was lettered straight through the `map` and `sound: on`
+   * buttons. These are the boxes a POI label has to keep out of, and
+   * they are handed to `POIManager` rather than hard-coded there,
+   * because the label system has no business knowing what a HUD is.
+   */
+  chrome: HTMLElement[] = [];
 
   constructor() {
     this.root = document.getElementById('app')!;
@@ -75,6 +85,7 @@ export class UI {
     this.card = el('region-card', this.root);
     this.cardKicker = el('kicker', this.card);
     this.cardName = el('name', this.card);
+    this.chrome = [this.hud, this.card];
 
     // hint line (controls, small truths)
     this.hintEl = el('hint', this.root);

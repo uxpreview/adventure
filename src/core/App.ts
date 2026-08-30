@@ -78,6 +78,14 @@ export class App {
   private camGround = 0;
   /** How much higher the ground ahead is than the ground here, damped. */
   private camRise = 0;
+  /* ---- THE BEARING (Session 9) ------------------------------------- *
+   * Radians east of due north, damped, and hard-clamped by the rig's own
+   * envelope; and how much of the walker's travel is coming AT the lens,
+   * damped, 0..1. Both are exactly zero for a walker standing still, and
+   * `setBearing(false)` pins both at zero for the regression harness. */
+  private camYaw = 0;
+  private camAstern = 0;
+  private bearingOn = true;
   /* ---- the harness's clock (see __inklands.step) ------------------- *
    * Null in the shipping game: `held` is only ever set from `?debug`. */
   private held = false;
@@ -130,6 +138,12 @@ export class App {
     // a label is written over the place it names, and the place has a
     // height now
     this.poi.groundAt = (x, z) => this.terrain.heightAt(x, z);
+    // and how tall the page is there, so a name clears the thing it
+    // names rather than printing across it (Session 9)
+    this.poi.skylineAt = (x, z, r) => this.world.skylineAt(x, z, r);
+    // and the chrome is in the picture too: a name may not be lettered
+    // through the map button or across a region card
+    this.poi.reserved = this.ui.chrome;
 
     // every point of interest exists from the start; distance hides them
     for (const def of ALL_POIS) {
@@ -374,6 +388,33 @@ export class App {
           this.held = false;
           this.clock.getDelta();
         },
+
+        /* ---- THE BEARING, PINNED ------------------------------------ *
+         * WORLD-SYSTEMS §2: "the shoot harness pins yaw to zero, every
+         * existing contact sheet re-shoots unchanged, and a regression is
+         * a diff and not an opinion." This is that pin, and
+         * `tools/shoot-lib.mjs` sets it for every sheet that does not
+         * explicitly ask for the bearing. Every protected framing in this
+         * project is therefore reproducible for as long as the pin
+         * exists, whatever a later session does to the camera. */
+        setBearing: (on: boolean) => {
+          this.bearingOn = on;
+          if (!on) {
+            this.camYaw = 0;
+            this.camAstern = 0;
+          }
+        },
+        /** Hold a peek, for the bearing sheet: −1 hard left, +1 right. */
+        peek: (v: number | null) => {
+          this.input.holdPeek = v;
+        },
+        /** What the camera is actually doing, in degrees off north and in
+         *  0..1 of astern. The proof that a stopped walker comes home. */
+        bearing: () => ({
+          yaw: (this.camYaw * 180) / Math.PI,
+          astern: this.camAstern,
+          peek: this.input.peek,
+        }),
       };
     }
 
@@ -422,8 +463,8 @@ export class App {
        * it cannot say which gesture produces it). */
       this.ui.showHint(
         'ontouchstart' in window
-          ? 'drag to walk, further to run — tap things to look'
-          : 'wasd to walk — shift to run — E to look — M for the map',
+          ? 'drag to walk, further to run — two fingers to lean — tap to look'
+          : 'wasd to walk — shift to run — E to look — , . to lean — M for the map',
         6000
       );
     }
@@ -608,12 +649,16 @@ export class App {
     /** Resting framing: how far back, how high, and what height it aims
      *  at over the walker's own ground. Portrait is NOT desktop with a
      *  wider lens — a tall frame wants the camera further back and its
-     *  aim higher, or a vista arrives as a strip of ground and haze. */
-    desktop: { back: 13.0, up: 6.0, look: 3.4, fov: 42 },
-    portrait: { back: 14.4, up: 6.9, look: 4.0, fov: 54 },
-    /** The poster, before you set out. */
-    posterDesktop: { back: 15.2, up: 6.4, look: 5.0, fov: 42 },
-    posterPortrait: { back: 16.6, up: 7.0, look: 5.8, fov: 54 },
+     *  aim higher, or a vista arrives as a strip of ground and haze.
+     *
+     *  `yaw` and `lead` are Session 9's, and they are per-rig for the
+     *  same reason everything else here is: see THE BEARING below. */
+    desktop: { back: 13.0, up: 6.0, look: 3.4, fov: 42, yaw: 26, lead: 4.2 },
+    portrait: { back: 14.4, up: 6.9, look: 4.0, fov: 54, yaw: 12, lead: 2.0 },
+    /** The poster, before you set out. The bearing is dead here: nobody
+     *  is walking, and the poster is a composition. */
+    posterDesktop: { back: 15.2, up: 6.4, look: 5.0, fov: 42, yaw: 0, lead: 0 },
+    posterPortrait: { back: 16.6, up: 7.0, look: 5.8, fov: 54, yaw: 0, lead: 0 },
     /** Where the camera looks for ground worth revealing. */
     aheadNear: 34,
     aheadMid: 60,
@@ -633,6 +678,119 @@ export class App {
     fogNear: 50,
     fogFar: 175,
     fogPerUnit: 3.6,
+
+    /* ================================================================ *
+     * THE BEARING (Session 9) — and the whole of it is two numbers and
+     * one sentence:
+     *
+     *   THE PART OF YOUR TRAVEL THAT CROSSES THE FRAME TURNS THE CAMERA.
+     *   THE PART THAT COMES AT THE LENS OPENS THE GROUND AT YOUR FEET.
+     *
+     * The owner's complaint was exact: the camera only ever looks north,
+     * so walking east or west you cross the frame, and walking SOUTH you
+     * walk backwards out of it into ground you cannot see — and the
+     * king's road runs north–south for four hundred and eighty units.
+     *
+     * ---- 1. WHY THE ENVELOPE IS A NUMBER AND NOT A TUNING KNOB ------
+     *
+     * STANDEES ARE NOT BILLBOARDS. `makeStandee` builds a plane with a
+     * fixed rotation.y and nothing in this engine turns to face the
+     * camera; at the shipped bearing every cutout is square to the lens,
+     * and that is the entire reason the paper metaphor reads. Turn the
+     * camera and a cutout narrows by its cosine:
+     *
+     *   yaw    apparent width   verdict
+     *    0°        100%         the shipped page
+     *   12°         98%         PORTRAIT'S ENVELOPE
+     *   20°         94%         free
+     *   26°         90%         DESKTOP'S ENVELOPE
+     *   30°         87%         survivable
+     *   35°         82%         the wall — past here the paper metaphor
+     *                           does not degrade, it FAILS, and it fails
+     *                           looking exactly like a bug
+     *   45°         71%         the world is a stack of card seen sideways
+     *
+     * So a free orbit is fatal and a bounded one is not, and 26° is nine
+     * degrees clear of the wall.
+     *
+     * ---- 2. WHY PORTRAIT'S IS HALF OF IT ----------------------------
+     *
+     * Not for the standees — 12° costs nothing there. Because the two
+     * viewports do not have the same frame to spend a turn in. Desktop
+     * is 42° vertical at 16:9, which is 68.6° ACROSS. Portrait is 54°
+     * vertical at 390×844, which is 26.5° across — a third of it. A yaw
+     * of φ slides a distant thing across the page by tan φ / tan(½ hfov):
+     *
+     *   desktop, 26°:   36% of the frame's width
+     *   portrait, 26°:  the whole of it, and out the side
+     *   portrait, 12°:  45% of the frame's width
+     *
+     * And WORLD-SYSTEMS §8: the joystick must never sit under the thing
+     * the player is steering toward. A tall screen's lower band belongs
+     * to the thumb and its top band is the vista; a turn that carries
+     * the subject off the page has taken the vista away to show you the
+     * turn.
+     *
+     * ---- 3. WHAT ANSWERS THE WALK SOUTH, WHICH IS NOT THE YAW -------
+     *
+     * WORLD-SYSTEMS §2 said a bounded yaw would let you "see what is
+     * coming" walking south. IT CANNOT, and the geometry is not close.
+     * The camera trails the walker on the +Z side; yawing the rig 26°
+     * about the walker leaves it on the +Z side. Southward travel is
+     * travel AT THE LENS, and no bounded rotation puts a lens behind
+     * itself.
+     *
+     * What you can actually see ahead of you walking south is the strip
+     * of page between the walker and the bottom of the frame, and it is
+     * measurable: with the camera 6 up and 13 back aiming at 3.4, the
+     * frame's bottom edge meets the ground 9.5 units in front of the
+     * lens — THREE AND A HALF UNITS in front of the walker. At walking
+     * pace that is eight tenths of a second of warning. THAT is the
+     * defect, stated as a number.
+     *
+     * So the answer is not a rotation, it is a RETREAT AND A DROP: when
+     * travel is toward the lens the camera gives ground — it trails
+     * further back and lowers its aim, which pitches the page up and
+     * puts the walker high in the frame with the road they are walking
+     * into laid out below them. It is the same trick as `riseBack`
+     * (reveal by distance, never by pitching the subject out of frame)
+     * pointed the other way. With the terms below: 9.5 units of visible
+     * page ahead on desktop, 11.6 in portrait, against 3.5 and 5.7 — the
+     * ground you can see yourself walking into roughly TRIPLES.
+     *
+     * ---- 4. AND WHY THERE IS NO COIN TOSS AT DUE SOUTH --------------
+     *
+     * The obvious way to write "ease toward travel" is to point the
+     * camera at the travel bearing and clamp it. Do that and due south
+     * is a coin toss between +26° and −26°, and a walker wobbling either
+     * side of it flips a fifty-two-degree pan back and forth. That is
+     * the wobble, and it is not a tuning problem, it is a discontinuity.
+     *
+     * Splitting travel into its two components removes it outright:
+     * the yaw runs off the CROSSING component and the retreat off the
+     * TOWARD-THE-LENS one. Both are continuous everywhere on the circle,
+     * both are odd or even in the right way, and both are exactly zero
+     * for a walker standing still — which is the clause that keeps six
+     * WOWED verdicts valid, the same clause that protected them through
+     * Session 4's rebuild.
+     * ================================================================ */
+    /** Degrees off north, per rig — the table in §1 above is the reason,
+     *  and it is not a knob. Nothing in this game ever puts the camera
+     *  past its rig's envelope: the peek does not add to the yaw, it
+     *  takes it over. */
+    yawEase: 2.2,
+    /** A stopped walker is in the SHIPPED composition, not asymptotically
+     *  near it. Under this much the bearing is set to exactly zero. */
+    yawSnap: 0.0026,
+    /** How long the aim runs ahead of the walker, capped per rig by
+     *  `lead` above: a lead is free, it helps east–west, and in portrait
+     *  the frame is 3.4 units wide at the walker so it must be small. */
+    leadSec: 0.9,
+    /** Travel at the lens: how far the camera gives ground, and how far
+     *  its aim drops to lay that ground out. §3 above is the reason. */
+    asternBack: 5.5,
+    asternLook: -1.6,
+    asternEase: 1.4,
   };
 
   private camRig() {
@@ -643,9 +801,13 @@ export class App {
   }
 
   private snapCamera() {
+    // a teleport has no travel, so it has no bearing: the snapped frame
+    // is always the shipped composition, due north
+    this.camYaw = 0;
+    this.camAstern = 0;
     this.camTarget.copy(this.char.pos);
     this.camGround = this.terrain.smoothHeightAt(this.char.pos.x, this.char.pos.z);
-    this.camRise = this.riseAhead(this.char.pos.x, this.char.pos.z, this.camGround);
+    this.camRise = this.riseAhead(this.char.pos.x, this.char.pos.z, this.camGround, 0);
     const rig = this.camRig();
     const C = App.CAM;
     this.camera.position.set(
@@ -662,18 +824,28 @@ export class App {
   }
 
   /**
-   * How much higher the page gets in front of you. The camera always
-   * looks north, so "ahead" is three probes up the −Z axis: near enough
-   * to answer a fold, far enough to answer a ridge. Only rises count —
-   * walking toward a hole should not tip the camera into the ground.
+   * How much higher the page gets in front of you: three probes up the
+   * camera's own bearing, near enough to answer a fold and far enough to
+   * answer a ridge. Only rises count — walking toward a hole should not
+   * tip the camera into the ground.
+   *
+   * SESSION 9 ANSWERED "AHEAD OF WHAT?". Until the camera could turn,
+   * "ahead" was the −Z axis and the two readings were the same one. They
+   * are not any more, and the probes belong to the LENS and not to the
+   * walker: the rise term exists to get a landform into the frame, so
+   * the ground it must read is the ground the frame is pointed at. Probe
+   * up the walker's travel instead and a walker crossing a valley
+   * sideways under a ridge retreats from a hill that is off-camera.
    */
-  private riseAhead(x: number, z: number, here: number) {
+  private riseAhead(x: number, z: number, here: number, yaw: number) {
     const C = App.CAM;
     const t = this.terrain;
+    const s = Math.sin(yaw);
+    const c = Math.cos(yaw);
     const up = Math.max(
-      t.smoothHeightAt(x, z - C.aheadNear),
-      t.smoothHeightAt(x, z - C.aheadMid),
-      t.smoothHeightAt(x, z - C.aheadFar)
+      t.smoothHeightAt(x + C.aheadNear * s, z - C.aheadNear * c),
+      t.smoothHeightAt(x + C.aheadMid * s, z - C.aheadMid * c),
+      t.smoothHeightAt(x + C.aheadFar * s, z - C.aheadFar * c)
     );
     return Math.max(0, Math.min(C.riseCap, up - here));
   }
@@ -950,27 +1122,85 @@ export class App {
       }
     }
 
+    const C = App.CAM;
+    const rig = this.camRig();
+
+    /* ---- THE BEARING, in two components and no coin toss ------------ *
+     *
+     *   the part of your travel that CROSSES the frame turns the camera;
+     *   the part that comes AT THE LENS opens the ground at your feet.
+     *
+     * That is the whole rule (see App.CAM, THE BEARING, for why it is
+     * that and not "point at the travel bearing and clamp it" — the
+     * short version is that clamping makes due south a coin toss between
+     * ±26° and a walker wobbling either side of it flips a fifty-two
+     * degree pan back and forth). Both terms are the walker's own
+     * velocity over their own top speed, so both are zero standing still
+     * and both scale honestly with the boat, which is faster.
+     *
+     * THE PEEK DOES NOT ADD, IT TAKES OVER. Adding would let a peek and
+     * a turn stack past the envelope, and the envelope is the one number
+     * in this system that is not allowed to be exceeded — so a full peek
+     * IS the envelope, from any bearing, and letting go hands the camera
+     * back to the walk. */
+    const vmax = Math.max(1e-3, this.char.maxSpeed);
+    let yawWant = 0;
+    let asternWant = 0;
+    if (this.bearingOn && this.started && !this.char.frozen) {
+      const env = (rig.yaw * Math.PI) / 180;
+      const cross = Math.max(-1, Math.min(1, this.char.vel.x / vmax));
+      const auto = env * cross;
+      const pk = this.input.peek;
+      yawWant = auto + (env * pk - auto) * Math.abs(pk);
+      asternWant = Math.max(0, Math.min(1, this.char.vel.z / vmax));
+    }
+    this.camYaw += (yawWant - this.camYaw) * (1 - Math.exp(-dt * C.yawEase));
+    this.camAstern += (asternWant - this.camAstern) * (1 - Math.exp(-dt * C.asternEase));
+    /* AND IT ARRIVES, rather than approaching. An exponential ease never
+     * reaches zero, and "a stopped walker is always in the composition
+     * the land was authored for" is a contract, not a limit.
+     *
+     * The test is on what the camera is being ASKED for, not on the
+     * asking being nothing: a walker letting go of the keys decelerates
+     * exponentially too, so their velocity never becomes exactly zero
+     * either, and a snap that waited for it would never fire. Under a
+     * sixth of a degree of ask is a shuffle, not a turn. */
+    if (Math.abs(yawWant) < C.yawSnap && Math.abs(this.camYaw) < C.yawSnap) this.camYaw = 0;
+    if (asternWant < 0.004 && this.camAstern < 0.004) this.camAstern = 0;
+
     /* ---- the follow ------------------------------------------------ *
-     * Horizontal: damped, with a little lead in the direction of travel.
+     * Horizontal: damped, with a lead in the direction of travel — free,
+     * and the one term that helps east–west travel without costing a
+     * standee a degree. It is capped in UNITS per rig rather than held at
+     * a number of seconds, because portrait's frame is only three and a
+     * half units wide where the walker stands and a lead written in
+     * seconds walks them off the side of it at a run.
      * Vertical: slower, off a disc-averaged ground, so cockle never
      * reaches the frame. Rise: slower still, so cresting the castle
      * ramp opens the frame as a swell rather than a jolt. */
-    const lead = 0.5;
+    const sp = Math.hypot(this.char.vel.x, this.char.vel.z);
+    const lead = sp > 1e-3 ? Math.min(C.leadSec, rig.lead / sp) : 0;
     const tx = this.char.pos.x + this.char.vel.x * lead;
     const tz = this.char.pos.z + this.char.vel.z * lead;
     const k = 1 - Math.exp(-dt * 3.2);
     this.camTarget.x += (tx - this.camTarget.x) * k;
     this.camTarget.z += (tz - this.camTarget.z) * k;
 
-    const C = App.CAM;
-    const rig = this.camRig();
     const groundNow = this.terrain.smoothHeightAt(this.camTarget.x, this.camTarget.z);
     this.camGround += (groundNow - this.camGround) * (1 - Math.exp(-dt * 2.0));
-    const riseNow = this.riseAhead(this.camTarget.x, this.camTarget.z, groundNow);
+    const riseNow = this.riseAhead(
+      this.camTarget.x, this.camTarget.z, groundNow, this.camYaw
+    );
     this.camRise += (riseNow - this.camRise) * (1 - Math.exp(-dt * 1.1));
 
-    const camX = this.camTarget.x;
-    const camZ = this.camTarget.z + rig.back + this.camRise * C.riseBack;
+    /* The rig, swung. The camera orbits the AIM POINT, so the thing it
+     * is aimed at never moves on the page when the bearing changes —
+     * only what is around it does. */
+    const dBack = rig.back + this.camRise * C.riseBack + this.camAstern * C.asternBack;
+    const sy = Math.sin(this.camYaw);
+    const cy = Math.cos(this.camYaw);
+    const camX = this.camTarget.x - dBack * sy;
+    const camZ = this.camTarget.z + dBack * cy;
     // never inside the hill: on the scarp the ground behind the walker
     // can be higher than the walker is
     const camY = Math.max(
@@ -982,7 +1212,8 @@ export class App {
     this.camera.position.z += (camZ - this.camera.position.z) * k;
     this.camera.lookAt(
       this.camTarget.x,
-      this.camGround + rig.look + this.camRise * C.riseLook,
+      this.camGround + rig.look + this.camRise * C.riseLook
+        + this.camAstern * C.asternLook,
       this.camTarget.z
     );
     this.applyFog();

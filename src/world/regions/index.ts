@@ -106,6 +106,34 @@ type Built = {
 const BUILD_REACH = 185;
 const SHOW_REACH = 165;
 
+/* ================================================================== *
+ * THE SKYLINE — how tall the world is at a point on the page.
+ *
+ * Session 9, and it exists to close THE OLDEST VISIBLE DEFECT IN THE
+ * GAME: a POI's name was written at a fixed 3.4 units over the GROUND,
+ * so "THE CROSSROADS" printed across the middle of the four-point-seven
+ * unit signpost it names — and that signpost carries the story's hinge.
+ * It has been wrong since Session 1 and it survived six sessions of
+ * contact sheets because nobody could point at a rule it broke.
+ *
+ * The rule it breaks: A LABEL IS WRITTEN OVER A PLACE, SO IT MUST CLEAR
+ * WHAT IS STANDING THERE. And once that is the rule, the fix is not
+ * thirty authored `labelHeight`s that drift the moment anything moves —
+ * it is asking the world how tall it is, which is a question the world
+ * can answer for free, because `ctx.standee` is the single choke point
+ * every one-off stand-up in this game goes through (163 call sites, all
+ * of them here).
+ *
+ * So every standee records its top into a four-unit grid as it is
+ * built, and a label is written above the tallest thing under it rather
+ * than above the dirt. It costs one Map write per prop at build time
+ * and one read per visible label per frame, and it fixes every label in
+ * the world at once — including the ones five unbuilt lands have not
+ * authored yet.
+ * ================================================================== */
+const SKY_CELL = 4;
+const SKY_KEY = (cx: number, cz: number) => (cx + 2048) * 4096 + (cz + 2048);
+
 /**
  * Lay a flat mark along the page. A decal is INK ON PAPER: on a fold it
  * follows the fold. Yaw first, then tip the quad into the surface
@@ -134,6 +162,8 @@ function rectDist(r: Rect, x: number, z: number): number {
 export class World {
   private built = new Map<RegionId, Built>();
   private bridges: THREE.Group;
+  /** The skyline: cell → the highest standee top over it. */
+  private sky = new Map<number, number>();
 
   constructor(private scene: THREE.Scene, private terrain: Terrain) {
     // bridges belong to the road web, not to any one land
@@ -195,6 +225,7 @@ export class World {
         m.position.set(x, terrain.heightAt(x, z), z);
         if (opts.rotY) m.rotation.y = opts.rotY;
         group.add(m);
+        this.raiseSkyline(x, z, w, m.position.y + h);
         return m;
       },
       decal: (tex, w, h, x, z, rotY = 0, opacity = 0.9) => {
@@ -261,6 +292,42 @@ export class World {
         for (const f of b.fields) f.cascadeFrom(x, z, 34, t, 0.3);
       }
     }
+  }
+
+  /** Remember how tall the page is here. A standee is a flat cutout, so
+   *  its footprint is treated as a disc of its own width: near enough
+   *  for a label, and it cannot be wrong in the direction that matters
+   *  (a name printed across the thing it names). */
+  private raiseSkyline(x: number, z: number, w: number, top: number) {
+    const r = Math.min(Math.max(w * 0.5, SKY_CELL * 0.5), 14);
+    const c0 = Math.floor((x - r) / SKY_CELL);
+    const c1 = Math.floor((x + r) / SKY_CELL);
+    const d0 = Math.floor((z - r) / SKY_CELL);
+    const d1 = Math.floor((z + r) / SKY_CELL);
+    for (let cx = c0; cx <= c1; cx++) {
+      for (let cz = d0; cz <= d1; cz++) {
+        const k = SKY_KEY(cx, cz);
+        const cur = this.sky.get(k);
+        if (cur === undefined || top > cur) this.sky.set(k, top);
+      }
+    }
+  }
+
+  /** The highest thing standing within `r` of (x, z), or −Infinity where
+   *  the page is empty. */
+  skylineAt(x: number, z: number, r: number) {
+    let top = -Infinity;
+    const c0 = Math.floor((x - r) / SKY_CELL);
+    const c1 = Math.floor((x + r) / SKY_CELL);
+    const d0 = Math.floor((z - r) / SKY_CELL);
+    const d1 = Math.floor((z + r) / SKY_CELL);
+    for (let cx = c0; cx <= c1; cx++) {
+      for (let cz = d0; cz <= d1; cz++) {
+        const v = this.sky.get(SKY_KEY(cx, cz));
+        if (v !== undefined && v > top) top = v;
+      }
+    }
+    return top;
   }
 
   /** For a fresh save: ink the spawn land instantly, no wave. */
