@@ -24,8 +24,15 @@ await shoot({
      * shape and left the flight arc keyed to y = 0, three and a half
      * units under the square, so for four sessions the birds vanished
      * instead of flying (owner, 2026-08-30). This is the frame that
-     * would have caught it. */
-    ['07b-pigeons-put-up', -44, -74, 700, { hold: [0, -1, 0], holdMs: 6000 }],
+     * would have caught it.
+     *
+     * The numbers are worked, not guessed. It stands EAST of the market
+     * cross, because at x -44 the camera ends up inside the fountain and
+     * the whole lower frame is one translucent slab; and it holds for
+     * ELEVEN seconds, because this sandbox runs at about a sixth of game
+     * speed and a pigeon's flight is 1.5 seconds long — hold for six and
+     * the shutter opens on a bird that has barely left the ground. */
+    ['07b-pigeons-put-up', -36, -77, 700, { hold: [0, -1, 0], holdMs: 11000 }],
     ['08-belfry-yard', -68, -34, 1000],
     ['09-orchard', -103, -52, 1200],
     ['10-market-lane', 8, -88, 1000],

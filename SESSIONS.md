@@ -127,6 +127,30 @@ project, which is WORKING OUT HOW ANYBODY KNOWS.*
   should shoot it FIRST, not last.** The critic is a proposal until the
   owner rules, like the STORY EDITOR before it.
 
+### And one thing the owner found, which was not this session's
+- **BRIM'S PIGEONS HAVE BEEN FLYING UNDER THE SQUARE SINCE SESSION 4.**
+  Owner, 2026-08-30: *"the birds in the kingdom of brim are disappearing
+  when you move close to them, whereas they used to fly away from you."*
+  They were. `civic.ts` keyed the flight arc to **y = 0** — correct in
+  Session 3, when the sheet was flat and zero was the flagstones.
+  Session 4 gave the page a shape and **Brim Square went up to y = 3.55**
+  (measured at all five roost positions: 3.50 to 3.62). The arc peaks at
+  2.3. So from the instant a bird was put up it was below the paving for
+  the whole of its flight: down three and a half units through the
+  square, along underneath it, and back up on landing. One term fixes
+  it — the arc is above the GROUND, not above zero — and every other
+  flying thing in the game (the swifts, the rooks, the swallows, the
+  gulls) was already ground-relative.
+  **Photographed both ways**, same framing, same drive: before, nothing
+  in the air; after, a bird above the paving.
+  **And why five sessions of contact sheets never caught it: every
+  framing this project owns is a STAND-STILL, and this bird is only
+  wrong while it is moving.** The old-world sheet gains
+  `07b-pigeons-put-up`, driven into the roost — worked numbers, not
+  guessed ones: east of the market cross, because at x −44 the camera
+  ends up inside the fountain, and an eleven-second hold, because a
+  1.5-second flight at a sixth of game speed needs nine.
+
 ### Gotchas (new; Sessions 1–7 all still apply)
 - **AN OFFLINE CONTEXT RENDERS A GRAPH, NOT A SYSTEM.** Anything that
   reads `performance.now()`, schedules off `setTimeout` or waits on
@@ -163,6 +187,18 @@ project, which is WORKING OUT HOW ANYBODY KNOWS.*
 - **`.tmp/` can vanish mid-session.** A background command redirecting
   into it dies instantly; every tool here `mkdir`s it, but a shell
   redirect will not.
+- **AN ANIMATION WRITTEN BEFORE THE PAGE HAD A SHAPE IS A BUG NOW.**
+  The pigeons are the second time this has bitten (the flat ground was
+  the first, and it cost a critique round). Anything positioned with a
+  bare number for y was written against a flat sheet: **grep the region
+  files for a `position.y` or a `position.set` with no `groundY` or
+  `heightAt` term in it before trusting any of them.** Today exactly one
+  line was wrong, and it had been wrong for four sessions.
+- **EVERY FRAMING THIS PROJECT OWNS IS A STAND-STILL**, and a whole
+  class of defect only exists while something is moving. Session 6 had
+  to drive the sprint and the oars to photograph them at all; the
+  pigeons are the first time a stand-still sheet actively HID one. A
+  land with motion in it wants at least one driven framing.
 - `Audio.ts` gained ~15 exports (`MOODS`, `VOICES`, `LAND_VOICE`,
   `BEDS`, `TAILS`, `phrase`, `buildBed`, `mixLevels`, `equalPower`,
   `crossfade`, `XFADE`, `srand`, `nightnessAt`, `playedBy`, `toneAt`).
