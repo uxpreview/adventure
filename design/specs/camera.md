@@ -266,7 +266,7 @@ bit-identical and the nine that did not were **all four coast framings,
 at both hours** — the only ones in the set with animated water in them.
 Neither is visible, and both make a pixel comparison meaningless.
 
-`__inklands.setTime(t)` pins all four; `__inklands.step(dt, n)` runs `n`
+`__inklands.setTime(t)` pins all five; `__inklands.step(dt, n)` runs `n`
 fixed ticks and renders only the last; the animation loop then
 re-presents that frame until the clock is handed back. **Twelve game
 seconds of settle costs 130–400 ms instead of seventy seconds of wall

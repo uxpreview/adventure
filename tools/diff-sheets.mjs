@@ -44,7 +44,7 @@
 // that would not come back the same twice.
 //
 // So the settle is not milliseconds, it is GAME SECONDS: __inklands
-// pins all four clocks and steps a fixed number of fixed ticks, and
+// pins all five clocks and steps a fixed number of fixed ticks, and
 // renders once at the end. Twelve game seconds costs about a third of a
 // second instead of seventy, and two runs of one framing come back
 // bit-identical. That is the whole tool; the diff underneath it is
