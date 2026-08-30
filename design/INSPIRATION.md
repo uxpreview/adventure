@@ -106,6 +106,148 @@ world is new. The argument for mounts (WORLD-SYSTEMS §4).
 
 ---
 
+## THE LONG-RUNNING WORLD
+
+### RuneScape / Old School RuneScape — Jagex, 2001– **[owner, 2026-08-30]**
+
+*The largest single entry on this list, because the owner named six
+separate things it does and because five of them are things INKLANDS
+has already half-decided and can now stop deciding. It is also the only
+work here that has been played continuously for twenty-four years,
+which is the exact question this project keeps asking itself: **what
+keeps somebody in a world after the novelty is gone?***
+
+Read it against the standing target (WORLD-SYSTEMS §0): a small map is
+not a short game. RuneScape's map is a twenty-minute run and people
+have lived in it for two decades, and **not one of the reasons is
+combat.**
+
+#### 1 · INTERIORS — the roofless cutaway
+
+Every building in RuneScape can be walked into, and the roof comes off
+when you do. A house is two rooms, a table, a range, a bed and a
+person, and it is enough — because an interior there is not a simulated
+room, it is **three or four objects that say who lives here.** That is
+Fallout's vignette (§10) at domestic scale, and it is the cheapest
+square footage in games: interiors multiply a world without a single
+extra acre of ground.
+
+**Take:** *the cutaway.* You walk in and the roof lifts. On a sheet of
+paper that is not a camera trick, it is **a drawing convention** — a
+plan and an elevation on the same page — which makes it craft rather
+than subject, and puts it firmly inside the standing rule. And **the
+four-object rule**: an interior is a posture, a place and two or three
+objects, exactly like a person is (STORY §7).
+**Refuse:** **Construction**, the player-owned house, and every
+decorating menu attached to it. A room you furnish is an inventory
+wearing wallpaper, and there is no crafting in this game.
+**Applied in:** WORLD-SYSTEMS §11 (new), and DIRECTION.md already had
+interiors on the un-numbered queue with no model. It has one now.
+
+#### 2 · THE MAP — an object people memorise
+
+RuneScape players can draw their map from memory. It is one hand-drawn
+sheet at one scale, there is no fast travel worth the name for a long
+time, and its regions are legible **because their architecture differs**
+— you know Varrock from Falador from a rooftop, not from a legend.
+
+**Take:** that a world map is worth building as **an artefact in its own
+right** rather than as a reference tool, and that it stays legible by
+making the regions look different, not by labelling them. Session 7
+already made ours the record of your own walk; this is the argument for
+keeping it a drawing.
+**Refuse:** **the minimap and its icon layer**, and teleports. An icon
+layer is the "?" map (Witcher 3, above), and a minimap is a second
+screen the player watches instead of the world.
+**Applied in:** `src/ui/map.ts`, QUALITY-BAR §4 (*places, not
+coverage*).
+
+#### 3 · MINIGAMES — a place with a rule the world does not have
+
+Barbarian Assault, Castle Wars, Gnome Ball, the Rat Pits. What they have
+in common is not scores or prizes: it is that **one location behaves by
+rules that apply nowhere else on the map**, and you can just go and do
+it, and it is over when you leave.
+
+**Take:** **the LOCAL RULE.** A place where the world does something it
+does nowhere else, available to anybody who wanders in, repeatable, and
+worth doing because it is fun to do. Skimming a stone. A bell that
+answers. An echo that comes back wrong. This is Goat Simulator's
+argument with a location attached.
+**Refuse:** scores, timers, leaderboards, reward shops, and minigame
+currencies — **every one of which is a meter**, and RuneScape has all of
+them. Take the room, refuse the scoreboard.
+**Applied in:** QUESTS §9, as a **proposal for a seventh tier** — the
+owner has not ratified it and it is written down as a question.
+
+#### 4 · QUESTS — the closest thing on this whole list to what we want
+
+RuneScape's quests are the crown jewel and the reason it is on this
+list at all. They are **hand-authored, never generated**, gated by
+knowledge and access rather than by level, frequently very funny played
+completely straight, occasionally devastating, and **they change the
+world permanently and cannot be repeated.** People remember them by
+name — *Monkey Madness*, *The Fremennik Isles*, *Recipe for Disaster* —
+which is not a thing anybody says about a fetch chain.
+
+**Take:** that **a quest is a piece of writing with a name people
+remember**, and that the comic register works in exact proportion to how
+straight it is played. Also: RuneScape is the largest existing proof
+that **a world can be built almost entirely out of authored, unrepeatable
+content** and still run for decades — which is our whole moat stated as
+someone else's shipping history.
+**Refuse:** **the quest journal, the quest list, and QUEST POINTS.**
+RuneScape keeps a literal completion counter and sells you a cape for
+finishing them all. That is precisely and exactly the thing QUESTS §7
+forbids, from the game that otherwise agrees with us most.
+**Applied in:** QUESTS §§2, 6, 7.
+
+#### 5 · THE END-GAME — the same world, read differently
+
+RuneScape's late game is not a final dungeon and not a boss. It is
+grandmaster quests, achievement diaries and the long tail — and every
+one of them takes place in **the world you have already crossed a
+thousand times**, which is now legible in a way it was not.
+
+**Take:** the shape. **Our Act IV is the same move**: a train comes down
+a road the player has walked for fifteen hours, and the ending is not a
+new place, it is the old place finally doing the thing it was for
+(`THE-LINE.md` §4). RuneScape is the evidence that an end-game made of
+the map you already have is not an anticlimax.
+**Refuse:** **the cape.** A worn badge for completion is a score you
+wear, and in a world with no other players there is nobody to show it
+to. Ours ends with a world that is different, not a walker who is
+decorated.
+**Applied in:** `design/THE-LINE.md` §4, QUESTS §5 (the reward law).
+
+#### 6 · THE MUSIC — and it is why Session 8 exists
+
+Not on the owner's list by name, and it belongs here anyway: RuneScape's
+soundtrack is **the most-remembered thing about it after the map.** Each
+area has its own track, the tracks are short, strange, played on a
+handful of voices, and a player who has not opened the game in a decade
+can name the area from four bars. **Hearing it IS knowing where you
+are** — which is the map-as-record, in sound, and it is the exact gap
+WORLD-SYSTEMS §9 identifies in our own mix.
+
+**Take:** *a land has a voice, and the voice is the place.* Twelve
+lands, twelve instruments, and a border you can hear blind.
+**Refuse:** **the music player and the unlock message.** "You have
+unlocked a new music track" turns a soundtrack into a collection with a
+list and a count, and we have spent a whole session refusing exactly
+that (`src/world/knowledge.ts`). The track arrives because you are
+standing there. Nothing announces it and nothing lists it.
+**Applied in:** WORLD-SYSTEMS §9, and it is Session 8.
+
+#### What RuneScape does not get to bring
+
+Combat, skills, levels, XP drops, the grand exchange, an economy, an
+inventory, a bank, other players, gear, and the entire idea that a
+number goes up. It is on this list for six things and every one of them
+is about **place**.
+
+---
+
 ## THE SMALL OPEN WORLDS — the original bar
 
 *QUALITY-BAR §1: the walk people send each other.*

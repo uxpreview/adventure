@@ -44,6 +44,7 @@ and the knowledge games — is `design/INSPIRATION.md`.*
 | **Skyrim** | faction lines as parallel campaigns, completable in any order; the memorable-weird tier (Daedric quests) | **radiant quests** — procedurally generated filler, and Skyrim's own worst content. We generate nothing |
 | **Goat Simulator** | that a world should reward messing about; that some content should exist only to delight; that a secret is allowed to just be a joke | everything else, obviously |
 | **The Witcher 3** | **every side quest has a TURN** — a reveal that recontextualises what you were doing. This is the single highest bar on the list and it is the one we hold ourselves to | the "?" map icons, which CDPR themselves call the weak part |
+| **RuneScape** *(added 2026-08-30)* | that a quest is **a piece of writing with a name people remember**, hand-authored, unrepeatable, gated by knowledge rather than by level, and permanently world-changing — and the largest proof anywhere that a world made almost entirely of authored content runs for decades. Plus the **local rule** (§8, proposed) and, for the endgame, that the last hours are **the map you already have, read differently** | **quest points, the quest journal, and the completion cape.** RuneScape keeps a literal counter and sells you something to wear for finishing them all, which is exactly what §7 forbids — from the game that otherwise agrees with us most |
 
 ---
 
@@ -228,7 +229,53 @@ mechanic the bar is aiming at (QUALITY-BAR §1).
 
 ---
 
-## 8. Budget, and where it goes on the ladder
+## 8. UNDER CONSIDERATION — a seventh tier *(proposal, 2026-08-30)*
+
+*Raised by the owner adding RuneScape to `INSPIRATION.md`. **Not
+ratified. Written down as a question**, because six tiers were settled
+deliberately and a seventh is the owner's call, not a session's.*
+
+### THE LOCAL RULE *(~10, place-bound, repeatable)*
+
+RuneScape's minigames — Barbarian Assault, Castle Wars, Gnome Ball, the
+Rat Pits — have nothing in common with each other except the one thing
+that matters: **each is a place where the world behaves by rules that
+apply nowhere else on the map**, you can just wander in and do it, and
+it is over when you leave.
+
+Ours would be the same shape with the scoreboard cut off:
+
+> **One place in a land where the world does something it does nowhere
+> else, available to anybody who walks in, repeatable for as long as you
+> like, and worth doing because it is good to do.**
+
+Candidates that already exist as drawings: the well that answers a shout
+on too long a delay; the bell that splits the difference; skimming a
+stone off the sandbar; the swing on the leaning oak; the echo in
+Splitrock that comes back wrong.
+
+**Why it might be a tier rather than more Tier 5.** THE UNMARKED is
+things you NOTICE — the payload is the noticing and it happens once. A
+local rule is something you DO, and the payload is that you can keep
+doing it. Those are different appetites and a world wants both:
+`WORLD-SYSTEMS` §0 lists four engines for depth and this is closest to
+none of them, which is either an argument that it is missing or an
+argument that it is not needed.
+
+**Why it might not be.** Every tier in the table above has a distinct
+FUNCTION and a distinct TONE, and the honest question is whether this
+one's function is already covered by Tier 5 plus "motion is life"
+(QUALITY-BAR §4). If a local rule turns out to be an idle animation you
+can trigger, it is not a tier.
+
+**What it may never become, whichever way the owner rules:** a score, a
+timer, a leaderboard, a reward shop, or a currency. RuneScape has all
+five and **every one of them is a meter** (§7, and the reward law in
+§5). Take the room; refuse the scoreboard.
+
+---
+
+## 9. Budget, and where it goes on the ladder
 
 | tier | pieces | rough session cost |
 |---|---|---|

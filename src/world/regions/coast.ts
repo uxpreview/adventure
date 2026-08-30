@@ -467,7 +467,7 @@ export const BEACH_POIS: WorldPOI[] = [
     prompt: 'WALK THE PLANKS',
     note: {
       title: 'the boardwalk',
-      body: 'the road walks out onto the sand, thinks better of it, and becomes planks. the planks knock hollow underfoot — the sound of a drawing bragging about being a drawing. they stop, eventually, over the water, for no reason anybody wrote down.',
+      body: 'the road walks out onto the sand, thinks better of it, and becomes planks. the planks knock hollow underfoot, which is the only sound on this coast anybody built on purpose. they stop, eventually, over the water, for no reason anybody here can give you.',
     },
   },
   {
@@ -491,7 +491,7 @@ export const BEACH_POIS: WorldPOI[] = [
     prompt: 'STAND AT THE POINT',
     note: {
       title: 'the holdfast',
-      body: 'the wet edge of the page tore away on both sides of here and this piece held. that is all a headland is. the stones on top were put there one at a time by people who had just climbed the cut and wanted to say so.',
+      body: 'the sea took the land away on both sides of here and this piece held. that is all a headland is. the stones on top were put there one at a time by people who had just climbed the cut and wanted to say so.',
     },
   },
   {
@@ -507,7 +507,7 @@ export const BEACH_POIS: WorldPOI[] = [
     prompt: 'WATCH THE INK GO OUT',
     note: {
       title: 'the river mouth',
-      body: 'four hundred units of river, one long sentence across the whole page, and this is the full stop. the ink goes out with the tide and does not come back, and upstream it keeps writing the same word anyway.',
+      body: 'the whole river comes down to this, and here is where it stops being one. what goes out on the tide does not come back, and upstream it keeps coming down at exactly the same rate, which is either patience or arithmetic.',
     },
   },
   { x: -232, z: 112, radius: 7, label: 'A BOAT, RESTING' },
@@ -695,7 +695,8 @@ export const OCEAN_POIS: WorldPOI[] = [
     prompt: 'WADE OUT',
     note: {
       title: 'the shallows',
-      body: 'you can wade to about the knee of the drawing. past that the blue gets serious, and whoever drew you gave you no more swimming than they gave themselves. what they did give you is a bar of dry sand going the other way.',
+      body: 'you can wade to about the knee. past that the blue gets serious, and nobody on this coast has ever learned to swim, on the grounds that the sea is not somewhere a person goes. what there is instead is a bar of dry sand, going out.',
+      learns: ['name:ocean'],
     },
   },
   {
@@ -703,7 +704,7 @@ export const OCEAN_POIS: WorldPOI[] = [
     prompt: 'FEEL THE GROUND CHANGE',
     note: {
       title: 'the sandbar',
-      body: 'the wash went over this page in one pass and missed a strip of it, the way a wash always does. the sea has been trying to take the strip back ever since and has got nowhere. it is dry, it is a hundred and eighty units long, and it goes out.',
+      body: 'a strip of this seabed came up dry and nobody on the coast can tell you why. the sea has been trying to take it back ever since and has got nowhere. it is dry, it is a hundred and eighty paces long, and it goes out.',
     },
   },
   {
@@ -711,7 +712,7 @@ export const OCEAN_POIS: WorldPOI[] = [
     prompt: 'STAND HERE A MOMENT',
     note: {
       title: 'the long water',
-      body: 'sixty units from anything. there is not one mark drawn on the page from here to the fog, which on a sheet that is drawings all the way down is the loudest thing in the world.',
+      body: 'sixty paces from anything, and then nothing at all between here and the fog. no boat, no bird, no bar, no sound. in a world where something is always going on just out of sight, that is the loudest thing in it.',
     },
   },
   {
@@ -719,7 +720,7 @@ export const OCEAN_POIS: WorldPOI[] = [
     prompt: 'WATCH THEM ROUND IT',
     note: {
       title: 'the mark',
-      body: 'they have been sailing this triangle since the page was wet. nobody has ever won and the bell keeps the time anyway, which is roughly what a race is.',
+      body: 'they have been sailing this triangle since before anybody was counting. nobody has ever won, and the bell keeps the time anyway, which is roughly what a race is.',
     },
   },
   {
@@ -727,7 +728,7 @@ export const OCEAN_POIS: WorldPOI[] = [
     prompt: 'LOOK UP',
     note: {
       title: 'the seaward face',
-      body: 'from the sand you are either on the point or behind it. from here you get the whole face at once: eleven units of torn edge, hatched down its own fall, with one thin line cut across it by somebody who wanted to be up there.',
+      body: 'from the sand you are either on the point or behind it. from here you get the whole face at once: eleven paces of raw cliff going straight down, with one thin line cut across it by somebody who wanted to be up there.',
     },
   },
 ];

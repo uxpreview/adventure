@@ -1,5 +1,212 @@
 # SESSIONS — the handoff log
 
+## Session 7 — 2026-08-30 — the stories
+
+*The story was LOCKED before this session started (`design/STORY.md` —
+THE 8:15) and its architecture was WRITTEN (`design/QUESTS.md`, six
+tiers). This session did not invent either. It MAPPED the first, BUILT
+the one system the second requires, AUTHORED one vertical slice of it,
+and FIXED THE VOICE — which turned out to be the biggest job in the
+session and the one the whole project had been quietly failing at since
+Session 1.*
+
+### Shipped
+
+- **THE LINE, MAPPED BEAT BY BEAT** (`design/THE-LINE.md`). Four acts,
+  every beat with where it lives, what the player sees, what fires it,
+  and the column that matters — **what it does not say**. Two things in
+  it are decisions rather than notes, and both were this session's to
+  make:
+  - **Where a person stands for Act III**, and the honest version of it.
+    The line is 480 units end to end; the camera only ever looks north;
+    the highest walkable ground on the line's own axis is the south curl
+    at (−45, 278), y 7.3, which opens the haze to 201 units. **So the
+    whole line cannot be seen at once, and that is better** — from the
+    best seat in the world you get two hundred units of dead straight
+    empty road going away into haze. *You cannot see where it ends. You
+    can see that it does not stop.* The king's road's last authored
+    point is z 262 and the rim's crest is z 284: **the road has stopped
+    sixteen units short of the edge of the world since Session 1 and
+    nobody ever said why.** Now it has a reason, and nothing in the game
+    will ever mention it.
+  - **THE ENDING, settled.** `STORY.md` §6 flagged it as a proposal and
+    handed it to the session that maps the stories. Three changes, all
+    argued in `THE-LINE.md` §4.5: the 8:15 **stops twelve times** rather
+    than gathering everyone on one platform (they cannot reach it —
+    rule 1 of §8 is the engine of the whole story and an ending that
+    broke it would retract the game in its last minute); **there is no
+    final choice**, because whether anybody is on each platform is the
+    consequence of fifteen hours; and the turn lands **on the train, in
+    silence**, which is the only frame in the game that can hold two
+    lands at once. Joan Harrow is not on it, exactly as proposed.
+- **THE TWELVE WAITS** (`design/THE-WAITS.md`). One per land, each with
+  its named person, its two or three places that mean something
+  different once you know, **its turn**, and its visible permanent
+  change. Four were thrown away and rewritten because the first draft
+  was a mood rather than a turn. Four new names — VAL, HOLT, AMOS,
+  WREN — in the east-by-south register. And **one mechanism for all
+  twelve**: a wait resolves when the player, holding the right
+  knowledge, arrives at the right place. Nothing asks them, nothing
+  confirms it, the world simply does the thing.
+- **THE EIGHT STRANGERS AND THE THREE INVENTORIES**
+  (`design/THE-STRANGERS.md`). Cross-land, met in one place and resolved
+  in another; the very funny one is **THE STANDING COMPLAINT** (a sealed
+  grievance about the belfry clock, carried to Greyweather, received
+  with total ceremony and nailed up beside a proclamation already
+  weathered past reading — the procedure followed exactly, everybody
+  satisfied, nothing whatsoever having happened) and the genuinely
+  upsetting one is **THE ELEVEN UNITS**. Then ~20 errands, ~28
+  encounters and 31 unmarked, as **one-line inventories**, which is the
+  format and not a placeholder.
+- **KNOWLEDGE AS THE CONTENT SYSTEM** (`src/world/knowledge.ts`,
+  WORLD-SYSTEMS §6). A **NAME**, a **FACT**, a **ROUTE**, a **REASON**,
+  every id a phrase a human could read out, and a region asks
+  `knowledge.has(...)` in the present tense — *does the walker know
+  this* — rather than being told which stage of which quest is done.
+  **There is no count anywhere**: the class has no `size`, nothing
+  computes a length, and the only reader of the raw set is the save
+  file. Saved as `Save.data.known`, the way `boat` and `hour` were added
+  last session.
+- **ROUTES are the one kind of knowledge nobody in this world could
+  tell you**, because nobody crosses a border and the line crosses
+  eleven. So they are walked off authored posts — on foot or under oar,
+  because rowing the river IS walking it for this purpose — and the
+  progress survives closing the tab.
+- **THE MAP IS THE RECORD.** Three registers instead of two: a question
+  mark for what you have never heard of, the name in **pencil** with a
+  rule under it for a place somebody named to you, the name in **ink**
+  for a place you stood in. The crossroads signpost names three lands in
+  its first sentence and has done since Session 1; it is worth something
+  now. **And the line:** walk the king's road, main street and the
+  commuter spur end to end and the map stops dashing them and draws one
+  continuous stroke from a castle gate to a car park, with the other
+  eight roads still dashes around it. **There is no caption.** That is
+  Act III's reveal, delivered by cartography.
+- **BRIM'S WAIT, END TO END** — the vertical slice. **MARGET** sets the
+  stall out at dawn, lays the cloth, does not open, and packs it away at
+  dusk, straight off Session 6's clock. The belfry's two hands have
+  disagreed for as long as anybody can remember and **now they disagree
+  about something specific**: one points at eight, which is the hour
+  Brim's lamps actually come on, and one points at eleven. Stand in the
+  yard while the lamps are lit and one of them agrees with them. Take
+  that to the market cross and the bell rings the hour it actually is:
+  **the cloth comes off, the awning goes up, and a board is chalked at
+  the cross that stays there at every hour afterwards, forever.**
+- **AND BRIM GOES HOME.** `StandeeField.setDim` — one multiply over a
+  whole field — takes the square's sixteen folk off the page overnight.
+  A square with sixteen people standing in it at three in the morning
+  makes one woman packing her stall away look like a bug rather than a
+  day. Last session's lamps made the LIGHT change; this makes the PLACE
+  change, and it costs six lines.
+- **THE VOICE PASS, and the number was worse than anybody had said.**
+  `STORY.md` estimated a third of thirty-five. The session brief counted
+  17 of 33 with a grep. **Read aloud it is 24 of 34** — the grep looked
+  for six phrasings and the offence has more ways to say itself than
+  that (`a scribble`, `six lines old`, `the second stroke`, `the
+  artist`, `the wash went over this page`). **Anybody auditing this rule
+  again should read, not grep.**
+- **AND THE SENTENCE THE WHOLE STORY HANGS ON:**
+
+  > the timetable says the 8:15 is coming. **there is no track here, and
+  > there is no track anywhere.** everyone waiting knows both of these
+  > things and has made their peace.
+
+  Same three beats, same cadence, third sentence verbatim. What changed
+  is where the impossibility comes from — *"the 8:15 is drawn nowhere on
+  this sheet"* is a claim only the narrator can make and no player can
+  check; *"there is no track here"* is an absence at the player's own
+  feet, and *"and there is no track anywhere"* is only knowable by
+  somebody who has been everywhere, which in this world is exactly one
+  person. **The line quietly became about the walker and nobody says
+  so.** The full defence is in `design/critiques/critique-story-1.md`.
+- **THE SIGNPOST'S FOURTH NAME.** It said HOME. `STORY.md` §4 says the
+  Common's crossroads has four names on it and one of them is a TIME,
+  and calls it the hinge Act II turns on — so the built game and the
+  locked story disagreed and the story is binding. It says **8:15**, on
+  the same board, in the same hand, at the same size, with no emphasis
+  of any kind, and nothing anywhere refers to it.
+
+### State
+- Build green. `node tools/check-terrain.mjs` passes, unchanged.
+- **`node tools/verify-story.mjs` — twenty checks, and it PLAYS the
+  wait rather than poking it.** The contact sheet reaches both of a
+  wait's states with `__inklands.learn(...)`, which is legitimate for
+  photography and proves nothing about the game; this walks the chain a
+  player walks. A fresh page knows only where it is standing; reading
+  the signpost puts three lands into pencil and standing in one puts it
+  into ink; the belfry yard at NOON teaches nothing and at DUSK teaches
+  the hour; carrying that to the cross calls the market, and exactly one
+  of the two stalls is on the page, and the board is chalked, and Marget
+  is at her counter; **and all of it survives a reload.** Plus the line,
+  walked post by post, because a route is the one kind of knowledge
+  nobody can be told.
+- **Frame cost unchanged.** Brim Square is 210 draws / 214k triangles
+  with four more standees in it than Session 6 left (Session 6 recorded
+  217 from a slightly different stand). THE COMMON is still the worst
+  frame in the game.
+- **No layout change**: no rect, no road geometry, no river, no bridge,
+  no mood, no step zone. `Road` gained one authored flag (`line?: true`)
+  on the three roads STORY §4 makes one road.
+- **No elevation change.** This session added four standees to Brim
+  Square and edited two textures.
+- Six protected lands re-shot at **two hours** (`HOUR=12`,
+  `HOUR=19.6`) in both viewports and unregressed. Session 3's
+  square-wide framing now contains Marget's stall and is the better for
+  it.
+- New: `src/world/knowledge.ts`, `design/THE-LINE.md`,
+  `design/THE-WAITS.md`, `design/THE-STRANGERS.md`,
+  `design/critiques/critique-story-1.md`, `tools/shoot-story.mjs`,
+  `tools/shoot-map.mjs`.
+- **Gate: WOWED** after 3 rounds (`design/critiques/critique-story-1.md`,
+  verbatim), plus the note read-aloud (PASS) and a **new critic, the
+  STORY EDITOR, which is a PROPOSAL for the owner** — it read the twelve
+  waits blind and named what each land believes, twelve for twelve,
+  without once using the word.
+
+### Gotchas (new; Sessions 1–6 all still apply)
+- **KNOWLEDGE IS STICKY WITHIN A PAGE, AND A CONTACT SHEET IS ONE
+  PAGE.** The first sheet of this session shot "Marget shut" with the
+  awning already up, because the frame before it had learned why. Any
+  script that photographs a wait at both states shoots **every** shut
+  frame before the first open one.
+- **A SILENT SYSTEM STILL HAS TO BE VISIBLE.** The map's pencil and ink
+  registers were first separated by transparency alone, and the map is
+  drawn at 940 and shown at about 690 — the difference did not survive
+  the scale. Three signals, not one: the ink goes heavier, the pencil
+  goes lighter AND greyer AND thinner. If a register does not read, the
+  system does not exist.
+- **A FACT THE PLAYER IS HANDED FOR BEING SOMEWHERE IS A FLAG. A FACT
+  THEY CAN LOOK AT IS KNOWLEDGE.** Brim's belfry had two hands pointing
+  at roughly one o'clock and roughly twelve, which is a wobble and not a
+  disagreement. They point at eight and eleven now, and eight is the
+  hour the lamps come on, and the whole of Brim's wait is two lines of
+  geometry. **A stopped clock is right twice a day** — which is why
+  fixed hands are the correct drawing and moving ones would have been
+  wrong.
+- **BRIM SQUARE HAS THREE RUNS OF BUNTING AND THE CAMERA TRAILS
+  THIRTEEN UNITS.** Every framing that stands within about eight units
+  of z −65, −81 or −96 hangs two enormous translucent triangles down the
+  middle of the frame. Work out where the camera lands before shooting,
+  not after.
+- **A PROSE CHANGE CAN FALSIFY A DRAWING.** The crossroads note was
+  rewritten to say "one arm pointing south", and the signpost has four
+  arms, none of which points south. Either the note or the drawing has
+  to move, and it is cheaper to check than to ship a game whose card and
+  whose sign disagree.
+- **`vite preview` started with `&` inside a compound bash command dies
+  with the command.** Use `setsid` and a separate call, or every shoot
+  after the first one hits a dead port.
+- **ASSERTION VERSUS SIMILE**, and it is the line the medium rule
+  actually draws. A note that says the world IS drawn has broken the
+  rule; a note that compares a thing in the world to handwriting is a
+  figure of speech, and this world has ink and pens in it as ordinary
+  objects. Two lines survive on that distinction (riverbend's cursive,
+  the tarn's "black as the good ink") and both are flagged to the owner
+  in the critique as one-line changes if the ruling goes the other way.
+- `layout.ts` gained `Road.line`. `Save` gained `known` and `passed`.
+  `StandeeField` gained `setDim`. `POI` note defs gained `learns`.
+  `shoot-lib` gained `opts.learn`.
+
 ## Session 6 — 2026-08-29 — traversal & time
 
 *A systems session. Nothing here adds a land; everything here changes

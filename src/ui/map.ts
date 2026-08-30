@@ -3,12 +3,39 @@ import { INK, PENCIL } from '../engine/palette';
 import { letterCanvas, S } from './lettering';
 import { WORLD, REGION_SPECS, ROADS, RIVER, BRIDGES, PONDS, SANDBAR } from '../world/layout';
 import { coastX } from '../world/terrain';
+import { knowledge } from '../world/knowledge';
 
 /**
  * THE MAP — drawn, of course. Region borders in pencil, coast and
- * river in the good blue, roads dashed the way a hand dashes them,
- * and only the lands you have actually stood in get their names.
- * The rest are a question mark, which is the honest cartography.
+ * river in the good blue, roads dashed the way a hand dashes them.
+ *
+ * ── AND SINCE SESSION 7 IT IS THE RECORD ───────────────────────────
+ *
+ * WORLD-SYSTEMS §6: *pencil for what you have heard about, ink for
+ * what you have seen.* The map had drawn in both registers since
+ * Session 1 and had only two things to say with them — a name, or a
+ * question mark. It has three states now, and they are the whole
+ * content system made visible:
+ *
+ *   **unknown** a question mark and a smear of pencil hatching. You
+ *               have not been and nobody has mentioned it
+ *   **heard**   the name, in PENCIL, in a lighter hand. Somebody named
+ *               it to you — off a signpost, out of a note — and you
+ *               have taken their word for it
+ *   **seen**    the name, in INK. You stood in it
+ *
+ * And ONE road is drawn differently, and nothing anywhere explains it.
+ * A player who has walked the king's road, main street and the
+ * commuter spur end to end has walked one road under three of its
+ * twelve names (STORY §4), and the next time they open the map it is
+ * not dashed any more. It is a single ruled line from the castle gate
+ * to a car park, with the other eight roads still dashes around it.
+ *
+ * That is Act III's reveal and it is delivered by cartography. There
+ * is no caption, no note, no character, and no acknowledgement of any
+ * kind — rule 5 of STORY §8 is that nobody says the turn, and the
+ * cheapest way to keep that rule is to make the map's own hand say it
+ * instead.
  */
 
 export function renderMap(state: {
@@ -121,8 +148,17 @@ export function renderMap(state: {
       { width: 1.4, alpha: 0.55, color: '#4a7ab0' }, 1.2);
   }
 
-  // roads: dashes, because a hand dashes a road
+  /* roads: dashes, because a hand dashes a road — except the one the
+     walker has been the whole way along, which is inked in one pass.
+     `knowledge.has` is asked here and nowhere else in this file: the
+     map does not know what the line IS, only that it is drawn now. */
+  const inkedLine = knowledge.has('route:the-line');
   for (const road of ROADS) {
+    if (road.line && inkedLine) {
+      stroke(ctx, road.pts.map(([x, z]) => [X(x), Z(z)] as [number, number]), r,
+        { width: 2.3, alpha: 0.85, jitter: 1.1 });
+      continue;
+    }
     for (let i = 0; i < road.pts.length - 1; i++) {
       const [ax, az] = road.pts[i];
       const [bx, bz] = road.pts[i + 1];
@@ -142,20 +178,50 @@ export function renderMap(state: {
     line(ctx, X(b.x) - 4, Z(b.z) + 3, X(b.x) + 4, Z(b.z) + 3, r, { width: 1.4, alpha: 0.6, passes: 1 });
   }
 
-  // names — earned by walking there
+  /* names — in the register the walker earned. A name written in ink
+     is a place you stood in; a name written in pencil is a place
+     somebody told you about and you have taken their word for. */
   for (const s of REGION_SPECS) {
     const cx = (s.rect.minX + s.rect.maxX) / 2;
     const cz = (s.rect.minZ + s.rect.maxZ) / 2;
-    if (state.discovered.includes(s.id)) {
-      const label = letterCanvas(s.name, { ...S.quiet(11 * ink), align: 'center' });
-      ctx.drawImage(label, X(cx) - label.width / 4, Z(cz) - label.height / 4,
-        label.width / 2, label.height / 2);
-    } else {
+    const reg = knowledge.register(s.id, state.discovered);
+    if (reg === 'unknown') {
       const q = letterCanvas('?', S.quiet(13 * ink));
       ctx.globalAlpha = 0.6;
       ctx.drawImage(q, X(cx) - q.width / 4, Z(cz) - q.height / 4, q.width / 2, q.height / 2);
       ctx.globalAlpha = 1;
       hatch(ctx, X(cx) - 26, Z(cz) + 10, 52, 14, 0.4, 6, r, { alpha: 0.1, color: PENCIL });
+      continue;
+    }
+    /* TWO HANDS, AND THEY HAVE TO READ AS TWO HANDS AT THE SIZE THE MAP
+       IS ACTUALLY DELIVERED AT. The first build of this separated them
+       by alpha alone and the registers were indistinguishable on the
+       contact sheet — the map is drawn at 940 and shown at about 690,
+       and a 1.6× alpha difference does not survive that. So the ink
+       goes HEAVIER (a name you earned is written firmly) and the pencil
+       goes lighter, greyer AND thinner, which is three signals instead
+       of one. */
+    const heard = reg === 'heard';
+    const label = letterCanvas(s.name, {
+      ...S.quiet(11 * ink),
+      align: 'center',
+      alpha: heard ? 0.8 : 0.96,
+      weightScale: heard ? 0.85 : 1.25,
+      ...(heard ? { color: PENCIL } : {}),
+    });
+    const lw = label.width / 2;
+    const lh = label.height / 2;
+    ctx.globalAlpha = heard ? 0.66 : 1;
+    ctx.drawImage(label, X(cx) - lw / 2, Z(cz) - lh / 2, lw, lh);
+    ctx.globalAlpha = 1;
+    /* and a place you have only HEARD of does not get its border drawn
+       around it — you know the name, not the shape. One underline, the
+       way a hand marks a thing it has been told, clear of the letters'
+       own descenders. */
+    if (heard) {
+      const uy = Z(cz) + lh / 2 - 1;
+      line(ctx, X(cx) - lw * 0.42, uy, X(cx) + lw * 0.42, uy, r,
+        { width: 1.1, alpha: 0.32, color: PENCIL, passes: 1, jitter: 1.6 });
     }
   }
 

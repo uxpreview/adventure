@@ -130,19 +130,99 @@ camera and the character controller each need one lift.
 **This must land before any more lands are authored.** Every land built
 flat is a land re-opened later.
 
-## 2. The camera — due a real design pass
+## 2. The camera — the height pass is DONE; the BEARING question is open
+
+### The first pass — BUILT, Session 4 ✓
 
 Session 3 established the **frame-top ceiling**: the shipping camera
 shows roughly 10 world units of height at 33 units out and 16 at 82, so
 any tall near object fills the upper frame and hides everything behind
 it. That is why Greyweather's keep is drawn wide (640×320) and its
-gatehouse is only 9.5 units.
+gatehouse is only 9.5 units. That ceiling was a camera constant nobody
+chose on purpose.
 
-That ceiling is a camera constant nobody chose on purpose. With terrain
-height arriving, the camera has to change anyway (it must follow the
-ground, and rising ground must actually reveal more). Treat the camera
-as a designed system with elevation, pitch and fog as its parameters —
-not as three magic numbers in `cameraOffset()`.
+*Session 4 fixed it. The camera is a designed system now — `back`,
+`up`, `look`, the three `rise*` terms and `fogPerUnit`, each a decision
+with a reason, all documented in `App.CAM`. Rising ground reveals more
+by RETREATING rather than by pitching, because pitching throws the
+walker out of the bottom of the frame. Height buys distance. All three
+rise terms are zero on flat ground, which is what protected the WOWED
+compositions of Sessions 2 and 3.*
+
+### The second question — OPEN, and the owner named it *(2026-08-30)*
+
+> **Can the camera shift, on desktop and on mobile, so the player can
+> always see where they are headed?**
+
+**The complaint is exact and it is real.** The camera only ever looks
+north. Walk north and you are walking into the frame; walk EAST or WEST
+and you are crossing it; **walk SOUTH and you are walking backwards out
+of it, into ground you cannot see.** That is not an edge case: the
+king's road runs north–south for four hundred and eighty units and
+**Act III's whole walk — the castle gate down to the car park — is done
+facing away from where you are going** (`design/THE-LINE.md` §3).
+
+And it collides head-on with a law: **the camera only ever looks north,
+and that decides LAYOUT** (QUALITY-BAR). Six lands were authored on it.
+Session 5 lost two rounds to a boardwalk laid east–west and a regatta
+staged west of its viewpoint. So this is a foundations question, not a
+polish one, and it wants its own session.
+
+#### The technical fact that decides the shape of the answer
+
+**Standees are not billboards.** `makeStandee` builds a `PlaneGeometry`
+with a fixed `rotation.y`; nothing in this engine turns to face the
+camera. At the shipped bearing every cutout is square to the lens, and
+that is the entire reason the paper metaphor reads.
+
+Rotate the camera and they are seen off-axis. The arithmetic is the
+whole design constraint:
+
+| yaw | a standee's apparent width | verdict |
+|---|---|---|
+| 0° | 100% | the shipped page |
+| 20° | 94% | free |
+| 30° | 87% | survivable |
+| 45° | 71% | visibly card |
+| 90° | 0% | the world is edges |
+
+**So a free camera is fatal and a bounded one is not.** Anything past
+about thirty-five degrees turns this world into a stack of paper seen
+sideways, which is a bug that looks exactly like the metaphor failing.
+
+#### The four candidates, and the standing recommendation
+
+1. **A free orbit.** Refused. It re-opens every land, breaks the layout
+   law, and hits the standee wall above.
+2. **BOUNDED YAW THAT EASES TOWARD TRAVEL** — the camera swings a
+   limited amount toward the direction the walker is actually going,
+   inside an authored envelope of roughly ±30°, and eases back to due
+   north whenever they stop. Walking south you get enough of a turn to
+   see what is coming; standing still you are always in the shipped
+   composition. **This is the recommendation.**
+3. **A PEEK GESTURE** — hold a key, or two-finger drag on a phone, to
+   look, springing back on release. Bearing is a gesture and never a
+   state. Cheap, honest, and it does nothing for the player who does not
+   know the control exists.
+4. **A LEAD OFFSET rather than a rotation** — aim further along the
+   direction of travel without changing bearing. Costs nothing and helps
+   east–west travel, **and cannot help south at all**, because south is
+   behind the lens. Worth doing anyway; not an answer on its own.
+
+Two and three are complementary and probably ship together.
+
+#### What any version of this must not break
+
+- **The resting bearing is due north**, and a stopped walker is always
+  in the composition the land was authored for.
+- **Every protected framing must be reproducible exactly.** The shoot
+  harness pins yaw to zero, every existing contact sheet re-shoots
+  unchanged, and a regression is a diff and not an opinion.
+- **The envelope is authored, not free** — one number, in `App.CAM`,
+  with the standee table above written beside it as the reason.
+- **Portrait gets its own envelope.** A tall frame has less horizontal
+  room to spend on a turn, and the joystick must never sit under the
+  thing the player is steering toward (§8).
 
 ## 3. Traversal — BUILT, Session 6 ✓
 
@@ -412,6 +492,44 @@ holding on to for whoever picks:
   score in one object, and it would be the best use of the mount system
   nobody has thought of yet.
 
+### The proof that this is worth a whole session
+
+*Added 2026-08-30 with the RuneScape entry (`INSPIRATION.md`).*
+
+**RuneScape's soundtrack is the most-remembered thing about it after
+the map.** Every area has its own short, strange track played on a
+handful of voices, and a player who has not opened the game in a decade
+can name the area from four bars. **Hearing it IS knowing where you
+are** — which is the map-as-record, in sound, and it is the exact gap
+this section identifies in our own mix. Twelve moods on one instrument
+is a world with one voice; twelve instruments is a world with twelve
+places.
+
+**And it names the thing to refuse, from the same game.** RuneScape
+posts *"You have unlocked a new music track"* and keeps a music player
+with a list in it, which turns a soundtrack into a collection with a
+count. Session 7 spent itself refusing exactly that
+(`src/world/knowledge.ts`). **A land's voice arrives because you are
+standing there. Nothing announces it and nothing lists it.**
+
+### And the source is decided by the story now
+
+The two candidates parked above were *the world plays it* and *somebody
+is playing it — one instrument, carried, moving around the world on its
+own schedule*.
+
+**The second one is dead, and the story killed it.** `STORY.md` §8 rule
+1: *nobody crosses a border but the walker.* A musician who moves from
+land to land is the one thing this fiction cannot contain, and it would
+break the engine of the whole story in the service of a nice touch.
+
+So it is **the world plays it**, and that is now the cheapest and
+truest option rather than merely the cheaper one: each land's instrument
+is a thing that is actually there. Brim's is the belfry and a market
+that finally opened; Greyweather's is wind in a stone building with
+nobody in it; the office park's is two notes of hold music; the coast's
+is the sea. Nothing is scored. You are hearing where you are.
+
 **Law, unchanged:** zero assets, so every voice is synthesis; the whole
 graph stays a handful of nodes; and nothing outside `Audio.ts` invents
 an instrument, exactly as nothing outside `palette.ts` invents a colour.
@@ -497,6 +615,50 @@ diegetic menu is still a menu, and rule 1 of §0 is that the world says
 it or it does not get said. And the ash: Fallout is post-apocalyptic
 and this is a sheet of paper with a lark on it. **We take the
 archaeology and the deadpan. We do not take the apocalypse.**
+
+---
+
+## 11. Interiors — the roofless cutaway
+
+*Added 2026-08-30. `DIRECTION.md` has had interiors on the un-numbered
+queue since before the story was picked, with the right argument and no
+model. RuneScape is the model (`INSPIRATION.md`).*
+
+**Interiors are the cheapest square footage in games.** They multiply
+the map without expanding the sheet — which matters here more than
+almost anywhere, because expanding the sheet is parked (see the audit)
+and gets more expensive every session, while a doorway costs a drawing.
+
+### What RuneScape settles
+
+- **You walk in, and the roof comes off.** No loading screen, no door
+  transition, no separate scene. On a sheet of paper that is not a
+  camera trick — **it is a drawing convention.** A plan and an elevation
+  on the same page is what a draughtsman does, which puts the cutaway
+  squarely in CRAFT and nowhere near SUBJECT (§0).
+- **An interior is three or four objects, not a simulated room.** A
+  table, a range, a bed, a person. That is Fallout's vignette (§10) at
+  domestic scale, and it is the same rule the cast already runs on: a
+  person is a posture, a place, a routine and a name (STORY §7), and a
+  ROOM is a place and two or three objects.
+- **And it is where the waits live indoors.** Wick's banner loft. Teg's
+  sealed complaint. Val's lit window seen from inside it. Half of
+  `THE-WAITS.md` and most of `THE-STRANGERS.md` want a doorway.
+
+### What it must not become
+
+**Construction** — RuneScape's player-owned house, the building skill,
+and every decorating menu attached to it. *A room you furnish is an
+inventory wearing wallpaper*, there is no crafting in this game, and
+rule 1 of §0 forbids the menu it would need.
+
+### What it costs, honestly
+
+The camera. Everything else here is a texture and a collision edit, but
+the camera only ever looks north (QUALITY-BAR) and it trails thirteen
+units, which is wider than most rooms. **A cutaway interior is a camera
+problem before it is an art problem**, and any session that takes this
+on budgets for that first.
 
 ---
 

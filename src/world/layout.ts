@@ -218,6 +218,21 @@ export type Road = {
    * and let the others be tracks.
    */
   carry: number;
+  /**
+   * THIS ROAD IS PART OF THE LINE (Session 7, STORY §4).
+   *
+   * The king's road, main street and the commuter spur are one road
+   * under three of its twelve names, castle gate to car park, surveyed
+   * as a railway and built as a road by people who were waiting for it
+   * to become the other thing. Session 6 already made the three of them
+   * carry hardest; this flag is what lets `knowledge.ts` lay route
+   * posts down the whole of it and what lets the MAP draw it as one
+   * continuous line once the walker has actually been the whole way.
+   *
+   * Nothing in the game ever says any of that. The map simply stops
+   * dashing it.
+   */
+  line?: true;
 };
 
 export const ROADS: Road[] = [
@@ -226,7 +241,7 @@ export const ROADS: Road[] = [
   // barbican, because the avenue IS the way up the ridge and a bare
   // pale slope read as nothing. Terrain and map pick it up for free.
   // THE LINE, first of three: castle gate to the far side of Maple Court.
-  { width: 5, carry: 1, pts: [[-45, -218], [-45, -206], [-45, -195], [-45, -120], [-48, -60], [-45, -15], [-45, 58], [-42, 130], [-45, 200], [-45, 262]] },
+  { width: 5, carry: 1, line: true, pts: [[-45, -218], [-45, -206], [-45, -195], [-45, -120], [-48, -60], [-45, -15], [-45, 58], [-42, 130], [-45, 200], [-45, 262]] },
   // the coast road: meadow west over the dune line to the boardwalk
   { width: 4, carry: 0.5, pts: [[-45, 58], [-110, 62], [-165, 60], [-205, 58], [-219, 58]] },
   // the east road: meadow → the downs → bridge → desert edge
@@ -235,10 +250,10 @@ export const ROADS: Road[] = [
   { width: 4, carry: 0.5, pts: [[145, 28], [148, 90], [150, 150], [148, 205], [150, 262]] },
   // main street: neighborhood → the river bridge → downtown
   // THE LINE, second: the same road under a different name.
-  { width: 4.5, carry: 1, pts: [[-45, 200], [-8, 202], [40, 198], [90, 200], [148, 205]] },
+  { width: 4.5, carry: 1, line: true, pts: [[-45, 200], [-8, 202], [40, 198], [90, 200], [148, 205]] },
   // commuter spur: city → office park
   // THE LINE, third and last: and it ends in a car park.
-  { width: 4.5, carry: 1, pts: [[148, 205], [210, 208], [268, 205], [330, 202]] },
+  { width: 4.5, carry: 1, line: true, pts: [[148, 205], [210, 208], [268, 205], [330, 202]] },
   // the forest track: kingdom east gate into the Penwood
   { width: 3.2, carry: 0.34, pts: [[55, -110], [95, -130], [130, -160], [150, -195], [160, -230]] },
   // the market lane: Brim Square east to the Wood Gate (Session 3)

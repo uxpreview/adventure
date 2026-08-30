@@ -44,6 +44,15 @@ every session, not only story ones:
 is not a land, and `DIRECTION.md` is now the record of how the story was
 chosen rather than an open question.
 
+**And from Session 7 the story is MAPPED as well as locked.**
+`design/THE-LINE.md` holds the four acts beat by beat and **settles the
+ending**, which `STORY.md` §6 had flagged as a proposal;
+`design/THE-WAITS.md` holds the twelve fables, each with its turn;
+`design/THE-STRANGERS.md` holds the eight cross-land strangers and the
+errand, encounter and unmarked inventories. All three are binding the
+way `STORY.md` is, and a session authoring content reads them before it
+invents any.
+
 ## 2. The verdict gates
 
 Nothing is "done" because it is placed. It is done when it survives its
@@ -75,8 +84,53 @@ and THE WIDE BLUE, the first two lands authored ON that ground (WOWED,
 critique-art-4); TRAVERSAL AND TIME — sprint as ink weight, roads that
 carry, the rowboat, and the day cycle, with all six built lands judged
 at **two hours of the day** and none of them regressed (WOWED,
-critique-art-5). Every other land is a scatter draft and is presumed
-NOT YET.
+critique-art-5); **THE STORIES** — knowledge as the content system, the
+map made the record in three registers with the line inked once you have
+walked it, Brim's wait authored end to end, and the voice pass over all
+thirty-four notes including the premise line itself (WOWED,
+critique-story-1, and the same file logs a new critic — see below).
+Every other land is a scatter draft and is presumed NOT YET.
+
+**AND THE MAIN STORYLINE HAS NEVER BEEN READ BY A CRITIC** (owner,
+2026-08-30). Every gate this project has run has judged **pictures**.
+Session 7 mapped THE LINE — four acts, the ending settled, the whole
+spine of the game — and the only thing that read it was the session
+that wrote it. The twelve WAITS at least got a blind read (§3 of
+`critique-story-1.md`); **the acts got nothing.**
+
+So a story gate is owed, and it is not the same job as the art
+director's. What it should ask, and none of it is about how anything
+looks:
+
+- **Does Act I teach its three facts without stating them** — everybody
+  is waiting, nobody can leave, you can?
+- **Does the turn survive not being said?** Read the twelve waits'
+  contributions cold (`THE-WAITS.md` §13) and see whether a reader
+  assembles *they were all waiting for each other* — and whether they
+  can do it WITHOUT having been told there is something to assemble.
+- **Does the ending land, or is it a shrug?** `STORY.md` §6 flagged
+  that risk in the file itself and `THE-LINE.md` §5 settled the beat;
+  neither has been tested on anybody.
+- **Is Act III a reveal or an anticlimax?** The player cannot see the
+  whole line — 480 units against 201 units of haze — and that was
+  argued as a strength. It has never been checked against a reader who
+  did not make the argument.
+- **And does any of it work if the player does the acts out of order?**
+  Nothing is gated. A player who walks straight to the Cubicle Mile in
+  the first ten minutes is supposed to find that none of it means
+  anything yet, and that is either the game working or a hole.
+
+**Run it as an adversarial read, not a review.** A critic who is trying
+to find the shrug is worth ten who are trying to enjoy it.
+
+**A third critic is PROPOSED and awaiting the owner** (Session 7): the
+**STORY EDITOR**, who reads a wait blind — the person, the places, the
+turn, the change, nothing else — and has to be able to say what that
+land BELIEVES, without being told and without the word "waiting"
+appearing in the answer. If they cannot, the wait is a description and
+not a fable. It has been run once and logged
+(`design/critiques/critique-story-1.md` §3); it is not binding until the
+owner says so.
 
 **And from Session 6 on, a protected framing is protected at TWO HOURS.**
 The day cycle is not done until dusk is as good as noon, so every

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {
-  makeTexture, stroke, line, scribbleCircle, hatch, type Ctx2D,
+  makeTexture, stroke, line, scribbleCircle, hatch, letteringFit, type Ctx2D,
 } from '../engine/ink';
 import { INK, PENCIL, WASH } from '../engine/palette';
 
@@ -381,10 +381,25 @@ export function brimBelfryTexture(seed: number): THREE.CanvasTexture {
     // string courses
     line(ctx, 60, 262, 132, 260, r, { width: 1.4, alpha: 0.45, passes: 1 });
     line(ctx, 58, 350, 134, 348, r, { width: 1.4, alpha: 0.45, passes: 1 });
-    // the clock: a scratched circle with two hands that disagree
+    /* THE CLOCK: a scratched circle with two hands that disagree, and
+     * from Session 7 they disagree about something SPECIFIC.
+     *
+     * They are stopped, and a stopped clock is right twice a day. One
+     * of these two points at eight, which is the hour Brim's lamps
+     * actually come on (`daylight.ts`); the other points at eleven and
+     * is simply wrong. Nobody in this town can tell which, because
+     * nobody in this town has anything to check a clock against — but
+     * the walker has watched the light go all the way round, and can
+     * stand in this yard while the lamps are lit and see that one of
+     * the two hands agrees with them.
+     *
+     * That is the whole of Brim's wait (design/THE-WAITS.md §2) and it
+     * is two lines of geometry. Do not "fix" these angles. */
     scribbleCircle(ctx, 96, 300, 17, r, { width: 1.8, alpha: 0.8 }, 1.1);
-    line(ctx, 96, 300, 96 + 9, 293, r, { width: 1.6, alpha: 0.8, passes: 1 }, 2);
-    line(ctx, 96, 300, 96 - 4, 289, r, { width: 1.3, alpha: 0.7, passes: 1 }, 2);
+    // eight o'clock: down and to the left, and it is the right one
+    line(ctx, 96, 300, 96 - 12.1, 300 + 7.0, r, { width: 1.7, alpha: 0.82, passes: 1 }, 2);
+    // eleven: up and to the left, and it has never given ground
+    line(ctx, 96, 300, 96 - 7.0, 300 - 12.1, r, { width: 1.4, alpha: 0.72, passes: 1 }, 2);
     // the bell stage: paired arches, the bell a dark bulb in the left
     for (const bx of [72, 104]) {
       stroke(ctx, [[bx, 220], [bx, 172], [bx + 8, 160], [bx + 16, 172], [bx + 16, 220]], r,
@@ -1434,5 +1449,173 @@ export function screeDecal(seed: number): THREE.CanvasTexture {
       const x = 30 + r() * 200;
       scribbleCircle(ctx, x, 100 + r() * 18, 2.4 + r() * 1.6, r, { width: 1, alpha: 0.3 }, 1.3);
     }
+  });
+}
+
+/* ================================================================== *
+ * MARGET'S STALL — the one wait this session authors end to end.
+ *
+ * THE-WAITS.md §2. Marget sets the stall out at dawn, lays the cloth,
+ * DOES NOT OPEN, and packs it away at dusk. She is not waiting for
+ * buyers and she is not waiting for a market: market day is called
+ * from the cross when the bell strikes the hour, and Brim's belfry has
+ * two hands that disagree, so nobody in this town has been able to
+ * agree what hour the bell struck for longer than anybody remembers.
+ * She is waiting for one other person in the world to agree with her
+ * about what time it is.
+ *
+ * So the stall gets TWO drawings and the difference between them is
+ * the whole of the wait, in one silhouette:
+ *
+ *   CLOSED  a trestle and a cloth. Two units tall, flat-topped, cream,
+ *           and there is nothing on it. It is the shape of a thing
+ *           that has been made ready and not used
+ *   OPEN    the cloth bunched at one end, the counter under goods, and
+ *           an AWNING — which nearly doubles the height and puts the
+ *           town's red back over the square
+ *
+ * QUESTS §4: a piece of content ends with the world visibly and
+ * permanently different near where you are standing. Two units to four,
+ * and cream to red, from thirty units away, at a glance.
+ * ================================================================== */
+export function margetStallTexture(seed: number, open: boolean): THREE.CanvasTexture {
+  return makeTexture(224, 224, seed, (ctx, r) => {
+    const lean = (r() - 0.5) * 4;
+
+    if (open) {
+      /* the awning goes up first so the counter's line crosses in front
+         of its posts, the way a near thing does */
+      line(ctx, 34, 140, 30 + lean, 46, r, { width: 2.6, alpha: 0.9 });
+      line(ctx, 190, 138, 194 + lean, 44, r, { width: 2.6, alpha: 0.9 });
+      fillPoly(ctx, [[18, 50], [112 + lean, 28], [206, 48], [206, 72], [18, 76]], CREAM, 0.62);
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = RED;
+      for (let i = 0; i < 4; i++) {
+        const x0 = 28 + i * 44;
+        ctx.beginPath();
+        ctx.moveTo(x0, 74);
+        ctx.lineTo(x0 + 9 + lean * 0.4, 42);
+        ctx.lineTo(x0 + 28 + lean * 0.4, 40);
+        ctx.lineTo(x0 + 19, 74);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      stroke(ctx, [[18, 50], [112 + lean, 30], [206, 48]], r, { width: 2.2, alpha: 0.9 });
+      for (let i = 0; i < 5; i++) {
+        const x0 = 18 + i * 38;
+        stroke(ctx, [[x0, 72], [x0 + 19, 82], [x0 + 38, 72]], r,
+          { width: 1.8, alpha: 0.85, passes: 1 });
+      }
+    }
+
+    // the trestle: two splayed pairs and a board across
+    for (const bx of [46, 178]) {
+      line(ctx, bx - 13, 208, bx + 2, 140, r, { width: 2.4, alpha: 0.88 });
+      line(ctx, bx + 13, 208, bx - 2, 140, r, { width: 2.4, alpha: 0.88 });
+      line(ctx, bx - 8, 178, bx + 8, 178, r, { width: 1.4, alpha: 0.55, passes: 1 });
+    }
+    fillPoly(ctx, [[22, 138], [202, 134], [202, 146], [22, 150]], '#c9a06a', 0.4);
+    poly(ctx, [[22, 138], [202, 134], [202, 146], [22, 150]], r, { width: 2, alpha: 0.9 });
+
+    if (!open) {
+      /* THE CLOTH, LAID. It hangs over the front and over both ends,
+         squared off, because it was laid by somebody who lays it every
+         day. Nothing is on it. */
+      fillPoly(ctx, [[16, 132], [208, 128], [210, 190], [14, 194]], CREAM, 0.72);
+      poly(ctx, [[16, 132], [208, 128], [210, 190], [14, 194]], r, { width: 1.8, alpha: 0.72 });
+      // the hem, and two folds where it was creased in the putting away
+      stroke(ctx, [[14, 194], [62, 190], [110, 193], [160, 189], [210, 190]], r,
+        { width: 1.5, alpha: 0.6, passes: 1 });
+      for (const fx of [74, 148]) {
+        line(ctx, fx, 132, fx + 3, 192, r, { width: 1.1, alpha: 0.3, passes: 1 });
+      }
+      // a crate under the trestle: her own, and it stays packed
+      stroke(ctx, [[96, 206], [98, 176], [136, 176], [138, 206]], r, { width: 1.7, alpha: 0.8 });
+      line(ctx, 97, 190, 137, 190, r, { width: 1, alpha: 0.45, passes: 1 });
+      return;
+    }
+
+    /* OPEN. The cloth is not gone — it is bunched at the near end,
+       which is what a cloth does when somebody finally pulls it back. */
+    fillBlob(ctx, 44, 122, 20, r, CREAM, 0.68, 0.62);
+    stroke(ctx, [[26, 128], [40, 112], [58, 120], [66, 132]], r, { width: 1.6, alpha: 0.6 });
+
+    // two baskets of apples, and the town's red is the orchard's red
+    for (const bx of [96, 158]) {
+      stroke(ctx, [[bx - 18, 134], [bx - 14, 114], [bx + 14, 114], [bx + 18, 134]], r,
+        { width: 1.7, alpha: 0.82 });
+      line(ctx, bx - 15, 121, bx + 15, 120, r, { width: 1, alpha: 0.4, passes: 1 });
+      ctx.globalAlpha = 0.6;
+      ctx.fillStyle = RED;
+      for (let g = 0; g < 5; g++) {
+        ctx.beginPath();
+        ctx.arc(bx - 11 + g * 5.6 + (r() - 0.5) * 3, 111 + (r() - 0.5) * 4, 3.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+    // a stack of something flat, and a string hung off the near post
+    for (let i = 0; i < 4; i++) {
+      line(ctx, 186, 132 - i * 5, 204, 131 - i * 5, r, { width: 1.5, alpha: 0.6, passes: 1 });
+    }
+    stroke(ctx, [[32, 56], [30, 78], [32, 98]], r, { width: 1, alpha: 0.55, passes: 1 });
+    for (let g = 0; g < 3; g++) {
+      scribbleCircle(ctx, 31 + (r() - 0.5) * 3, 68 + g * 12, 3.6, r, { width: 1, alpha: 0.55 });
+    }
+  });
+}
+
+/**
+ * MARGET. A posture, a place, a routine and a name (STORY §7) — and
+ * nothing about her ever changes, including on the day the market
+ * opens. She is an apron and a pair of hands held in front of her, and
+ * she has no face, because nobody in this world has one but the walker.
+ */
+export function margetTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(96, 176, seed, (ctx, r) => {
+    scribbleCircle(ctx, 48, 32, 14, r, { width: 2, alpha: 0.85 }, 1.1);
+    // hair pinned back, which is one line and is not a face
+    stroke(ctx, [[35, 26], [40, 16], [58, 16], [62, 27]], r, { width: 1.6, alpha: 0.7 });
+    // the body: a working dress, long
+    poly(ctx, [[38, 48], [26, 128], [70, 128], [58, 48]], r, { width: 2, alpha: 0.85 });
+    // THE APRON — the whole of her costume, and the only thing that
+    // tells you she is behind the stall rather than in front of it
+    fillPoly(ctx, [[40, 62], [32, 124], [64, 124], [56, 62]], CREAM, 0.55);
+    poly(ctx, [[40, 62], [32, 124], [64, 124], [56, 62]], r, { width: 1.4, alpha: 0.6 });
+    line(ctx, 40, 62, 44, 50, r, { width: 1.2, alpha: 0.55, passes: 1 });
+    line(ctx, 56, 62, 52, 50, r, { width: 1.2, alpha: 0.55, passes: 1 });
+    // hands held in front, one over the other. Waiting is a posture
+    stroke(ctx, [[38, 58], [30, 84], [44, 92]], r, { width: 1.8, alpha: 0.82 });
+    stroke(ctx, [[58, 58], [66, 84], [52, 92]], r, { width: 1.8, alpha: 0.82 });
+    line(ctx, 30, 128, 34, 164, r, { width: 1.8, alpha: 0.82 });
+    line(ctx, 66, 128, 62, 164, r, { width: 1.8, alpha: 0.82 });
+  });
+}
+
+/**
+ * THE MARKET BOARD — chalked at the cross the day the market is called,
+ * and it never comes down again.
+ *
+ * QUESTS §3.3, and it is the channel this project has left unused for
+ * six sessions: *the world can be WRITTEN ON.* We hand-letter
+ * everything and have only ever spent it on UI. This is a notice
+ * actually standing in the square rather than described on a card — and
+ * it is the permanent half of Brim's change, the half that is there at
+ * every hour, including the ones the stall is packed away for.
+ */
+export function marketBoardTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(224, 160, seed, (ctx, r) => {
+    // two short legs and a whitewashed board
+    line(ctx, 46, 156, 52, 108, r, { width: 2.4, alpha: 0.85 });
+    line(ctx, 178, 156, 172, 108, r, { width: 2.4, alpha: 0.85 });
+    fillPoly(ctx, [[20, 14], [204, 10], [206, 116], [18, 120]], PLASTER, 0.86);
+    poly(ctx, [[20, 14], [204, 10], [206, 116], [18, 120]], r, { width: 2.4, alpha: 0.9, color: TIMBER });
+    // written on it, by a hand, at world scale
+    letteringFit(ctx, 'MARKET', 34, 60, 156, 40, r, { alpha: 0.9, crooked: 0.55 });
+    letteringFit(ctx, 'EVERY DAY', 34, 88, 156, 20, r, { alpha: 0.75, crooked: 0.6 });
+    letteringFit(ctx, 'FROM THE BELL', 34, 110, 156, 18, r, { alpha: 0.72, crooked: 0.6 });
+    // and the chalk it was written with, left on the ledge
+    line(ctx, 150, 122, 166, 121, r, { width: 3, alpha: 0.5, passes: 1, color: CREAM });
   });
 }

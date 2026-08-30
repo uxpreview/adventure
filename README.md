@@ -84,14 +84,27 @@ and deals a region card — nothing else, because the sheet is continuous.
   handful of voices the lands own — a lark, a bell, rooks, and, on the
   coast, surf that comes at shorter intervals the nearer you stand to
   the water.
-- Position, discovered lands and strides walked saved to `localStorage`.
+- **A map that is the record of your own walk**, in three hands: a
+  question mark for a place you have never heard of, its name in pencil
+  for one somebody named to you, its name in ink for one you stood in.
+  And if you have walked the king's road, main street and the commuter
+  spur end to end, the map stops dashing them and draws one line.
+- **A market that opens**, once you have worked out what the belfry
+  clock actually says — the first piece of this world that changes
+  because of something the walker knows.
+- Position, discovered lands, strides walked, the boat, the hour and
+  what you know saved to `localStorage`.
 
 The story is **THE 8:15** — see `design/STORY.md` for the bible and
 `design/QUESTS.md` for how content is tiered in a game with no quest
-log. `design/INSPIRATION.md` credits everything this project is
-learning from, from Calvino to Goat Simulator, and scopes each to the
-one thing it contributes. `DIRECTION.md` is the record of how the story
-was chosen.
+log. It is mapped as well as locked: `design/THE-LINE.md` (the four
+acts, and the ending), `design/THE-WAITS.md` (twelve lands, twelve
+fables, twelve turns) and `design/THE-STRANGERS.md` (the cross-land
+tier, and the errand / encounter / unmarked inventories).
+`design/INSPIRATION.md` credits everything this project is learning
+from, from Calvino to Goat Simulator, and scopes each to the one thing
+it contributes. `DIRECTION.md` is the record of how the story was
+chosen.
 
 ## Run it
 

@@ -50,7 +50,7 @@ export const FOREST_POIS: WorldPOI[] = [
     prompt: 'TRY THE ROWBOAT',
     note: {
       title: 'the tarn',
-      body: 'still water, black as the good ink. the rowboat has one oar. whoever drew it either ran out of patience or means for you to go in circles.',
+      body: 'still water, black as the good ink. the rowboat has one oar, and the oar is newer than the boat. nobody comes down to the water and nobody will say why. there is a path around it, and everybody uses it.',
     },
   },
   { x: 160, z: -232, radius: 8, label: 'THE DEEP PINES' },
@@ -94,7 +94,7 @@ export const CANYON_POIS: WorldPOI[] = [
     prompt: 'STAND UNDER IT',
     note: {
       title: 'the needle arch',
-      body: 'a hole worn through solid rock by nothing but weather and insistence. you stand under it. it holds. it has been holding since the second stroke.',
+      body: 'a hole worn through solid rock by nothing but weather and insistence. you stand under it. it holds. it has been holding since before anything out here was named.',
     },
   },
   { x: 318, z: -108, radius: 9, label: 'THE RIVERHEAD' },
@@ -149,7 +149,8 @@ export const DESERT_POIS: WorldPOI[] = [
     prompt: 'DRINK',
     note: {
       title: 'the oasis',
-      body: 'green, out here, is a rumor you can stand in. the water is drawn in the same blue as the sea, which either means all water is one water or the artist only had the one pen.',
+      body: 'green, out here, is a rumor you can stand in. the water is the same blue as the sea, which is a long way west, and nobody has ever worked out how it gets here or where it goes afterwards.',
+      learns: ['name:beach'],
     },
   },
   { x: 292, z: -30, radius: 6, label: 'SOMEBODY’S LONG WALK' },
@@ -199,7 +200,7 @@ export const DOWNS_POIS: WorldPOI[] = [
     prompt: 'WATCH THE SAILS',
     note: {
       title: 'the mill',
-      body: 'the sails are drawn mid-turn and will be mid-turn forever. the miller, wherever they are, is owed one good gust that never quite arrives.',
+      body: 'the sails are mid-turn. they were mid-turn when you came over the rise and they will be mid-turn when you look back. the miller is owed one good gust, has been owed it for years, and does not appear to mind.',
     },
   },
   {

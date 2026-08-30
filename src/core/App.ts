@@ -18,6 +18,7 @@ import {
   type RegionSpec,
 } from '../world/layout';
 import { clock as dayClock, LAMP_POOL, LAMP_EDGE } from '../world/daylight';
+import { knowledge } from '../world/knowledge';
 import { MEADOW_POIS } from '../world/regions/meadow';
 import { FOREST_POIS, CANYON_POIS, DESERT_POIS, DOWNS_POIS } from '../world/regions/wilds';
 import { OCEAN_POIS, BEACH_POIS } from '../world/regions/coast';
@@ -135,6 +136,10 @@ export class App {
               this.audio.init();
               this.audio.note();
               this.save.readNote(def.label ?? note.title);
+              /* A NOTE THAT NAMES A PLACE TELLS YOU ITS NAME. No
+               * announcement, no chime: the next time the player opens
+               * the map, it is written there in pencil. */
+              for (const id of note.learns ?? []) knowledge.learn(id);
               this.ui.openNote(note.title, note.body);
             }
           : def.onInteract,
@@ -195,6 +200,14 @@ export class App {
 
     if (this.save.data.hour !== null) dayClock.set(this.save.data.hour);
 
+    /* WHAT THE WALKER ALREADY KNOWS (Session 7, WORLD-SYSTEMS §6).
+     * Loaded before the first frame and before the first map, because
+     * the map is the record and a record that forgets is a decoration.
+     * Every land already discovered is, by definition, a land whose
+     * name you know — older saves get that for free. */
+    knowledge.load(this.save.data.known, this.save.data.passed);
+    for (const id of this.save.data.discovered) knowledge.learn(`name:${id}`);
+
     // stand the walker somewhere sensible under the title
     const startPos = this.save.data.pos ?? SPAWN;
     this.char.teleport(startPos.x, startPos.z);
@@ -236,6 +249,12 @@ export class App {
           this.audio.setHour(h);
         },
         boat: this.boat,
+        /* WHAT THE WALKER KNOWS, for the harness. The gate has to shoot
+         * a wait at BOTH its states and the map at all three of its
+         * registers, and neither is reachable in a shoot script's
+         * lifetime by playing the game properly. */
+        knowledge,
+        learn: (id: string) => knowledge.learn(id),
         takeOars: () => this.toggleBoat(),
         /** Get out, wherever you are. The shoot harness needs this
          *  because `toggleBoat` correctly refuses mid-river. */
@@ -329,6 +348,7 @@ export class App {
     this.region = regionAt(this.char.pos.x, this.char.pos.z);
     this.audio.setMood(this.region.id);
     const newLand = this.save.discover(this.region.id);
+    knowledge.learn(`name:${this.region.id}`);
     this.ui.showRegionCard(this.region.kicker, this.region.name);
     if (fresh || newLand) {
       /* The hint IS the control list, and running is a control now
@@ -431,6 +451,9 @@ export class App {
     if (this.started) {
       this.ui.showRegionCard(spec.kicker, spec.name);
       this.save.discover(spec.id);
+      // standing in a land is the strongest way to know its name, and
+      // it is the one the map writes in ink
+      knowledge.learn(`name:${spec.id}`);
     }
   }
 
@@ -831,9 +854,20 @@ export class App {
       // a card is up: the world's own writing stays behind it
       this.poi.suppressed = this.ui.noteOpen || this.ui.mapOpen;
       this.activePoi = this.poi.update(this.char.pos);
+      /* THE ROUTES, WALKED (WORLD-SYSTEMS §6). A route is the one kind
+       * of knowledge nobody in this world could tell you, because they
+       * cannot cross a border and the line crosses eleven. So it is
+       * marked off underfoot, on foot or under oar — rowing the river
+       * IS walking it for this purpose, which is the whole point of a
+       * mount. Nothing is announced when a route completes. */
+      knowledge.travel(this.char.pos.x, this.char.pos.z);
       this.persistAcc += dt;
-      if (this.persistAcc > 4) {
+      if (this.persistAcc > 4 || knowledge.dirty) {
         this.persistAcc = 0;
+        const k = knowledge.saved;
+        knowledge.dirty = false;
+        this.save.data.known = k.known;
+        this.save.data.passed = k.passed;
         this.save.data.pos = { x: this.char.pos.x, z: this.char.pos.z };
         this.save.data.boat = { x: this.boat.pos.x, z: this.boat.pos.y };
         this.save.data.hour = dayClock.hour;

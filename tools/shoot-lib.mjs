@@ -49,6 +49,14 @@ const ONLY = process.env.VIEWPORT;
  * Plus `opts.boat` / `opts.aboard`, which put the rowboat somewhere and
  * put the walker in it.
  *
+ * SESSION 7 adds one more, and the gate needs it: `opts.learn` — a list
+ * of knowledge ids to hand the walker before the frame. A wait has to
+ * be photographed at BOTH its states and the map at all three of its
+ * registers, and neither is reachable inside a shoot script's lifetime
+ * by playing the game honestly (the market needs a dusk in the belfry
+ * yard and then a walk to the cross, and the map's inked line needs
+ * four hundred and eighty units of road).
+ *
  * @param {object} o
  * @param {string} o.out              output directory
  * @param {[string, number, number, number, object?][]} o.framings
@@ -114,6 +122,9 @@ export async function shoot({ out, framings, url, map = false, hour, extra }) {
       if (opts.boat) {
         await page.evaluate((b) => window.__inklands.putBoat(b[0], b[1]), opts.boat);
       }
+      if (opts.learn) {
+        await page.evaluate((ids) => ids.forEach((i) => window.__inklands.learn(i)), opts.learn);
+      }
       await page.evaluate(([tx, tz]) => window.__inklands.goto(tx, tz), [x, z]);
       if (opts.aboard) {
         await page.evaluate(() => window.__inklands.takeOars());
@@ -140,6 +151,12 @@ export async function shoot({ out, framings, url, map = false, hour, extra }) {
     }
 
     if (map) {
+      if (process.env.LEARN) {
+        await page.evaluate(
+          (ids) => ids.forEach((i) => window.__inklands.learn(i)),
+          process.env.LEARN.split(',')
+        );
+      }
       await page.keyboard.press('KeyM');
       await page.waitForTimeout(900);
       await page.screenshot({ path: `${dir}/99-map.png` });

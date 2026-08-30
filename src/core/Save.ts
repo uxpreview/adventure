@@ -24,6 +24,25 @@ export type SaveData = {
    * to the middle of last night's dusk.
    */
   hour: number | null;
+  /**
+   * WHAT THE WALKER KNOWS. Names, facts, routes and reasons, as
+   * readable ids (`fact:brim-hour`, `route:the-line`) — the content
+   * system in one array, because the content system is knowledge and
+   * not collection (WORLD-SYSTEMS §6, `src/world/knowledge.ts`).
+   *
+   * `boat` and `hour` were added last session without ceremony and
+   * this goes the same way. Note there is no count kept anywhere and
+   * nothing reads `.length` — QUESTS §7 refuses the player a tally,
+   * and the cheapest way to keep that promise is to never compute one.
+   */
+  known: string[];
+  /**
+   * ROUTE POSTS ALREADY PASSED. A route is the one kind of knowledge
+   * nobody can tell you, so it is walked off a line of authored points
+   * — and the walking has to survive closing the tab, or the river is
+   * a thing you have to row in one sitting.
+   */
+  passed: string[];
 };
 
 const KEY = 'inklands-save-v1';
@@ -37,6 +56,8 @@ const DEFAULTS: SaveData = {
   walked: 0,
   boat: null,
   hour: null,
+  known: [],
+  passed: [],
 };
 
 export class Save {
