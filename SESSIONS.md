@@ -1,5 +1,156 @@
 # SESSIONS — the handoff log
 
+## Session 8 — 2026-08-30 — the score
+
+*A systems session, and the first one whose product cannot be
+photographed. `WORLD-SYSTEMS.md` §9 was the architecture and this
+session did not re-open it: it built the two missing voices, gave
+twelve lands an instrument and a room, made the border a crossfade —
+and then spent its second half on the part nobody had ever done in this
+project, which is WORKING OUT HOW ANYBODY KNOWS.*
+
+### Shipped
+
+- **THE INSTRUMENT BOX IS FIVE VOICES AND THEY ARE FUNCTIONS.** The
+  enabling refactor, taken first exactly as the brief advised: a voice
+  is `(ctx, dest, freq, t0, opts)` and never touches `this.ctx`,
+  `currentTime` or a timer. That is what makes an offline render
+  possible at all, and it is half an hour done in that order.
+  - **THE PLUCKED STRING** — Karplus–Strong, and it is **rendered into
+    a buffer rather than wired as a delay fed back on itself**, for one
+    hard reason: *a feedback cycle in Web Audio is floored at one render
+    quantum (128 samples), so a wired version cannot play a note above
+    about 340 Hz* — and half this world's scales live above that. It is
+    also cheaper: half-rate, one buffer per pitch, seeded FROM the pitch,
+    so every string is its own string and it is the same string every
+    time you pluck it. Variation comes from the hand: a few cents of
+    playback rate and a different body.
+  - **THE BOWED VOICE** — a saw through a resonant lowpass, and the
+    ATTACK is the whole instrument. Everything else in this box starts
+    at its loudest; this one arrives.
+  - **And §9's own arithmetic was off by one** — two voices left, not
+    three. Fixed in §9 while passing.
+- **TWELVE LANDS, FIVE INSTRUMENTS, FIVE FAMILIES** (`LAND_VOICE`,
+  authored as a table beside `MOODS` with instrument, register, trim and
+  **the reason in one line each**). What you wake to is the music box
+  (THE COMMON and MAPLE COURT, an octave apart); what grows is the
+  plucked string (THE PENWOOD damped and dark, THE HARROW DOWNS the same
+  wood out in the light); what was cast and hung up is struck metal
+  (BRIM'S belfry, the buoy on the mark, and struck stone in SPLITROCK);
+  what stands still is the bowed voice (GREYWEATHER, and THE CUBICLE
+  MILE, which is the same held voice **on hold**); and what moves
+  without being touched is air (the sea at LONGSHORE, warm air off a
+  grating in GREYLINE CITY, and the top of the page in THE BLEACH
+  FLATS). **The world plays it** — §9's decided source — so every one of
+  those is a thing that is actually there.
+- **A BED PER LAND** (`BEDS`): the room, with what it is made of, whether
+  it breathes, and how much of it there is. The canyon is **14 dB below
+  the sea** and every bed measures under the land it is the room of,
+  which is what "the quietest thing in the mix" has to mean to mean
+  anything. Plus `TAILS` — one shared delay, mixed per land: **the cut
+  answers you back and a field does not.**
+- **A BORDER IS A CROSSFADE**, equal power, three and a half seconds, on
+  the room AND on the instrument: for those seconds the phrase is played
+  on both lands' instruments at the fade's own weights. **A crossfade of
+  instruments, not of tunes** — two tunes at once is a mistake, one tune
+  changing what it is played on is a border. The card, the footstep and
+  the mood fire exactly as they did.
+- **THE MIX IS A PURE FUNCTION** (`mixLevels`), so the two seams Session
+  6 left open have somewhere to arrive: how hard the player is going and
+  what time it is, in one place, and the class ramps toward it. **The
+  day cycle was not re-opened**; eight in the morning to four in the
+  afternoon is still bit-for-bit the shipped page and `check-audio`
+  asserts that it is.
+- **AND THE PROOF, WHICH WAS THE HARD HALF AND THE INTERESTING ONE:**
+  - **`tools/check-audio.mjs`** renders every land through an
+    `OfflineAudioContext` in headless Chromium and asserts what a
+    listener would notice. **It found four real defects** (§1 of the
+    critique), and one of them is the reason the tool was worth
+    building: **every border in the game had a 3 dB swell in the middle
+    of it**, because two beds built from the same noise buffer at the
+    same offset are not two rooms, they are one signal played twice, and
+    an equal-power fade between two identical signals peaks at √2.
+    Inaudible as a fault, obvious as a wrongness, and nothing but a
+    meter was ever going to find it.
+  - **`tools/verify-score.mjs`** does the half a renderer cannot: the
+    class's own wiring, live, with a real context — fifteen crossings,
+    then **five crossings inside one three-and-a-half-second fade**,
+    which is the case that puts an AudioParam into a state Web Audio
+    throws on.
+  - **`tools/shoot-sound.mjs`** — **SHOOT THE SOUND.** Every land's
+    waveform and spectrum drawn with `src/engine/ink.ts`, the room in
+    pencil under the land in ink (the map's own two registers), on ONE
+    shared decibel window so a quiet land looks quiet. Twelve lands are
+    visibly twelve sounds, and a second sheet plots three borders
+    against the curve the fade is supposed to follow.
+  - **`tools/render-wavs.mjs`** — nineteen files, one uniform gain,
+    never a per-file normalisation, plus `WHAT-TO-LISTEN-FOR.txt`.
+- **AND THE GATE THIS SESSION COULD NOT RUN.** The score has been
+  rendered, measured, plotted and asserted. **IT HAS NOT BEEN HEARD, by
+  anybody.** A spectrum is not a listen and a plot is not a judgement.
+  The ear gate is the owner's, the evidence is in `out/sound/`, and this
+  is now written into QUALITY-BAR §2 as the standing rule for any system
+  whose product is not a picture.
+
+### State
+- Build green. `node tools/check-terrain.mjs` passes, unchanged.
+  `node tools/check-audio.mjs` passes (new). `node tools/verify-score.mjs`
+  passes (new, needs `vite preview`).
+- **No geometry, no layout, no elevation, no texture, no region file was
+  touched.** The diff is `src/core/Audio.ts` plus four new tools and the
+  documents. Six protected lands re-shot at **two hours** (`HOUR=12`,
+  `HOUR=19.6`) in both viewports and unregressed — and this session's
+  regression pass is supposed to be boring, because the world did not
+  change and nothing ambient draws.
+- Two dead private helpers went with the rewrite (`thump`, `burst` —
+  inherited from margins, never called by anything INKLANDS ships).
+- **Gate: WOWED** after 3 rounds on the sound sheet
+  (`design/critiques/critique-score-1.md`, verbatim), plus the machine
+  gate, and the ear gate **handed to the owner unperformed**.
+
+### Gotchas (new; Sessions 1–7 all still apply)
+- **AN OFFLINE CONTEXT RENDERS A GRAPH, NOT A SYSTEM.** Anything that
+  reads `performance.now()`, schedules off `setTimeout` or waits on
+  `currentTime` advancing renders SILENCE. That is why `phrase()` takes
+  its start time as an argument and why the class's scheduler is never
+  involved in a render.
+- **AND A SUSPENDED CONTEXT'S CLOCK DOES NOT ADVANCE.** A live audio
+  check in headless Chromium needs
+  `--autoplay-policy=no-user-gesture-required`, or every ramp sits at
+  its start value and every assertion is a lie that passes.
+- **A FEEDBACK CYCLE IN WEB AUDIO IS FLOORED AT 128 SAMPLES.** Any
+  DelayNode inside a loop cannot be shorter than one render quantum, so
+  wired Karplus–Strong is capped at about 340 Hz. Render it instead.
+- **A GLSL COMMENT INSIDE A JS TEMPLATE LITERAL STILL MAY NOT CONTAIN A
+  BACKTICK — AND NEITHER MAY A JS ONE.** Sessions 5 and 6 did it in
+  shaders; this session did it in the in-page render harness, in a file
+  whose header comment warns about it. **Third time.**
+- **MEASURE LIKE WITH LIKE, OR THE METER LIES.** Half the first round of
+  `check-audio` failures were the test's fault, not the score's: the RMS
+  of fifty milliseconds of noise bounces two decibels on its own, so
+  comparing a windowed minimum against a long average reads a hole that
+  is not there. Every reading in that file is now a half-second average,
+  which is also about how long an ear takes to decide something got
+  quieter.
+- **A ROOM THAT BREATHES MOVES ON ITS OWN.** The sea's bed swells 3.7 dB
+  over its own seven-second count, so a crossfade assertion has to
+  measure each land's solo wander first and allow it. That much is
+  weather; the crossfade does not answer for it.
+- **A "LEVEL" IN A TABLE IS A SOURCE GAIN, NOT A LOUDNESS.** A bandpass
+  passes a fraction of what you put in it, and the fraction depends on
+  the filter — so `air` at the same nominal gain as `box` was 18 dB
+  quieter. Every number in `LAND_VOICE` and `BEDS` was MEASURED into
+  place, and `check-audio` re-measures them so they cannot drift.
+- **`.tmp/` can vanish mid-session.** A background command redirecting
+  into it dies instantly; every tool here `mkdir`s it, but a shell
+  redirect will not.
+- `Audio.ts` gained ~15 exports (`MOODS`, `VOICES`, `LAND_VOICE`,
+  `BEDS`, `TAILS`, `phrase`, `buildBed`, `mixLevels`, `equalPower`,
+  `crossfade`, `XFADE`, `srand`, `nightnessAt`, `playedBy`, `toneAt`).
+  `setAmbientLevel` changed meaning: it is now a 0..1 multiplier over
+  the bed's own level rather than an absolute gain. Nothing calls it
+  yet (it is the Blot's, parked).
+
 ## Session 7 — 2026-08-30 — the stories
 
 *The story was LOCKED before this session started (`design/STORY.md` —
