@@ -20,9 +20,10 @@ import {
   crateBarrelTexture, greyweatherKeepTexture,
   greyweatherGateTexture, ridgeWallTexture, tallBannerTexture,
   toppledStatueTexture, gnarledHawthornTexture, farPinesTexture, rookTexture,
-  screeDecal,
+  screeDecal, margetStallTexture, margetTexture, marketBoardTexture,
 } from '../textures-oldworld';
 import { clock } from '../daylight';
+import { knowledge } from '../knowledge';
 import type { RegionBuilder, WorldPOI } from './index';
 
 /* ------------------------------------------------------------------ *
@@ -191,6 +192,33 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   ctx.standee(crateBarrelTexture(1478), 3.6, 2.5, -60.5, -85, { rotY: 0.3 });
   ctx.standee(crateBarrelTexture(1479), 3.2, 2.25, -29.5, -80, { rotY: -0.4 });
 
+  /* ---- MARGET, AND THE STALL THAT DOES NOT OPEN ------------------- *
+   *
+   * THE-WAITS.md §2, and the one wait Session 7 authors end to end.
+   * She is placed at the head of the square, north of the fountain and
+   * under the bunting, because the camera only ever looks north: a
+   * player coming up from the south gate gets the market cross near,
+   * the fountain as the subject and Marget's stall as the far thing,
+   * between two lamps that come on at dusk.
+   *
+   * Two stalls, one at a time. Which one you see is not a flag the
+   * game set — it is whether the walker has worked out why the market
+   * never opened (`reason:brim`), asked in the present tense, every
+   * frame. That is WORLD-SYSTEMS §6 stated as five lines of code.        */
+  const stallShut = ctx.standee(margetStallTexture(1484, false), 4.6, 4.6, -44, -94.5);
+  const stallOpen = ctx.standee(margetStallTexture(1485, true), 4.6, 4.6, -44, -94.5);
+  const marget = ctx.standee(margetTexture(1486), 1.35, 2.4, -48.8, -93.4);
+  for (const m of [stallShut, stallOpen, marget]) {
+    (m.material as THREE.MeshBasicMaterial).transparent = true;
+  }
+  /* THE BOARD. Chalked at the cross the day the market is called, and
+   * never taken down: the permanent half of the change, standing at
+   * every hour including the sixteen the stall is packed away for. */
+  const marketBoard = ctx.standee(marketBoardTexture(1487), 3.0, 2.15, -32.4, -70.2,
+    { rotY: -0.22 });
+  (marketBoard.material as THREE.MeshBasicMaterial).transparent = true;
+  marketBoard.visible = false;
+
   // bunting strung post to post, ends pinned at lamp height,
   // breathing in the update
   const bunting = [
@@ -327,6 +355,55 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     // high street, straight off the clock. One number, fourteen meshes.
     lightUp(lampsAndWindows, clock.lamp);
 
+    /* ================================================================ *
+     * MARGET'S DAY, AND THE DAY THE MARKET WAS CALLED.
+     *
+     * Three things happen here and none of them is announced.
+     *
+     * 1. THE ROUTINE. Out at dawn, away at dusk, every day, whether or
+     *    not anybody is in the square to see it. STORY §7: a person in
+     *    this world is a posture, a place, a ROUTINE and a name, and
+     *    the routine is the only one of the four that needs a clock.
+     *    We have had one since Session 6.
+     *
+     * 2. THE FACT. Brim's belfry has two hands and they disagree, and
+     *    nobody in this town can settle which is right because nobody
+     *    in this town has anything to check it against. The walker
+     *    does: the lamps. Stand in the belfry yard while they are
+     *    coming on and one hand agrees with them. Nothing says so —
+     *    the player is simply somewhere at an hour, which is the only
+     *    kind of knowing this world deals in.
+     *
+     * 3. THE CALLING. Market day is called from the cross. Come to the
+     *    cross holding the hour and the bell rings it, and Brim has a
+     *    market. There is no prompt and nothing to accept: you turn up
+     *    knowing something and the world does the rest.
+     * ================================================================ */
+    const open = knowledge.has('reason:brim');
+    // dawn to dusk. A cloth laid at first light and folded at the last
+    const outNow = Math.min(
+      Math.max(0, Math.min(1, (clock.hour - 5.5) / 0.9)),
+      Math.max(0, Math.min(1, (20.4 - clock.hour) / 0.9))
+    );
+    for (const m of [stallShut, stallOpen, marget]) {
+      (m.material as THREE.MeshBasicMaterial).opacity = outNow;
+    }
+    stallShut.visible = outNow > 0.02 && !open;
+    stallOpen.visible = outNow > 0.02 && open;
+    marget.visible = outNow > 0.02;
+    marketBoard.visible = open;
+
+    if (!open) {
+      // the belfry yard, while the lamps are settling the hour
+      if (clock.lamp > 0.3 && Math.hypot(px + 64, pz + 42) < 9) {
+        knowledge.learn('fact:brim-hour');
+      }
+      // and the cross, where a market is called from
+      if (knowledge.has('fact:brim-hour') && Math.hypot(px + 35, pz + 71) < 8) {
+        if (knowledge.learn('reason:brim')) say('brim-bell');
+      }
+    }
+
     // the gate pennants take the same wind as the meadow grass
     pennantL.scale.x = 1 + Math.sin(t * 5.1) * 0.16 + Math.sin(t * 1.3) * 0.06;
     pennantR.scale.x = 1 + Math.sin(t * 4.6 + 1.9) * 0.16 + Math.sin(t * 1.1 + 0.7) * 0.06;
@@ -428,6 +505,20 @@ export const KINGDOM_POIS: WorldPOI[] = [
     note: {
       title: 'the belfry',
       body: 'the clock\'s two hands were drawn at different times of day and have refused to discuss it since. the bell splits the difference and rings when it feels the hour has been earned.',
+    },
+  },
+  {
+    /* THE MARKET CROSS — where Brim's wait is legible, and the place
+     * it resolves at. The note carries the VOICE and not the
+     * INSTRUCTION (QUESTS §3.4): it says what a cross is for and what
+     * the town cannot agree on, and it does not say go and look at the
+     * clock. The label sits high because the cross is six units tall
+     * and BRIM SQUARE's own label is fifteen units away at three. */
+    x: -35, z: -71, radius: 7, label: 'THE MARKET CROSS', labelHeight: 6.8,
+    prompt: 'READ THE CROSS',
+    note: {
+      title: 'the market cross',
+      body: 'a market is called from here, at the hour the bell strikes, and there is a step worn into the base from the calling. the stalls are set and the bunting is up. nobody in brim has been able to agree what hour the bell struck for a very long time.',
     },
   },
   {

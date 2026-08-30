@@ -61,7 +61,24 @@ export type RegionBuilder = (ctx: BuildCtx) =>
 
 /** A point of interest plus the note card its interact opens, if any. */
 export type WorldPOI = import('../../engine/POI').POIDef & {
-  note?: { title: string; body: string };
+  note?: {
+    title: string;
+    body: string;
+    /**
+     * WHAT READING IT TELLS YOU (Session 7).
+     *
+     * A note that NAMES a place hands the walker that place's name, and
+     * the map starts drawing it in pencil — heard about, not seen
+     * (`src/world/knowledge.ts`). The crossroads signpost names three
+     * lands in its first sentence and has done since Session 1; it has
+     * simply never been worth anything until the map became the record.
+     *
+     * This is authored, never inferred. Nothing scans prose for
+     * place-names, because a note that mentions the sea in passing has
+     * not told you where the sea is.
+     */
+    learns?: string[];
+  };
 };
 
 const BUILDERS: Record<RegionId, RegionBuilder> = {
