@@ -102,10 +102,11 @@ Every other land is a scatter draft and is presumed NOT YET.
 **AND FROM SESSION 9 A REGRESSION IS A DIFF AND NOT AN OPINION.**
 "Unregressed" has meant a person looking at two contact sheets a week
 apart, and it was never a claim anybody could check — two shots of one
-framing in this project were never the same picture, because four
-clocks (the paper grain, the standee wind, the ink-in cascade, and the
-walker's own breath) move between two shutter presses and every one of
-them is in every pixel. `tools/diff-sheets.mjs` pins all four, builds a
+framing in this project were never the same picture, because **five
+clocks** (the paper grain, the standee wind, the ink-in cascade, the
+walker's own breath and the water) move between two shutter presses and
+every one of them is in every pixel. The last two were found BY the
+diff, not before it. `tools/diff-sheets.mjs` pins all five, builds a
 base git ref and the working tree, shoots the framings that carry the
 verdicts through an identical protocol, and counts the pixels that
 moved — separating THE PAGE (which may not move at all) from THE

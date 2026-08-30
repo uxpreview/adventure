@@ -120,12 +120,21 @@ which is the clause six WOWED verdicts hang on.
   two shutter presses and every one of them is in every pixel: the paper
   pass's grain and its hand-drawn wobble (hashed off `uTime`, re-seeded
   three times a second — **a one-pixel random resample of every ink edge
-  in the frame**), the standee wind, the ink-in cascade at 34 units a
-  second, and — found by the first diff this file ever ran — **the
-  walker's own quiet breath**, eight parts in a thousand of its height,
-  a third of a pixel, and exactly enough to redraw an outline. All four
-  are pinned by `__inklands.setTime`, and `__inklands.step` runs a stated
-  number of fixed ticks and renders only the last.
+  in the frame**), the standee wind, and the ink-in cascade at 34 units a
+  second.
+  **And then the diff found the two nobody would have guessed.** The
+  first run came back with fifty-three differing pixels in a
+  fourteen-by-thirty-seven box in the middle of an otherwise identical
+  frame, and the box was **the walker's own quiet breath** — eight parts
+  in a thousand of its height, a third of a pixel, exactly enough to
+  redraw an outline. The second came back with eighty-three of
+  ninety-two framings bit-identical and the nine that were not were **all
+  four coast framings at both hours**: the sheet's own shader animates
+  **the water** off a clock that accumulates from page load and is reset
+  by nothing. Neither is visible. Both make a pixel comparison
+  meaningless. All five are pinned by `__inklands.setTime`, and
+  `__inklands.step` runs a stated number of fixed ticks and renders only
+  the last.
   **The settle is now stated in GAME SECONDS and costs one frame**:
   twelve game seconds takes 130–400 ms instead of seventy seconds of
   wall clock, and two runs of a framing come back **bit-identical**.
@@ -153,7 +162,22 @@ which is the clause six WOWED verdicts hang on.
   touched**, except `regions/index.ts` gaining the skyline recorder.
 - `shoot-lib.mjs` now **pins the bearing by default**; a sheet opts in
   with `shoot({ bearing: true })`.
-- **Gate: see `design/critiques/critique-camera-1.md`.**
+- **Gate: WOWED** after 3 rounds (`design/critiques/critique-camera-1.md`,
+  verbatim), plus the two machine gates.
+- **AND THE NUMBER THE WHOLE SESSION IS FOR: `diff-sheets` returns
+  92 OF 92 FRAMINGS BIT-IDENTICAL ON THE PAGE.** Not within a threshold
+  — zero pixels moved, in the twenty-three compositions that carry six
+  WOWED verdicts, across six lands, at noon and at dusk, on a monitor
+  and on a phone. Fifty of the ninety-two differ once the world's own
+  writing is put back, and every one of those is a name or a control
+  that moved on purpose.
+  **The baseline is a CONTROL BUILD** — a local commit off `2ed1147`
+  with the shipped camera, the shipped labels and every clock pinned —
+  because the pins are part of this session's own change and a base
+  without them could never have proved the four coast framings anything.
+  The recipe is in the critique. **From Session 10 it is unnecessary:**
+  `origin/main` will carry all five pins, so `node tools/diff-sheets.mjs`
+  with no arguments is the tight run from here on.
 - **AND ONE GATE IS THE OWNER'S, and this session could not run it.**
   A camera is not a picture. Every number above can be asserted and not
   one of them is the question, which is **whether it helps or whether
@@ -161,6 +185,24 @@ which is the clause six WOWED verdicts hang on.
   The walk-south capture is the evidence, every station shot twice so it
   is a comparison rather than a cold judgement. QUALITY-BAR §2 now
   carries this as a standing rule beside the ear gate.
+
+### And what the sheet and the diff sent back
+
+Three findings came off the first bearing sheet and the first regression
+run, and all three are logged in `critique-camera-1.md` with the fixes:
+**the water clock** (above); **the prompt could be lettered off the edge
+of the frame** — "READ THE SIGNPOST" read "D THE SIGNPOST", because the
+screen-space nudge was applied after the viewport clamp; and **the clamp
+is a nudge and not a parking space** — it had been taking places BEHIND
+the camera and lettering their names into the corner of the frame, so
+THE CUT sat across the bottom-right of the coast sheet like a watermark.
+A label that is not really in the picture is no longer written, which is
+the rule the collision pass already followed.
+
+**And the last unseeded randomness in the drawn world went with them:**
+one `Math.random` deciding how far down the beach LONGSHORE's gull flock
+settles. Every flight still carries them a different distance; it is now
+the same different distance every time you walk it.
 
 ### Gotchas (new; Sessions 1–8 all still apply)
 - **THE GRAIN IS A CLOCK.** `PaperPass`'s `uTime` drives a per-pixel
@@ -195,6 +237,18 @@ which is the clause six WOWED verdicts hang on.
   offset to both, and moved a thumb target.
 - **`getComputedStyle(el).opacity` is how you ask whether a faded-out
   overlay is really there.** A hidden HUD still has a bounding box.
+- **AND A CSS SELECTOR IN A HARNESS IS UNTESTED CODE.** The first
+  regression run hid `#labels` — which is a CLASS, not an id — so it
+  matched nothing, and every deliberately re-placed label was silently
+  scored as a regression of the world. A hiding selector that matches
+  nothing looks exactly like a hiding selector that works.
+- **THE ONLY HONEST BASELINE IS A CONTROL BUILD.** The regression diff's
+  base has to differ from the head in ONE thing. `2ed1147` could not pin
+  the water clock, because that pin is part of this session's own change,
+  so the four coast framings could never have been proved unchanged
+  against it. The final run is against a local commit off `2ed1147`
+  carrying the clock pins and nothing else — the shipped camera and the
+  shipped labels, fully pinned.
 
 ## Session 8 — 2026-08-30 — the score
 

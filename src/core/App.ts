@@ -347,8 +347,9 @@ export class App {
          * exactly why "unregressed" has meant a person looking at two
          * pictures rather than a number.
          *
-         * Three things move on their own between two shutter presses and
-         * every one of them is in every pixel:
+         * FIVE things move on their own between two shutter presses and
+         * every one of them is in every pixel — and the last two were
+         * found by the diff itself rather than before it:
          *   · the paper pass's grain and its hand-drawn wobble, which are
          *     hashed off `uTime` and re-seeded three times a second — a
          *     one-pixel random resample of every ink edge in the frame;
@@ -356,7 +357,13 @@ export class App {
          *     stage of every field in the world;
          *   · the ink-in cascade, which travels 34 units a second from
          *     wherever the walker first stood in a land, so a frame shot
-         *     early catches the page half drawn.
+         *     early catches the page half drawn;
+         *   · the walker's own quiet breath, eight parts in a thousand
+         *     of its height — a third of a pixel, and exactly enough to
+         *     redraw an outline;
+         *   · and the WATER, the one animation in the sheet's own
+         *     shader, which made the four coast framings the only ones
+         *     in the regression set that could not be reproduced.
          *
          * So the harness stops asking for wall clock and asks for GAME
          * TIME instead: pin the clock to a stated instant, step the

@@ -176,13 +176,14 @@ second-order effect checked, and the harness clock.
 
 **A regression used to mean a person looking at two contact sheets a
 week apart**, and it was never a claim anybody could check: two shots of
-one framing in this project were never the same picture. Four clocks
+one framing in this project were never the same picture. Five clocks
 move between two shutter presses and every one of them is in every pixel
 — the paper pass's grain and its hand-drawn wobble (a one-pixel random
 resample of every ink edge, re-seeded three times a second), the standee
-wind, the ink-in cascade at 34 units a second, and the walker's own
-quiet breath, which is a third of a pixel and exactly enough to redraw
-an outline. Since Session 9 the harness pins all four and steps the
+wind, the ink-in cascade at 34 units a second, the walker's own quiet
+breath (a third of a pixel, and exactly enough to redraw an outline) and
+the water. The last two were found BY the diff and by nothing else.
+Since Session 9 the harness pins all five and steps the
 world in GAME seconds instead of waiting in milliseconds, so twelve
 seconds of settle costs a third of a second instead of seventy and two
 runs of a framing come back **bit-identical**. `diff-sheets.mjs` builds

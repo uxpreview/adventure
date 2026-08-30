@@ -246,7 +246,7 @@ time**, against an ink-in cascade that takes eight seconds to cross a
 land. Every framing shot before this session was shot on a page that was
 still drawing itself.
 
-And **four clocks** move between two shutter presses, each of them in
+And **five clocks** move between two shutter presses, each of them in
 every pixel of the frame:
 
 | clock | what it does to the picture |
@@ -255,10 +255,16 @@ every pixel of the frame:
 | `StandeeField` `uTime` | the wind, in the vertex stage of every field in the world |
 | `World.tick`'s `t` | the ink-in cascade, travelling 34 units a second from wherever the walker first stood in a land |
 | `Character.idleT` | **the walker's quiet breath** — eight parts in a thousand of its height, a third of a pixel, and exactly enough to redraw an outline |
+| `Terrain` `uTime` | **the water**, the one animation in the sheet's own shader |
 
-The fourth was found by the first diff this project ever ran: fifty-three
+**Neither of the last two would ever have been found by looking.** The
+fourth turned up in the first diff this project ever ran — fifty-three
 differing pixels in a fourteen-by-thirty-seven box in the middle of an
-otherwise identical frame, and the box was the walker.
+otherwise identical frame, and the box was the walker. The fifth turned
+up in the second: eighty-three of ninety-two framings came back
+bit-identical and the nine that did not were **all four coast framings,
+at both hours** — the only ones in the set with animated water in them.
+Neither is visible, and both make a pixel comparison meaningless.
 
 `__inklands.setTime(t)` pins all four; `__inklands.step(dt, n)` runs `n`
 fixed ticks and renders only the last; the animation loop then

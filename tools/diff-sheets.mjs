@@ -35,10 +35,13 @@
 //     FRAMES, which is a sixth of a second of game time and nowhere near
 //     the eight seconds a land takes to ink in.
 //
-// A fourth turned up the first time this file was run, and it is the one
-// nobody would have guessed: the walker's own quiet breath, eight parts
-// in a thousand of its height, which is a third of a pixel and exactly
-// enough to redraw an outline.
+// Two more turned up when this file was actually run, and neither would
+// ever have been found by looking: the walker's own quiet breath, eight
+// parts in a thousand of its height, which is a third of a pixel and
+// exactly enough to redraw an outline; and THE WATER, whose clock lives
+// in the terrain shader, accumulates from page load and is reset by
+// nothing — which made the four coast framings, and only those, the ones
+// that would not come back the same twice.
 //
 // So the settle is not milliseconds, it is GAME SECONDS: __inklands
 // pins all four clocks and steps a fixed number of fixed ticks, and
