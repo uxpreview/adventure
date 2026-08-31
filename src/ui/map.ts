@@ -239,18 +239,30 @@ export function renderMap(state: {
     ctx.drawImage(you, X(hx) + 8, Z(hz) - 20, you.width / 2, you.height / 2);
   }
 
-  // the boast line
-  const found = state.discovered.length;
-  const walked = Math.round(state.walked);
-  const boast = letterCanvas(
-    `${found} of ${REGION_SPECS.length} lands walked — ${walked} strides of ink`,
-    S.quiet(10.5 * ink)
-  );
-  /* and the boast fits the sheet it is written on: at the small-map
-     ink scale a half-size draw is wider than the map itself */
-  const bw = Math.min(boast.width / 2, W - pad * 2);
-  const bh = (boast.height / 2) * (bw / (boast.width / 2));
-  ctx.drawImage(boast, W / 2 - bw / 2, H - 22 - bh, bw, bh);
+  /* ================================================================ *
+   * THE BOAST LINE IS GONE, AND IT SHOULD HAVE GONE IN SESSION 7.
+   *
+   * It read `${found} of ${REGION_SPECS.length} lands walked — ${walked}
+   * strides of ink`, and it had been on the bottom of this map since
+   * Session 1, four sessions before anybody wrote the law it breaks.
+   *
+   * `QUALITY-BAR` §Law: **no count, no list, no percentage, anywhere,
+   * for anything.** And `knowledge.ts` names this exact string as the
+   * signal that the content system has been misused: *"If a later
+   * session finds itself writing '3 of 12' anywhere in the UI, this
+   * system has been misused."* It was writing "6 of 12" the whole time.
+   *
+   * There is nothing in its place, on purpose. The map already says
+   * everything that line said and says it in the register the game
+   * actually uses — pencil for a place you have heard of, ink for one
+   * you have stood in, a question mark for the rest — so a player can
+   * see at a glance how much of the world they have been in without
+   * anybody handing them a score. **The map is the record. A record
+   * does not tally itself.**
+   *
+   * `state.walked` and `save.data.walked` are left alone: the distance
+   * is worth keeping and it is the DISPLAY that was the violation.
+   * ================================================================ */
 
   return canvas;
 }

@@ -248,9 +248,14 @@ the three.
 | the marks, the arch, the boat ×2, the trestles, Holt ×2, his place, the kite | 9 standees | 9 |
 | **total** | **≈ 20 draws** | **≈ 21 canvases, ~7 MB** |
 
-Target: under THE HARROW DOWNS' 272 draws / 3.4 ms on this land's worst
-framing. **Share drawings, instance placements** — Session 10's round 4
-was a performance round and it was fair.
+**MEASURED** (`tools/shoot-fps.mjs`, portrait, the rig that matters):
+the canyon's worst framing is **THE MOUTH at 170 draws / 2.1 ms**, and
+THE SHOT is 164 / 1.2 — against THE COMMON's 261 and Brim Square's 259.
+It is the second-cheapest built land in the game, and the cheapest is
+the one it ships beside.
+
+**Share drawings, instance placements** — Session 10's round 4 was a
+performance round and it was fair.
 
 ---
 

@@ -242,6 +242,57 @@ downstream of got two units shorter, and every one of them is named
 above with its number, its bounding box and the sentence its verdict was
 actually awarded on.
 
+### AND THE MAP HAS BEEN COUNTING SINCE SESSION 1
+
+Nobody had run `tools/shoot-map.mjs` since the map became the record, and
+along the bottom of it, in hand lettering, was:
+
+> **6 of 12 lands walked — 0 strides of ink**
+
+`QUALITY-BAR`'s law, verbatim: *no count, no list, no percentage,
+anywhere, for anything.* And `knowledge.ts` §"THE THREE THINGS THIS FILE
+MUST NOT BECOME" names this exact string as the signal that the content
+system has been misused: *"If a later session finds itself writing '3 of
+12' anywhere in the UI, this system has been misused."* It has been
+writing "6 of 12" the whole time, four sessions before anybody wrote the
+law and seven before anybody wrote the warning.
+
+It is gone, and there is **nothing in its place, on purpose**. The map
+already says everything that line said, in the register the game
+actually uses — pencil for a place you have heard of, ink for one you
+have stood in, a question mark for the rest — so a player can see at a
+glance how much of the world they have been in without anybody handing
+them a score. **The map is the record. A record does not tally itself.**
+`save.data.walked` is untouched: the distance was worth keeping and the
+DISPLAY was the violation.
+
+### AND A STALE THRESHOLD IS NOT A REGRESSION
+
+`verify-story.mjs` asserted Brim Square at ≤ 235 draw calls and had been
+failing since Session 10. 235 was *217 + the four standees Session 7
+added* — a DELTA written as an absolute — and it went stale the moment
+another session put anything on the page: Brim Square sees the PENWOOD's
+edge, 105 units east, well inside `SHOW_REACH`. It is re-cut against the
+number Session 10's own performance round was judged on (THE COMMON, the
+worst frame in the game, at 350 draws) with the reasoning above it and
+an instruction not to raise it again. Brim Square measures 311 / 3.2 ms.
+
+### AND THE TWO NEW LANDS ARE THE TWO CHEAPEST IN THE GAME
+
+`tools/shoot-fps.mjs`, portrait, which is the rig that matters:
+
+```
+  brim square      259 draws   the common      261      the downs shot  238
+  canyon THE SHOT  164 draws   the mouth       170      the lip         162
+  flats THE SHOT    96 draws   the oasis        90      the pan          90
+```
+
+The canyon's worst framing is 170 draws / 2.1 ms and **the Flats' worst
+is 98**, which is less than two fifths of THE COMMON. That is not luck —
+it is what "share drawings, instance placements" and a composed void
+cost, and it is the headroom a mid-range phone gets back after the
+canyon.
+
 ### THE PAPER PLANE IS DEFERRED, IN WRITING, TO SESSION 14
 
 `PROMPT.md` required this to be a decision rather than a silence, and it

@@ -225,9 +225,12 @@ not been here at night reads it as a man keeping his gear nice.
 | the catch, the cistern ×2, Amos ×2, the skull, the boot, the signpost | 8 standees | 8 |
 | **total** | **≈ 24 draws** | **≈ 26 canvases, ~6 MB** |
 
-The Flats are the cheapest land in the game to draw and they should
-stay that way — this is where a mid-range phone gets its headroom back
-after the canyon.
+**MEASURED** (`tools/shoot-fps.mjs`, portrait): the Flats' worst framing
+is **98 draws / 1.1 ms** — against THE COMMON's 261, Brim Square's 259
+and the Downs' 238. **They are the cheapest land in the game to draw by
+a factor of two and a half, and they should stay that way**: this is
+where a mid-range phone gets its headroom back after the canyon, and it
+is not an accident — it is what a composed void costs.
 
 ---
 
