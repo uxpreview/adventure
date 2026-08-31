@@ -158,6 +158,36 @@ session states in its log that it could not perform the gate. **A
 session that claims a sound is good is lying; a session that hands over
 the evidence is not.**
 
+**AND THE SECOND OF THOSE GATES HAS NOW BEEN RUN, AND IT FAILED**
+(owner, 2026-08-31, after Session 11 shipped). The owner played the game
+and reported that **the desktop camera makes them feel sick**, that the
+phone's joystick appears on the desktop, and that they could not run on
+a keyboard. All three were reproduced.
+
+**Every automated check stayed green while that was true.**
+`check-camera.mjs` still asserts, correctly, that the envelope never
+leaks, that the bearing is continuous round the whole circle of travel,
+and that a stopped walker comes home to exactly zero. What no check
+asked was **how fast the frame rotates, in degrees a second, under an
+input a player can produce** — and the answer is up to twenty, with a
+forty-three-degree swing for one change of mind about which way to walk,
+coupled to an eight-unit dolly. That is the number the owner felt and
+there was no assertion anywhere near it.
+
+So the rule Session 8 wrote for the ear and Session 9 generalised for
+the camera gets the corollary it has now earned the hard way:
+
+> **A system whose gate has not been run is not done. It is SHIPPED AND
+> UNJUDGED, and those are two different words.** A green check is
+> evidence that the thing does what its author described. It is not
+> evidence that what its author described is worth doing.
+
+It also cost less than it might have, and that is the other half of the
+lesson: the defect was found in an afternoon of play by the one person
+who had never been asked to play, three sessions after it shipped. **The
+gates this project cannot run should be handed over the week they are
+owed, not carried in a list.**
+
 **AND A SECOND GATE IS THE OWNER'S, FOR THE SAME REASON** (Session 9).
 A camera is not a picture. The bearing can be asserted — the envelope
 never leaks, the bearing is continuous round the whole circle of travel,

@@ -35,12 +35,42 @@ retired; the chosen story is **THE 8:15** (`design/STORY.md`).
 | 9 | **The bearing** ✓ 2026-08-30 | **Foundations, and the last of them.** The camera answers TRAVEL, in two components: the part that CROSSES the frame turns it (26° on desktop, 12° in portrait, the envelope authored off the standee table), and the part that comes AT THE LENS opens the ground at the walker's feet (the astern terms) — because a bounded yaw cannot help the walk south and `WORLD-SYSTEMS` §2 was wrong to say it could. Plus the PEEK (a gesture, never a state) and a lead capped per rig. **And the proof, which was half the session:** `tools/diff-sheets.mjs` — a regression is a diff and not an opinion — standing on a harness that pins all four of the game's clocks so two shots of one framing are one picture, and `tools/check-camera.mjs`, which asserts the envelope, the continuity and the walk south in units of page. **And the oldest visible defect closed:** THE SKYLINE, so a name is written over the thing it names instead of across it. Gate to WOWED (`critique-camera-1.md`). |
 | 10 | **Farm & forest** ✓ 2026-08-30 | THE HARROW DOWNS + THE PENWOOD, and the first land session that could prove the page had not moved while it worked. **THE HARROW** authored into `elevation.ts` (the land is named for a thing that rakes a field into parallel lines, and it is now the ground), the mill rise, and the tarn's bowl. **THE PENWOOD HAS ONE ROAD AND IT IS A CIRCLE** — BRACK'S ROUND, forty-two units about the water, with the track from Brim running in and stopping at it: `THE-WAITS` §7's turn told entirely in a polyline, said by the map and by nothing else. Eleven authored FIELDS as polygons, one state each, hedged along the grain; four authored stands of pine with the voids between them doing as much work as the trees; THE FORD (`layout.FORDS` — the bed rises, the water does not fall, so `route:the-river` survives). **Both waits end to end:** JOAN HARROW's second setting, put away every evening and laid every morning until you sit down, and BRACK's quarter turn. Six ambient voices and one authored silence. Gate to WOWED (`critique-art-6.md`). See `design/specs/harrow-downs.md` and `design/specs/the-penwood.md`. |
 | 11 | **The dry lands** ✓ 2026-08-31 | SPLITROCK CANYON + THE BLEACH FLATS, and the session that MOVED A LANDFORM. Session 4's tear was cut at x = 338, six units from the foot of the world's curled east margin, and the trail that is the only way into that land never came within thirty units of it; it is at x = 300 now, in the middle of its own rect, with the river's source moved with it, the trail re-laid, and the depth tuned so `check-terrain` still prints **floor −10.8** — because `THE-STRANGERS` S5 is an errand about that number. **THE ONLY ROAD IN SPLITROCK IS A RIVERBED**: the trail rounds the head of the river (there is no bridge on this water), drops down the mouth, and runs a hundred and twelve units north along the floor of the tear itself, every point of it `tearX(z)` sampled. **HOLT's** four chalk marks are the only horizontal marks in a land drawn entirely in verticals and their heights are the boat, the trestles, the shed's ridge and the lip; the fifth is above the lip and behind it is his house. **AMOS** carries water forty units UPHILL both ways every night, on a track that is not a road; the gutter runs downhill from the cistern and nothing mentions it. Plus **`fact:the-fold`**, authored end to end for the first time — the design's own dependency, missing from the source since Session 7. Gate to WOWED (`critique-art-7.md`). See `design/specs/splitrock-canyon.md` and `design/specs/the-bleach-flats.md`. |
-| 12 | **The now** | MAPLE COURT + GREYLINE CITY + THE CUBICLE MILE: street rhythm, lit windows at dusk, the junction — and the 8:15 drawn into existence. **AND IT IS THREE LANDS AND A MOUNT AGAINST EVERY OTHER LAND SESSION'S TWO — see the note below, which Session 11 was asked to write and did.** |
-| 12b | **The mount, and the wilds' reward** | **THE PAPER PLANE** (`WORLD-SYSTEMS` §4), deferred in writing by Session 11 with its reason and its brief. |
-| 13 | **Motion & life** | Systems pass: wind everywhere, sails and windmills turning, NPC routines, road encounters. (The score moved out of this session to 8 — see the ordering rule.) |
-| 14 | **The juror** | Awwwards pass on the whole build: title, first minute, map, UI feel, mobile portrait, performance audit, then the full-gauntlet critique. |
+| 12 | **The hands and the eye** | **Foundations, re-opened, and not by choice.** THE FEEL GATE was run by the owner on 2026-08-31 and **it returned NOT YET**: the desktop camera makes people sick, the phone's joystick appears on the desktop, and the run is unreachable on a keyboard. Fix all three; assert the one number nobody asked for (**degrees a second of frame rotation under player input**); prove the resting composition did not move (`diff-sheets` at 92/92); and shoot the chrome on the desktop rig as well as the phone. See `PROMPT.md`. |
+| 13 | **The now** | MAPLE COURT + GREYLINE CITY: street rhythm, lit windows at dusk, the junction. §3.2's rim composition is shot FIRST, not last. |
+| 14 | **The 8:15** | THE CUBICLE MILE, its wait, and the mount — **you draw the 8:15 into existence and it arrives.** |
+| 15 | **The mount, and the wilds' reward** | **THE PAPER PLANE** (`WORLD-SYSTEMS` §4), deferred in writing by Session 11 with its reason and its brief. May be folded into 13 or 14 if either has room. |
+| 16 | **Motion & life** | Systems pass: wind everywhere, sails and windmills turning, NPC routines, road encounters. (The score moved out of this session to 8 — see the ordering rule.) |
+| 17 | **The juror** | Awwwards pass on the whole build: title, first minute, map, UI feel, mobile portrait, performance audit, then the full-gauntlet critique. |
 
-**SESSION 12 IS THREE LANDS AND SHOULD BE SPLIT, AND SESSION 11 IS THE
+**AND THEN THE OWNER PLAYED IT, AND THE LADDER WAS RE-CUT AGAIN**
+(2026-08-31, after Session 11 merged). **THE FEEL GATE — owed since
+Session 9 and listed in `QUALITY-BAR.md` §2 as one of the two gates no
+tool in this repository can run — was run, and it returned NOT YET.**
+The desktop camera makes the owner feel sick; the phone's joystick
+appears on the desktop under a mouse; the run cannot be found on a
+keyboard. All three reproduced against the merged build.
+
+**That displaces the lands, and it displaces them by this file's own
+law.** The ordering rule at the top of this document says *systems that
+change how a land is authored must land before the lands are authored*,
+and **the camera is the most load-bearing example of it in the file**:
+every composition in this game is framed through it, and THE SHOT of all
+eight built lands was chosen by looking down it. Three more lands built
+on a camera that has to change is three lands re-opened, which is
+exactly the mistake the ordering rule was written after Session 3 to
+prevent.
+
+So **Session 12 is THE HANDS AND THE EYE**, THE NOW moves to 13, THE
+8:15 to 14, and everything below shifts. If the owner would rather have
+the lands first, swap them back — but the camera fix ships before three
+more lands are judged through it.
+
+**AND THE SPLIT SESSION 11 RECOMMENDED IS TAKEN**, for the reason it
+gave: Session 12-as-written was three lands, three waits, three named
+inhabitants, THE LINE's riskiest un-shot framing and a mount, against
+every other land session's two-and-two.
+
+**SESSION 12 WAS THREE LANDS AND SHOULD BE SPLIT, AND SESSION 11 IS THE
 SESSION THAT NOTICED, WHICH IS WHAT THE LADDER ASKED FOR.**
 
 Session 10 and Session 11 were each two lands and two waits, and both of
@@ -143,6 +173,17 @@ now built:**
   is travel AT THE LENS and no bounded rotation puts a lens behind
   itself. What answers it is a RETREAT AND A DROP, not a turn. §2
   records both the recommendation and the correction, on purpose.
+- **THE FEEL GATE ON THE CAMERA** — **RUN, 2026-08-31, AND IT RETURNED
+  NOT YET.** Session 9 shipped a bearing it could measure and could not
+  judge and said so in its own log; three sessions later the owner
+  played it and could not use it. The measured behaviour, driven round a
+  normal circuit from the spawn: the frame swings **forty-three degrees**
+  for one change of mind about which way to walk, at up to **twenty
+  degrees a second**, while the camera dollies **eight units** in and
+  out. `check-camera.mjs` is green on all of that, because it asserts
+  the envelope's SIZE and never its RATE. Session 12 owns the fix and
+  owes the missing assertion.
+
 - **A STORY GATE** (`QUALITY-BAR` §2). **Run once, beside Session 8,
   and it returned NOT YET** (`design/critiques/critique-story-2.md`).
   The spine is sound and the ending is not a shrug — but Act I's second

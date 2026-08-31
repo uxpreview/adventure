@@ -1,212 +1,253 @@
-# PROMPT — Session 11: THE DRY LANDS
+# PROMPT — Session 12: THE HANDS AND THE EYE
 
 You are continuing INKLANDS in `uxpreview/adventure`. Read, in order:
-`design/QUALITY-BAR.md` (binding), `design/LAND-SPEC-TEMPLATE.md`,
-`design/WORLD-SYSTEMS.md` §1 and §4, **`design/THE-WAITS.md` §4 (HOLT)
-and §5 (AMOS), which are the two waits this session authors**,
-`design/THE-STRANGERS.md` (S5 lives in both of these lands and is the
-only three-land stranger in the game), then `PLAN.md`, `README.md`,
+`design/QUALITY-BAR.md` (binding, and §2's paragraph about the gates
+this project cannot run is now the whole subject of this session),
+`design/specs/camera.md`, `design/specs/traversal.md`,
+`design/WORLD-SYSTEMS.md` §2 and §8, then `PLAN.md`, `README.md`,
 `SESSIONS.md`.
 
-**Session 10's handoff especially.** It is the first land session that
-worked against a page it could prove had not moved, and the second half
-of its entry is a list of things it got wrong first and the rule each
-one produced. Every one of them will bite here.
+**Session 11's handoff, and then Session 9's.** Session 9 built the
+bearing, asserted it six ways, and wrote in its own log that it could
+not judge it. That gate has now been run.
 
 ---
 
-## The job
+## 0. THE THING THAT CHANGED, AND IT IS WHY THIS IS NOT A LAND SESSION
 
-### 1. SPLITROCK CANYON and THE BLEACH FLATS
+**THE OWNER PLAYED THE GAME AND IT MADE THEM FEEL SICK.**
 
-Two lands, and they are each other's opposite the way the last two were:
-**a hole in the page against the flattest ground in the world.** One is
-the most vertical thing on the sheet; the other is the only land whose
-whole thesis is that the answer is somewhere else.
+Verbatim, 2026-08-31:
 
-The scope, from the ladder: **corridor drama, and the oasis as reward.**
-Read `design/specs/` for how the seven finished lands are written up and
-write these two the same way.
+> *"the desktop camera movements make it hard to play — makes me kind of
+> sick — and you can also the mobile controls exists on desktop as well,
+> and the keyboard controls lack the ability to run."*
 
-**Every land ships its places AND its wait AND its named inhabitant:**
+That is **THE FEEL GATE**, which `QUALITY-BAR.md` §2 has listed as owed
+to the owner since Session 9, run for the first time. **It returned NOT
+YET.** Session 9's own words were: *"the bearing can be asserted — the
+envelope never leaks, the bearing is continuous round the whole circle
+of travel, a stopped walker comes home to exactly zero in 2.5 game
+seconds, the walk south sees three times the page it did — and not one
+of those is the question, which is whether it HELPS or whether the world
+wobbles."*
 
-- **HOLT** and the boat on the trestles (`THE-WAITS.md` §4). He keeps a
-  boat, upside down, oiled, at the top of a dry channel. The marks up
-  the wall are not flood records — **they are a list, in the order
-  things would float**, and the boat is at the bottom of it. His
-  permanent change is that the boat comes off the trestles and goes
-  right way up on the dry channel floor, and **the game never says
-  whether that is madness or readiness.**
-- **AMOS** and the cistern (`THE-WAITS.md` §5). The rain-catch is in
-  good order and the cistern is full and it has always been full,
-  because he carries the water forty units from the oasis by hand, at
-  night, and there is nobody out here to fool. He is not faking a
-  rainfall — **he is keeping the thing that catches rain in working
-  order.** His permanent change is that the lid comes off.
+**It wobbles.** And every one of those assertions still passes:
+`node tools/check-camera.mjs` is green on the shipped build. This is the
+clearest evidence this project has ever produced that a measured system
+is not a judged one, and it is worth more than the fix.
 
-Both authored *in the world* — in geometry, placement and routine. No
-dialogue trees, nothing announced, no count and no list (QUALITY-BAR).
-**Session 10's lesson is the one to carry in:** a turn that can be built
-into the GEOGRAPHY should never be written into a note. The Penwood's
-whole fable is a polyline, and Splitrock has at least as much geometry
-to say things with.
+### Why this displaces the lands
 
-### 2. THREE FACTS ABOUT THE GROUND YOU ARE INHERITING, AND ONE OF THEM IS A PROBLEM
+`PLAN.md`'s ordering rule is the project's own law and it decides this:
+*systems that change how a land is authored must land before the lands
+are authored.* **The camera is the most load-bearing example of that
+rule in the file** — every composition in this game is framed through
+it, and THE SHOT of all eight built lands was chosen by looking down it.
+Building MAPLE COURT, GREYLINE CITY and THE CUBICLE MILE on a camera
+that has to change is three lands re-opened.
 
-Read these before you draw anything. They are all measurable today with
-`node tools/check-terrain.mjs`.
-
-- **THE TEAR IS REAL AND IT IS IN THE WRONG PLACE.** Session 4 authored
-  it: `tearX(z) ≈ 338 ± 11`, a floor at −10.8 and lips standing proud,
-  walls that refuse a walker. But 338 is **forty units from the world's
-  curled east margin** (`curlE` starts at x = 344), the tear only exists
-  between about z = −272 and z = −132, and **the canyon trail runs at
-  x = 255–305 and never goes near it.** So the land called SPLITROCK is
-  currently a scatter of mesas with the split off in the corner.
-  **Decide this first**, before a single prop: either the tear moves
-  west into the middle of its own land — which is a layout-wide audit
-  (elevation, the trail, the river's source, the map) and is allowed —
-  or the land is re-laid along the tear where it is and the trail is
-  brought to it. Either is defensible. Doing neither is what the draft
-  already does.
-- **THE CANYON IS TEN POINT EIGHT UNITS DEEP AND A STRANGER'S WHOLE
-  ERRAND TURNS ON THAT NUMBER.** `THE-STRANGERS.md` S5: *"ODD has
-  measured the canyon: ten point eight units from lip to floor, taken
-  twice, with a line."* `check-terrain` prints `floor -10.8`. If you
-  change the tear's depth, **you change S5 and you say so in the file**;
-  if you keep it, it is the most satisfying coincidence in this project
-  and it should be left exactly alone.
-- **THE RIVER RISES AT THE CANYON'S MOUTH AND THE CHANNEL ABOVE IT IS
-  DRY. THIS IS NOT A BUG.** `RIVER[0]` is (318, −108), just inside the
-  canyon's southern edge; the tear runs north of it. That is Holt's wait
-  already true in the height field — *the river that cut this canyon is
-  now somebody else's river* — and the dry channel he keeps his boat
-  above is the tear itself. **Do not "fix" it.**
-
-### 3. AND ONE THING THE FLATS' WAIT NEEDS THAT DOES NOT EXIST
-
-`THE-WAITS.md` §0 says THE BLEACH FLATS turns on **`fact:the-fold`**,
-earned by *walking the crease, both faces*. Grep the source: the ids
-actually wired today are `fact:brim-hour`, `fact:the-place-kept`,
-`fact:the-tarn`, `name:beach`, `name:downs`, `name:kingdom`,
-`name:ocean`, `reason:brim`, `route:the-line`. **There is no
-`fact:the-fold` and nothing teaches it.**
-
-So Amos's wait cannot resolve until this session authors the EARNING as
-well as the spending — and the crease is at `foldX(z) ≈ 78 ± 13`, which
-is on the Common/Downs border, in two lands this session is not
-building. That is fine and it is the point of the whole content system
-(`WORLD-SYSTEMS` §6: you carry a fact across a border), but it means
-**the Flats' wait has a dependency in somebody else's land and you must
-budget for it.** Session 10's Penwood earned its fact by ARRIVAL —
-twenty units of proximity, no note, no prompt — and that is the cheapest
-honest mechanism available; the crease has two faces, so *both* is the
-condition, which is a two-post route rather than a proximity test.
-
-**Whatever you do there must not move THE COMMON's protected framings.**
-Session 10 got caught putting grass on their horizon and had to pull it
-back east of x = 96. Read that part of `SESSIONS.md`.
+So the ladder is re-cut and `PLAN.md` carries it: **Session 12 is the
+hands and the eye. THE NOW moves to 13, THE 8:15 to 14**, and the two
+systems sessions after them shift by two. If the owner would rather have
+the lands first, say so and swap them back — but ship the camera fix
+before three more lands are judged through it.
 
 ---
 
-## The things Session 10 paid for and you get free
+## 1. THE THREE DEFECTS, DIAGNOSED
 
-- **`node tools/shoot-textures.mjs`** — every drawing in a prop box, at
-  actual size, on paper, with no camera and no land in the way, in four
-  seconds. **Shoot this FIRST and the world second.** Session 10's first
-  gate round had four separate faults in it and it took three full world
-  re-shoots to work out which drawing caused which; the texture sheet
-  answered all four in one look.
-- **`node tools/montage.mjs <dir> <out.png> a.png b.png …`** — a land on
-  one sheet instead of one frame at a time. A fault invisible in one
-  frame (every hedge the same height; a drove that fords a river) is
-  obvious across ten.
-- **`node tools/check-fields.mjs`** — new, and it exists because the
-  owner found that every animal in the game had been invisible the
-  moment it changed posture since Session 5. Run it whenever anything is
-  drawn as an instanced field and **especially anything that moves.**
-- **`node tools/diff-sheets.mjs`** — run it BEFORE you think you are
-  finished. It found a corrugation that had run out of its own land onto
-  the world's rim, in a land that session never opened, and nothing else
-  would have.
-- **The harness owns the clock.** `__inklands.setTime` / `step(dt, n)` /
-  `drive` / `learn`. Shoot settled PAST the ink-in cascade (thirteen
-  game seconds), drive at least one framing per land, and **photograph
-  both states of each wait** — `learn` hands the walker the knowledge so
-  a sheet does not have to play the game to get it.
+All three were reproduced against the merged build (`bc174a5`) before
+this prompt was written. Do not re-derive them; verify the fixes against
+them.
 
-## The laws that will bite these two lands in particular
+### 1a. THE CAMERA SWINGS FORTY DEGREES AND DOLLIES EIGHT UNITS
 
-- **THE CAMERA'S RESTING BEARING IS DUE NORTH AND IT DECIDES LAYOUT.**
-  A thing you walk ALONG runs north–south; a thing you LOOK at is north
-  of where you stand. **The tear already obeys this** — `tearX` is a
-  function of z, so the canyon runs the right way — which is most of why
-  it is worth keeping rather than re-cutting. The trail comes in from
-  the south-west and that is the part to watch.
-- **PLANAR FACES.** This is the land the rule was written for. A canyon
-  wall is the biggest run of cliff in the game and the terrain hatches
-  down the fall line: keep the walls in straight runs with corners
-  between them, the way `HOLD_PLAN` does for the Holdfast, and the way
-  paper actually tears.
-- **BOUND EVERY TERM IN `elevation.ts` ON ALL FOUR SIDES.** Session 10's
-  harrow shipped with no east bound and ran across two other lands.
-  These two lands sit against the curled east rim and against each
-  other; you will be authoring next to three protected framings
-  (`curl-rim`, `tear-lip`, `crease-east-road`).
-- **A DECAL IS A FLAT QUAD AT ONE HEIGHT.** Eleven or twelve units is
-  the ceiling on curved ground; nineteen buries one side and draws a
-  hard straight edge across your land.
-- **NEVER USE A FILLED POLYGON AS A COLOUR.** Use the `stain()` helper
-  both new texture files carry.
-- **SHARE DRAWINGS, INSTANCE PLACEMENTS.** Variety comes from the plan
-  and from placement, not from giving every instance its own canvas.
-- **A HIDDEN INSTANCE MUST STILL SAY WHERE IT IS** —
-  `StandeeField.hide(i, x, z)`, never `set(i, x, -4000, …)`.
-- **Nobody crosses a border but the walker.** Holt cannot leave
-  Splitrock; Amos cannot leave the Flats — **and Amos's whole wait is a
-  forty-unit walk he makes every night**, so his track must stay inside
-  his own land and must not touch the oasis's border.
-- **`ctx.standee` is the choke point** for the skyline. And Session 10
-  found its limit the hard way: **the skyline lifts a name above what is
-  standing UNDER it and cannot know what is standing BEHIND it.** In a
-  land of tall thin mesas that will happen constantly. Height does not
-  solve it; angle does.
+Driven round a normal circuit from the spawn — north, north-east, east,
+south-east, south, west, stop — sampling every third of a second. The
+bearing is the camera's angle off due north; "back" is how far behind
+the walker it sits:
+
+```
+  north       bearing      0°   Δ  0.0°/0.33s   back 14.4 → 13.5
+  north-east  bearing  -17.6°   Δ -5.0°/0.33s   back 13.2
+  east        bearing  -21.2°   Δ -2.2°/0.33s   back 12.5 → 13.1
+  south-east  bearing  -18.8°   Δ +0.8°/0.33s   back 13.4 → 18.1
+  south       bearing   -0.9°   Δ +5.4°/0.33s   back 18.4 → 20.3
+  west        bearing  +21.9°   Δ +6.6°/0.33s   back 20.2 → 15.0
+  stop        bearing   +1.1°   Δ -6.1°/0.33s   back 14.6 → 14.2
+```
+
+Read the deltas. **Turning from east to west swings the whole frame
+forty-three degrees**, at up to **twenty degrees a second**, while the
+camera simultaneously dollies in and out over **eight units** and its
+height wanders. Nobody asked for any of that: the player pressed a
+direction key.
+
+That is a large-field rotation the viewer did not initiate, coupled to a
+dolly — which is the standard recipe for vection sickness. The envelope
+is 26° each way on desktop, so the worst case is fifty-two degrees of
+swing for one change of mind about which way to walk.
+
+**Where it lives:** `App.CAM.desktop.yaw` (26) and `.lead` (4.2), the
+astern terms, and the easing that drives them. `design/specs/camera.md`
+is the write-up.
+
+**What you may NOT do:** you may not simply set the envelope to zero and
+call it fixed without saying what was lost. Session 9 earned a WOWED on
+`critique-camera-1` for two real things — a walk south that has ground
+in front of it, and a frame that answers travel — and one of those
+(**the astern retreat and drop on southward travel**) exists because a
+bounded yaw *cannot* help the walk south. Decide, in writing, which of
+Session 9's two components is making people sick. The measurements above
+suggest it is the YAW and not the astern terms, but the astern dolly is
+what makes the yaw worse, and you should test them separately.
+
+**Candidates, and the session picks and justifies one:**
+
+- **Cut the envelope hard** (26° → 8–10°) and slow the easing so it can
+  never exceed a few degrees a second. Cheapest, keeps the idea.
+- **Make it a snap-back rather than a follow**: the frame leans only
+  while the direction is CHANGING and returns to north while you hold a
+  steady heading. Travel-derivative rather than travel.
+- **Take the yaw off desktop entirely and keep the astern terms**, which
+  is the honest reading of the numbers: the walk south is a real gain
+  and the yaw is where the sickness is.
+- **Make it the player's**, defaulting OFF. This project has no options
+  screen and does not want one, so this is the expensive answer, but a
+  camera that some people cannot use is worse than a settings toggle.
+
+**And whichever you pick, one constraint makes it checkable:** a stopped
+walker is due north by contract, and **every protected framing is shot
+standing still with the bearing pinned.** So a correct fix to the moving
+camera should come back from `node tools/diff-sheets.mjs` at **92 of 92
+bit-identical.** If it does not, you have moved a composition eight
+verdicts were awarded on, and you have to say which and why.
+
+### 1b. THE PHONE'S JOYSTICK IS ON THE DESKTOP
+
+Confirmed at 1280×720 with a mouse:
+
+```
+  before mousedown   .joy classes: "joy"
+  during a drag      .joy classes: "joy active running"
+                     on screen at 592,352, 96×96, opacity 1
+```
+
+A mouse drag anywhere on the canvas raises the touch stick's ring under
+the cursor. `src/core/Input.ts` says so in its own header — *"a drag
+virtual joystick that serves both touch and mouse"* — and the only guard
+in it is an ASPECT-RATIO test (`window.innerWidth / window.innerHeight <
+0.8`) that decides where the stick may be grabbed, not whether it should
+exist.
+
+**Aspect ratio is not the question. Pointer type is.** The fix is
+almost certainly `matchMedia('(pointer: coarse)')`, plus a decision the
+session has to make and write down: **is click-drag-to-walk a desktop
+control at all?** There is a real argument for keeping it (a trackpad
+user with no interest in WASD), and a real argument against (it fights
+the camera, and it is the reason the ring appears). If you keep it, it
+must not draw a ring and it must not be the only visible run affordance,
+which it currently is.
+
+`node tools/shoot-mobile.mjs` shoots the chrome at four widths. It has
+never been pointed at the desktop rig. **The chrome is shot too**
+(QUALITY-BAR §3) and this defect proves that rule needs a desktop half.
+
+### 1c. THE RUN IS UNREACHABLE ON A KEYBOARD
+
+**Be careful here, because the wiring is not what is broken, and the
+next session should not waste an hour looking for a dead key path.**
+Measured on the harness clock, so the sandbox's frame rate is out of it:
+
+```
+  five game seconds, driven north
+    walk  24.18 units   4.84 u/s   effort 0.70
+    run   35.37 units   7.07 u/s   effort 1.00      ratio 1.46×
+```
+
+and with real key presses, `input.run` climbs to 0.65 within two and a
+half wall-clock seconds of `ShiftLeft` going down. **Shift is read,
+`Input.run` responds, and the walker does go one and a half times
+faster.** The mechanism works.
+
+What is broken is that **a player cannot find it or feel it**:
+
+- the only place this game ever says Shift exists is a six-second hint
+  fired once, on entering a land (`App.ts`, `showHint`);
+- the only *visible* run affordance in the whole game is the phone
+  stick's ring turning `running` — which on desktop is defect 1b;
+- and 1.46× against a frame that is swinging twenty degrees a second is
+  a change most people will not see.
+
+So this one is a DESIGN defect wearing a bug's clothes, and the fix is a
+design decision, not a patch. Options, and none of them is a HUD:
+make the run louder in the world (the trail is already ink weight —
+Session 6 built exactly this and it may simply be too subtle), make the
+step and the score lean harder, put a persistent one-line control
+legend somewhere that is not a six-second toast, or reconsider whether
+running should be a held modifier at all on a keyboard.
+
+**Do not add a UI element that reports speed.** WORLD-SYSTEMS §0 rule 1
+is still law: no UI where the world can say it, and what says this one
+is the trail behind you.
 
 ---
 
-## One thing that is owed and is your call
+## 2. THE JOB
 
-**THE PAPER PLANE.** `WORLD-SYSTEMS` §4: one mount per quadrant, *"the
-paper plane — the wilds — launched from height — refuses being steered,
-mostly"*, and `PLAN.md` says mounts arrive with their quadrant's land
-session. The wilds are the east half, Session 10 did not take it, and
-**Splitrock's lip and the curled east rim are the two best launch
-heights in the world.** So it is overdue and this is its natural home.
+1. **Fix all three, and write down the reasoning for each**, in
+   `design/specs/camera.md` (which is the camera's write-up and is
+   already the right home) and in a new `design/specs/controls.md` for
+   the input half. The camera one has to answer: *which of Session 9's
+   two components was making people sick, and how do you know?*
+2. **Prove the resting composition did not move**:
+   `node tools/diff-sheets.mjs` at 92 of 92, or an explanation per
+   framing that moved.
+3. **Extend `tools/check-camera.mjs` with the assertion this session
+   exists because nobody had written it**: not only *does the bearing
+   stay inside its envelope*, but **how fast can the frame rotate, in
+   degrees per second, under any input a player can produce?** That is
+   the number the owner felt and there is no check for it. Pick a
+   ceiling, justify it, and assert it. The table in §1a is the
+   before-figure to beat.
+4. **Point `tools/shoot-mobile.mjs` at the desktop rig too**, so the
+   chrome rule covers both. A mouse cursor is not shot today and the
+   joystick bug lived in that gap.
+5. **And re-run the whole gauntlet**, because a camera change touches
+   every land: `check-terrain`, `check-audio`, `check-camera`,
+   `check-fields`, `diff-sheets`, and the art director on a sheet that
+   includes at least THE SHOT of all eight built lands.
 
-It is also a mount, on top of two lands and two waits, and the bar is
-explicit that a session that cannot meet it **ships less scope, never a
-lower bar**. So: take it, or defer it **in writing** in `SESSIONS.md`
-with the reason and the session you are handing it to. What is not
-acceptable is it quietly not happening for a third session.
+**Scope discipline:** this is a small session by design. If it finishes
+early, the standing debts in `PLAN.md` are the queue — the rowboat's
+first meeting at THE RIVER MOUTH has now been passed and not praised by
+**five** gates, and it is the front door of Holt's wait.
 
 ---
 
-## The gate
+## 3. AND THE FEEL GATE ITSELF IS NOW A STANDING THING
 
-1. `node tools/check-terrain.mjs`, `node tools/check-audio.mjs`,
-   `node tools/check-camera.mjs` and `node tools/check-fields.mjs` all
-   pass.
-2. `node tools/diff-sheets.mjs` — and **say what moved and why, with the
-   bounding boxes.** Session 10 could not hold 92 of 92 because a
-   protected framing looks into a land it was building; it said which,
-   by how much, where in the frame, and what the verdict was actually
-   awarded on. That is the standard: not silence, and not a shrug.
-3. **The art director**, on a new sheet: both lands, both viewports, two
-   hours, at least one driven framing each, **both states of both
-   waits**, and **each land's SHOT**. A land with no composition people
-   would share unprompted is not done.
-4. Iterate to WOWED. Log the verdicts verbatim in
-   `design/critiques/critique-art-7.md`.
+The deepest thing to come out of this is not the camera. It is that
+**this project shipped a system with its gate deferred, and the gate,
+when it was finally run, failed** — while every automated check stayed
+green. `QUALITY-BAR.md` §2 already says a session that claims a sound is
+good is lying and a session that hands over the evidence is not. Session
+12 should add the corollary it now has evidence for:
+
+> **A system whose gate has not been run is not done. It is SHIPPED AND
+> UNJUDGED, and those are different words.**
+
+Two gates are still in that state and both are the owner's:
+
+1. **THE EAR GATE.** Twenty-five WAVs and one authored silence handed
+   over unperformed (`critique-score-1.md` §4, plus six voices from
+   Session 10 and six more from Session 11). **Nobody has heard the
+   game.** `tools/render-wavs.mjs` is how it is handed over.
+2. **THE FEEL GATE ON THE WALK ITSELF**, as opposed to the camera: is
+   4.1 units a second the right walk, is 1.5× the right run, and does a
+   hundred and twelve units of canyon corridor take too long? No
+   screenshot can answer any of those either.
 
 ---
 
@@ -227,52 +268,60 @@ session: pushed, `SESSIONS.md` handoff updated, verdicts logged.
 
 ---
 
+## What Session 11 left you, and it is mostly tools
+
+- **`node tools/shoot-textures.mjs`** — every drawing in a prop box, at
+  actual size, on paper, in four seconds. **Two full rounds of Session
+  11's gate never rendered the world at all** and found twelve classes
+  of fault between them. Shoot this first, always.
+- **`node tools/montage.mjs <dir> <out.png> a.png b.png …`** — a land on
+  one sheet. Beware one thing Session 11 learned: it downscales, so a
+  prompt reading `look` in a montage may be `LOOK AT THE MARKS` at full
+  size. Check the frame before you file the bug.
+- **`node tools/check-fields.mjs`** — nine lands now, including both of
+  Session 11's, because both carry a field re-set from an update loop.
+- **`node tools/diff-sheets.mjs`** — run it BEFORE you think you are
+  finished. It takes about half an hour end to end; start it and write
+  your docs while it runs.
+- **`node tools/check-terrain.mjs`** now asserts SPLITROCK's floor at
+  **−10.8** and fails if it drifts a tenth, because `THE-STRANGERS` S5
+  is an errand about that number.
+
 ## Standing debts, carried forward
 
 They live in `PLAN.md` as well as here, because this file is overwritten
 every session.
 
 - **The rowboat's first-meeting composition at THE RIVER MOUTH** is a
-  lot of sand. **Four** gates have now passed it and pointedly not
-  praised it. *(Note for this session: the rowboat is how
-  `route:the-river` is earned, and `route:the-river` is what resolves
-  Holt. You will be in that machinery anyway.)*
-- **THE HARROW DOWNS' stooked field** and **THE PENWOOD's east arc**
-  (Session 10, `critique-art-6`): both passed, neither praised.
+  lot of sand. **Five** gates have now passed it and pointedly not
+  praised it, and it now matters more than it did: `route:the-river` is
+  what resolves HOLT, so that boat is the front door of a wait.
+- **THE HARROW DOWNS' stooked field**, **THE PENWOOD's east arc** and
+  **THE BLEACH FLATS' `WHERE THE ROAD STOPS`**: all three passed, none
+  praised. The last is two posts and some cracked ground at the end of
+  the longest road in the world.
+- **Holt's lit window** is one warm pixel at forty units. It is the only
+  lit window in the east half of the world and it deserves a glow.
 - **Brim Square is full.** The next authored thing in that plaza
   displaces something Session 3 earned.
-- **The prompt on a very wide subject is still on the subject.** READ
-  THE PROCLAMATION is legible on Greyweather's barbican and it is a
-  compromise (`critique-camera-1.md`, round 3, noted-not-blocking).
+- **READ THE PROCLAMATION** on Greyweather's barbican is a compromise
+  (`critique-camera-1.md`, round 3, noted-not-blocking).
 
 ## Not this session's job, and recorded so nobody re-derives them
 
 - **§3.2's rim composition is the riskiest un-shot frame in the game**
-  and **Session 12 shoots it FIRST, not last.** Act III is a
-  two-hundred-unit look north up an empty straight road from the world's
-  south rim, and nothing tall may stand within about eight units of
-  x = −45 between z = 120 and z = 278.
-- **SESSION 12 IS THREE LANDS** (Maple Court, Greyline City, the Cubicle
-  Mile) plus the 8:15 drawn into existence, against Session 10's and 11's
-  two apiece. If that is going to be split, the session that notices
-  should say so in `PLAN.md` rather than the one that runs out of room.
+  and **the session that builds MAPLE COURT shoots it FIRST, not last.**
+  Act III is a two-hundred-unit look north up an empty straight road
+  from the world's south rim, and nothing tall may stand within about
+  eight units of x = −45 between z = 120 and z = 278. **It is also the
+  framing most exposed to whatever this session does to the camera**, so
+  shoot it before and after, even though its land is not built.
+- **THE PAPER PLANE**, deferred in writing by Session 11 with its brief
+  and its reason (`PLAN.md`, `WORLD-SYSTEMS` §4). It launches from
+  Splitrock's east lip or the curled rim; it refuses being steered
+  *mostly*; and it must not trivialise the walk back round the canyon's
+  mouth.
 - **The story gate returned NOT YET** (`critique-story-2.md`), with two
   mandatory findings belonging to the sessions that build Acts I and IV.
 - The remaining WAITS, the eight STRANGERS and the three inventories are
   the authoring queue.
-
-## Waiting on the owner, and none of it blocks you
-
-1. **THE EAR GATE on the score.** Nineteen WAVs handed over unperformed
-   (`critique-score-1.md` §4), and Session 10 added six more voices and
-   one authored silence to them. **Nobody has heard the game.**
-2. **THE FEEL GATE on the camera.** Session 9 shipped a bearing it could
-   measure and could not judge. The evidence is `shots-s9/`: the walk
-   south, every station shot twice. **Does it help, or does the world
-   wobble?**
-3. **Whether the STORY GATE becomes a standing critic**, and whether its
-   NOT YET blocks Acts I and IV or merely annotates them.
-4. **The STORY EDITOR**, proposed as a third standing critic.
-5. **The premise line's rewrite** and **two surviving similes**.
-6. **A seventh content tier, THE LOCAL RULE** (`QUESTS.md` §8),
-   proposed and explicitly not ratified.
