@@ -84,6 +84,7 @@ import { createServer } from 'http';
 import { readFile } from 'fs/promises';
 import { mkdirSync, rmSync, existsSync } from 'fs';
 import { extname, join, normalize } from 'path';
+import { CHROMIUM } from './pw.mjs';
 
 const arg = (name, dflt) => {
   const i = process.argv.indexOf('--' + name);
@@ -193,7 +194,7 @@ const VIEWPORTS = [
   { name: 'portrait', width: 390, height: 844 },
 ].filter((v) => !ONLY || v.name === ONLY);
 
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await chromium.launch({ executablePath: CHROMIUM });
 
 /**
  * Shoot one side of the comparison and hand back base64 PNGs keyed by

@@ -20,9 +20,10 @@
 //
 //   node tools/verify-story.mjs
 import { chromium } from 'playwright';
+import { CHROMIUM } from './pw.mjs';
 
 const url = process.env.URL ?? 'http://localhost:4173/?debug';
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await chromium.launch({ executablePath: CHROMIUM });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 /* NO addInitScript HERE, and it cost this script a false failure.
  * An init script runs on EVERY navigation, so clearing localStorage

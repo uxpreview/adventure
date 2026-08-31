@@ -147,12 +147,20 @@ off it), **drag further past the ring to run**, **two fingers to lean**,
 tap to interact.
 
 The camera answers where you are going, inside an envelope you cannot
-leave: the part of your travel that CROSSES the frame turns it (26° on
-desktop, 12° on a phone), and the part that comes AT THE LENS makes it
-give ground — walking south it trails further back and lowers its aim,
-so the road you are walking into is laid out below you instead of
-arriving from behind. **Stand still and it is due north, exactly**, which
-is the composition every land in this world was drawn for.
+leave: the part that comes AT THE LENS makes it give ground — walking
+south it trails further back and lowers its aim, so the road you are
+walking into is laid out below you instead of arriving from behind.
+**Stand still and it is due north, exactly**, which is the composition
+every land in this world was drawn for.
+
+**AND WALKING NEVER TURNS THE FRAME** (Session 12). It used to: the
+crossing part of your travel leaned the camera up to 26°, and the owner
+played it and it made them sick — 51° of swing at 35°/s for one change
+of mind about which way to walk. That envelope is still 26° on desktop
+and 12° on a phone, and it belongs to **the peek** now: hold `,` or `.`
+(two fingers on a phone) and the world turns, and it springs back when
+you let go. **Rotation in this game is a thing you ask for.** The lean
+went to the walker instead, who leans into a crossing at a run.
 
 Append `?debug` to expose `window.__inklands` (teleport, region query,
 terrain probes, frame cost, audio, and the harness clock — `setTime`,
@@ -160,8 +168,10 @@ terrain probes, frame cost, audio, and the harness clock — `setTime`,
 
 ```sh
 node tools/check-terrain.mjs   # assert the height field, off-screen
-node tools/check-camera.mjs    # assert the BEARING: the envelope, the
-                               #   continuity, the walk home, the walk south
+node tools/check-camera.mjs    # assert the BEARING: the envelope, the walk
+                               #   home, the walk south — AND THE RATE, in
+                               #   degrees a second, which is what nobody
+                               #   asserted until a player felt it
 node tools/diff-sheets.mjs     # A REGRESSION IS A DIFF AND NOT AN OPINION
 node tools/shoot-bearing.mjs   # the walk south, shot twice: shipped, then now
 node tools/shoot-shape.mjs     # every landform, both viewports
@@ -176,7 +186,10 @@ node tools/montage.mjs <dir> <out.png> a.png b.png …   # a land on one sheet
 node tools/check-fields.mjs    # no instanced field is ever half inked in
 HOUR=19.6 node tools/shoot-first-minute.mjs   # any sheet, at any hour
 node tools/shoot.mjs           # all twelve lands, walkability smoke test
-node tools/shoot-mobile.mjs    # the CHROME, at 320/360/390/430 points
+node tools/shoot-mobile.mjs    # the CHROME, at 320/360/390/430 points AND at
+                               #   1280×720 with a mouse — and its stick step
+                               #   is an assertion: a thumb raises the stick,
+                               #   a mouse raises nothing (RIG=… for one rig)
 node tools/shoot-fps.mjs       # frame cost, draw calls, triangles
 
 node tools/check-audio.mjs     # RENDER THE SCORE OFFLINE AND ASSERT IT
@@ -185,9 +198,16 @@ node tools/shoot-sound.mjs     # the sound sheet: twelve lands, plotted in ink
 node tools/render-wavs.mjs     # nineteen WAVs, for the one gate a tool cannot run
 ```
 
-`design/specs/camera.md` is the camera written up — the two components,
-the envelope's arithmetic, the walk south in units of page, every
-second-order effect checked, and the harness clock.
+`design/specs/camera.md` is the camera written up — §0 is Session 12's
+correction (which component was making people sick, and how that was
+measured), then the two components, the envelope's arithmetic, the walk
+south in units of page, every second-order effect checked, and the
+harness clock. `design/specs/controls.md` is the hands: what each device
+gets, why the joystick is a thumb's control only, and why the run is
+taught once at the moment it becomes worth having.
+
+Every tool takes `$PW_CHROMIUM` if Playwright's own Chromium is not
+where it expects (`tools/pw.mjs`).
 
 **A regression used to mean a person looking at two contact sheets a
 week apart**, and it was never a claim anybody could check: two shots of

@@ -8,6 +8,7 @@
 // them are exactly what a phone would see. DPR is forced past the app's
 // own cap so the pixel count is a worst case.
 import { chromium } from 'playwright';
+import { CHROMIUM } from './pw.mjs';
 
 const SPOTS = [
   ['brim square', -45, -70], ['castle avenue', -45, -176], ['the bailey', -45, -222],
@@ -23,7 +24,7 @@ const SPOTS = [
 ];
 
 const url = process.env.URL ?? 'http://localhost:4173/?debug';
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await chromium.launch({ executablePath: CHROMIUM });
 for (const vp of [
   { name: 'desktop', width: 1280, height: 720, dpr: 2 },
   { name: 'portrait', width: 390, height: 844, dpr: 3 },

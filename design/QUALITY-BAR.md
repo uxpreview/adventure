@@ -302,11 +302,17 @@ regression check it always was.
 - **`node tools/check-camera.mjs` whenever the camera is touched.** The
   envelope is the one number standing between this world and a stack of
   card seen sideways, so it is asserted rather than trusted: nothing —
-  travel, a peek, a road that carries, all at once — gets past it; the
-  bearing is continuous round the whole circle of travel, which is what
-  stops a walker weaving either side of due south from flipping a
-  fifty-two-degree pan back and forth; and a stopped walker arrives at
-  EXACTLY zero rather than approaching it.
+  travel, a peek, a road that carries, all at once — gets past it; and a
+  stopped walker arrives at EXACTLY zero rather than approaching it.
+  **AND SINCE SESSION 12 IT ASSERTS A RATE AND NOT ONLY A PLACE**, which
+  is the assertion whose absence let a system that made people sick pass
+  six green checks: **walking may not turn the frame at all** (1°/s,
+  which is how you write zero and survive an easing term), a peek — a
+  rotation the player is holding a key to get — is bounded at 45°/s held
+  and 80°/s reversed mid-gesture, and **the rig may never give ground
+  faster than the walker covers it** (4.1 units a second, the walk
+  itself). A camera's defects live in the JOURNEY between two framings
+  and every check before Session 12 asked only about the framings.
 - **`node tools/check-fields.mjs` whenever anything is drawn as an
   instanced field, and especially anything that MOVES.** The owner
   found, after nine sessions, that every animal in the game went
@@ -357,6 +363,16 @@ regression check it always was.
   and 430 points, with the longest note and the longest land name in the
   game. Five sessions of world screenshots could not have caught it,
   because not one of them ever opened a card.
+  **AND FROM SESSION 12 THE RULE HAS A DESKTOP HALF, because "the chrome
+  is shot" had only ever meant "the chrome is shot on a phone."** The
+  owner found the phone's joystick raising its ring under a mouse cursor
+  at 1280×720 — a control from the wrong device, on screen, in the
+  shipped build, for three sessions — and **no tool in this repository
+  had ever pointed a mouse at this game.** `shoot-mobile.mjs` shoots
+  five rigs now, and its joystick step is an ASSERTION with the opposite
+  expectation on each: a touch drag must raise the stick, a mouse drag
+  must raise nothing. A control is a thing that can be on the wrong
+  device, and that is a defect class no world screenshot can hold.
 - **Inherited rules must be re-ratified or dropped.** This engine was
   ported whole from margins, and some of its laws are margins' story
   rather than our design — the flat ground was one, and it cost us a

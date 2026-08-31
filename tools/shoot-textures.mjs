@@ -15,6 +15,7 @@
 // camera, a walker or a land in the way.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'fs';
+import { CHROMIUM } from './pw.mjs';
 
 const OUT = process.env.OUT ?? 'shots-textures';
 const URL = process.env.URL ?? 'http://localhost:4173/?debug';
@@ -81,7 +82,7 @@ const SHEETS = {
   ],
 };
 
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await chromium.launch({ executablePath: CHROMIUM });
 const page = await browser.newPage({ viewport: { width: 1500, height: 1000 } });
 page.on('pageerror', (e) => console.log('PAGE EXCEPTION:', e.message));
 await page.goto(URL, { waitUntil: 'networkidle' });

@@ -1,5 +1,6 @@
 import { chromium } from 'playwright';
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+import { CHROMIUM } from './pw.mjs';
+const browser = await chromium.launch({ executablePath: CHROMIUM });
 const page = await browser.newPage();
 page.on('pageerror', (e) => console.log('PAGE EXCEPTION:', e.message));
 await page.goto('http://localhost:4173/?debug', { waitUntil: 'networkidle' });

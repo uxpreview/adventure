@@ -18,6 +18,7 @@ import { build } from 'esbuild';
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'fs';
 import { LANDS, BOOTH } from './audio-lib.mjs';
+import { CHROMIUM } from './pw.mjs';
 
 mkdirSync('.tmp', { recursive: true });
 mkdirSync('out/sound', { recursive: true });
@@ -30,7 +31,7 @@ for (const [entry, name, out] of [
   await build({ entryPoints: [entry], bundle: true, format: 'iife', globalName: name, outfile: out, logLevel: 'error' });
 }
 
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await chromium.launch({ executablePath: CHROMIUM });
 const page = await browser.newPage({ viewport: { width: 400, height: 400 } });
 await page.goto('about:blank');
 for (const f of ['.tmp/audio.iife.js', '.tmp/ink.iife.js', '.tmp/palette.iife.js']) {

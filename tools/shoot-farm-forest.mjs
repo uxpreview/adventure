@@ -16,6 +16,7 @@
 // shot on a page still drawing itself.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'fs';
+import { CHROMIUM } from './pw.mjs';
 
 const OUT = process.env.OUT ?? 'shots-s10';
 const URL = process.env.URL ?? 'http://localhost:4173/?debug';
@@ -86,7 +87,7 @@ const SEAM = [
 ];
 
 mkdirSync(OUT, { recursive: true });
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await chromium.launch({ executablePath: CHROMIUM });
 
 for (const vp of VIEWPORTS) {
   const dir = `${OUT}/${vp.name}`;
