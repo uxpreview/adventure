@@ -10,7 +10,7 @@ import {
 } from './layout';
 import {
   HeightField, H_STEP, H_MIN_X, H_MAX_X, H_MIN_Z, H_MAX_Z, MAX_WALK_SLOPE, SHEET_PAD,
-  holdfastK,
+  holdfastK, tearFloorK,
 } from './elevation';
 
 export { coastX };
@@ -661,6 +661,39 @@ function paintWorld(): { data: Uint8Array; water: Uint8Array; road: Uint8Array }
         if (bk > 0.002) {
           for (let c = 0; c < 3; c++) d[i + c] += (dry[c] - d[i + c]) * bk * 0.85;
         }
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  /* ---- AND SPLITROCK IS NOT ALL CANYON (Session 11) --------------- *
+   * The same argument as the Holdfast's, from the other end of the
+   * sheet. One stain per land is a rule about LANDS, and the one thing
+   * inside SPLITROCK that is not canyon-coloured is the bottom of the
+   * rip: the walls are the page seen edge-on and they keep the land's
+   * wash, but the FLOOR is a riverbed with nothing in it, and a dry bed
+   * is paler and greyer than the country it runs through.
+   *
+   * It is worth a pass over the pixels for one reason: **a walker on
+   * the west lip has to be able to see that the channel is a channel.**
+   * From up there the tear is a shadow and a line of stacks, and without
+   * this it is a shadow and a line of stacks the same colour as the
+   * ground. With it, the floor reads as a road going north, which is
+   * exactly what it is. */
+  {
+    const bed = mixHex(PAPER, WASH.sand, 0.34);
+    const img = ctx.getImageData(0, 0, TEX_W, TEX_H);
+    const d = img.data;
+    for (let ty = 0; ty < TEX_H; ty++) {
+      const wz = WORLD.minZ + ((ty + 0.5) / TEX_H) * SPAN_Z;
+      if (wz > -100 || wz < -280) continue;
+      for (let tx = 0; tx < TEX_W; tx++) {
+        const wx = WORLD.minX + ((tx + 0.5) / TEX_W) * SPAN_X;
+        if (wx < 250 || wx > 350) continue;
+        const k = tearFloorK(wx, wz);
+        if (k < 0.004) continue;
+        const i = (ty * TEX_W + tx) * 4;
+        for (let c = 0; c < 3; c++) d[i + c] += (bed[c] - d[i + c]) * k * 0.8;
       }
     }
     ctx.putImageData(img, 0, 0);

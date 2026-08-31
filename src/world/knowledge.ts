@@ -128,6 +128,46 @@ export const ROUTES: Route[] = [
     reach: 18,
     posts: posts(SANDBAR, 2),
   },
+  {
+    /**
+     * THE FOLD — and it is a FACT rather than a route, which is the one
+     * id in this file whose prefix does not match its mechanism, on
+     * purpose.
+     *
+     * `THE-WAITS` §0 has said since Session 7 that THE BLEACH FLATS turn
+     * on `fact:the-fold`, *earned by walking the crease, both faces*, and
+     * until Session 11 there was no such id anywhere in the source and
+     * nothing that taught it: Amos's wait had a dependency nobody had
+     * built. Session 10's Penwood earned its fact by ARRIVAL — twenty
+     * units of proximity, no note, no prompt — and that is the cheapest
+     * honest mechanism this project has. It does not fit here, because
+     * **a fold has two sides and the whole of the fact is that you have
+     * been on both of them.** A proximity test cannot say that. Two
+     * posts can, and they are the only honest way to say it.
+     *
+     * So the KIND is a fact (you noticed something that is true) and the
+     * MECHANISM is a route (you went there). It is spelled `fact:` because
+     * the id is the thing a region builder reads in the present tense and
+     * because a human reading `knowledge.has('fact:the-fold')` in the
+     * Bleach Flats should understand it without coming here.
+     *
+     * The two posts are the crease's two shoulders at z = 45, which is
+     * where the east road dives through the fold (`elevation.ts`,
+     * `foldX(45) ≈ 84.7`, and `check-terrain` prints the profile). They
+     * are twelve units either side of the bottom, with a reach of eleven,
+     * so a walker who goes down one face and up the other collects both
+     * and a walker who skirts the fold collects neither.
+     *
+     * **NOTHING MARKS THEM AND NOTHING WAS BUILT FOR THEM.** They add no
+     * geometry to THE COMMON and none to THE HARROW DOWNS — which is
+     * deliberate twice over, because both of those lands hold verdicts
+     * and `crease-east-road` is a protected framing standing sixteen
+     * units from the southern post.
+     */
+    id: 'fact:the-fold',
+    reach: 11,
+    posts: [[72.7, 45], [96.7, 45]],
+  },
 ];
 
 /* ------------------------------------------------------------------ */

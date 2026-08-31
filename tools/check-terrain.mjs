@@ -94,7 +94,7 @@ const SPOTS = [
   ['castle reveal', -45, -163], ['banner avenue', -45, -172],
   ['gatehouse', -45, -189], ['bailey', -45, -211], ['keep', -45, -234],
   ['moat pool', -100, -200], ['ridge west', -120, -182],
-  ['forest', 145, -190], ['canyon lip', 300, -150], ['desert', 300, 45],
+  ['forest', 145, -190], ['canyon lip', 266, -150], ['desert', 300, 45],
   ['downs', 148, -5], ['beach', -205, 60], ['ocean', -270, 60],
   ['maple court', -45, 195], ['city', 148, 205], ['office', 280, 205],
   // the coast (Session 5)
@@ -477,7 +477,7 @@ console.log('\nthe rowboat — its ground is water, and it refuses every other:'
     ['under the boardwalk bridge', -200, 210], ['the long reach', -108, 192],
     ["the king's road bridge", -45, 170], ['the meadow bend', 52, 100],
     ['the east road bridge', 110, 45], ['the downs', 168, 8],
-    ['the canyon mouth', 285, -70], ['the source', 318, -108],
+    ['the canyon mouth', 285, -70], ['the source', 296, -116],
   ];
   for (const [n, x, z] of UP) if (!afloat(x, z)) fail(`the river is not rowable at ${n}`);
   console.log('  the river carries an oar from the sea to the source, under all three bridges \u2713');

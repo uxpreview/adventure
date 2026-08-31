@@ -199,16 +199,104 @@ export function foldX(z: number): number {
   return 78 + Math.sin(z * 0.011) * 9 + Math.sin(z * 0.031 + 1.1) * 4;
 }
 
-/** Where the page is torn. SPLITROCK CANYON is this line. */
+/**
+ * WHERE THE PAGE IS TORN. SPLITROCK CANYON is this line.
+ *
+ * ── SESSION 11 MOVED IT FORTY UNITS WEST, AND THAT WAS THE FIRST
+ *    DECISION OF THE SESSION ────────────────────────────────────────
+ *
+ * Session 4 authored the tear at x = 338 and it was a good cut in the
+ * wrong place. The world's curled east margin starts lifting at
+ * x = 344, so the rip ran six units from the foot of the rim: the land
+ * called SPLITROCK had its split jammed into its own east gutter, there
+ * was no far side of it anybody could stand on, and the canyon trail —
+ * which is the only way into that land — ran at x = 255..305 and never
+ * came within thirty units of the thing the land is named for. A land
+ * whose one feature is off in the corner is a scatter of mesas.
+ *
+ * So the tear is at x = 300 now, which is the middle of its own land
+ * (the rect is 230..380), and every consequence of that was audited
+ * rather than assumed: the river's source moved with it (it still rises
+ * at the canyon's MOUTH, which is the whole of Holt's wait — see
+ * `THE-WAITS` §4 — and the mouth is now at x = 300 rather than 338), the
+ * canyon trail was re-laid to come up the WEST lip and run north, and
+ * `tools/check-terrain.mjs` grew four new proofs about the result.
+ *
+ * WHAT DID NOT CHANGE IS THE DEPTH. `THE-STRANGERS` S5 turns on one
+ * number — *"ODD has measured the canyon: ten point eight units from lip
+ * to floor, taken twice, with a line"* — and the height field has printed
+ * `floor -10.8` since Session 4. The amplitude below is tuned so it still
+ * does, in its new position, to a tenth of a unit. Moving a landform is
+ * allowed. Moving a number a stranger's whole errand stands on is not.
+ *
+ * ── AND THE SHAPE IS THE OTHER HALF OF THE DECISION ─────────────────
+ *
+ * Paper does not tear along a curve — it tears along its fibres, so the
+ * lip wanders at two scales and is ragged at the smaller one. That was
+ * already true and it is why this landform was worth keeping rather than
+ * re-cutting: `tearX` is a function of z, so the canyon runs north–south
+ * and the camera's law is obeyed by the ground itself.
+ */
 export function tearX(z: number): number {
-  // paper does not tear along a curve — it tears along its fibres, so
-  // the lip wanders at two scales and is ragged at the smaller one
   return (
-    338 +
+    300 +
     Math.sin(z * 0.02 + 0.4) * 7 +
     Math.sin(z * 0.055) * 4 +
     (vnoise(z * 0.11, 7.3) - 0.5) * 8
   );
+}
+
+/**
+ * HOW MUCH OF THE TEAR'S FLOOR THERE IS AT (x, z) — 1 on the dry
+ * channel bed, 0 off it.
+ *
+ * The twin of `holdfastK`, and it exists for the same reason: one stain
+ * per land is a rule about LANDS, and the one thing inside SPLITROCK
+ * that is emphatically not canyon-coloured is the bottom of the rip.
+ * The walls are the page seen edge-on and they keep the land's wash; the
+ * FLOOR is a riverbed with nothing in it, and a dry bed is paler and
+ * greyer than the country it runs through. `terrain.ts` paints it, and
+ * the result is that the channel reads as a channel from the rim — which
+ * is the one thing a walker on the lip has to be able to see.
+ */
+export function tearFloorK(x: number, z: number): number {
+  const m = tearMouth(z);
+  if (m < 0.02) return 0;
+  return m * (1 - smoothstep(8, 16, Math.abs(x - tearX(z))));
+}
+
+/**
+ * HOW MUCH TEAR THERE IS AT z: 0 south of the mouth, 1 down the length
+ * of the channel, 0 again at the head.
+ *
+ * Both ends are authored and they are not the same shape, because the
+ * two ends of a rip are not the same thing.
+ *
+ * **THE MOUTH (south) is a RAMP**, sixty-two units of it. A tear starts
+ * shallow and deepens as it runs, which is what makes the channel a
+ * place you can WALK INTO instead of a hole you need a ladder for: the
+ * floor falls thirteen units over sixty-two, one in five, and there is
+ * no stair to author anywhere in this land. The metaphor did the work.
+ *
+ * **THE HEAD (north) is a WALL**, fourteen units of it, and it refuses.
+ * That is the composition the whole land is staged around — you walk
+ * north up the channel and it ends, in front of you, in a face of rock
+ * with a boat under it. Fourteen units is not a free number: the height
+ * grid's pitch is four, so anything narrower aliases into chevrons the
+ * way Session 5's cut did, and anything wider stops holding |∇h| past
+ * the walk limit and turns the head of the canyon into a slope out.
+ *
+ * AND THE SOUTH END STOPS SHORT OF THE RIVER ON PURPOSE. `RIVER[0]` is
+ * the source and `riverBed` runs from +3 down to −3.2 monotonically —
+ * water cannot climb a hill, so a source dropped into a thirteen-unit
+ * hole would have to climb out of it. The tear is nothing at z = −124
+ * and the river rises at z = −118, six units south of it: the water
+ * comes out of the ground at the canyon's mouth and the channel above it
+ * is dry, which is not a bug and is the whole of `THE-WAITS` §4 told in
+ * the height field.
+ */
+function tearMouth(z: number): number {
+  return smoothstep(-124, -186, z) * smoothstep(-268, -254, z);
 }
 
 /** Where the dune line runs behind LONGSHORE. */
@@ -557,13 +645,59 @@ function landHeight(x: number, z: number): number {
    * bank, so the cove is a bowl that only opens to its own water. */
   const coveBack = 4.4 * bump((x + 188) / 24) * bump((z + 148) / 30);
 
-  /* ---- the tear ---------------------------------------------------- *
+  /* ---- THE TEAR (Session 4; moved and reshaped, Session 11) -------- *
    * The page ripped and you can see a long way down. Its lips stand
-   * proud where the fibres pulled up; its walls are unwalkable. Session
-   * 9 builds SPLITROCK on this cut — the ground is already here. */
+   * proud where the fibres pulled up; its walls are unwalkable, in
+   * straight runs with corners between them, because that is how paper
+   * goes.
+   *
+   * The floor is EIGHTEEN units wide and the wall is thirteen and three
+   * quarters of fall over ten of run, which holds |∇h| at about two —
+   * near three times the walk limit — for the whole middle of the face.
+   * Eighteen is the narrowest a slot can be and still hold a boat, a
+   * shed, a man and a walker without any of them standing on a cliff;
+   * ten is the widest a face can be and still refuse one. There is no way down into SPLITROCK anywhere on
+   * its length; the only way in is the MOUTH, and the mouth is at the
+   * south end where the rip is still shallow. That is the land's whole
+   * traversal design and it costs one smoothstep.
+   *
+   * The amplitude is −13.35 rather than Session 4's −13.0, and the third
+   * decimal is load-bearing: `check-terrain` measures the floor at the
+   * axis, the accumulated `smax` bias and the local cockle differ at
+   * x = 300 from what they were at x = 338, and `THE-STRANGERS` S5 is an
+   * errand about the number this prints. It prints −10.8. */
   const td = x - tearX(z);
-  const mouth = smoothstep(-96, -132, z) * smoothstep(-292, -272, z);
-  const tear = (-13 * (1 - smoothstep(6, 16, Math.abs(td))) + 1.7 * bump((Math.abs(td) - 19) / 7)) * mouth;
+  const mouth = tearMouth(z);
+  const tear = (-13.75 * (1 - smoothstep(9, 19, Math.abs(td)))
+              + 1.7 * bump((Math.abs(td) - 22) / 7)) * mouth;
+
+  /* ---- THE PAN (Session 11) --------------------------------------- *
+   * THE BLEACH FLATS are the flattest ground in the world and that was
+   * a fact about the cockle table rather than a thing anybody authored.
+   * A land with no shape at all gives the camera nothing to recede
+   * along, which is the lesson Session 10 paid for with THE HARROW.
+   *
+   * So the Flats get ONE shape and no others: a single dish, ninety
+   * units across and a unit and three quarters deep, and it is where any
+   * water that ever fell on this land would go. THE OASIS sits at the
+   * bottom of it. **AMOS'S CISTERN SITS ON ITS RIM**, which means the
+   * forty units he carries by hand every night are forty units UPHILL,
+   * both ways, for as long as he has been doing it (`THE-WAITS` §5).
+   * Nobody will ever measure that and it is true anyway.
+   *
+   * A unit and three quarters over forty-five units is a gradient of
+   * about one in twenty-six — a thirtieth of the hatching threshold — so
+   * the dish may be doubly curved here for the same reason the tarn's
+   * bowl may be in the Penwood: there is no fall line for the shader to
+   * draw down and therefore no thumb print to draw it as. Said in the
+   * code, as PLAN.md requires.
+   *
+   * AND IT IS BOUNDED ON ALL FOUR SIDES, hard, at x = 332 — twelve units
+   * short of where the curl starts lifting and thirty-eight short of the
+   * protected `curl-rim` framing's own ground. */
+  const panK = smoothstep(236, 262, x) * (1 - smoothstep(310, 332, x))
+    * smoothstep(-16, 8, z) * (1 - smoothstep(80, 102, z));
+  const pan = -1.75 * bump((Math.hypot(x - 294, (z - 42) * 1.15)) / 46) * panK;
 
   /* ---- THE HARROW (Session 10) ------------------------------------ *
    * The land is called the Harrow Downs and until this session that was
@@ -674,7 +808,7 @@ function landHeight(x: number, z: number): number {
   land = smax(land, downsA, 4);
   land = smax(land, millRise, 4);
 
-  let h = land + buckle + crease + penBasin + bowl + harrow + sourGround + sag + tear;
+  let h = land + buckle + crease + penBasin + bowl + harrow + sourGround + sag + tear + pan;
 
   /* ---- THE CUT ----------------------------------------------------- *
    * A ledge is not a ramp bolted onto a cliff — it is stone TAKEN AWAY,

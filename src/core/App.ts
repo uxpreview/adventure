@@ -18,6 +18,7 @@ import {
   type RegionSpec,
 } from '../world/layout';
 import { clock as dayClock, LAMP_POOL, LAMP_EDGE } from '../world/daylight';
+import { tearX } from '../world/elevation';
 import { knowledge } from '../world/knowledge';
 import { MEADOW_POIS } from '../world/regions/meadow';
 import { FOREST_POIS, CANYON_POIS, DESERT_POIS, DOWNS_POIS } from '../world/regions/wilds';
@@ -1113,6 +1114,74 @@ export class App {
               this.audio.event('pine-tick');
               this.ambientAcc = 5 + Math.random() * 6;
             }
+          }
+        } else if (this.region.id === 'canyon') {
+          /* SPLITROCK CANYON, and the room is the point.
+           *
+           * The canyon is the only land in the game with a TAIL on it
+           * (Audio.TAILS, mix 0.55) and the quietest bed in the mix, so
+           * everything it makes comes back and there is nothing under it
+           * to cover the coming back. Three voices, and which one you
+           * get is entirely a question of where you are standing:
+           *
+           *  · ON THE FLOOR, the slot breathes — a pipe with one end
+           *    open, and the only land in the game where the wind has a
+           *    NOTE rather than a hiss;
+           *  · NEAR THE BOAT, a rag on a hull, which is the only made
+           *    sound out here and the only evidence at forty units that
+           *    anybody is doing anything;
+           *  · and A ROCKFALL YOU HEAR AND DO NOT SEE (THE-STRANGERS
+           *    C19), which fires around the middle of the day, because
+           *    that is when a rock face lets go, and is never once
+           *    drawn.
+           */
+          const { x, z } = this.char.pos;
+          const inSlot = Math.abs(x - tearX(z)) < 13 && z < -132 && z > -258;
+          const toBoat = Math.hypot(x - 306, z + 234);
+          const h = dayClock.hour;
+          const roll = Math.random();
+          if (toBoat < 34 && h > 5.8 && h < 20.4 && roll > 0.45) {
+            this.audio.event('hull-rag');
+            this.ambientAcc = 7 + (toBoat / 34) * 8 + Math.random() * 5;
+          } else if (h > 10.5 && h < 15 && roll > 0.72) {
+            this.audio.event('stone-fall');
+            this.ambientAcc = 26 + Math.random() * 30;
+          } else if (inSlot) {
+            this.audio.event('slot-wind');
+            this.ambientAcc = 8 + Math.random() * 7;
+          } else {
+            this.audio.event('stone-fall');
+            this.ambientAcc = 30 + Math.random() * 34;
+          }
+        } else if (this.region.id === 'desert') {
+          /* THE BLEACH FLATS, and NOTHING OUT HERE COMES BACK.
+           *
+           * The canyon repeats you; this land has nothing to repeat you
+           * off. Every voice in it arrives from one side and leaves by
+           * the other, and the bed is the highest and thinnest in the
+           * game — the top of the page, moving, with nothing under it.
+           *
+           * Two of the three are about the two places worth walking to.
+           * The palms rattle from twenty-six units out, so **you hear
+           * the oasis before you can see the water**, which is what
+           * makes it arrive rather than appear; and on the track, at
+           * night, there is somebody carrying cans.
+           */
+          const { x, z } = this.char.pos;
+          const toOasis = Math.hypot(x - 305, z - 55);
+          const onTrack = Math.abs(x - 303.5) < 14 && z > 50 && z < 100;
+          const h = dayClock.hour;
+          const night = h > 20.5 || h < 4.5;
+          const roll = Math.random();
+          if (toOasis < 26 && roll > 0.3) {
+            this.audio.event('palm-rattle');
+            this.ambientAcc = 5 + (toOasis / 26) * 6 + Math.random() * 4;
+          } else if (onTrack && night && roll > 0.4) {
+            this.audio.event('can-knock');
+            this.ambientAcc = 9 + Math.random() * 9;
+          } else {
+            this.audio.event('grit-run');
+            this.ambientAcc = 11 + Math.random() * 13;
           }
         } else {
           this.ambientAcc = 5;
