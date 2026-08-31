@@ -246,16 +246,57 @@ export const ROADS: Road[] = [
   { width: 4, carry: 0.5, pts: [[-45, 58], [-110, 62], [-165, 60], [-205, 58], [-219, 58]] },
   // the east road: meadow → the downs → bridge → desert edge
   { width: 5, carry: 0.55, pts: [[-45, 58], [10, 50], [60, 46], [110, 45], [160, 22], [225, 8], [290, 12], [345, 18]] },
-  // the mill lane: east road south through the downs into the city
-  { width: 4, carry: 0.5, pts: [[145, 28], [148, 90], [150, 150], [148, 205], [150, 262]] },
+  // the mill lane: the mill, the ford, the east road, and then south
+  // through the downs into the city.
+  //
+  // Session 10 EXTENDED IT NORTH, and that is the whole of THE HARROW
+  // DOWNS' layout. The lane used to stop dead at the river's south
+  // bank, which left the mill — the land's one landmark and half of its
+  // wait — standing thirty units off the end of a road nobody could
+  // follow to it. Now the lane crosses at the ford and climbs the mill
+  // rise, so the mill is a thing you walk toward and the camera's law
+  // is obeyed instead of argued with: the lane runs north–south, the
+  // mill is north of everywhere you stand on it.
+  { width: 4, carry: 0.5, pts: [[150, -14], [148, 2], [147, 19], [145, 28], [148, 90], [150, 150], [148, 205], [150, 262]] },
   // main street: neighborhood → the river bridge → downtown
   // THE LINE, second: the same road under a different name.
   { width: 4.5, carry: 1, line: true, pts: [[-45, 200], [-8, 202], [40, 198], [90, 200], [148, 205]] },
   // commuter spur: city → office park
   // THE LINE, third and last: and it ends in a car park.
   { width: 4.5, carry: 1, line: true, pts: [[148, 205], [210, 208], [268, 205], [330, 202]] },
-  // the forest track: kingdom east gate into the Penwood
-  { width: 3.2, carry: 0.34, pts: [[55, -110], [95, -130], [130, -160], [150, -195], [160, -230]] },
+  /* THE FOREST TRACK — the way in, and it goes as far as the ring.
+   * Session 10 stopped it at the ring's south-west corner; before that
+   * it ran through the middle of the tarn, which was a road painted
+   * across twelve units of open water and nobody had ever stood on it
+   * to notice. */
+  { width: 3.2, carry: 0.34, pts: [[55, -110], [78, -122], [101, -134], [120, -148], [129, -158.6]] },
+  /* ================================================================ *
+   * BRACK'S ROUND — and it is the only other road in the Penwood.
+   *
+   * THE-WAITS §7: Brack will not go within forty units of the tarn and
+   * has walked its circumference for forty years, and "the forest track
+   * is his path — worn by one man's caution, hardened into a road, then
+   * used by everybody after him, none of whom were afraid of anything."
+   *
+   * So it is not a note and it is not a behaviour. It is the road.
+   * Forty-two units of radius round the water, all the way round, and
+   * the track from Brim arrives at it and stops. **THE PENWOOD HAS ONE
+   * ROAD AND IT IS A CIRCLE**: everybody who has ever crossed this wood
+   * has walked part of a ring around a pond and gone back the way they
+   * came, and not one of them has ever thought that strange.
+   *
+   * Forty-two rather than forty, because the points are the polyline
+   * and the chords sag: at thirty degrees apart the middle of a segment
+   * is about a unit and a half in, which lands the road's centreline at
+   * forty and a half at its nearest. The man keeps his forty. The
+   * carry is the lowest on the sheet — a ring road that CARRIED would
+   * walk you round and round, which is funny once and a bug forever.
+   * ================================================================ */
+  { width: 3.2, carry: 0.22, pts: [
+    [192, -195], [186.4, -174], [171, -158.6], [150, -153], [129, -158.6],
+    [113.6, -174], [108, -195], [113.6, -216], [129, -231.4], [150, -237],
+    [171, -231.4], [186.4, -216], [192, -195],
+  ] },
   // the market lane: Brim Square east to the Wood Gate (Session 3)
   { width: 3.4, carry: 0.42, pts: [[-40, -86], [-12, -96], [18, -104], [42, -109], [55, -110]] },
   // canyon trail: downs NE corner up the canyon mouth
@@ -397,6 +438,41 @@ export const PLANKS: { x: number; z: number; r: number }[] = [
   { x: -248, z: 55, r: 8 },
   { x: -257, z: 54, r: 7 },
 ];
+
+/* ------------------------------------------------------------------ *
+ * THE FORD (Session 10) — and it is deliberately NOT a fourth bridge.
+ *
+ * THE HARROW DOWNS needed the mill lane to cross the river, and a plank
+ * bridge on a farm track is the dull answer: this world already has
+ * three and they are the ROAD WEB's, which is part of what makes the
+ * king's road read as something laid down on purpose. What a working
+ * land does instead is find the shallow place and drive the cart
+ * through it.
+ *
+ * So a ford changes exactly one thing, and it is not the water. The
+ * river's waterness is untouched — which matters more than it looks,
+ * because `rowableAt` reads that number and `route:the-river` is salt
+ * to source under every crossing: reduce it here and the rowboat runs
+ * aground in the middle of the Downs. What the ford changes is the BED
+ * (raised, so the water shallows and pales over it) and what the PAGE
+ * REFUSES (`Terrain.blockedAt` lets a walker through).
+ *
+ * You can therefore see exactly where it is: it is where the river goes
+ * light. Nothing has to tell you.
+ * ------------------------------------------------------------------ */
+export const FORDS: { x: number; z: number; r: number }[] = [
+  { x: 147, z: 19, r: 9 },   // the mill lane's crossing, THE HARROW DOWNS
+];
+
+/** How much of a ford there is at (x, z): 1 in the crossing, 0 off it. */
+export function fordAt(x: number, z: number): number {
+  let k = 0;
+  for (const f of FORDS) {
+    const d = Math.hypot(x - f.x, z - f.z);
+    if (d < f.r + 5) k = Math.max(k, 1 - csmooth(f.r * 0.5, f.r + 4, d));
+  }
+  return k;
+}
 
 /** Small still waters, painted as soft blobs. */
 export const PONDS: { x: number; z: number; r: number }[] = [

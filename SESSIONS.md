@@ -1,5 +1,324 @@
 # SESSIONS — the handoff log
 
+## Session 10 — 2026-08-30 — farm & forest
+
+*The first of five land sessions in a row with nothing structural left
+to interrupt them, and the first session in this project that could
+build a land against a page it could prove had not moved. Two lands,
+two waits, two named inhabitants, and one geometry that says the whole
+of one of them without a word.*
+
+### THE ONE THING TO KNOW: THE PENWOOD HAS ONE ROAD AND IT IS A CIRCLE
+
+`THE-WAITS.md` §7 gives BRACK a fear and a fact about it: he will not go
+within forty units of the tarn, he has walked its circumference for
+forty years, and *the forest track is his path — worn by one man's
+caution, hardened into a road, then used by everybody after him, none of
+whom were afraid of anything.* The turn is that **the geography of a
+whole land is one person's superstition that outlived being a
+superstition and became the way things are done.**
+
+Sessions before this one would have written that in a note. It is in
+`layout.ROADS` instead:
+
+- the track from Brim's Wood Gate runs in and **stops** at the ring's
+  south-west corner;
+- **BRACK'S ROUND** is a closed polyline at forty-two units' radius
+  around the tarn (forty-two, because the chords sag: the road's
+  centreline is at forty and a half at its nearest, which
+  `check-terrain.mjs` now asserts);
+- and there is no other road in the Penwood at all.
+
+Everybody who has ever crossed this wood has walked part of a circle
+round a pond and gone back the way they came, and not one of them has
+ever thought that strange. **The map draws roads. The map says it.**
+Nothing else does — not a note, not a label, not a line of prose. The
+art director's round 5 read the shape off the map unprompted and called
+it the best thing in the project.
+
+Four more facts carry it and none of them is written down either:
+**the wear on the track is heavier on the water side** (U18, implemented
+as an asymmetric decal turned to face the tarn); **the pines lean away
+from the tarn, all of them, everywhere in the land** (U17, implemented
+as a placement rule — a pine's flip is decided by its bearing from the
+water, so the lean is perfectly radial round one pond and perfectly
+consistent across a hundred and seventy units of wood); **the biggest
+trees in the wood are the ones inside the forty**, because nobody has
+ever dared cut them; and **inside twenty units of Brack the ambient
+stops**, which is the only silence in the game.
+
+### What shipped
+
+**THE HARROW DOWNS** — `design/specs/harrow-downs.md`. Six places: THE
+MILL (rebuilt as a tower mill with its sails on their own quad so they
+can turn), THE HEADLAND (Joan's table, laid for two), THE HOME FIELD,
+THE FORD, THE DROVE, THE SCARECROW. Eleven authored FIELDS as polygons,
+each carrying exactly one state — standing corn, stooked, stubble,
+ploughed, fallow, grazed — with no two neighbours matching, hedged along
+the harrow's grain.
+
+**THE PENWOOD** — `design/specs/the-penwood.md`. Five places: THE WOOD
+ROAD, THE OARS (Hallows, and the game will never say eleven), THE ROUND,
+THE TARN, THE DEEP PINES. Four authored stands of different ages with
+the voids between them doing as much work as the trees.
+
+**THE GROUND, authored not sprinkled** (`elevation.ts`):
+- **THE HARROW** — the land is named for a thing that rakes a field into
+  parallel lines, and until this session that was a word on a signpost.
+  It is now the ground: five or six low ridges forty-six units apart
+  running north–south with a wander in them. It gives the land a GRAIN
+  that runs the way the camera looks, it lets the field plan be laid one
+  field per fold, and you crest one every forty paces. **It starts east
+  of the crease**, which makes the fold the Downs' west wall and keeps
+  every unit of it clear of the protected `crease-east-road` framing's
+  own ground.
+- **THE MILL RISE** — a windmill stands on the highest ground it can
+  find, because that is what a windmill is for, and this one stood on a
+  swell whose crest was forty units west of it.
+- **THE TARN'S BOWL** — three and a half units of fall from the ring
+  road down to the water over twenty-six units. Without it the tarn was
+  invisible from anywhere but its own rim, which is fatal for a land
+  whose one composition is a look at it from forty units away.
+
+**THE FORD** (`layout.FORDS`, `Terrain.blockedAt`) — the mill lane
+crosses the river. Deliberately **not** a fourth bridge: a ford changes
+the BED (raised, so the water shallows and pales over it) and what the
+page REFUSES, and **not the waterness** — because `rowableAt` reads that
+number and `route:the-river` is salt to source under every crossing.
+Reduce the water at a ford and the rowboat runs aground in the middle of
+the Downs. You can see exactly where it is: it is where the river goes
+light.
+
+**THE TWO WAITS, END TO END.**
+- **JOAN HARROW** (`THE-WAITS` §10) works her field from six to eight,
+  stands at the headland over the middle of the day with her hands at
+  the small of her back, and the second setting is **put away every
+  evening and laid out again every morning**. Sit down once
+  (`fact:the-place-kept`) and it is laid at every hour, in every save,
+  forever. The register is the point and it is the only one in the game
+  that is not wry: there is no joke anywhere in that land, and the
+  drawings obey it as well as the notes do.
+- **BRACK** (`THE-WAITS` §7) paces about twenty units of the ring's south
+  arc facing the water the whole way, in one of two drawings. Go to the
+  tarn — inside twenty units of it, which is inside his forty, which is
+  the one line in this world nobody but the walker crosses — and he
+  turns a quarter. One figure, one quarter turn, permanent.
+
+**SIX VOICES AND ONE SILENCE** (`Audio.event`, `App`'s ambient
+scheduler): `mill-creak` (louder the nearer the mill, the way the sea is
+on the coast), `sheep`, `field-work` (**no voices anywhere in the Downs
+— nobody in that land is talking**), `axe-far` (and the wood ANSWERS it,
+at a tenth the level, 340 ms behind: the Penwood is the only land
+besides the canyon that repeats you), `tarn-drip`, `pine-tick`.
+
+**ONE ENGINE ADDITION, and it is four lines:** `StandeeField`'s `wave` —
+one gust crossing a whole field, west to east, one-sided so it arrives
+and passes rather than oscillating. The existing `wind` term is
+per-instance noise on a spatial hash, which is what grass does; corn
+does the opposite and moves in one piece.
+
+### Three tools this session built for itself, and two of them are keepers
+
+- **`tools/shoot-textures.mjs`** — every drawing in a prop box, at
+  actual size, on paper, with no camera and no land in the way. Four
+  seconds. **This is the single most useful thing in this handoff.**
+  Round 1 of the gate had four separate faults in it and it took three
+  world re-shoots to work out which drawing was causing which; the
+  texture sheet answered all four in one look. Any session that authors
+  new art should shoot this FIRST and the world second.
+- **`tools/montage.mjs`** — a land on one sheet instead of one frame at
+  a time. A fault invisible in one frame (every hedge the same height,
+  three brown things in a row, a drove that fords a river) is obvious
+  across ten.
+- `tools/shoot-farm-forest.mjs` — this session's own sheet, including
+  **both states of both waits**, which the harness hands over with
+  `learn` rather than making the sheet play the game to get them.
+
+### The gate
+
+- `check-terrain.mjs` ✓ (and it grew two proofs: **THE FORD** — a walker
+  crosses, an oar still passes, and it is the only dry-shod crossing for
+  forty units either way; and **BRACK'S ROUND** — nearest the water 40.6
+  units, it closes, and the bowl is walkable from every side)
+- `check-audio.mjs` ✓ · `check-camera.mjs` ✓ · `check-fields.mjs` ✓ (new —
+  see the owner's bug below)
+- `diff-sheets.mjs` — see below, and read it before you assume anything
+- **critique-art-6: WOWED at round 5.**
+
+### THE REGRESSION NUMBER, AND WHAT IT ACTUALLY SAYS
+
+`node tools/diff-sheets.mjs`, ninety-two framings against `origin/main`,
+bearing pinned, twelve game seconds of settle:
+
+```
+THE PAGE (the world, writing hidden):
+  73/92 bit-identical, 19 over 0.000%
+    3.2518%  desktop/crease-east-road@12    at 2,139,1278,398
+    2.4360%  desktop/crease-east-road@19.6  at 159,149,1121,388
+    1.6041%  portrait/crease-east-road@12   at 3,239,387,355
+    0.7704%  portrait/crease-east-road@19.6 at 71,239,319,353
+    0.1173%  desktop/gate-detail@12         at 1156,159,124,46
+    0.0807%  desktop/tear-lip@12            at 0,138,37,74
+    0.0171%  desktop/gate-detail@19.6       at 1228,168,52,24
+    0.0158%  desktop/common-THE-SHOT@19.6   at 1046,194,149,5
+    0.0120%  desktop/common-THE-SHOT@12     at 1055,195,140,4
+    0.0095%  desktop/crossroads@19.6        at 1069,196,149,4
+    0.0092%  desktop/common-wide@19.6       at 1045,192,112,4
+    0.0072%  desktop/crossroads@12          at 1069,196,149,4
+```
+
+**Read the bounding boxes, because they are the whole answer.** Every
+one of the small ones is four or five pixels TALL: they are strips of
+horizon. THE COMMON's protected framings can see to about x = 74 at the
+fog limit, and x = 74 is inside the Penwood's south-east corner, so the
+Penwood's own edge trees now show on their skyline as a four-pixel band.
+`tear-lip` is the same thing from the other side — its left edge reaches
+x ≈ 193, which is inside the Penwood. `gate-detail` is a forty-six-pixel
+block in the top-right corner, which is the same horizon lower in frame.
+
+**And the big one, `crease-east-road`, was always going to move.** That
+framing stands at (62, 62) and looks north, and the right half of what
+it sees at distance **is the Harrow Downs**. Its own ground is untouched
+by construction: the harrow term starts at x = 96, and Session 4's
+`downsA` swell was deliberately KEPT for exactly this reason. Shot
+side by side, the fold, both shoulders, the walker's ground, Brim's wall
+and the grass at the crease's foot are pixel-for-pixel what they were.
+What changed is beyond the crease: **eleven identical cartoon oaks and a
+red barn have become the Penwood's edge and a hedged patchwork.**
+
+**Two more moved only in the WRITING pass and not on the page**
+(`common-wide@12`, `portrait/common-THE-SHOT@12`), which is the DOM card
+mid-fade — the one clock in this game the harness does not own.
+
+**THE RULE IS UNCHANGED, AND THIS IS NOT A LICENCE.** A protected
+framing may not move for a session's convenience. When it moves because
+the land inside it was the session's scope, the session says which
+framing, by how much, where in the frame, and what the verdict was
+actually awarded on. Two things were cut from this session to keep that
+list honest and short: the harrow's missing east bound (below), and the
+Downs' western pasture, which put four-hundred-pixel slivers of new
+grass on four of THE COMMON's framings and has been pulled back east of
+x = 96 — where the spec said the Downs' west third was a composed void
+in the first place.
+
+### AND THE TOOL EARNED ITS KEEP THE FIRST TIME A LAND SESSION RAN IT
+
+The first run came back with **eight per cent of `curl-rim` moved** —
+the world's east margin, in THE BLEACH FLATS, a land this session never
+opened. The cause: `harrowK = smoothstep(96, 130, x)` and no east bound,
+which is **1 at x = 370**. A corrugation authored for one land ran clean
+across two others and out onto the curled rim of the page.
+
+Nothing in this session's own contact sheet could have shown that, and
+no person comparing two contact sheets a week apart would ever have
+found it. **Bound every term in `elevation.ts` on all four sides**, and
+run the tool BEFORE you think you are finished, not after.
+
+### AND ONE BUG THE OWNER FOUND THAT NINE SESSIONS OF CONTACT SHEETS COULD NOT
+
+> *"The animals in other locations disappear when you approach them.
+> The only ones that seem to be working are in Brim."*
+
+Correct, and it had been true since Session 5.
+
+**Every creature with more than one posture is drawn as one instanced
+field per pose with a single instance showing at a time**, and the way
+the world hid the other poses was `set(i, x, -4000, 0.001)` — park it
+four thousand units away at a thousandth of its size. But `set` RECORDS
+the position, `positions` is the field's answer to *where is instance
+i*, and `cascadeFrom` reads it to decide when the ink wave gets there.
+Four thousand units at the wave's thirty-four a second is a birth
+**ninety-seven seconds in the future**, and until its birth the shader
+draws an instance at `uGhost` — sixteen per cent — which against paper
+is nothing at all.
+
+So every animal in the game went invisible the moment it changed
+posture, for the first hundred seconds in each land, which is all the
+time anybody spends near one. **Brim's pigeons, Brim's swallows and
+Greyweather's rooks were immune only because they are one-off
+`ctx.standee` meshes with no birth attribute to get wrong** — which is
+exactly the shape of the report.
+
+Nothing in this project could have caught it. A contact sheet
+photographs a walker standing still; the bug only fires when a creature
+changes pose, and a creature changes pose because you walked at it. It
+was found by asking the running page what its births actually were.
+
+**The fix is `StandeeField.hide(i, x, z)`** — drop the instance straight
+down under its own feet at zero scale and keep telling the truth about
+where it is. Five call sites: the gulls (Longshore), the sheep, the
+goat, the field hands and the fallen pines. Plus two things that made
+the invariant exact rather than nearly true: unused field capacity is
+parked at zero scale instead of merely a thousand units down, and
+`cascadeFrom` births the seats nobody sits in.
+
+**And it ships with an assertion, because a bug that survives nine
+sessions gets a check and not a comment:** `tools/check-fields.mjs`
+drives the walker AT the animals in seven lands and asserts that **no
+field is half inked in** — a field is cascaded all at once, so after
+thirteen game seconds one with some instances born and some stranded is
+the bug itself, wherever it is. Verified both ways: green on the fix,
+red at ninety-five seconds on the old idiom.
+
+### For the next land session — read this part
+
+- **AUTHOR THE GROUND FIRST AND THE PROPS SECOND.** THE HARROW took
+  twenty minutes and it is why both of these lands compose: it gives the
+  camera something to recede along before a single drawing is placed.
+- **A DECAL IS A FLAT QUAD AT ONE HEIGHT.** Lay a nineteen-unit floor
+  tile on ground that falls five units over twenty-six and one side of
+  it buries itself, and the intersection draws a hard straight edge
+  across your land. Eleven or twelve units is the ceiling on curved
+  ground. Round 4's sheet had the Penwood's foreground faceted with
+  them and it took two rounds to work out what they were.
+- **NEVER USE A FILLED POLYGON AS A COLOUR.** `fillBlob` is sixteen
+  sides and on a decal that TILES you can count all sixteen from a
+  hundred units. Both texture files now carry a `stain()` — a radial
+  gradient — and every ground colour in both lands goes through it.
+- **SHARE DRAWINGS. INSTANCE PLACEMENTS.** Round 4 of the gate was a
+  performance round and it was fair: a hundred and forty hedge panels
+  each with their own 512×160 canvas is thirty-two megabytes of texture
+  for the hedges of one land. Variety comes from the plan and from
+  placement. After the fix, the Downs' worst framing is **272 draws /
+  3.4 ms** on desktop against **THE COMMON's 350 / 6.4 ms** — the new
+  lands are LIGHTER than the oldest one.
+- **FULL BALLPOINT PRESSURE BELONGS TO THE FOREGROUND LAYER AND
+  NOTHING ELSE.** A twenty-one-unit tree at register 0 that ends up ten
+  units from the lens is a hundred individual scratches across a third
+  of the frame. The three registers exist so a stand can be built from
+  all three at once; the near register is for the eight trunks you
+  authored by hand.
+- **A CUTOUT RUN NEEDS ITS ENDS ERASED.** A hedge panel is a rectangle
+  and a run of them is a row of cards until you fade forty pixels off
+  each end with `destination-out`. The same trick fixed the near trunk,
+  which was reading as a dark board with a straight top.
+- **A HIDDEN INSTANCE MUST STILL SAY WHERE IT IS.** Use
+  `StandeeField.hide(i, x, z)`, never `set(i, x, -4000, …)`. And place
+  every instance of a field at least once — an instance that has never
+  been placed has no position, and anything that reasons about position
+  (the cascade, `wakeNear`, `awakeCount`) skips it.
+- **AND THE CAMERA'S LAW IS STILL THE LAW.** Every framing that failed
+  in this session failed it: a hedge five units in front of the lens, a
+  drove laid across a river, a label at a ford printed on a mill forty
+  units behind it. That last one is worth remembering — **Session 9's
+  skyline lifts a name above what is standing UNDER it, and cannot know
+  what is standing BEHIND it.** Height does not solve that. Angle does:
+  the ford's POI moved a stride west, to the end of the stones you
+  actually step on, and is now twelve to nineteen degrees clear of the
+  mill from every viewpoint on the lane.
+
+### Standing debts, carried
+
+- **The stooked field** is the weakest composition in either land, and
+  **the Penwood's east arc** is a road through a wood. Both passed,
+  neither praised.
+- **The rowboat's first meeting at THE RIVER MOUTH** — **four** gates
+  have now passed it without praising it.
+- **Brim Square is full.**
+- **READ THE PROCLAMATION** on Greyweather's barbican is a compromise.
+- **THE EAR GATE and THE FEEL GATE are still the owner's**, and this
+  session added six sounds nobody has heard to the first of them.
+
 ## Session 9 — 2026-08-30 — the bearing
 
 *The last foundations item on the board, taken before the five remaining

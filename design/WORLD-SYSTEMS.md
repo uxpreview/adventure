@@ -410,6 +410,22 @@ express through posture, placement and routine.
 - **Animals** are the cheapest life-per-byte in any world, and ours
   respond: sheep part, fish scatter in the shallows, a dog follows you
   for half a land, a cat on a wall wakes if you run past.
+  *(Session 10: the sheep part — thirteen of them in the drove, square
+  off the lane's axis to whichever hedge is nearer, holding while you
+  pass and closing up behind, and two of them never move. And the
+  Penwood's goat keeps its distance and looks back and is never
+  catchable.)*
+
+**AND FROM SESSION 10, THE STRONGEST FORM OF THIS IS NOT A PERSON AT
+ALL.** THE PENWOOD's inhabitant is one man with two drawings and a
+twenty-unit beat, and the thing that actually carries his whole wait is
+the ROAD: a closed circle at forty-two units about the water, with the
+track from Brim running in and stopping at it, and nothing else in the
+land. Everybody who has ever crossed that wood has walked part of a
+circle round a pond and never thought it strange. **A behaviour is what
+one person does; geography is what everybody after them does anyway**,
+and the second one needs no animation, no clock and no note. Look for it
+before reaching for a routine.
 
 ## 6. The content system — knowledge, not collection
 

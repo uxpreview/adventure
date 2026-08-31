@@ -33,7 +33,7 @@ retired; the chosen story is **THE 8:15** (`design/STORY.md`).
 | 7 | **The stories** ✓ 2026-08-30 | THE LINE mapped beat by beat with Act III's standing place solved and **THE ENDING SETTLED** (`design/THE-LINE.md`); the twelve WAITS, each with its person, its places, its TURN and its visible permanent change (`design/THE-WAITS.md`); the eight STRANGERS and the errand / encounter / unmarked inventories (`design/THE-STRANGERS.md`). **KNOWLEDGE** built as the content system (`src/world/knowledge.ts` — a NAME, a FACT, a ROUTE, a REASON, and no count anywhere), the **MAP MADE THE RECORD** in three registers with the line inked once you have walked it, and **BRIM'S WAIT AUTHORED END TO END**: Marget, her routine off the clock, the belfry's two hands, and a market that opens and stays open. Plus the voice pass — **24 of 34 notes**, the premise line included. Gate to WOWED (`critique-story-1.md`). From here every land session ships places **and** its wait **and** its named inhabitant. |
 | 8 | **The score** ✓ 2026-08-30 | Five synthesised instruments over twelve lands, doubled by FAMILY (music box, plucked string — Karplus–Strong, rendered rather than wired — bowed voice, struck metal, air), each land's assignment authored with its register and its one-line reason; a BED per land, and it is the quietest thing in the mix; a border that is a three-and-a-half second EQUAL-POWER crossfade of both the room and the instrument; and a mix that answers the walk and the hour. **And the proof, which was the hard half:** `check-audio.mjs` renders the score offline and asserts it, `verify-score.mjs` proves the wiring in the running game, `shoot-sound.mjs` draws it in ink, and `render-wavs.mjs` hands the ear gate to the owner — because it is the first product in this project that cannot be screenshotted. Gate to WOWED (`critique-score-1.md`). See `WORLD-SYSTEMS.md` §9. |
 | 9 | **The bearing** ✓ 2026-08-30 | **Foundations, and the last of them.** The camera answers TRAVEL, in two components: the part that CROSSES the frame turns it (26° on desktop, 12° in portrait, the envelope authored off the standee table), and the part that comes AT THE LENS opens the ground at the walker's feet (the astern terms) — because a bounded yaw cannot help the walk south and `WORLD-SYSTEMS` §2 was wrong to say it could. Plus the PEEK (a gesture, never a state) and a lead capped per rig. **And the proof, which was half the session:** `tools/diff-sheets.mjs` — a regression is a diff and not an opinion — standing on a harness that pins all four of the game's clocks so two shots of one framing are one picture, and `tools/check-camera.mjs`, which asserts the envelope, the continuity and the walk south in units of page. **And the oldest visible defect closed:** THE SKYLINE, so a name is written over the thing it names instead of across it. Gate to WOWED (`critique-camera-1.md`). |
-| 10 | **Farm & forest** | THE HARROW DOWNS + THE PENWOOD: field patchwork vs pine dark; the tarn; the forest track. |
+| 10 | **Farm & forest** ✓ 2026-08-30 | THE HARROW DOWNS + THE PENWOOD, and the first land session that could prove the page had not moved while it worked. **THE HARROW** authored into `elevation.ts` (the land is named for a thing that rakes a field into parallel lines, and it is now the ground), the mill rise, and the tarn's bowl. **THE PENWOOD HAS ONE ROAD AND IT IS A CIRCLE** — BRACK'S ROUND, forty-two units about the water, with the track from Brim running in and stopping at it: `THE-WAITS` §7's turn told entirely in a polyline, said by the map and by nothing else. Eleven authored FIELDS as polygons, one state each, hedged along the grain; four authored stands of pine with the voids between them doing as much work as the trees; THE FORD (`layout.FORDS` — the bed rises, the water does not fall, so `route:the-river` survives). **Both waits end to end:** JOAN HARROW's second setting, put away every evening and laid every morning until you sit down, and BRACK's quarter turn. Six ambient voices and one authored silence. Gate to WOWED (`critique-art-6.md`). See `design/specs/harrow-downs.md` and `design/specs/the-penwood.md`. |
 | 11 | **The dry lands** | SPLITROCK CANYON (a tear in the page) + THE BLEACH FLATS: corridor drama, the oasis as reward. |
 | 12 | **The now** | MAPLE COURT + GREYLINE CITY + THE CUBICLE MILE: street rhythm, lit windows at dusk, the junction — and the 8:15 drawn into existence. |
 | 13 | **Motion & life** | Systems pass: wind everywhere, sails and windmills turning, NPC routines, road encounters. (The score moved out of this session to 8 — see the ordering rule.) |
@@ -43,6 +43,8 @@ retired; the chosen story is **THE 8:15** (`design/STORY.md`).
 INTERRUPT THEM.** Session 9 took the last foundations item on the board;
 everything below it shifted by one, and from Session 10 on every land
 session ships its places **and** its wait **and** its named inhabitant.
+**Session 10 was the first of them and the shape held**: two lands, two
+waits, two named inhabitants, one gate, one number.
 
 **This ladder does not reach the owner's target yet, and it should say
 so.** The target is now HOURS of play, not a short walk
@@ -113,8 +115,12 @@ file that does not persist.
   and never sideways, and a name with nowhere legible to go is not
   written at all.
 - **The rowboat's first-meeting composition at THE RIVER MOUTH** is a
-  lot of sand. **Three** gates have now passed it and pointedly not
+  lot of sand. **Four** gates have now passed it and pointedly not
   praised it.
+- **THE HARROW DOWNS' stooked field** and **THE PENWOOD's east arc**
+  (Session 10, `critique-art-6`): both passed, neither praised. The
+  sheaves recede but the field around them is thin; the east arc is a
+  road through a wood and not a place.
 - **The prompt on a very wide subject is still on the subject.** READ
   THE PROCLAMATION is legible on Greyweather's barbican and clear of
   anything with detail in it, but it is a compromise and Session 9 wrote
@@ -165,4 +171,18 @@ Rules of the ladder:
 - **Author landforms with PLANAR FACES.** The terrain draws a cliff in
   strokes down its fall line, and a doubly-curved landform has no
   constant fall line to draw down — it comes out as a thumb print. Paper
-  tears in straight runs and turns at corners; use that.
+  tears in straight runs and turns at corners; use that. *(A dish IS
+  allowed where nothing on it comes near the hatching threshold — the
+  tarn's bowl in Session 10 falls three and a half units over
+  twenty-six, which is a fifth of the limit, and there is no fall line
+  for the shader to draw down. Say so in the code when you do it.)*
+- **AND EVERY TERM IN `elevation.ts` IS BOUNDED ON ALL FOUR SIDES.**
+  Session 10's harrow shipped with `smoothstep(96, 130, x)` and no east
+  bound, which is 1 at x = 370: a corrugation authored for one land ran
+  clean across two others and out onto the world's curled rim, and eight
+  per cent of a protected framing moved in a land the session never
+  opened. `diff-sheets.mjs` found it. Nothing else would have.
+- **AUTHOR THE GROUND FIRST AND THE PROPS SECOND** (Session 10). The
+  harrow took twenty minutes and it is why both of that session's lands
+  compose: it gives the camera something to recede along before a single
+  drawing is placed.

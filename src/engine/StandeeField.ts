@@ -19,6 +19,24 @@ export type StandeeFieldOpts = {
    */
   wind?: { amp: number; freq: number };
   /**
+   * ONE GUST CROSSING A WHOLE FIELD (Session 10, THE HARROW DOWNS).
+   *
+   * `wind` above is per-instance sway on a phase hashed off world
+   * position, and its coefficients are large on purpose — neighbouring
+   * blades are uncorrelated, which is what grass does. A field of corn
+   * does the opposite: it moves in one piece, in a wave you can watch
+   * arrive. That is the same term with a SMALL spatial coefficient and
+   * a one-sided envelope, so the gust passes rather than oscillating.
+   *
+   *   amp    how far the heads go over at the peak of it
+   *   speed  radians a second — one gust every 2π/speed
+   *   len    world units per radian across the field; the wave travels
+   *          along +x, which in the Downs is the wind off the wood
+   *
+   * Requires `wind` to be set: it rides in the same vertex term.
+   */
+  wave?: { amp: number; speed: number; len: number };
+  /**
    * The ground under an instance (Session 4). Set once by ctx.field, so
    * the twelve region builders never have to think about height: every
    * f.set(i, x, z, ...) call already written stands the instance on the
@@ -57,6 +75,7 @@ export class StandeeField {
       overshoot = 0.12,
       decal = false,
       wind,
+      wave,
       ground,
     } = opts;
     this.count = capacity;
@@ -81,6 +100,7 @@ export class StandeeField {
         uBase: { value: baseOpacity },
         uOvershoot: { value: overshoot },
         uWind: { value: new THREE.Vector2(wind?.amp ?? 0, wind?.freq ?? 0) },
+        uWave: { value: new THREE.Vector3(wave?.amp ?? 0, wave?.speed ?? 0, wave?.len ?? 0) },
         uQuadH: { value: h },
         uPlayer: { value: new THREE.Vector2(1e6, 1e6) },
       },
@@ -89,6 +109,7 @@ export class StandeeField {
         uniform float uTime;
         uniform float uOvershoot;
         uniform vec2 uWind;
+        uniform vec3 uWave;
         uniform float uQuadH;
         uniform vec2 uPlayer;
         varying vec2 vUv;
@@ -109,7 +130,14 @@ export class StandeeField {
             float phase = origin.x * 1.7 + origin.y * 2.3;
             float sway = sin(uTime * uWind.y + phase)
                        + 0.5 * sin(uTime * uWind.y * 2.7 + phase * 1.3);
-            wp.x += sway * uWind.x * hFac * hFac;
+            // THE GUST: one wave crossing the whole field, one-sided so
+            // it arrives, passes, and leaves the corn standing again
+            float g = 0.0;
+            if (uWave.x > 0.0) {
+              float w = sin(uTime * uWave.y - origin.x * uWave.z);
+              g = max(0.0, w) * max(0.0, w) * uWave.x;
+            }
+            wp.x += (sway * uWind.x + g) * hFac * hFac;
             vec2 away = origin - uPlayer;
             float d = length(away);
             if (d < 1.7 && d > 1e-4) {
@@ -140,11 +168,20 @@ export class StandeeField {
 
     this.mesh = new THREE.InstancedMesh(geo, this.mat, capacity);
     this.mesh.frustumCulled = false;
+    /* Unused capacity is parked at ZERO SCALE, not merely a thousand
+     * units under the page. A field is often created at the size a
+     * scatter was ASKED for and `ctx.scatter` is allowed to return
+     * fewer (it gives up after so many tries against water, road and
+     * slope), so most fields in this world carry a few seats nobody
+     * sits in. They were full-size quads a thousand units down, which
+     * is invisible by luck rather than by construction. */
     for (let i = 0; i < capacity; i++) {
       this.dummy.position.set(0, -1000, 0);
+      this.dummy.scale.set(0, 0, 0);
       this.dummy.updateMatrix();
       this.mesh.setMatrixAt(i, this.dummy.matrix);
     }
+    this.dummy.scale.set(1, 1, 1);
   }
 
   /** Place instance i. Negative scaleX flips the silhouette. */
@@ -156,6 +193,49 @@ export class StandeeField {
     this.dummy.position.set(x, g + (this.isDecal ? 0.05 : 0.001) + (i % 7) * 0.0004, z);
     this.dummy.rotation.set(0, rotY, 0);
     this.dummy.scale.set(flip ? -scale : scale, scale, scale);
+    this.dummy.updateMatrix();
+    this.mesh.setMatrixAt(i, this.dummy.matrix);
+    this.mesh.instanceMatrix.needsUpdate = true;
+  }
+
+  /**
+   * TAKE INSTANCE i OFF THE PAGE WITHOUT LYING ABOUT WHERE IT IS.
+   *
+   * Every creature in this world that has more than one posture is drawn
+   * as one instanced field per pose with a single instance showing at a
+   * time, and the way the world hid the other poses was
+   * `set(i, x, -4000, 0.001)` — park it four thousand units away at a
+   * thousandth of its size.
+   *
+   * **That is a lie, and `positions` is the field's answer to "where is
+   * instance i".** `cascadeFrom` reads it: a gull parked at z = −4000
+   * came out four thousand units from the walker, and four thousand
+   * units at the ink wave's thirty-four a second is a birth **ninety-
+   * seven seconds in the future**. Until then the shader draws it at
+   * `uGhost` — sixteen per cent — which is invisible against paper.
+   *
+   * So every animal in the game vanished the moment it changed posture,
+   * for the first hundred seconds in each land, which is all the time
+   * anybody spends near it. The only ones that worked were Brim's
+   * pigeons, Brim's swallows and Greyweather's rooks, and they worked
+   * because they are one-off `ctx.standee` meshes with no birth
+   * attribute to get wrong. Reported by the owner; found by asking the
+   * running page what its births actually were.
+   *
+   * The instance drops straight down under its own feet at zero scale.
+   * `positions[i]` keeps the truth, so the cascade, `wakeNear` and
+   * `awakeCount` all still see a creature standing where it stands.
+   *
+   * (The other half of that rule, for anyone adding a field later: an
+   * instance that has NEVER been placed has no position at all, and
+   * `cascadeFrom` skips it and it is never born. Place every instance
+   * once at build time, or hide it — do not leave it untouched.)
+   */
+  hide(i: number, x: number, z: number) {
+    this.positions[i] = { x, z };
+    this.dummy.position.set(x, -4000, z);
+    this.dummy.rotation.set(0, 0, 0);
+    this.dummy.scale.set(0, 0, 0);
     this.dummy.updateMatrix();
     this.mesh.setMatrixAt(i, this.dummy.matrix);
     this.mesh.instanceMatrix.needsUpdate = true;
@@ -180,7 +260,16 @@ export class StandeeField {
   cascadeFrom(x: number, z: number, speed: number, now: number, jitter = 0.15, reach = Infinity) {
     for (let i = 0; i < this.count; i++) {
       const p = this.positions[i];
-      if (!p) continue;
+      if (!p) {
+        /* A seat nobody sits in. It draws nothing, so its birth cannot
+         * matter — but leaving it at infinity means a cascaded field is
+         * only MOSTLY born, and "a cascaded field is wholly born" is
+         * the invariant `tools/check-fields.mjs` asserts to keep the
+         * ghosted-animal bug from coming back. Give it the wave's own
+         * start and the invariant is exact. */
+        if (now < this.birth.getX(i)) this.birth.setX(i, now);
+        continue;
+      }
       const d = Math.hypot(p.x - x, p.z - z);
       // the wave carries only so far: past its reach the page stays
       // ghosted, and the rest of the sheet is the player's to walk

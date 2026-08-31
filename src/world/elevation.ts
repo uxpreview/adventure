@@ -1,5 +1,6 @@
 import {
-  WORLD, REGION_SPECS, RIVER, BRIDGES, PONDS, coastX, barDist, type RegionId,
+  WORLD, REGION_SPECS, RIVER, BRIDGES, PONDS, coastX, barDist, fordAt,
+  type RegionId,
 } from './layout';
 
 /**
@@ -564,9 +565,83 @@ function landHeight(x: number, z: number): number {
   const mouth = smoothstep(-96, -132, z) * smoothstep(-292, -272, z);
   const tear = (-13 * (1 - smoothstep(6, 16, Math.abs(td))) + 1.7 * bump((Math.abs(td) - 19) / 7)) * mouth;
 
-  /* ---- two swells in the downs and a basin in the pines ----------- */
+  /* ---- THE HARROW (Session 10) ------------------------------------ *
+   * The land is called the Harrow Downs and until this session that was
+   * a word on a signpost. It is now the ground.
+   *
+   * A harrow rakes a field into long parallel lines, and a sheet of
+   * paper that dried while it was held along one edge cockles the same
+   * way: not in random lumps, in RUNS. So the Downs' buckle is
+   * authored rather than sampled — five or six low ridges, forty-six
+   * units apart, running north–south with a slow wander in them, about
+   * a unit and a half from trough to crest.
+   *
+   * It does three jobs at once and that is why it is worth a term:
+   *   · the land finally has a GRAIN, and the grain runs the way the
+   *     camera looks, so the recession in every framing is drawn by the
+   *     ground instead of by props standing on it;
+   *   · the field plan can be laid one field per fold, which is what
+   *     makes a patchwork read as a patchwork rather than as a grid;
+   *   · and you crest one every forty paces, which is the cheapest
+   *     midpoint a walk can have.
+   *
+   * IT STARTS EAST OF THE CREASE, and that is deliberate twice over.
+   * The fold is the Downs' west wall — you come over it out of THE
+   * COMMON and the harrowed country begins on the far side — and it
+   * keeps every unit of this term more than thirty units clear of the
+   * protected `crease-east-road` framing's own ground.
+   */
+  /* AND IT IS BOUNDED ON ALL FOUR SIDES, which the first version was
+   * not: `smoothstep(96, 130, x)` alone is 1 at x = 370, so the Downs'
+   * corrugation ran clean across the Bleach Flats and out onto the
+   * world's curled east rim. `tools/diff-sheets.mjs` found it — eight
+   * per cent of the protected `curl-rim` framing had moved, in a land
+   * this session never opened — which is exactly the class of mistake
+   * that tool exists for and exactly the kind nobody has ever caught by
+   * looking at two contact sheets a week apart. */
+  const harrowK = smoothstep(96, 130, x) * (1 - smoothstep(206, 232, x))
+    * smoothstep(-96, -62, z) * (1 - smoothstep(96, 128, z));
+  const harrowPhase = x * 0.1366 + Math.sin(z * 0.0125) * 1.15 + Math.sin(z * 0.0041 + 2.2) * 0.6;
+  const harrow = (Math.sin(harrowPhase) * 1.15 + Math.sin(harrowPhase * 2 + 1.4) * 0.34) * harrowK;
+
+  /* The rough grazing's swell, from Session 4 and deliberately KEPT.
+   * It is the only ground in the Downs visible from the protected
+   * `crease-east-road` framing at anything like foreground pressure,
+   * and a land session that re-cut it would be moving a page six
+   * verdicts were awarded on for no gain (QUALITY-BAR §2). */
   const downsA = 3.4 * bump((x - 108) / 52) * bump((z + 52) / 44);
-  const downsB = 2.6 * bump((x - 196) / 44) * bump((z - 74) / 52);
+
+  /* THE MILL RISE. A windmill stands on the highest ground it can find,
+   * because that is what a windmill is FOR, and until now this one
+   * stood on a swell whose crest was forty units west of it. The rise
+   * is broad and low — four and a half units over sixty — so the lane
+   * climbs it the whole way from the ford and the mill is the last
+   * thing you reach and the first thing you see. */
+  const millRise = 4.5 * bump((x - 150) / 46) * bump((z + 10) / 40);
+  /* and the ground going sour toward the city: a shallow, wide sag in
+   * the south-east, which is the void's excuse for being a void */
+  const sourGround = -1.6 * bump((x - 206) / 44) * bump((z - 96) / 40);
+
+  /* ---- THE TARN'S BOWL (Session 10) ------------------------------- *
+   * The wood's floor was a flat sheet with a blue disc lying on it, so
+   * the water was invisible from anywhere except its own rim — which is
+   * fatal for a land whose one composition is a look at it from forty
+   * units away.
+   *
+   * A pond in a wood sits in a hollow, so the page dishes: the ground
+   * falls three and a half units from the ring road down to the water
+   * over twenty-six units, which is a gradient of about one in seven —
+   * you barely feel it underfoot and you can see straight down it. The
+   * dish is doubly curved, and that is safe here and nowhere else in
+   * this file: nothing on it comes within a fifth of the hatching
+   * threshold, so there is no fall line for the shader to draw down and
+   * no thumb print to draw it as.
+   *
+   * Kept east of x = 78 so it can never touch Brim or Greyweather. */
+  const tarnD = Math.hypot(x - 150, z + 195);
+  const bowlK = smoothstep(78, 104, x);
+  const bowl = (-3.5 * (1 - smoothstep(2, 46, tarnD))
+                + 0.9 * bump((tarnD - 50) / 14)) * bowlK;
   const penBasin = -2.8 * bump((x - 146) / 62) * bump((z + 192) / 54);
 
   /* ---- the curl: the margins lift off the desk -------------------- *
@@ -597,9 +672,9 @@ function landHeight(x: number, z: number): number {
   land = smax(land, holdfast, 0.8);
   land = smax(land, brimSwell + commonClimb, 4);
   land = smax(land, downsA, 4);
-  land = smax(land, downsB, 4);
+  land = smax(land, millRise, 4);
 
-  let h = land + buckle + crease + penBasin + sag + tear;
+  let h = land + buckle + crease + penBasin + bowl + harrow + sourGround + sag + tear;
 
   /* ---- THE CUT ----------------------------------------------------- *
    * A ledge is not a ramp bolted onto a cliff — it is stone TAKEN AWAY,
@@ -648,7 +723,11 @@ export function pageHeight(x: number, z: number): number {
       if (d < bridgeD) bridgeD = d;
     }
     const chan = 1 - smoothstep(7.5, 20, rd);
-    const bed = riverBed(rt) - 1.3 + smoothstep(14, 4, bridgeD) * 0.55;
+    /* THE FORD raises the bed rather than lowering the water: the river
+     * runs a hand deep over a gravel bar, so it shallows and pales over
+     * the crossing and is exactly as wet as it was everywhere else. */
+    const bed = riverBed(rt) - 1.3 + smoothstep(14, 4, bridgeD) * 0.55
+              + fordAt(x, z) * 1.02;
     h = h * (1 - chan) + Math.min(h, bed) * chan;
   }
 

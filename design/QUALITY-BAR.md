@@ -96,7 +96,12 @@ gate below that this project could not run); **THE BEARING** — the
 camera answers travel inside an authored envelope, the walk south has
 ground in front of it for the first time, and the oldest visible defect
 in the game (a name printed across the thing it names) is closed
-(WOWED, critique-camera-1 — and see the second owner's gate below).
+(WOWED, critique-camera-1 — and see the second owner's gate below);
+**FARM & FOREST** — THE HARROW DOWNS and THE PENWOOD, the first two
+lands built on ground authored for them (THE HARROW, the mill rise, the
+tarn's bowl) and the first land session whose "unregressed" is a number,
+with both waits shipped end to end and **the Penwood's whole fable told
+in a polyline: one road, and it is a circle** (WOWED, critique-art-6).
 Every other land is a scatter draft and is presumed NOT YET.
 
 **AND FROM SESSION 9 A REGRESSION IS A DIFF AND NOT AN OPINION.**
@@ -113,6 +118,22 @@ moved — separating THE PAGE (which may not move at all) from THE
 WRITING OVER IT (which moves when a label is deliberately re-placed).
 **A session that says a protected land is unregressed now says it with
 a number.**
+
+**AND IT EARNED ITS KEEP THE FIRST TIME A LAND SESSION RAN IT**
+(Session 10). A corrugation authored for THE HARROW DOWNS shipped with
+no east bound on it and ran clean across two other lands and out onto
+the world's curled rim: eight per cent of the protected `curl-rim`
+framing had moved, in a land the session never opened, and not one thing
+in that session's own contact sheet could have shown it. **A regression
+is now a thing a session finds in itself before anybody else does.**
+The corollary is the honest half: a land session's own scope WILL touch
+a protected framing that looks into it — `crease-east-road` stands at
+(62, 62) and the right half of what it sees at distance is the Downs —
+and the rule is unchanged. A framing may not move for a session's
+convenience. When it moves because the land inside it was the scope, the
+session says which framing, by how much, and what the verdict was
+awarded on (`crease-east-road` was awarded on the fold, and the fold is
+pixel-for-pixel what it was).
 
 **AND ONE GATE IS THE OWNER'S, because no tool in this repository can
 run it** (Session 8). The score can be rendered, measured, plotted and
@@ -244,6 +265,16 @@ regression check it always was.
   stops a walker weaving either side of due south from flipping a
   fifty-two-degree pan back and forth; and a stopped walker arrives at
   EXACTLY zero rather than approaching it.
+- **`node tools/check-fields.mjs` whenever anything is drawn as an
+  instanced field, and especially anything that MOVES.** The owner
+  found, after nine sessions, that every animal in the game went
+  invisible the moment it changed posture — a hidden pose was parked
+  four thousand units away and the ink wave scheduled its birth ninety-
+  seven seconds out, so it drew at ghost opacity. **No contact sheet in
+  this project could ever have caught it**, because a contact sheet
+  photographs a walker standing still and the bug only fires when a
+  creature changes pose. The check drives the walker AT the animals and
+  asserts that no field is half inked in.
 - **`node tools/check-terrain.mjs` before you look at anything.** It
   bundles the height field and asserts the amplitude envelope, that no
   road is severed, that every standing place is reachable on foot from

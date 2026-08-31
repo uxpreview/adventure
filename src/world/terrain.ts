@@ -5,7 +5,7 @@ import {
 } from '../engine/paper';
 import {
   WORLD, REGION_SPECS, ROADS, BRIDGES, PLANKS, coastX, seaAt, waterFieldAt,
-  barDist,
+  barDist, fordAt,
   type Rect,
 } from './layout';
 import {
@@ -571,11 +571,14 @@ export class Terrain {
     return false;
   }
 
-  /** What the page refuses: deep water, and ground too steep to climb. */
+  /** What the page refuses: deep water, and ground too steep to climb.
+   *  Two things get you across water: a plank, and a FORD (Session 10) —
+   *  the shallow place the mill lane crosses the river on, where the bed
+   *  comes up and the cart goes through. */
   blockedAt(x: number, z: number): boolean {
     if (this.tooSteep(x, z)) return true;
     if (this.waterAt(x, z) <= 0.62) return false;
-    return !this.onPlanks(x, z);
+    return !this.onPlanks(x, z) && fordAt(x, z) < 0.45;
   }
 }
 
