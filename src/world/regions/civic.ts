@@ -2,12 +2,23 @@ import * as THREE from 'three';
 import { grassTexture } from '../../engine/ink';
 import {
   lamppostTexture, bannerTexture, boulderTexture, wellTexture,
-  suburbanHouseTexture, mailboxTexture, carTexture, picketFenceTexture,
-  streetTreeTexture, swingSetTexture, towerBlockTexture, glassTowerTexture,
-  shopfrontTexture, trafficLightTexture, benchTexture, busStopTexture,
-  planterTexture, doodleFolkTexture, bushTexture, signpostTexture,
+  mailboxTexture, carTexture, picketFenceTexture,
+  streetTreeTexture, swingSetTexture, glassTowerTexture,
+  benchTexture, busStopTexture,
+  planterTexture, doodleFolkTexture, bushTexture,
   lampGlowTexture, brazierTexture,
 } from '../textures';
+import {
+  courtHouseTexture, courtHouseLitTexture, valHouseTexture, valPorchLitTexture,
+  clippedHedgeTexture, gardenChairTexture, latchGateTexture, valTexture,
+  juneTexture, pillarBoxTexture, binTexture, surveyPegTexture,
+  mownLawnDecal, drivewayDecal, kerbRunDecal, emptyPlotDecal, roadEndDecal, hopscotchDecal,
+  greylineTowerTexture, greylineTowerLitTexture, farSkylineTexture, shopRowTexture,
+  wornPathsDecal, pavingDecal, hardBenchTexture, junctionManTexture,
+  commuterTexture, lightMastTexture, fireEscapeTexture, hoardingTexture,
+  revolvingDoorTexture, grateDecal, grateSteamTexture, cityBinsTexture,
+  hollowWallTexture,
+} from '../textures-now';
 import {
   brimWallTexture, wallTowerTexture, brimGateTexture, gatePennantTexture,
   wornGroundDecal, wheelRutsDecal, longFenceTexture,
@@ -844,149 +855,858 @@ export const CASTLE_POIS: WorldPOI[] = [
 ];
 
 /* ================================================================== *
- * MAPLE COURT — porch lights, picket fences, a green with a swing
- * set. The kind of street the pen draws from memory.
+ * MAPLE COURT — a street that keeps its arrangements.
+ *
+ * Session 13, to `design/specs/maple-court.md`.
+ *
+ * THE DRAFT THIS REPLACES was two `for` loops: houses every twenty-four
+ * units down two fixed offsets, a picket fence every fourteen, thirty
+ * street trees and eighty tufts of grass on a Poisson scatter, and a
+ * signpost. That is even spacing, repeated silhouettes and uniform
+ * density, which is the three-part definition of "reads as an array"
+ * (`QUALITY-BAR` §4).
+ *
+ * ── WHAT REPLACES IT, AND IT IS A SENTENCE ABOUT THE SURVEY ─────────
+ *
+ * **The street thins to nothing as it goes south, and the reason is
+ * that the survey ran out.** The north end, where the Common is, is the
+ * oldest and the densest: a court off the king's road with a turning
+ * circle and eleven houses round it. Main street is the middle. South
+ * of main street the plots get bigger and further apart, then there are
+ * two plots with kerbs and dropped kerbs and driveways and NO HOUSES,
+ * and then there is nothing at all for sixteen units, and then the edge
+ * of the world.
+ *
+ * That gradient does three jobs at once and it is why it is the plan:
+ * it is a density that means something rather than a density that fills;
+ * it is `THE-LINE.md` §3.2's protected corridor obeyed by the land's own
+ * story instead of by a constraint; and it is what the walk SOUTH sees,
+ * which is the one motion Session 12 kept and improved.
+ *
+ * ── THE CORRIDOR, AND IT IS A HARD RULE ─────────────────────────────
+ *
+ * Nothing tall stands within eight units of x = −45 between z = 120 and
+ * z = 278 (`THE-LINE` §3.2). Every house here is authored at least
+ * twelve units off the axis so that its DRAWING clears the corridor as
+ * well as its origin, every scatter is bounded by `offLine`, and
+ * `tools/check-sightline.mjs` asserts the whole run against the world's
+ * own skyline grid so no later session can put a tree in it.
  * ================================================================== */
 
+/** THE LINE'S AXIS, and how much air it is owed either side. */
+const LINE_X = -45;
+const LINE_CLEAR = 8;
+/** Nothing tall may go here. Used as `scatter({ avoid })` and asserted
+ *  by `tools/check-sightline.mjs`. */
+const inLine = (x: number, z: number) =>
+  z > 118 && z < 280 && Math.abs(x - LINE_X) < LINE_CLEAR + 5;
+
+/** VAL'S, at the head of the court (`THE-WAITS` §3). */
+const VAL = { x: -78, z: 128 };
+/** The three chairs, and the hedge they face (`WORLD-SYSTEMS` §10). */
+const CHAIRS = { x: -61, z: 134 };
+const HEDGE_Z = 126;
+/** JUNE'S GATE and the fence at the end of the road
+ *  (`THE-STRANGERS` S3). */
+const JUNE_GATE = { x: 50, z: 191 };
+const JUNE_FENCE = { x: 55.5, z: 197.2 };
+
 export const buildNeighborhood: RegionBuilder = (ctx) => {
-  const { r, terrain } = ctx;
+  const { r } = ctx;
 
-  const houses: [number, number, number][] = [];
-  for (let z = 138; z <= 270; z += 24) {
-    houses.push([-63 - r() * 4, z, 0.5]);
-    houses.push([-26 + r() * 4, z + 12, -0.5]);
-  }
-  for (let x = -20; x <= 48; x += 24) {
-    houses.push([x, 184 - r() * 4, 0.5]);
-    houses.push([x + 12, 220 + r() * 4, -0.5]);
-  }
-  let hi = 0;
-  for (const [x, z, rot] of houses) {
-    if (terrain.waterAt(x, z) > 0.04) continue;
-    if (Math.hypot(x + 45, z - 200) < 16) continue; // the corner stays open
-    if (Math.hypot(x - 0, z - 160) < 14) continue;  // the green
-    ctx.standee(suburbanHouseTexture(1000 + hi), 8.8, 6.6, x, z, { rotY: rot * (0.5 + r() * 0.5) });
-    // a mailbox out front, sometimes a car
-    const mx = x + (rot > 0 ? 5 : -5);
-    ctx.standee(mailboxTexture(1030 + hi), 1.1, 1.7, mx, z + 2);
-    if (r() > 0.6) ctx.standee(carTexture(1060 + hi), 4.6, 2.3, mx + (r() - 0.5) * 3, z + 5, { rotY: rot > 0 ? 0.2 : -0.2 });
-    hi++;
+  /* ---- the shared drawings, made ONCE (Session 10's costing) ------- */
+  const HOUSE = [0, 1, 2].map((v) => courtHouseTexture(8000 + v, v as 0 | 1 | 2));
+  const HOUSE_LIT = [0, 1, 2].map((v) => courtHouseLitTexture(8010 + v, v as 0 | 1 | 2));
+  const LAWN = [0, 1].map((v) => mownLawnDecal(8600 + v, v as 0 | 1));
+  const DRIVE = [0, 1].map((v) => drivewayDecal(8610 + v, v as 0 | 1));
+
+  /* ================================================================ *
+   * THE PLOTS. Authored, one line each, and there is not a loop in it.
+   *
+   *   x, z      where the house stands
+   *   rot       which way it is turned — no two neighbours agree
+   *   kind      which of the three drawings
+   *   lit       whether anybody is in at dusk. **Most of them are not**,
+   *             and that is the whole of `THE-WAITS` §3: a dark house on
+   *             this road means the family went, and Val will not be the
+   *             one who makes the road look like that.
+   *   car/bin   what is out the front
+   * ================================================================ */
+  type Plot = { x: number; z: number; rot: number; kind: 0 | 1 | 2; lit?: boolean; car?: boolean; bin?: boolean; lawn?: boolean };
+  const PLOTS: Plot[] = [
+    /* the court, round the circle — the oldest part of the street */
+    { x: -90, z: 134, rot: 0.36, kind: 1, car: true, lawn: true },
+    { x: -89, z: 147, rot: 0.16, kind: 0, lit: true, bin: true, lawn: true },
+    { x: -68, z: 135, rot: -0.3, kind: 2, lawn: true },
+    { x: -70, z: 152, rot: -0.12, kind: 0, car: true, lawn: true },
+    { x: -92, z: 160, rot: 0.1, kind: 2, lit: true, lawn: true },
+    /* the east side of the king's road, north block */
+    { x: -32, z: 141, rot: -0.22, kind: 0, car: true, lawn: true },
+    { x: -30, z: 155, rot: -0.08, kind: 1, bin: true },
+    { x: -30, z: 114 + 60, rot: 0.2, kind: 2, lit: true, lawn: true },   // z 174
+    /* main street's own frontage: set back, and one of them is a shop's
+     * worth of hedge and nothing else */
+    { x: -62, z: 213, rot: 0.14, kind: 0, lit: true, car: true, lawn: true },
+    { x: -74, z: 219, rot: 0.3, kind: 2, bin: true },
+    { x: -31, z: 214, rot: -0.16, kind: 1, lawn: true },
+    { x: -21, z: 221, rot: -0.34, kind: 0, car: true },
+    { x: 6, z: 212, rot: 0.1, kind: 2, lit: true, lawn: true },
+    { x: 24, z: 218, rot: -0.2, kind: 0, bin: true },
+    { x: 41, z: 211, rot: 0.26, kind: 1, car: true, lawn: true },
+    /* south of main street the plots get bigger and further apart */
+    { x: -70, z: 233, rot: 0.22, kind: 1, lawn: true },
+    { x: -32, z: 236, rot: -0.1, kind: 0, lit: true, car: true, lawn: true },
+    { x: -19, z: 249, rot: -0.4, kind: 2 },
+    { x: -78, z: 251, rot: 0.44, kind: 0, bin: true },
+    /* and then one on its own, and it is the last house in the world */
+    { x: -31, z: 259, rot: 0.06, kind: 1, lawn: true },
+  ];
+
+  const lits: THREE.Mesh[] = [];
+  for (let i = 0; i < PLOTS.length; i++) {
+    const p = PLOTS[i];
+    const w = p.kind === 1 ? 9.6 : 8.8;
+    const h = p.kind === 1 ? 5.4 : p.kind === 2 ? 7.0 : 6.6;
+    ctx.standee(HOUSE[p.kind], w, h, p.x, p.z, { rotY: p.rot });
+    if (p.lit) {
+      const m = ctx.standee(HOUSE_LIT[p.kind], w, h, p.x, p.z, { rotY: p.rot, opacity: 0 });
+      (m.material as THREE.MeshBasicMaterial).transparent = true;
+      lits.push(m);
+    }
+    // the front garden: a lawn, a drive, and what is standing on it
+    const front = p.z + 6.5;
+    if (p.lawn) ctx.decal(LAWN[i % 2], 11, 9, p.x - 2.5, front, p.rot * 0.5, 0.5);
+    if (p.car || p.bin) {
+      ctx.decal(DRIVE[p.car ? 1 : 0], 4.6, 9, p.x + 4.4, front, p.rot * 0.5, 0.66);
+    }
+    if (p.car) {
+      ctx.standee(carTexture(8700 + i), 4.6, 2.3, p.x + 4.4, front + 1.2,
+        { rotY: p.rot > 0 ? 0.24 : -0.24 });
+    }
+    if (p.bin) ctx.standee(binTexture(8720 + i), 1.1, 1.5, p.x + 5.2, front + 4.2);
+    ctx.standee(mailboxTexture(8740 + i), 1.0, 1.6,
+      p.x + (p.x < LINE_X ? -5.8 : 5.8), front + 4.6);
   }
 
-  // picket fences stitch the yards together
-  const fences = ctx.field(picketFenceTexture(1100), 40, { w: 5.4, h: 1.7 });
-  let fi = 0;
-  for (let z = 132; z <= 272 && fi < 20; z += 14, fi++) {
-    fences.set(fi, -74, z, 1, Math.PI / 2, false);
-  }
-  for (let x = -18; x <= 50 && fi < 40; x += 12, fi++) {
-    fences.set(fi, x, 236, 1, 0, false);
-  }
+  /* ---- one drive with a hopscotch on it, mostly rained off --------- *
+   * Nobody says whose it was. Nobody in Maple Court would be so rude
+   * (`THE-WAITS` §3, and it is the land's whole manner).              */
+  ctx.decal(hopscotchDecal(8604), 2.6, 5.2, -65.5, 160.5, 0.1, 0.85);
 
-  const trees = ctx.field(streetTreeTexture(1101), 30, { w: 4.6, h: 6.3 });
-  ctx.scatter(30, { minDist: 10 }).forEach(([x, z], i) =>
-    trees.set(i, x, z, 0.75 + r() * 0.5, 0, r() > 0.5));
+  /* ================================================================ *
+   * THE COURT — the street the land is named after, and it is a dead
+   * end that comes back to itself (`layout.ts` draws the road; this is
+   * what stands round it).
+   *
+   * VAL'S HOUSE is at the head of it, north-facing camera dead on, so
+   * a walker coming up the court at any hour after about seven has one
+   * lit porch in front of them and eleven dark houses behind them.
+   * That is THE SHOT, and it is `THE-WAITS` §3's turn photographed:
+   * she is not holding a light for the people who left, she is holding
+   * the street's line.
+   * ================================================================ */
+  ctx.standee(valHouseTexture(8100), 10.6, 8.6, VAL.x, VAL.z);
+  const porch = ctx.standee(valPorchLitTexture(8101), 10.6, 8.6, VAL.x, VAL.z, { opacity: 0 });
+  (porch.material as THREE.MeshBasicMaterial).transparent = true;
+  ctx.decal(LAWN[0], 13, 10, VAL.x - 1, VAL.z + 7.5, 0, 0.5);
+  ctx.standee(picketFenceTexture(8110), 5.4, 1.3, VAL.x - 5.8, VAL.z + 8.4, { rotY: 0.04 });
+  ctx.standee(picketFenceTexture(8111), 5.4, 1.3, VAL.x + 5.6, VAL.z + 8.2, { rotY: -0.03 });
+  ctx.standee(pillarBoxTexture(8400), 1.3, 2.2, -71.5, 149.5, { rotY: 0.2 });
 
-  const grass = ctx.field(grassTexture(), 80, { w: 1.6, h: 1.1 });
-  ctx.scatter(80, { minDist: 3 }).forEach(([x, z], i) =>
+  /* VAL, and she has two postures and no face. Out at the gate in the
+   * evening looking up her own street; and, once in the morning, the
+   * bin. `WORLD-SYSTEMS` §5: one visible want each, expressed by where
+   * they stand and never by a line of dialogue. */
+  const val = [0, 1].map((p) =>
+    ctx.standee(valTexture(8120 + p, p as 0 | 1), 1.15, 2.05, VAL.x + 3.4, VAL.z + 8.8));
+  for (const m of val) (m.material as THREE.MeshBasicMaterial).transparent = true;
+
+  /* ================================================================ *
+   * THE THREE CHAIRS AND THE HEDGE (`WORLD-SYSTEMS` §10's tableau).
+   *
+   * Three chairs facing a hedge is a joke about suburbia until you
+   * notice that the hedge closed over a GAP. Come back holding the
+   * castle's name — which means you have stood under Greyweather — and
+   * the gap is cut back open, and it stays cut.
+   *
+   * **THE CHAIRS FACE NORTH**, because the camera only ever looks north
+   * and the whole beat is a sightline (`THE-WAITS` §3's authoring note,
+   * in capitals, and Session 12 removed the last excuse for ignoring
+   * it: a vista you cannot look along is not a vista). What is through
+   * the gap is a hundred and eighty units of the Common and then the
+   * pencil ridge over Brim — the same false-perspective keep this game
+   * has shown from the meadow since Session 2, seen from a back garden.
+   *
+   * Nothing is written on any of it. The land does not have a note
+   * about the chairs and it is not getting one.
+   * ================================================================ */
+  const hedgeShut = ctx.standee(clippedHedgeTexture(8200, false), 15, 2.5, CHAIRS.x, HEDGE_Z);
+  const hedgeCut = ctx.standee(clippedHedgeTexture(8201, true), 15, 2.5, CHAIRS.x, HEDGE_Z);
+  for (const m of [hedgeShut, hedgeCut]) {
+    (m.material as THREE.MeshBasicMaterial).transparent = true;
+  }
+  /* Three chairs, and NOT at even spacing: somebody sat in them and
+   * pushed them back, and the middle one is a little out of line with
+   * the other two. Even spacing is the thing the bar forbids and it is
+   * also, here, the thing that would make them furniture instead of a
+   * tableau. */
+  ([[-4.1, 0.2, 0, 0.06], [-0.4, -0.7, 1, -0.13], [3.2, 1.1, 2, 0.2]] as
+    [number, number, 0 | 1 | 2, number][]).forEach(([dx, dz, v, rot]) =>
+    ctx.standee(gardenChairTexture(8210 + v, v), 1.15, 1.25,
+      CHAIRS.x + dx, CHAIRS.z + dz, { rotY: rot }));
+  ctx.decal(LAWN[1], 17, 13, CHAIRS.x, CHAIRS.z + 5, 0, 0.42);
+  /* The hedge runs on either side of the garden, and both returns are
+   * SHORT. Round 3 of the gate carried two eleven-unit hedges turned
+   * ninety degrees, and a flat cutout seen almost edge-on does not read
+   * as a hedge going away from you — it reads as a card standing in a
+   * field. Three units each, tucked against the ends of the run. */
+  ctx.standee(clippedHedgeTexture(8202, false), 3.4, 2.3, CHAIRS.x - 7.4, HEDGE_Z + 1.7,
+    { rotY: Math.PI / 2 });
+  ctx.standee(clippedHedgeTexture(8203, false), 3.4, 2.3, CHAIRS.x + 7.4, HEDGE_Z + 1.7,
+    { rotY: Math.PI / 2 });
+
+  /* ================================================================ *
+   * THE GREEN (built since Session 1; it has a note and it keeps it).
+   * A swing set moving gently with nobody on it, a bench, one big tree
+   * and the sprinkler you never do find the lawn of.
+   * ================================================================ */
+  const GREEN = { x: 2, z: 178 };
+  const swing = ctx.standee(swingSetTexture(8800), 6.4, 4.8, GREEN.x, GREEN.z);
+  /* Portrait's frame is twenty-six degrees wide, and round 7's shot of
+   * this place was a swing set alone on a lawn with the bench and both
+   * trees outside the picture. A place is composed for the NARROW
+   * frame and allowed to be generous in the wide one. */
+  ctx.standee(benchTexture(8801), 3.6, 1.8, GREEN.x - 4.6, GREEN.z + 3.2, { rotY: 0.36 });
+  ctx.standee(streetTreeTexture(8802), 6.2, 8.4, GREEN.x + 5.4, GREEN.z - 2.6);
+  ctx.standee(streetTreeTexture(8803), 4.8, 6.6, GREEN.x - 7.4, GREEN.z - 6.5);
+  ctx.decal(LAWN[0], 26, 20, GREEN.x, GREEN.z + 1, 0.04, 0.42);
+
+  /* ================================================================ *
+   * JUNE'S GATE — `THE-STRANGERS` S3, beat one, and it is a detail a
+   * millimetre across: the latch plate is worn bright from being lifted
+   * and set back every night for years.
+   *
+   * The house is the last one before the border. The fence is the end
+   * of the road. Bring back what you saw at the junction and she is at
+   * the fence, and she stays there in every later save — forty-odd
+   * units from a man on the other side of a line neither of them can
+   * cross, and **nothing in this game ever says so.**
+   * ================================================================ */
+  ctx.standee(HOUSE[2], 8.8, 7.0, JUNE_GATE.x, JUNE_GATE.z - 5.5, { rotY: -0.06 });
+  ctx.decal(LAWN[1], 12, 10, JUNE_GATE.x, JUNE_GATE.z - 2, 0, 0.32);
+  ctx.standee(latchGateTexture(8300), 4.6, 2.5, JUNE_GATE.x, JUNE_GATE.z + 0.5);
+  const june = [0, 1].map((p) =>
+    ctx.standee(juneTexture(8310 + p, p as 0 | 1), 1.15, 2.05,
+      p === 0 ? JUNE_GATE.x - 2.2 : JUNE_FENCE.x, p === 0 ? JUNE_GATE.z + 1 : JUNE_FENCE.z));
+  for (const m of june) (m.material as THREE.MeshBasicMaterial).transparent = true;
+  /* THE FENCE AT THE END OF THE ROAD, and it runs ACROSS it.
+   *
+   * Round 5 laid it north–south along the border, which is where a
+   * border fence goes — and the camera only ever looks north, so five
+   * panels turned ninety degrees came back as one grey streak with a
+   * woman standing beside it. A thing you walk ALONG runs north–south;
+   * a thing you LOOK AT runs east–west. This is a thing you look at. */
+  for (let i = 0; i < 4; i++) {
+    ctx.standee(picketFenceTexture(8320 + i), 5.4, 1.6, 40 + i * 5.3,
+      197.6 + (i % 2) * 0.4, { rotY: (i - 1.5) * 0.02 });
+  }
+  ctx.standee(picketFenceTexture(8324), 4.4, 1.6, 58.2, 200.5, { rotY: Math.PI / 2 });
+
+  /* ================================================================ *
+   * THE PLOTS THAT WERE NEVER BUILT ON, and then the end of the road.
+   *
+   * `THE-LINE.md` §3.2: *"the road stops sixteen units short of the edge
+   * of the world and no session has ever said why. Now it has a reason:
+   * that is where the survey ran out."* So the last two hundred yards
+   * of Maple Court are kerbs, dropped kerbs and driveways with nothing
+   * behind them, the tarmac goes to gravel and then to grass, and there
+   * are three pegs in the ground.
+   *
+   * **There is no note here and there never will be.** It is the one
+   * place in the game important enough to leave unlettered.
+   * ================================================================ */
+  for (const [x, z, rot] of [
+    [-63, 238, 0.02], [-63, 250, 0.02], [-27, 244, -0.03], [-27, 256, -0.03],
+  ] as [number, number, number][]) {
+    ctx.decal(emptyPlotDecal(8900 + z), 22, 16, x, z, rot, 0.62);
+  }
+  /* THE KERBS, and they run from main street to where the survey
+   * stopped. They are marks on the page, so they may lie in the
+   * corridor nothing is allowed to stand in — and two converging lines
+   * are the only thing that makes a hundred units of empty road read as
+   * a road rather than as a smear. */
+  const KERB = [0, 1].map((v) => kerbRunDecal(8920 + v));
+  for (let i = 0; i < 4; i++) {
+    ctx.decal(KERB[i % 2], 12, 16, -45, 202 + i * 15.6, 0, 0.62);
+  }
+  ctx.decal(roadEndDecal(8910), 13, 18, -45, 264, 0, 0.8);
+  ctx.standee(surveyPegTexture(8500, false), 0.5, 0.55, -46.4, 267.5, { rotY: 0.3 });
+  ctx.standee(surveyPegTexture(8501, false), 0.5, 0.55, -44.6, 272.5, { rotY: -0.2 });
+  ctx.standee(surveyPegTexture(8502, true), 0.9, 0.4, -45.6, 276.5, { rotY: 0.5 });
+
+  /* ================================================================ *
+   * THE PLANTING — and every last piece of it is bounded off the line.
+   *
+   * The draft scattered thirty street trees with `minDist: 10` and no
+   * `avoid`, and `scatter` only dodges the road's own PAINT, which is
+   * five units wide against a corridor that is sixteen. A tree could
+   * therefore land legally beside the king's road and inside the one
+   * sightline in this game that cannot afford it.
+   * ================================================================ */
+  const offLine = (x: number, z: number) => inLine(x, z);
+  const trees = ctx.field(streetTreeTexture(8950), 26, { w: 4.6, h: 6.3, wind: { amp: 0.05, freq: 0.5 } });
+  {
+    // street trees stand in verges, so they are authored in short runs
+    // beside the streets rather than sprinkled over the land
+    const spots: [number, number][] = [];
+    for (const [x0, z0, dx, dz, n] of [
+      [-86, 143, 0, 9, 4], [-30, 139, 0, 11, 3], [-30, 205, 13, 1.5, 5],
+      [-29, 226, -1, 12, 3], [-74, 208, 6, 1, 3], [8, 200, 12, -1.5, 3],
+    ] as [number, number, number, number, number][]) {
+      for (let i = 0; i < n; i++) {
+        const x = x0 + dx * i + (r() - 0.5) * 3;
+        const z = z0 + dz * i + (r() - 0.5) * 3;
+        if (offLine(x, z)) continue;
+        spots.push([x, z]);
+      }
+    }
+    spots.forEach(([x, z], i) => trees.set(i, x, z, 0.8 + r() * 0.5, 0, r() > 0.5));
+  }
+  const grass = ctx.field(grassTexture(), 60, { w: 1.6, h: 1.1, wind: { amp: 0.08, freq: 0.7 } });
+  ctx.scatter(60, { minDist: 5, avoid: offLine }).forEach(([x, z], i) =>
     grass.set(i, x, z, 0.6 + r() * 0.5, 0, r() > 0.5));
+  const fences = ctx.field(picketFenceTexture(8960), 24, { w: 5.4, h: 1.7 });
+  {
+    // fences stitch the yards of the court together and stop where the
+    // street does
+    let fi = 0;
+    for (const [x0, z0, n, rot] of [
+      [-86, 130, 5, Math.PI / 2], [-53, 150, 3, 0],
+      [-30, 210, 4, 0], [16, 206, 5, 0], [-70, 224, 4, 0],
+    ] as [number, number, number, number][]) {
+      for (let i = 0; i < n && fi < 24; i++) {
+        const x = rot === 0 ? x0 + i * 5.4 : x0;
+        const z = rot === 0 ? z0 : z0 + i * 5.4;
+        if (offLine(x, z)) continue;
+        fences.set(fi++, x, z, 1, rot, false);
+      }
+    }
+  }
 
-  // the green
-  ctx.standee(swingSetTexture(1110), 6.4, 4.8, 0, 158);
-  ctx.standee(benchTexture(1111), 3.6, 1.8, -8, 164, { rotY: 0.4 });
-  ctx.standee(streetTreeTexture(1112), 5.4, 7.4, 8, 150);
-  ctx.standee(signpostTexture(1113), 3.4, 4.1, -40, 196);
+  /* ---- and the folk, and there are three of them ------------------- *
+   * A suburb at four in the afternoon is not empty and it is not busy.
+   * Three people at the far end of what you can see is exactly right,
+   * and the fourth would be a crowd.                                   */
+  const folk = ctx.field(doodleFolkTexture(8970), 3, { w: 1.15, h: 1.9 });
+  [[-88, 206], [14, 232], [-30, 176]].forEach(([x, z], i) =>
+    folk.set(i, x, z, 0.95 + r() * 0.12, 0, r() > 0.5));
 
-  const folk = ctx.field(doodleFolkTexture(1120), 6, { w: 1.15, h: 1.9 });
-  ctx.scatter(6, { minDist: 20 }).forEach(([x, z], i) =>
-    folk.set(i, x, z, 0.85 + r() * 0.25, 0, r() > 0.5));
+  /* ================================================================ */
+  let sprinkler = 6;
+  let dog = 21;
+  return (dt: number, _t: number, px: number, pz: number) => {
+    const h = clock.hour;
+
+    /* THE PORCH LIGHT, AND IT NEVER GOES ALL THE WAY OUT.
+     *
+     * Everything else on this street lights at dusk and is dark at
+     * noon, the way Brim's lamps have been since Session 6. Val's porch
+     * is the exception and it is the whole wait: it is on at every
+     * hour, including the ones nobody is awake for. In daylight it is
+     * a bulb doing nothing that you can still see is on. */
+    const dusk = Math.max(
+      Math.min(1, (h - 17.4) / 2.2),
+      Math.min(1, (6.6 - h) / 1.8)
+    );
+    const k = Math.max(0, Math.min(1, dusk));
+    lightUp(lits, k);
+    (porch.material as THREE.MeshBasicMaterial).opacity = 0.3 + k * 0.7;
+    porch.visible = true;
+
+    /* THE GAP IS CUT BACK OPEN, and it stays cut. You have stood under
+     * Greyweather; the hedge at the bottom of this garden has a notch
+     * in it now, and through the notch there is a ridge. */
+    const seen = knowledge.has('name:castle');
+    hedgeShut.visible = !seen;
+    hedgeCut.visible = seen;
+
+    /* VAL'S DAY. Out at the gate in the evening, looking up her own
+     * street; the bin, once, early. She is not in shot at night and she
+     * is not in shot in the middle of the day. */
+    const pose = h > 18.2 && h < 20.8 ? 0 : h > 7.2 && h < 8.4 ? 1 : -1;
+    for (let p = 0; p < 2; p++) val[p].visible = p === pose;
+
+    /* JUNE. At her gate in the evening — and at the fence, always, once
+     * you have brought back what you saw at the junction. */
+    const told = knowledge.has('fact:the-man-at-the-junction');
+    june[0].visible = !told && h > 17.6 && h < 21;
+    june[1].visible = told;
+
+    /* THE SPRINKLER YOU NEVER FIND, and the dog two streets over. Both
+     * of them are sounds with nothing drawn anywhere in the land to
+     * make them, which is the point (`WORLD-SYSTEMS` §5): a suburb is
+     * mostly other people's afternoons, heard. */
+    const near = pz > 130 && pz < 250 && px > -110 && px < 55;
+    if (near) {
+      sprinkler -= dt;
+      if (sprinkler < 0) {
+        sprinkler = 13 + Math.random() * 15;
+        if (h > 8 && h < 20.5) say('sprinkler');
+      }
+      dog -= dt;
+      if (dog < 0) {
+        dog = 26 + Math.random() * 30;
+        // a door on a spring in the evening, a dog the rest of the time
+        say(h > 17 && h < 21.5 ? 'screen-door' : 'far-dog');
+      }
+    }
+    // the swing, and nobody is on it
+    swing.rotation.z = Math.sin(_t * 0.8) * 0.055 + Math.sin(_t * 0.31) * 0.02;
+  };
 };
 
 export const NEIGHBORHOOD_POIS: WorldPOI[] = [
   {
-    x: 0, z: 158, radius: 8, label: 'THE GREEN',
+    x: 2, z: 178, radius: 8, label: 'THE GREEN',
     prompt: 'SIT A WHILE',
     note: {
       title: 'the green',
       body: 'a swing set moving, gently, with nobody on it. somewhere behind a hedge a sprinkler is going, and you never do find the lawn it is on. it is always almost dinnertime here.',
     },
   },
+  {
+    /* The label sits over the circle rather than over the house: the
+     * skyline writes a name above the tallest thing UNDER it, and the
+     * tallest thing here is the porch Val is the reason for. */
+    x: -78, z: 140, radius: 9, label: 'MAPLE COURT',
+    prompt: 'LOOK UP THE STREET',
+    note: {
+      title: 'maple court',
+      body: 'eleven houses round a circle you can walk all the way around. one porch light on, at four in the afternoon, and it has not been off in a long time. the bins go out on the right day.',
+    },
+  },
+  {
+    x: -61, z: 139, radius: 8, label: 'THE THREE CHAIRS',
+    prompt: 'LOOK AT THE HEDGE',
+    note: {
+      title: 'the three chairs',
+      body: 'facing a hedge. somebody set them out at this angle on purpose, and somebody has gone on cutting the hedge ever since, and both of those are true.',
+    },
+  },
+  {
+    x: 50, z: 193, radius: 7, label: 'THE GATE ON THE LATCH',
+    prompt: 'LOOK AT THE LATCH',
+    note: {
+      title: 'the gate on the latch',
+      body: 'never locked, never left open. the plate under the bar is worn down to bright metal — lifted and set back, lifted and set back, for as many years as it takes to do that to a piece of iron.',
+    },
+  },
   { x: -45, z: 170, radius: 7, label: 'THE RIVER BRIDGE' },
 ];
 
 /* ================================================================== *
- * GREYLINE CITY — downtown. Hatched towers, lit windows, shopfronts
- * under awnings, and the junction that thinks it is the center of
- * the world (it is a four-way stop).
+ * GREYLINE CITY — where standing still is shameful.
+ *
+ * Session 13, to `design/specs/greyline-city.md`.
+ *
+ * THE DRAFT THIS REPLACES laid towers on a twenty-one-unit `for` loop,
+ * shopfronts at `76 + i * 15`, lamps at `78 + i * 30` and ten planters
+ * on a scatter. Even spacing, repeated silhouettes, uniform density.
+ *
+ * ── THE PLAN THAT REPLACES IT ───────────────────────────────────────
+ *
+ * A city is not props on a grid; it is a STREET WALL with holes in it,
+ * and the holes are where the light gets in. So everything here is
+ * placed against one of four things and never in the open:
+ *
+ *   THE STREET WALL   towers standing shoulder to shoulder along mill
+ *                     lane and main street, near ones cropped by the
+ *                     top of the frame, far ones whole
+ *   THE HOLLOW        the page's crease runs north–south through
+ *                     x ≈ 88, three units under the rest of the land,
+ *                     and the city turned its back on it
+ *   THE JUNCTION      four green lights, a man, and the pavement
+ *   THE NORTH END     where the grid runs out into the Downs
+ *
+ * **AND THE FRAME-TOP CEILING IS THE SUBJECT HERE.** Every land since
+ * Session 3 has designed AROUND the fact that the camera shows about
+ * ten units of height at thirty-three units out. Downtown is the one
+ * place in this world where a building going out of the top of the
+ * frame is the correct picture, and it is what makes this land read as
+ * a city rather than as a village with taller huts.
  * ================================================================== */
+
+/** THE JUNCTION, and the man who has been standing in it long enough to
+ *  be geography (`THE-WAITS` §11). */
+const JUNCTION = { x: 148, z: 203 };
+const MAN = { x: 142.5, z: 199 };
+/** The bench twenty units off that nobody has ever used. It is NORTH of
+ *  him on purpose: one standpoint holds the wear, the man and the bench
+ *  in one frame, and it is the same frame after he moves. */
+const BENCH = { x: 145.5, z: 181 };
+/** How long you have to stand still for it to be unmistakably a choice.
+ *  Four seconds, and `THE-WAITS` §11 is explicit that the cost is the
+ *  whole reason nobody in this city has ever paid it. */
+const ASK_SECONDS = 4;
+
+/** The walker's last position, for the stand-still test in the update
+ *  below: standing still is measured as NOT MOVING, not as not pressing
+ *  anything. */
+let lastX = 0;
+let lastZ = 0;
 
 export const buildCity: RegionBuilder = (ctx) => {
   const { r, terrain } = ctx;
 
-  // towers hold the street grid: mill lane (x≈150) and main street (z≈203)
-  const spots: [number, number][] = [];
-  for (let z = 145; z <= 270; z += 21) {
-    spots.push([131 - r() * 4, z], [170 + r() * 4, z + 10]);
-  }
-  for (let x = 72; x <= 128; x += 20) {
-    spots.push([x, 186 - r() * 4], [x + 8, 224 + r() * 4]);
-  }
-  for (let x = 186; x <= 222; x += 20) {
-    spots.push([x, 184 - r() * 4], [x + 6, 226 + r() * 4]);
-  }
-  let ti = 0;
-  for (const [x, z] of spots) {
-    if (terrain.waterAt(x, z) > 0.04 || terrain.roadAt(x, z)) continue;
-    if (Math.hypot(x - 150, z - 203) < 15) continue;
-    const floors = 5 + Math.floor(r() * 7);
-    const hpx = 64 + floors * 30;
-    ctx.standee(towerBlockTexture(1200 + ti, floors), 9.6, 9.6 * (hpx / 192), x, z);
-    ti++;
+  /* ---- the shared drawings ---------------------------------------- */
+  const TOWER: THREE.Texture[] = [];
+  const TOWER_LIT: THREE.Texture[] = [];
+  const TOWER_H: number[] = [];
+  // six blocks, three kinds, two heights each — and every tower in the
+  // land is one of these six, placed differently
+  ([[0, 5], [0, 9], [1, 6], [1, 12], [2, 7], [2, 11]] as [0 | 1 | 2, number][])
+    .forEach(([kind, floors], i) => {
+      TOWER.push(greylineTowerTexture(9000 + i * 10, kind, floors));
+      TOWER_LIT.push(greylineTowerLitTexture(9001 + i * 10, kind, floors));
+      TOWER_H.push(72 + floors * 34);
+    });
+  const PAVING = [0, 1].map((v) => pavingDecal(9300 + v, v as 0 | 1));
+
+  /* ================================================================ *
+   * THE STREET WALL. Authored, one line per building: which drawing,
+   * where it stands, how wide it is, and whether anybody is still in it
+   * at seven in the evening.
+   *
+   * The width is authored per placement and the height follows from the
+   * drawing, so two towers off the same canvas are different buildings
+   * rather than the same building twice.
+   * ================================================================ */
+  type Block = { x: number; z: number; t: number; w: number; rot?: number; lit?: boolean };
+  const BLOCKS: Block[] = [
+    /* mill lane's west wall, coming north from the junction */
+    { x: 132, z: 194, t: 3, w: 11.5, lit: true },
+    { x: 135, z: 184, t: 0, w: 9.5 },
+    { x: 137, z: 172, t: 4, w: 12, rot: 0.04, lit: true },
+    { x: 134, z: 160, t: 2, w: 10 },
+    /* mill lane's east wall */
+    { x: 161, z: 194, t: 5, w: 12.5, lit: true },
+    { x: 160, z: 180, t: 1, w: 10.5, rot: -0.03 },
+    { x: 163, z: 166, t: 3, w: 11 },
+    /* south of the junction, where the spur leaves: lower, older */
+    { x: 131, z: 218, t: 0, w: 10, lit: true },
+    { x: 160, z: 214, t: 2, w: 11, rot: 0.05 },
+    { x: 130, z: 234, t: 2, w: 9.5 },
+    { x: 164, z: 236, t: 0, w: 10.5, lit: true },
+    { x: 141, z: 252, t: 4, w: 11.5 },
+    /* main street's north side, running west from the junction to the
+     * top of the rise */
+    { x: 124, z: 194, t: 1, w: 10.5, lit: true },
+    { x: 112, z: 192, t: 3, w: 11 },
+    /* and the two that stand on the lip of the hollow and look into it */
+    { x: 100, z: 186, t: 0, w: 9.5, rot: -0.08 },
+    { x: 99, z: 220, t: 2, w: 10, rot: 0.06, lit: true },
+    /* the east quarter, thinner: the city is running out this way */
+    { x: 186, z: 200, t: 1, w: 11 },
+    { x: 198, z: 222, t: 0, w: 9.5, lit: true },
+    { x: 205, z: 188, t: 4, w: 11.5 },
+    /* the north end, and the last one is on its own */
+    { x: 150, z: 148, t: 2, w: 10, rot: -0.05 },
+    { x: 172, z: 143, t: 0, w: 9, lit: true },
+  ];
+
+  const towerLits: THREE.Mesh[] = [];
+  for (let i = 0; i < BLOCKS.length; i++) {
+    const b = BLOCKS[i];
+    if (terrain.waterAt(b.x, b.z) > 0.04) continue;
+    const h = b.w * (TOWER_H[b.t] / 192);
+    ctx.standee(TOWER[b.t], b.w, h, b.x, b.z, { rotY: b.rot ?? 0 });
+    if (b.lit) {
+      const m = ctx.standee(TOWER_LIT[b.t], b.w, h, b.x, b.z, { rotY: b.rot ?? 0, opacity: 0 });
+      (m.material as THREE.MeshBasicMaterial).transparent = true;
+      towerLits.push(m);
+    }
   }
 
-  // shopfronts at street level on main street
-  for (let i = 0; i < 5; i++) {
-    ctx.standee(shopfrontTexture(1240 + i), 7, 5, 76 + i * 15, 213, { rotY: -0.06 });
-  }
-  for (let i = 0; i < 3; i++) {
-    ctx.standee(shopfrontTexture(1250 + i), 7, 5, 96 + i * 17, 193, { rotY: Math.PI });
+  /* THE FAR SKYLINE — the haze layer. Pencil, no windows, and nothing a
+   * walker can ever reach: it is what stands BEHIND the street wall in
+   * every frame in this land. */
+  for (const [x, z, w, hh] of [
+    [178, 128, 62, 16], [130, 134, 54, 13], [214, 158, 58, 15],
+    [116, 266, 60, 14], [206, 268, 56, 13],
+  ] as [number, number, number, number][]) {
+    /* AND IT TAKES THE FOG. Round 5 turned fog off on these — the
+     * meadow's keep vista does, because it is a poster standing in for
+     * something a hundred and eighty units further out — and from MAPLE
+     * COURT, over the rise, five pale blocks hung in the air above the
+     * far bank with nothing hazing them. A skyline IS the haze layer;
+     * it does not get to opt out of the haze. */
+    ctx.standee(farSkylineTexture(9100 + x), w, hh, x, z, { opacity: 0.85 });
   }
 
-  // the junction
-  for (const [x, z, rot] of [[143, 196, 0], [157, 196, 0.4], [143, 211, -0.4], [157, 211, 0.2]] as
-    [number, number, number][]) {
-    ctx.standee(trafficLightTexture(1260), 1.6, 5.6, x, z, { rotY: rot });
+  /* ================================================================ *
+   * MAIN STREET at street level: two runs of shopfronts under awnings,
+   * facing each other across the road, and they stop where the rise
+   * does. Nothing has a name over it — no shop in this game does.
+   * ================================================================ */
+  ctx.standee(shopRowTexture(9200, 0), 20, 8.3, 118, 197.5, { rotY: -0.03 });
+  ctx.standee(shopRowTexture(9201, 1), 22, 9.2, 108, 217, { rotY: Math.PI + 0.02 });
+  ctx.standee(shopRowTexture(9202, 0), 18, 7.5, 137, 195, { rotY: -0.05 });
+  ctx.standee(busStopTexture(9210), 5.4, 5, 130, 214.5, { rotY: Math.PI });
+
+  /* THE REVOLVING DOOR — a door that goes round and brings you back to
+   * where you were, in the land where nobody arrives. It is not a POI,
+   * it has no note, and it turns whether or not anybody is looking. */
+  const doors = [0, 1].map((p) =>
+    ctx.standee(revolvingDoorTexture(9520 + p, p as 0 | 1), 5.2, 6.2, 139, 194));
+  for (const m of doors) (m.material as THREE.MeshBasicMaterial).transparent = true;
+
+  /* ================================================================ *
+   * THE HOLLOW — the page's crease, three units under the city, and the
+   * only landform in this land. `elevation.ts` cut it in Session 4 and
+   * the draft built straight over the top of it.
+   *
+   * A city does with a crease what a city does: it turns its back. So
+   * the hollow has the BACKS of things in it — a flank wall with a fire
+   * escape zigzagging down it, bins, a grating breathing warm air (the
+   * land's own voice, `Audio.ts` LAND_VOICE: *warm air off a grating
+   * under the whole street*) — and it runs north–south, so you can walk
+   * down into it and look along it.
+   * ================================================================ */
+  const HOLLOW_X = 88;
+  ctx.standee(fireEscapeTexture(9500), 8, 16, HOLLOW_X + 6.5, 196, { rotY: -0.42 });
+  ctx.standee(fireEscapeTexture(9501), 7, 14, HOLLOW_X + 6, 224, { rotY: -0.38 });
+  {
+    /* THE TOES OF BOTH SLOPES, and nothing above them.
+     *
+     * Round 6 tried to draw this fold properly — hatching down the fall
+     * line as `QUALITY-BAR` §3 asks for, and a full run of retaining
+     * walls — and both were worse than the smooth ground they were
+     * covering: forty identical hatch decals at even spacing read as
+     * corduroy (which is an ARRAY, in the one place in the world that
+     * already has a harrow in it), and a five-unit wall standing on a
+     * slope has its feet in the air at both ends.
+     *
+     * What is left is what a wall can honestly do here: short panels at
+     * the very bottom of the cut where the ground is nearly flat,
+     * turned toward the channel so the run of them recedes. **The fold
+     * itself is still shaded rather than drawn, and that is a debt this
+     * session records rather than hides** — its gradient is under the
+     * terrain's own hatching threshold, and the fix belongs to
+     * `elevation.ts` and not to a region builder. */
+    const WALLS = [0, 1].map((v) => hollowWallTexture(9550 + v, v as 0 | 1));
+    let wi = 0;
+    for (let z = 172; z <= 254; z += 11) {
+      for (const side of [-1, 1] as const) {
+        if (r() < 0.3) continue;
+        ctx.standee(WALLS[wi++ % 2], 8.5, 3.4, HOLLOW_X + side * 5.4,
+          z + (r() - 0.5) * 4, { rotY: side * 0.92 });
+      }
+    }
   }
-  ctx.standee(busStopTexture(1265), 5.4, 5, 122, 210, { rotY: Math.PI });
-
-  const benches = ctx.field(benchTexture(1270), 8, { w: 3.4, h: 1.7 });
-  [[80, 208], [104, 196], [170, 210], [140, 190], [160, 240], [138, 260], [200, 196], [214, 212]]
-    .forEach(([x, z], i) => benches.set(i, x, z, 1, (r() - 0.5) * 0.6, r() > 0.5));
-  const planters = ctx.field(planterTexture(1271), 10, { w: 2, h: 2 });
-  ctx.scatter(10, { minDist: 12 }).forEach(([x, z], i) =>
-    planters.set(i, x, z, 0.9 + r() * 0.3, 0, false));
-
-  const folk = ctx.field(doodleFolkTexture(1280), 14, { w: 1.15, h: 1.9 });
-  ctx.scatter(14, { minDist: 9, allowRoad: true }).forEach(([x, z], i) =>
-    folk.set(i, x, z, 0.85 + r() * 0.25, 0, r() > 0.5));
-
-  const lamps = ctx.field(lamppostTexture(1281), 10, { w: 1.7, h: 6 });
-  for (let i = 0; i < 5; i++) {
-    lamps.set(i * 2, 78 + i * 30, 197, 1, 0, false);
-    lamps.set(i * 2 + 1, 92 + i * 30, 209, 1, 0, true);
+  ctx.standee(cityBinsTexture(9540), 4.6, 3.1, HOLLOW_X - 2.5, 208, { rotY: 0.3 });
+  ctx.standee(cityBinsTexture(9541), 4.2, 2.8, HOLLOW_X + 1.5, 232, { rotY: -0.2 });
+  ctx.decal(grateDecal(9530), 3, 3, HOLLOW_X - 0.5, 216, 0.1, 0.7);
+  const steam = [0, 1].map((p) =>
+    ctx.standee(grateSteamTexture(9531 + p, p as 0 | 1), 3.4, 5, HOLLOW_X - 0.5, 216.5));
+  for (const m of steam) (m.material as THREE.MeshBasicMaterial).transparent = true;
+  // the hollow's own paving, and it is not swept
+  for (const z of [190, 206, 222, 238]) {
+    ctx.decal(PAVING[z % 2 === 0 ? 0 : 1], 12, 12, HOLLOW_X, z, 0.02, 0.5);
   }
+
+  /* ================================================================ *
+   * THE JUNCTION — four lights, all green, and a man standing in the
+   * one place on the pavement nobody walks (`THE-WAITS` §11).
+   *
+   * THE WEAR IS THE WAIT. Everybody walks round him, and the paths they
+   * take to do it have been trodden into the stone; the clean lens in
+   * the middle of them is the shape of a decision made about a million
+   * times. It is a DRAWING (`textures-now.ts`, `wornPathsDecal`) and it
+   * is twenty-six units across, laid on the pavement he stands on and
+   * on nothing else in the world.
+   *
+   * The paths do not change, ever. When he goes and sits down they stay
+   * exactly where they are, curving round a place where nobody is
+   * standing any more.
+   * ================================================================ */
+  for (let i = 0; i < 4; i++) {
+    const [x, z] = [[139, 210], [157.5, 210], [139, 195.5], [157.5, 195.5]][i];
+    ctx.standee(lightMastTexture(9430 + i, i % 2 === 1), 5.6, 9, x, z,
+      { rotY: (i < 2 ? 0.06 : Math.PI - 0.06) });
+  }
+  // the pavement round the crossing, then the wear on top of it
+  for (const [x, z] of [[160, 190], [161, 215], [131, 214]] as [number, number][]) {
+    ctx.decal(PAVING[(x + z) % 2], 13, 13, x, z, 0, 0.5);
+  }
+  /* AND NOTHING ELSE IS LAID OVER IT. Round 3 put a plain paving decal
+   * on each corner of the crossing and two of them overlapped this one;
+   * decals draw in the order they were made, so the stone the wait is
+   * drawn into was covered by ordinary stone and the whole wait went
+   * invisible in the contact sheet. */
+  ctx.decal(wornPathsDecal(9310), 30, 30, MAN.x, MAN.z, 0, 1);
+  ctx.standee(hardBenchTexture(9400), 3.9, 2.3, BENCH.x, BENCH.z, { rotY: -0.06 });
+
+  /* THE MAN. Two postures, no face, no name, and the map will never
+   * mark him. */
+  const man = [0, 1].map((p) =>
+    ctx.standee(junctionManTexture(9410 + p, p as 0 | 1), 1.25, 2.15,
+      p === 0 ? MAN.x : BENCH.x + 0.1, p === 0 ? MAN.z : BENCH.z + 0.55));
+  for (const m of man) (m.material as THREE.MeshBasicMaterial).transparent = true;
+
+  /* ================================================================ *
+   * THE NORTH END, where the grid gives up: a hoarding round a lot that
+   * nothing is being built on, and then the Downs.
+   * ================================================================ */
+  ctx.standee(hoardingTexture(9510), 16, 3.2, 158, 160, { rotY: 0.03 });
+  ctx.standee(hoardingTexture(9511), 11, 3.2, 168.5, 164.5, { rotY: Math.PI / 2 + 0.04 });
+  ctx.decal(PAVING[0], 14, 14, 150, 172, 0, 0.44);
+
+  /* ================================================================ *
+   * THE FLOW. Fourteen people, all of them mid-stride, none of them
+   * standing still — placed along the streets in ones and twos rather
+   * than scattered over the land, because a pavement is a line.
+   * ================================================================ */
+  const COMMUTE: [number, number, 0 | 1 | 2][] = [
+    [136, 220, 0], [156, 236, 1], [152, 190, 2], [151, 172, 0],
+    [128, 205, 1], [117, 203, 2], [106, 200, 0], [133, 200, 2],
+    [155, 240, 1], [168, 205, 0], [186, 210, 2], [149, 158, 1],
+    [162, 224, 0], [124, 216, 1],
+  ];
+  for (let v = 0; v < 3; v++) {
+    const sub = COMMUTE.filter(([, , k]) => k === v);
+    if (!sub.length) continue;
+    const f = ctx.field(commuterTexture(9420 + v, v as 0 | 1 | 2), sub.length,
+      { w: 1.2, h: 2.0 });
+    sub.forEach(([x, z], i) => f.set(i, x, z, 0.92 + r() * 0.16, 0, r() > 0.5));
+  }
+
+  const lamps = ctx.field(lamppostTexture(9600), 9, { w: 1.7, h: 6 });
+  [[132, 197], [120, 199], [108, 201], [152, 188], [152, 220],
+   [152, 244], [176, 202], [190, 214], [144, 168]]
+    .forEach(([x, z], i) => lamps.set(i, x, z, 1, 0, i % 2 === 0));
+  const planters = ctx.field(planterTexture(9601), 6, { w: 2, h: 2 });
+  [[126, 208], [114, 196], [156, 212], [140, 190], [166, 198], [104, 208]]
+    .forEach(([x, z], i) => planters.set(i, x, z, 0.9 + r() * 0.3, 0, false));
+  const pigeons = ctx.field(pigeonTexture(9602), 7, { w: 0.9, h: 0.7 });
+  [[150, 208], [151.5, 209], [153, 207.5], [136, 213], [137, 214.5],
+   [90, 214], [91, 216]]
+    .forEach(([x, z], i) => pigeons.set(i, x, z, 1, 0, r() > 0.5));
+
+  /* ================================================================ */
+  let stood = 0;
+  let tick = 3;
+  let heels = 8;
+  return (dt: number, t: number, px: number, pz: number) => {
+    const h = clock.hour;
+    const dusk = Math.max(0, Math.min(1,
+      Math.max((h - 16.8) / 2.4, (7.2 - h) / 2)));
+    lightUp(towerLits, dusk);
+
+    /* ================================================================ *
+     * THE ONE THING IN THIS WORLD THAT COSTS YOU FOUR SECONDS.
+     *
+     * `THE-WAITS` §11: he is not waiting for somebody to arrive, he is
+     * waiting **to be asked**, and asking means stopping, and in this
+     * land stopping is shameful. So there is no knowledge to bring and
+     * nothing to press. You stand still, near him, for long enough that
+     * it is unmistakably a choice.
+     *
+     * The test is deliberately strict about what standing still MEANS —
+     * it measures the walker's own movement between frames rather than
+     * an input, so a player being carried by the road or drifting on a
+     * stick does not qualify, and it resets the moment you move. Once
+     * it is done it is done for good: `fact:the-man-at-the-junction`
+     * lives in the save, he is on the bench in every later one, and
+     * forty units away in another land a woman is at a fence.
+     * ================================================================ */
+    const told = knowledge.has('fact:the-man-at-the-junction');
+    if (!told) {
+      const d = Math.hypot(px - MAN.x, pz - MAN.z);
+      const moved = Math.hypot(px - lastX, pz - lastZ);
+      lastX = px;
+      lastZ = pz;
+      if (d < 9 && moved < 0.02) {
+        stood += dt;
+        if (stood > ASK_SECONDS) {
+          knowledge.learn('fact:the-man-at-the-junction');
+          say('crossing-tick');
+        }
+      } else {
+        stood = 0;
+      }
+    }
+    man[0].visible = !told;
+    man[1].visible = told;
+
+    /* the door turns, and it turns whether or not anybody is going
+     * through it */
+    const phase = Math.floor(t * 1.1) % 2;
+    doors[0].visible = phase === 0;
+    doors[1].visible = phase === 1;
+    // the grating breathes: two drawings, slow, and never in step with
+    // the door
+    const sp = Math.floor(t * 0.7) % 2;
+    steam[0].visible = sp === 0;
+    steam[1].visible = sp === 1;
+
+    const inside = px > 62 && px < 228 && pz > 132 && pz < 278;
+    if (inside) {
+      /* THE CROSSING'S TICK. Four lights, all green, so the box that
+       * ticks for people waiting to cross ticks for nobody, forever. */
+      tick -= dt;
+      if (tick < 0) {
+        tick = 6.5 + Math.random() * 5;
+        if (Math.hypot(px - JUNCTION.x, pz - JUNCTION.z) < 34) say('crossing-tick');
+      }
+      /* AND SOMEBODY ELSE'S FOOTSTEPS, GOING AWAY. The only land in the
+       * game where you hear a step that is not yours. */
+      heels -= dt;
+      if (heels < 0) {
+        heels = 9 + Math.random() * 12;
+        say('heels');
+      }
+    }
+  };
 };
 
 export const CITY_POIS: WorldPOI[] = [
   {
-    x: 150, z: 203, radius: 9, label: 'THE JUNCTION',
+    x: 148, z: 203, radius: 9, label: 'THE JUNCTION',
     prompt: 'WAIT FOR THE LIGHT',
     note: {
       title: 'the junction',
       body: 'four traffic lights, and all four of them are green. the city has never once had to stop, and looks a little tired about it.',
     },
   },
-  { x: 100, z: 205, radius: 8, label: 'MAIN STREET' },
+  {
+    /* The label is west of the man, not over him. He has no name and
+     * nothing in this game will ever give him one — but the stone he
+     * stands on is a place, and the wear in it is what the label is
+     * for. */
+    x: 137, z: 196, radius: 8, label: 'THE PAVEMENT', labelHeight: 3.2,
+    prompt: 'LOOK DOWN',
+    note: {
+      title: 'the pavement',
+      body: 'the stone is worn pale in two long curves, and between them there is a patch the size of a person where it is not worn at all. it takes a very long time to do this to a paving slab.',
+    },
+  },
+  {
+    x: 120, z: 204, radius: 9, label: 'MAIN STREET',
+    prompt: 'LOOK UP',
+    note: {
+      title: 'main street',
+      body: 'awnings out over the glass, and the same street this whole road has been since the castle gate. it is called something else here. everything is called something else here.',
+    },
+  },
+  {
+    x: 88, z: 214, radius: 9, label: 'THE HOLLOW',
+    prompt: 'GO DOWN',
+    note: {
+      title: 'the hollow',
+      body: 'the ground folds here and the city built up to the edge of it and then turned round. down the bottom: bins, a fire escape, and warm air coming up out of a grating all year.',
+    },
+  },
+  { x: 158, z: 162, radius: 8, label: 'THE NORTH END' },
 ];
 
 /* ================================================================== *

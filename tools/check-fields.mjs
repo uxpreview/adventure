@@ -55,6 +55,15 @@ const CASES = [
    * written for, so both of them are walked at. */
   ['SPLITROCK CANYON', 300, -212, 0, -1, 8],
   ['THE BLEACH FLATS', 303, 92, 0, -1, 8],
+  /* SESSION 13. MAPLE COURT's fields are still — trees, grass, fences,
+   * three people standing about — but GREYLINE CITY's commuters are
+   * three fields of postures, and the whole land is a street the walker
+   * walks INTO. The city is also the first land whose wait changes a
+   * one-off standee's visibility from an update loop while a field is
+   * ticking beside it, which is near enough to Session 9's bug to be
+   * worth walking at. */
+  ['MAPLE COURT', -78, 152, 0, -1, 8],
+  ['GREYLINE CITY', 142, 216, 0, -1, 8],
 ];
 
 const browser = await chromium.launch({ executablePath: CHROMIUM });

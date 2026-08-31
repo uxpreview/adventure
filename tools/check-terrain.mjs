@@ -52,7 +52,8 @@ if (hi > 24 || lo < -18) fail('amplitude outside the authored envelope');
 console.log('\nroads — max gradient along the centreline (walk limit ' + MAX + '):');
 const ROAD_NAMES = [
   "king's road", 'coast road', 'east road', 'mill lane', 'main street',
-  'commuter spur', 'forest track', "brack's round", 'market lane', 'canyon trail',
+  'commuter spur', 'forest track', "brack's round", 'maple court', 'market lane',
+  'canyon trail',
 ];
 L.ROADS.forEach((road, ri) => {
   let worst = 0, worstAt = null, blocked = 0;

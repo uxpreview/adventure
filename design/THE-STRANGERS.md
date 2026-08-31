@@ -75,7 +75,7 @@ diligent, and the joke is entirely structural.*
 ---
 
 ### S3 · THE ELEVEN UNITS — *the upsetting one*
-**MAPLE COURT → GREYLINE CITY → MAPLE COURT**
+**MAPLE COURT → GREYLINE CITY → MAPLE COURT** *(built end to end, Session 13)*
 
 | beat | where | what |
 |---|---|---|
@@ -91,6 +91,17 @@ later save.
 
 **Never says:** who they are to each other. That they are waiting for
 each other. That forty units is nothing. **Especially not that.**
+
+**AND THE GEOGRAPHY MEASURED IT, SESSION 13.** This file said *forty
+units*; the world's own roads say **ninety-three**. The junction is
+where mill lane actually crosses main street, at (148, 203), and the
+last fence on the Maple Court side is at the border, at (56, 197); the
+number was never measured because neither end existed when it was
+written. Nothing about the beat changes and the number in the sentence
+above is left as it was written, because it is the FEELING and not the
+measurement — but a later session should not go looking for forty units
+between them, and **the sentence the game must never say is now true by
+a wider margin than the file thought.**
 
 *A note on why this is allowed to hurt: the world's mercy here is real
 and it is small. For years she did not know he was there. Now she does,

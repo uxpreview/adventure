@@ -156,7 +156,7 @@ market was ever cancelled — because it never was.
 
 ---
 
-### 3. MAPLE COURT — **VAL**
+### 3. MAPLE COURT — **VAL** *(authored end to end, Session 13)*
 
 | | |
 |---|---|
@@ -193,6 +193,15 @@ camera only ever looks north and the whole beat is a sightline. The
 castle is 300 units up the sheet on the same axis as the line. Do not
 put the gap on the east side toward the city, however much the fiction
 wants it — a vista you cannot look along is not a vista.
+
+**BUILT, SESSION 13, and the note above decided where the garden went.**
+The chairs are at (−61, 134) and the hedge at z = 126, on the Common's
+border, and that x is not a preference: what is through the gap is the
+pencil ridge over Brim at (−52, −52), so the garden had to sit on ITS
+bearing. Two units of drift east or west is nothing on a desktop and it
+is the edge of the frame in portrait, whose horizontal field of view is
+twenty-six degrees. **A sightline beat is a POSITION problem before it
+is an art problem.** The gap is cut on `name:castle` and stays cut.
 
 ---
 
@@ -515,7 +524,7 @@ This one is answered by the player stopping.*
 
 ---
 
-### 11. GREYLINE CITY — **THE MAN AT THE JUNCTION**
+### 11. GREYLINE CITY — **THE MAN AT THE JUNCTION** *(authored end to end, Session 13)*
 
 | | |
 |---|---|
@@ -551,6 +560,14 @@ worn**, curving round a place where nobody is standing any more.
 
 **Never says:** his name. What he was waiting for. That you did
 anything.
+
+**BUILT, SESSION 13.** Four seconds, measured as NOT MOVING rather than
+as not pressing anything, within nine units of him. The bench is
+twenty units NORTH of him on purpose, so one standpoint holds the wear,
+the man and the bench in a single frame — and holds the same frame
+afterwards, with the wear exactly where it was and him sitting twenty
+units further off. The wear itself is a drawing (`wornPathsDecal`) and
+the only note anywhere near it is about a paving slab.
 
 ---
 

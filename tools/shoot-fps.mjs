@@ -21,6 +21,12 @@ const SPOTS = [
   // in the game and the drove is the densest hedge in it
   ['the downs shot', 145, 34], ['the drove', 101, 108], ['the mill', 148, 6],
   ['the round', 150, -146], ['the deep pines', 188, -240], ['the thicket', 108, -180],
+  /* SESSION 13. The city is the densest STREET WALL in the world —
+   * twenty-one towers shoulder to shoulder, six of them with a lit
+   * layer over them — and the junction is the frame with the most
+   * unique standees in shot anywhere in the game. */
+  ['maple court', -78, 150], ['the survey', -45, 274],
+  ['the junction', 142, 213], ['the hollow', 88, 232],
 ];
 
 const url = process.env.URL ?? 'http://localhost:4173/?debug';

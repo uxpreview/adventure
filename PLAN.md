@@ -36,7 +36,7 @@ retired; the chosen story is **THE 8:15** (`design/STORY.md`).
 | 10 | **Farm & forest** ✓ 2026-08-30 | THE HARROW DOWNS + THE PENWOOD, and the first land session that could prove the page had not moved while it worked. **THE HARROW** authored into `elevation.ts` (the land is named for a thing that rakes a field into parallel lines, and it is now the ground), the mill rise, and the tarn's bowl. **THE PENWOOD HAS ONE ROAD AND IT IS A CIRCLE** — BRACK'S ROUND, forty-two units about the water, with the track from Brim running in and stopping at it: `THE-WAITS` §7's turn told entirely in a polyline, said by the map and by nothing else. Eleven authored FIELDS as polygons, one state each, hedged along the grain; four authored stands of pine with the voids between them doing as much work as the trees; THE FORD (`layout.FORDS` — the bed rises, the water does not fall, so `route:the-river` survives). **Both waits end to end:** JOAN HARROW's second setting, put away every evening and laid every morning until you sit down, and BRACK's quarter turn. Six ambient voices and one authored silence. Gate to WOWED (`critique-art-6.md`). See `design/specs/harrow-downs.md` and `design/specs/the-penwood.md`. |
 | 11 | **The dry lands** ✓ 2026-08-31 | SPLITROCK CANYON + THE BLEACH FLATS, and the session that MOVED A LANDFORM. Session 4's tear was cut at x = 338, six units from the foot of the world's curled east margin, and the trail that is the only way into that land never came within thirty units of it; it is at x = 300 now, in the middle of its own rect, with the river's source moved with it, the trail re-laid, and the depth tuned so `check-terrain` still prints **floor −10.8** — because `THE-STRANGERS` S5 is an errand about that number. **THE ONLY ROAD IN SPLITROCK IS A RIVERBED**: the trail rounds the head of the river (there is no bridge on this water), drops down the mouth, and runs a hundred and twelve units north along the floor of the tear itself, every point of it `tearX(z)` sampled. **HOLT's** four chalk marks are the only horizontal marks in a land drawn entirely in verticals and their heights are the boat, the trestles, the shed's ridge and the lip; the fifth is above the lip and behind it is his house. **AMOS** carries water forty units UPHILL both ways every night, on a track that is not a road; the gutter runs downhill from the cistern and nothing mentions it. Plus **`fact:the-fold`**, authored end to end for the first time — the design's own dependency, missing from the source since Session 7. Gate to WOWED (`critique-art-7.md`). See `design/specs/splitrock-canyon.md` and `design/specs/the-bleach-flats.md`. |
 | 12 | **The hands and the eye** ✓ 2026-08-31 | **Foundations, re-opened, and not by choice.** THE FEEL GATE — owed since Session 9 — was run by the owner and **returned NOT YET while all six of `check-camera`'s claims stayed green**, because every one of them is about WHERE the camera ends up and none about the journey between two of those places. Measured at the tick, the frame swung **51.2° at 34.7°/s** for one change of mind about which way to walk. **The two components separate perfectly:** the yaw is 100% of the rotation and 12% of the gain it was built for (3.2 units of page on top of 27 the pinned rig already had); the astern is 100% of the walk south and rotates nothing. So **the automatic yaw comes off both rigs and the envelope survives whole as THE PEEK'S** — rotation in this game is a thing the player asks for — and `asternEase` slows so the rig can never give ground faster than the walker covers it. **The crossing component leans the WALKER now**, at the one place in the picture that is never cropped. Plus: the phone's stick gated on `pointerType` and click-drag-to-walk removed from the desktop with the argument written down; the run taught ONCE, at the moment it becomes worth having, because **the trail could not teach it — the prints are laid behind the walker and the frame's bottom edge is three and a half units behind them**. `check-camera` asserts a RATE now and not only a place; `shoot-mobile` shoots five rigs including the desktop and its joystick step is an assertion; and `tools/pw.mjs` unhard-codes the browser path so the gates run on the owner's machine at all. See `design/specs/camera.md` §0 and `design/specs/controls.md`. |
-| 13 | **The now** | MAPLE COURT + GREYLINE CITY: street rhythm, lit windows at dusk, the junction. §3.2's rim composition is shot FIRST, not last. |
+| 13 | **The now** ✓ 2026-08-31 | MAPLE COURT + GREYLINE CITY, and the first land session judged through a camera that does not lean. **THE LINE'S SIGHTLINE IS ASSERTED NOW AND NOT TRUSTED** (`tools/check-sightline.mjs`): the shipped draft broke `THE-LINE` §3.2 twice — a signpost five units off the axis and thirty street trees on a scatter whose only bound was the road's own paint — and neither would have failed a check or shown in a contact sheet. **THE END OF THE SURVEY** built and left unlettered: the street thins south until there are two plots with kerbs, dropped kerbs and driveways and no houses, and then gravel, and then three pegs. **MAPLE COURT is drawn in closed shapes and GREYLINE CITY in marks that leave the frame**, which is the SPLITROCK/BLEACH FLATS pairing done for the two lands whose subject is the present day. **VAL's porch light never goes fully out**; the hedge is cut back open on `name:castle` and stays cut. **THE MAN AT THE JUNCTION costs four seconds of standing still** — the one permanent change in the game with no knowledge gate — and the pavement worn round him is a drawing, not a note. **S3, THE ELEVEN UNITS, is built at both ends**: June's latch plate is worn bright, and once you have stopped for him she is at the fence and stays there. Plus the keep vista's missing far bound, found from a land it had never been seen from. Gate to WOWED (`critique-art-8.md`). See `design/specs/maple-court.md` and `design/specs/greyline-city.md`. |
 | 14 | **The 8:15** | THE CUBICLE MILE, its wait, and the mount — **you draw the 8:15 into existence and it arrives.** |
 | 15 | **The mount, and the wilds' reward** | **THE PAPER PLANE** (`WORLD-SYSTEMS` §4), deferred in writing by Session 11 with its reason and its brief. May be folded into 13 or 14 if either has room. |
 | 16 | **Motion & life** | Systems pass: wind everywhere, sails and windmills turning, NPC routines, road encounters. (The score moved out of this session to 8 — see the ordering rule.) |
@@ -219,8 +219,9 @@ file that does not persist.
   and never sideways, and a name with nowhere legible to go is not
   written at all.
 - **The rowboat's first-meeting composition at THE RIVER MOUTH** is a
-  lot of sand. **Four** gates have now passed it and pointedly not
-  praised it.
+  lot of sand. **Six** gates have now passed it and pointedly not
+  praised it, and `route:the-river` is what resolves HOLT, so that boat
+  is the front door of a wait.
 - **THE HARROW DOWNS' stooked field** and **THE PENWOOD's east arc**
   (Session 10, `critique-art-6`): both passed, neither praised. The
   sheaves recede but the field around them is thin; the east arc is a
@@ -237,6 +238,43 @@ file that does not persist.
   it down as one (`critique-camera-1.md`, round 3).
 - **Brim Square is full.** Session 7 fitted Marget in. The next authored
   thing in that plaza displaces something Session 3 earned.
+- **THE HOLLOW** (Session 13, `critique-art-8`): passed, not praised.
+  The city's crease is the only landform in GREYLINE CITY, and its
+  gradient is under the terrain's own hatching threshold — so the land
+  had to hatch its own fold with decals and stand walls at the toe of
+  it. It works and it is not beautiful, and the general problem (a fold
+  too shallow to draw and too deep to ignore) belongs to whichever
+  session next opens `elevation.ts`.
+- **A COUNT IS PRINTED ON THE MAP** (`src/ui/map.ts:246`), and it has
+  been since Session 1: *"N of 12 lands walked — N strides of ink."*
+  Session 12 found the contradiction with the law's short form (*no
+  count, no list, no percentage, anywhere, for anything*) and did not
+  fix it, because the map holds a WOWED. Session 13 put it to the owner
+  as asked, and **the owner did not pick an option — they challenged the
+  law itself**, 2026-08-31:
+
+  > *"I don't understand why that law exists. Progression, collection,
+  > and advancements are part of what makes games fun."*
+
+  **So the count stays, nothing was changed, and the open question is
+  now bigger than the map.** It is not "should this line print a
+  number", it is **"does INKLANDS have progression the player can see,
+  and if so what shape is it"** — which is `QUESTS.md` §7 and
+  `WORLD-SYSTEMS` §6 re-opened by the person the ladder answers to. The
+  argument each way, so the next session does not have to reconstruct
+  it:
+
+  | for the law | against it |
+  |---|---|
+  | the law came from a sizing argument, not a taste one: **a collection caps at about two hours** — the player learns nothing doing the ninth one they did not know at the third — and the target is now HOURS of play (`WORLD-SYSTEMS` §0) | a count is not a collection. A number that says *you have walked eleven of these* is a **record of where you have been**, and this game already keeps one: the map, in three registers |
+  | the world's own rule is *no UI where the world can say it*, and the map already says it — an inked line is the ninth land drawn differently, which is a progress bar you can read at a glance | **nothing in this game ever tells you you are doing well**, and eleven sessions of design have quietly assumed that is a virtue without ever testing it on a player. The one person who has played it says it is not |
+  | Act III's whole beat is the map drawing the line as ONE line once you have walked it — a reward that is a change in a drawing rather than a number going up | that beat is exactly progression, and it works, which is an argument that MORE of it would work rather than less |
+
+  **What a session should NOT do is split the difference quietly.**
+  Either the law holds and the map's line loses its numbers, or the law
+  is amended in `QUALITY-BAR.md` and `QUESTS.md` §7 with the owner's
+  reasoning written into it. Both are one commit; the wrong answer is a
+  law that every prompt repeats and the shipped build breaks.
 
 Rules of the ladder:
 

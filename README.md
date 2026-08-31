@@ -28,12 +28,12 @@ here, what a footstep sounds like, whether the page takes your ink.
 | CASTLE GREYWEATHER | the high seat | the keep, the gatehouse, banner avenue |
 | THE KINGDOM OF BRIM | the walled town | cottages, Brim Square, the market |
 | THE COMMON | where you woke | the crossroads, the old well, three oaks |
-| MAPLE COURT | the neighborhood | porch lights, picket fences, the green |
+| MAPLE COURT | the neighborhood | the court and its one lit porch, the three chairs, the green, the end of the survey |
 | THE PENWOOD | under the pines | the tarn, the round, the deep pines |
 | SPLITROCK CANYON | the deep cut | the mouth, the Needle Arch, the marks on the wall |
 | THE HARROW DOWNS | farm country | the mill, the headland, the ford, the drove |
 | THE BLEACH FLATS | the desert | the Hands, the Pale, the track, the oasis |
-| GREYLINE CITY | downtown | hatched towers, lit windows, the Junction |
+| GREYLINE CITY | downtown | the junction, the worn pavement, the hollow, the north end |
 | THE CUBICLE MILE | the office park | ruled glass, hedges, the 8:15 stop |
 
 A river rises at the mouth of the canyon, crosses the whole sheet and
@@ -181,6 +181,10 @@ node tools/shoot-coast.mjs      # LONGSHORE + THE WIDE BLUE
 node tools/shoot-traversal.mjs # the ink weight, the roads, the boat, the day
 node tools/shoot-farm-forest.mjs # THE HARROW DOWNS + THE PENWOOD
 node tools/shoot-dry-lands.mjs  # SPLITROCK CANYON + THE BLEACH FLATS
+node tools/shoot-now.mjs       # MAPLE COURT + GREYLINE CITY (ONLY=… for one)
+node tools/check-sightline.mjs # THE LINE'S CORRIDOR: nothing tall within eight
+                               #   units of x = −45 between z = 120 and 278, and
+                               #   a DRAWING is in it if any part of it is
 node tools/shoot-textures.mjs  # EVERY DRAWING IN A PROP BOX, AT ACTUAL SIZE
 node tools/montage.mjs <dir> <out.png> a.png b.png …   # a land on one sheet
 node tools/check-fields.mjs    # no instanced field is ever half inked in
