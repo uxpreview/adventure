@@ -46,6 +46,14 @@ const CASES = [
   ['THE WIDE BLUE', -258, 84, -1, 0, 8],
   ['THE HARROW DOWNS', 101, 116, 0, -1, 8],
   ['THE PENWOOD', 132, -206, 0, -1, 8],
+  /* SESSION 11. Both new lands carry a field that MOVES every frame —
+   * the grit drifting up the channel, and the Bleach Flats' tumbleweeds,
+   * which cross a hundred and forty units and wrap round to the far side
+   * of the land when they get there. A field whose instances are re-set
+   * from an update loop is exactly the shape of the bug this file was
+   * written for, so both of them are walked at. */
+  ['SPLITROCK CANYON', 300, -212, 0, -1, 8],
+  ['THE BLEACH FLATS', 303, 92, 0, -1, 8],
 ];
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });

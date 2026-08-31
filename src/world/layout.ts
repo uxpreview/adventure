@@ -299,10 +299,40 @@ export const ROADS: Road[] = [
   ] },
   // the market lane: Brim Square east to the Wood Gate (Session 3)
   { width: 3.4, carry: 0.42, pts: [[-40, -86], [-12, -96], [18, -104], [42, -109], [55, -110]] },
-  // canyon trail: downs NE corner up the canyon mouth
-  // barely a road: a trail carries you the way a trail does, which is
-  // hardly at all
-  { width: 3, carry: 0.3, pts: [[225, 8], [255, -40], [280, -85], [300, -130], [305, -175]] },
+  /* ================================================================ *
+   * THE CANYON TRAIL — and from Session 11 it is the only road in
+   * SPLITROCK CANYON, and it is the bed of a river that is not there.
+   *
+   * THE-WAITS §4 gives HOLT a fact about his land: the river that cut
+   * this canyon is now somebody else's river, and the channel floor is
+   * "a riverbed with nothing in it, and the only flat walk in the land."
+   * The Penwood said its fable in a polyline and this land can say its
+   * own in the same place. So the trail does not stop at the canyon's
+   * edge and look in. It comes up out of THE BLEACH FLATS, **rounds the
+   * head of the river** — there is no bridge on this water and a river
+   * with no bridge is a wall, so the only way into this land on foot is
+   * round the top of it, six units north of where it comes out of the
+   * ground — drops down the MOUTH, where the rip is still shallow, and
+   * then runs a hundred and twelve units north along the floor of the
+   * tear itself before ending, dead, at a wall.
+   *
+   * Every point from z = −136 north is `tearX(z)` sampled at eight-unit
+   * intervals and rounded to a tenth, which is why the road wanders: it
+   * is not following a route, it is lying in the bottom of a channel,
+   * and paper does not tear straight.
+   *
+   * The carry is the second lowest on the sheet. A dry bed carries you
+   * the way a dry bed does, which is hardly at all — but it does carry,
+   * because the one thing a channel does to anything that walks into it
+   * is point it up or down.
+   * ================================================================ */
+  { width: 3, carry: 0.3, pts: [
+    [225, 8], [250, -12], [276, -34], [297, -58], [310, -86], [306, -110],
+    [298, -124], [292, -132],
+    [290.1, -136], [288.8, -144], [291.9, -152], [296.2, -160], [297.8, -168],
+    [299.3, -176], [303.8, -184], [303.5, -192], [308.4, -200], [309.6, -208],
+    [309.6, -216], [306.8, -224], [305.7, -232], [305.8, -240], [305.3, -248],
+  ] },
 ];
 
 /* ------------------------------------------------------------------ *
@@ -396,8 +426,25 @@ export const ROAD_BAND_MAX = Math.max(...ROADS.map((r) => r.width * 0.5 + 4.2));
  * exactly on road crossings; terrain paints the water around them.
  * ------------------------------------------------------------------ */
 
+/**
+ * THE RIVER RISES AT THE CANYON'S MOUTH AND THE CHANNEL ABOVE IT IS DRY.
+ *
+ * That is not a bug and it never was: it is `THE-WAITS` §4 already true
+ * in the height field. The rip runs north of here and there is nothing
+ * in it; the water comes out of the ground at the bottom of the canyon's
+ * open end and goes away west across four lands to the sea, and the man
+ * at the top of the dry part keeps a boat.
+ *
+ * SESSION 11 MOVED THE SOURCE WITH THE TEAR — the canyon is at x = 300
+ * now rather than x = 338 (`elevation.ts`, `tearX`), and a source left
+ * behind at 318 would have risen on the bench forty units east of the
+ * mouth, which says nothing at all. It rises six units south of where
+ * the tear begins, which is as close to the mouth as `riverBed` allows:
+ * the bed falls monotonically from +3 at the source, and water cannot
+ * climb out of a thirteen-unit hole.
+ */
 export const RIVER: [number, number][] = [
-  [318, -108], [285, -70], [250, -38], [205, -12], [168, 8], [138, 26],
+  [296, -116], [285, -70], [250, -38], [205, -12], [168, 8], [138, 26],
   [110, 45], [82, 72], [52, 100], [18, 128], [-22, 158], [-62, 178],
   [-108, 192], [-150, 200], [-200, 210], [-260, 222], [-330, 232],
 ];

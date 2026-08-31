@@ -141,6 +141,14 @@ measured and it stays chalked.
 **Never says:** how deep the sea is. Nobody knows and nobody in this
 world ever will.
 
+*Session 11 note, and it is the reason this entry is untouched: that
+land's tear was moved forty units west into the middle of its own rect,
+which is a layout-wide audit — and **the amplitude was re-tuned until
+`tools/check-terrain.mjs` printed `floor -10.8` again**, to a tenth of a
+unit, in the new position. Odd's line is still ten point eight units
+long. A session may move a landform; it may not move a number somebody
+else's errand stands on.*
+
 ---
 
 ### S6 · THE THIRTEENTH TREE

@@ -1169,6 +1169,90 @@ export class Audio {
         this.knock(800 * j, 0.004, 0.16 + Math.random() * 0.08);
         break;
       }
+
+      /* ---- THE DRY LANDS (Session 11) ------------------------------ *
+       * Six voices for two lands, and between them they say the one
+       * thing the beds cannot: that SPLITROCK is a ROOM and THE BLEACH
+       * FLATS are not. Everything the canyon makes comes back — it is
+       * the only land in the game with a tail on it (TAILS, mix 0.55) —
+       * and everything the Flats make goes away and does not return,
+       * because there is nothing out there for it to come back off.
+       *
+       * And the two lands are voiced the way they are DRAWN: the canyon
+       * is knocks and falls (things going down), the Flats are hisses
+       * and rattles (things going across). */
+
+      case 'stone-fall': {
+        /* THE-STRANGERS C19: *a rockfall you hear and do not see.* The
+         * whole event, and it is deliberately never shown — one stone
+         * lets go, three more follow it down at falling pitches, and
+         * then a long soft slide that is already dying when it starts.
+         * The canyon's own delay does the rest: by the time the slide
+         * has gone the room is still handing it back. */
+        const j = 0.9 + Math.random() * 0.2;
+        this.knock(180 * j, 0.020);
+        this.knock(150 * j, 0.014, 0.13 + Math.random() * 0.06);
+        this.knock(124 * j, 0.010, 0.28 + Math.random() * 0.08);
+        this.knock(102 * j, 0.007, 0.46 + Math.random() * 0.1);
+        this.surge(0.30, 1.5, 900, 190, 0.010, 0.16, 'lowpass');
+        break;
+      }
+
+      case 'slot-wind': {
+        /* Air over the top of a cut, which is a note and not a hiss:
+         * a slot is a pipe with one end open. Two bands a fifth apart,
+         * swelling and letting go, and neither of them ever quite
+         * settles on a pitch. */
+        const j = 0.94 + Math.random() * 0.14;
+        this.surge(1.2, 1.6, 300 * j, 460 * j, 0.0075, 0, 'bandpass');
+        this.surge(0.9, 1.5, 690 * j, 520 * j, 0.0042, 0.7, 'bandpass');
+        break;
+      }
+
+      case 'hull-rag': {
+        /* A rag going along a hull. THE ONLY MADE SOUND IN SPLITROCK
+         * and the only evidence, without walking up to him, that
+         * anybody out here is doing anything: three strokes, uneven,
+         * with the pause of somebody working rather than a rhythm. */
+        for (let i = 0, n = 3 + Math.floor(Math.random() * 2), at = 0; i < n; i++) {
+          this.surge(0.05, 0.22 + Math.random() * 0.12, 1800, 620, 0.0045, at);
+          at += 0.42 + Math.random() * 0.4;
+        }
+        break;
+      }
+
+      case 'grit-run': {
+        /* Sand crossing the page. It arrives from one side and leaves
+         * by the other and it does not come back — which is the whole
+         * difference between this land's voice and the canyon's. */
+        this.surge(0.9, 1.6, 2600, 1100, 0.0060, 0, 'bandpass');
+        break;
+      }
+
+      case 'palm-rattle': {
+        /* Dry fronds knocking. THE ONLY SOUND IN THE BLEACH FLATS MADE
+         * BY SOMETHING ALIVE, and you hear it before you see the water
+         * — which is what makes the oasis arrive rather than appear. */
+        for (let i = 0, n = 5 + Math.floor(Math.random() * 5), at = 0; i < n; i++) {
+          this.knock(1200 + Math.random() * 1500, 0.0042 - i * 0.0003, at);
+          at += 0.05 + Math.random() * 0.11;
+        }
+        this.surge(0.02, 0.5, 3400, 1800, 0.0026, 0.05);
+        break;
+      }
+
+      case 'can-knock': {
+        /* Two full cans, out on the track, at night. It is the sound of
+         * a man forty units from anywhere carrying water uphill, and
+         * the game will never say that: one hollow knock, its answer
+         * half a second later on the other side of him, and the slop of
+         * something nearly full. */
+        const j = 0.92 + Math.random() * 0.16;
+        this.knock(330 * j, 0.011);
+        this.knock(298 * j, 0.008, 0.44 + Math.random() * 0.12);
+        this.surge(0.06, 0.34, 520, 240, 0.0038, 0.06, 'lowpass');
+        break;
+      }
     }
   }
 

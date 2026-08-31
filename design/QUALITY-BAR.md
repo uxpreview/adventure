@@ -101,8 +101,20 @@ in the game (a name printed across the thing it names) is closed
 lands built on ground authored for them (THE HARROW, the mill rise, the
 tarn's bowl) and the first land session whose "unregressed" is a number,
 with both waits shipped end to end and **the Penwood's whole fable told
-in a polyline: one road, and it is a circle** (WOWED, critique-art-6).
-Every other land is a scatter draft and is presumed NOT YET.
+in a polyline: one road, and it is a circle** (WOWED, critique-art-6);
+**THE DRY LANDS** — SPLITROCK CANYON and THE BLEACH FLATS, and the first
+session to MOVE A LANDFORM: Session 4's tear was a good cut in the wrong
+place (six units from the foot of the world's curled margin, with the
+land's only trail thirty units clear of it) and it is in the middle of
+its own rect now, audited across elevation, the road web, the river's
+source and two protected framings, with **the depth tuned until
+`check-terrain` printed −10.8 again** because a stranger's errand stands
+on that number. **HOLT's four chalk marks are a sightline, not a note** —
+four heights that line up with four things you can see from where they
+are read, and a fifth that lines up with a roof — and AMOS carries water
+forty units uphill both ways every night on a track that is not a road
+(WOWED, critique-art-7). Every other land is a scatter draft and is
+presumed NOT YET.
 
 **AND FROM SESSION 9 A REGRESSION IS A DIFF AND NOT AN OPINION.**
 "Unregressed" has meant a person looking at two contact sheets a week

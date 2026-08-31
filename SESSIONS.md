@@ -1,5 +1,364 @@
 # SESSIONS — the handoff log
 
+## Session 11 — 2026-08-31 — the dry lands
+
+*Two lands, two waits, two named inhabitants — and the first session in
+this project to MOVE A LANDFORM. The tear was a good cut in the wrong
+place, and the land named after it had been built round the fact that it
+was somewhere else.*
+
+### THE ONE THING TO KNOW: THE LIST IS A SIGHTLINE
+
+`THE-WAITS.md` §4 gives HOLT a boat, upside down on trestles, oiled, at
+the top of a dry channel, and a set of marks up the wall behind it — and
+the turn is that **they are not flood records. They are a list, in the
+order things would float**, and he has written it where he can check it,
+and he keeps the boat oiled at the bottom of it where it would go first.
+
+A session before Session 10 would have written that in a note. It is a
+composition instead. Stand on the channel floor and look north:
+
+| you see | at | which is |
+|---|---|---|
+| **the boat**, keel up, oiled | 1.2 up | the lowest chalk mark |
+| **the trestles** under it | 2.3 up | the second |
+| **the shed's ridge**, forty units down the channel | 4.8 up | the third |
+| **the lip of the canyon**, which is in the frame | 12.6 up | the fourth |
+| **a fifth mark**, chalked on the rock ABOVE the wall | ~16 up | `THE-STRANGERS` U20: *one mark is above the lip, which means it is not a flood mark* |
+| **HOLT'S HOUSE**, on the rim behind it | | what the fifth mark is the height of |
+
+**Four heights that line up with four things you can see from where the
+marks are read, and a fifth that lines up with a roof.** There is no
+note on the marks, no number, no scale and no label anywhere in the
+land. The art director assembled the list before reading a word, and
+there is not a word to read.
+
+And the ink technique is what makes it legible: **everything in
+SPLITROCK is drawn in strokes down the page** — the terrain hatches a
+cliff down its fall line and a torn edge has fibres rather than strata —
+so the five chalk strokes are the only marks in a hundred and fifty
+units of canyon that go ACROSS anything. In a land of verticals, a
+horizontal reads as writing. **THE BLEACH FLATS next door are drawn
+entirely in level broken dashes**, for the same reason from the other
+end: the pair is a hole in the page against the flattest ground in the
+world and they are drawn at right angles to each other.
+
+### THE DECISION THIS SESSION TOOK FIRST, BEFORE A SINGLE PROP
+
+**THE TEAR WAS REAL AND IT WAS IN THE WRONG PLACE**, and the prompt was
+right that doing neither of the two available things is what the draft
+already did.
+
+Session 4 cut it at `tearX(z) ≈ 338`. The world's curled east margin
+starts lifting at x = 344, so the rip ran six units from the foot of the
+rim; the tear only existed between z ≈ −272 and −132; and the canyon
+trail — the only way into that land — ran at x = 255..305 and never came
+within thirty units of it. **The land called SPLITROCK had its split
+jammed into its own east gutter.**
+
+It is at **x = 300** now, the middle of its own rect, and every
+consequence was audited rather than assumed:
+
+- **the mouth is a sixty-two-unit RAMP and the head is a fourteen-unit
+  WALL.** A tear starts shallow and deepens, so there is **no stair to
+  author anywhere in this land** — you walk in at the shallow end, the
+  walls rise either side of you, and the walk ends in front of you at a
+  face of rock. That is the metaphor paying for a traversal design, and
+  it is the third time the sheet's vocabulary has paid this project back
+  and the first time it has paid in traversal.
+- **the floor went from twelve units wide to eighteen**, which is the
+  narrowest a slot can be and still hold a boat, a shed, a man and a
+  walker without any of them standing on a cliff.
+- **the amplitude went from −13.0 to −13.75**, and the third decimal is
+  load-bearing: `check-terrain` measures the floor at the axis and the
+  accumulated `smax` bias and the local cockle differ at x = 300. **It
+  still prints −10.8.** `THE-STRANGERS` S5 is an errand about that
+  number — *ten point eight units from lip to floor, taken twice, with a
+  line* — and it was not this session's to spend.
+- **`RIVER[0]` moved from (318, −108) to (296, −116)**, so the water
+  still rises at the canyon's MOUTH, six units south of where the rip
+  begins. That relationship is `THE-WAITS` §4 already true in the height
+  field and it was never a bug. It cost eighty-eight pixels on a
+  protected framing — see the regression section, which measures it.
+- **`tearFloorK` → `terrain.ts`**, the twin of Session 5's `holdfastK`:
+  the channel floor is painted as a dry bed rather than as canyon, so a
+  walker on the west lip can see that the channel is a channel.
+
+**What did not change: the depth, the vocabulary, the bearing.** `tearX`
+is a function of z, so the canyon runs north–south and the camera's law
+is obeyed by the ground itself. That is most of why the landform was
+worth moving rather than re-cutting.
+
+### THE ONLY ROAD IN SPLITROCK IS A RIVERBED
+
+The Penwood said its fable in `layout.ROADS` and this land says its own
+in the same place. The canyon trail comes up out of the Flats, **rounds
+the head of the river** — there is no bridge on this water and a river
+with no bridge is a wall, so going round the top of it six units from
+where it comes out of the ground is the only way into this land on foot
+— drops down the mouth, and then **every point from z = −136 north is
+`tearX(z)` sampled at eight-unit intervals.** It is not following a
+route; it is lying in the bottom of a channel, and paper does not tear
+straight. It ends, dead, at a wall.
+
+And the geography teaches one thing by making you walk it: **the east
+bench is thirty units away across the channel and the only way onto it
+is all the way back to the mouth and round.**
+
+### WHAT SHIPPED
+
+**SPLITROCK CANYON** — `design/specs/splitrock-canyon.md`. Six places:
+THE RIVERHEAD, THE TOP OF THE CLIMB (somebody's boots, side by side —
+`THE-STRANGERS` C20), THE MOUTH, THE OVERLOOK, THE NEEDLE ARCH, THE
+TRESTLES. Three placement registers and every drawing knows which it is
+in: the wall's toe, the skyline, the floor.
+
+**THE BLEACH FLATS** — `design/specs/the-bleach-flats.md`. Six places:
+THE HANDS (a signpost with four arms and **every one of them points out
+of this land**), THE PALE, THE OASIS, THE TRACK, THE CATCH, WHERE THE
+ROAD STOPS.
+
+**THE GROUND, authored not sprinkled** (`elevation.ts`): the tear moved
+and reshaped (above), and **THE PAN** — the Flats' one shape, a dish
+ninety units across and a unit and three quarters deep, bounded hard on
+all four sides at x = 332. The oasis sits at the bottom of it and
+**Amos's cistern sits on its rim**, which is what makes the forty units
+he carries every night forty units UPHILL, both ways. Nobody will ever
+measure that and it is true anyway.
+
+**THE TWO WAITS, END TO END.**
+- **HOLT** (`THE-WAITS` §4) is at the boat from six to eight, oiling,
+  with a stretch in the middle of the day at the foot of the wall with
+  his head back; at night he is not there and there is a light on up on
+  the rim. **He straightens when you come inside fifteen units**, which
+  is the land's one player-responsive motion and is a man stopping work
+  because somebody is walking up his channel, which out here has not
+  happened in a while. Hold `route:the-river` — rowed salt to source,
+  under all three bridges, which nothing else in this world has done —
+  and the boat is off the trestles and right way up on the dry floor,
+  bow north, in every later save. The game never says whether that is
+  madness or readiness and neither does the drawing.
+- **AMOS** (`THE-WAITS` §5) is on the track from half past eight in the
+  evening to half past four, the whole time: down empty, back with two
+  full cans, and again. `THE-STRANGERS` C21 is a player meeting him
+  going the other way and **the only way to make that happen is for it
+  to be true.** In the day he maintains a machine that has never worked:
+  the gutter runs downhill FROM the cistern (U23), so it could not have
+  delivered a drop, and the board beside it is ruled into columns with
+  nothing in any of them (U22). Hold `fact:the-fold` and the lid comes
+  off and stays off.
+
+**`fact:the-fold`, AND IT DID NOT EXIST.** `THE-WAITS` §0 has said since
+Session 7 that THE BLEACH FLATS turn on it, *earned by walking the
+crease, both faces* — and there was no such id anywhere in the source
+and nothing that taught it. **Amos's wait had a dependency nobody had
+built.** It is a two-post route in `knowledge.ts` now, on the crease's
+two shoulders at the place the east road dives through it, reach eleven.
+The kind is a FACT and the mechanism is a ROUTE, which is the one id in
+that file whose prefix does not match its mechanism and it is on
+purpose: a fold has two sides and the whole of the fact is that you have
+been on both of them, which a proximity test cannot say. **It adds no
+geometry to THE COMMON and none to THE HARROW DOWNS**, which is
+deliberate twice over — both hold verdicts, and `crease-east-road`
+stands sixteen units from the southern post.
+
+**SIX VOICES** (`Audio.event`, App's ambient scheduler), and between
+them they say the one thing the beds cannot: **the canyon is a ROOM and
+the Flats are not.** `slot-wind` (a slot is a pipe with one end open, so
+the wind has a NOTE rather than a hiss), `hull-rag` (the only made sound
+in SPLITROCK, and the only evidence at forty units that anybody is doing
+anything), `stone-fall` (C19 — *a rockfall you hear and do not see*, and
+it is never drawn); `palm-rattle` (the only sound in the Flats made by
+something alive, and **you hear the oasis before you can see the
+water**), `can-knock`, `grit-run` (which arrives from one side and
+leaves by the other and does not come back).
+
+**AND ONE PLACEMENT RULE THAT IS THE WHOLE OF C22.** The oasis's palms
+are massed on the NORTH shore, so a player who walks off the east road
+and comes at it from the north finds a stand of trees with nothing under
+them and no water anywhere. `THE-STRANGERS` C22 is *the oasis, from the
+wrong direction, and it is not there*, and it costs nothing but a
+decision about which side the trees are on. **The land teaches you that
+you came at it from the wrong side**, which is the belief of the place
+said without a note.
+
+### THE GATE
+
+- `check-terrain.mjs` ✓ · `check-audio.mjs` ✓ · `check-camera.mjs` ✓
+- `check-fields.mjs` ✓ — **and it gained both new lands**, because both
+  carry a field whose instances are re-set from an update loop every
+  frame (the grit, the tumbleweeds), which is the exact shape of the bug
+  that file was written for.
+- `diff-sheets.mjs` — see below, and read it before you assume anything.
+- **critique-art-7: WOWED at round 6.**
+
+### THE REGRESSION NUMBER, AND WHAT IT ACTUALLY SAYS
+
+`node tools/diff-sheets.mjs`, ninety-two framings against `origin/main`
+(c853988), bearing pinned, twelve game seconds of settle:
+
+```
+THE PAGE (the world, writing hidden):
+  80/92 bit-identical, 12 over 0.000%
+   72.0117%  max 235  desktop/tear-lip@12           at 0,0,1280,720
+   66.1272%  max 197  desktop/tear-lip@19.6         at 0,0,1280,720
+   53.5029%  max 232  portrait/tear-lip@12          at 0,161,390,683
+   46.8414%  max 187  portrait/tear-lip@19.6        at 0,161,390,683
+    4.1897%  max 105  desktop/curl-rim@19.6         at 0,126,1255,456
+    3.5014%  max 129  desktop/curl-rim@12           at 0,126,1280,519
+    3.1438%  max 104  portrait/curl-rim@19.6        at 0,221,383,264
+    2.5948%  max 116  portrait/curl-rim@12          at 0,221,390,300
+    0.0095%  max  39  desktop/crease-east-road@19.6 at 632,190,648,347
+    0.0093%  max  30  desktop/crease-east-road@12   at 631,190,649,347
+    0.0052%  max  33  portrait/crease-east-road@12  at 184,529,18,27
+    0.0046%  max  27  portrait/crease-east-road@19.6 at 186,311,16,245
+```
+
+**Nineteen of the twenty-three protected framings did not move by a
+single pixel, at either hour, in either viewport.** Three moved and each
+one is named, measured and accounted for:
+
+- **`tear-lip` (312, −140): 72%, the whole frame, and there is no honest
+  way to make that a small number.** The framing stands INSIDE
+  SPLITROCK, and this session moved the thing it is named after. Its
+  verdict is `critique-art-3`'s — the sheet's ELEVATION, awarded on the
+  tear reading as a torn page with proud lips and a floor. Shot side by
+  side: the base stands beside a mesa cutout with the old tear mostly
+  out of frame; the head stands on the **east lip** of the new one with
+  the cut falling away on the left, its floor visible the whole length,
+  the arch spanning it forty units north. **It is still a lip, it is the
+  same landform in the same vocabulary at the same depth, and the
+  framing's own name is finally true.**
+- **`curl-rim` (370, 16): 4.19%, and its own ground is untouched.**
+  Nothing in `elevation.ts` reaches it — THE PAN is bounded hard at
+  x = 332, thirty-eight units short of the walker's footing, and the
+  curl terms are not touched. What moved is what is drawn ON it and
+  BEYOND it, and both are THE BLEACH FLATS: the draft's sixty dune
+  decals and forty-two cacti deleted and the land's ground script laid
+  in their place, and the old canyon's mesas off the horizon replaced by
+  the new one's stacks a hundred and forty units north.
+- **`crease-east-road` (62, 62): eighty-eight pixels, and the cause is
+  provable.** It is the ONLY change in this session that reaches west of
+  x = 230, because every prop either land authored is east of x = 236.
+  It is the river: moving `RIVER[0]` shortened the polyline from **753.0
+  units to 750.0**, which re-parameterises `riverBed(t)` along its whole
+  length by **sixteen thousandths of a unit at its worst** (the east
+  road bridge), falling to four at the sea, still monotonic. What that
+  framing can see of it is the channel forty-eight units away at the
+  right edge of frame. **The verdict was awarded on the FOLD**, and the
+  fold is at x = 85 under the walker's feet and is pixel-for-pixel what
+  it was.
+
+Four more moved only in THE WRITING (`portrait/tide-line@19.6`,
+`portrait/curtain-wall` at both hours, `portrait/common-THE-SHOT@19.6`),
+which is the DOM card mid-fade — the one clock the harness does not own,
+and the same four-frame class Session 10 reported.
+
+### THE PAPER PLANE IS DEFERRED, IN WRITING, AND HERE IS THE WRITING
+
+`WORLD-SYSTEMS` §4 gives the wilds the paper plane and `PLAN.md` says
+mounts arrive with their quadrant's land session. Session 10 built the
+wilds' northern half and did not take it; **this session built the
+wilds' eastern half, which contains the two best launch heights in the
+world, and did not take it either.** That is two sessions, and the
+prompt was right that a third silent slip is not acceptable.
+
+**Why:** the scope was two lands, two waits, two named inhabitants, a
+MOVED LANDFORM (a layout-wide audit across elevation, the road web, the
+river, the reachability proof, two protected framings and the map), and
+one piece of missing content-system plumbing the design had been
+assuming for four sessions. A mount is a traversal system with a launch,
+a flight model, a refusal rule and a camera; the rowboat was half of
+Session 6. **The bar says a session that cannot meet it ships less
+scope, never a lower bar**, so this is less scope, said out loud.
+
+**The brief it is handed with**, so nobody re-derives it: it launches
+from the east lip of the tear or from the curled rim above it (both are
+authored ground now and both hold about eight units of drop into open
+air); it refuses being steered *mostly*, which means one input and it is
+not a rudder; it is found in the world and left in the world; and **the
+one thing it must not do is trivialise the walk back round the canyon's
+mouth**, which is the geography lesson SPLITROCK teaches by making you
+walk it.
+
+**It goes to Session 12b or Session 13, not to Session 12** — see the
+next section.
+
+### AND SESSION 12 IS THREE LANDS, WHICH SOMEBODY HAD TO SAY
+
+`PLAN.md`'s own rule is that *the session that notices should say so
+rather than the one that runs out of room.* Session 10 and Session 11
+were two lands and two waits each, and both spent a full third of their
+budget on the gate rather than on the building — this one ran six rounds
+and threw away an entire placement plan in the middle of them. Session
+12 as written is three lands, three waits, three named inhabitants,
+THE LINE's riskiest un-shot framing, and **the 8:15 drawn into
+existence**, which is a mount and the payoff of the whole story.
+
+`PLAN.md` now carries a proposed split (12: MAPLE COURT + GREYLINE CITY;
+12b: THE CUBICLE MILE and the 8:15) with the reason for the cut.
+
+### For the next land session — read this part
+
+- **THE TEXTURE SHEET FIRST, THE WORLD SECOND, AND IT IS NOT CLOSE.**
+  Round 1 of this gate never rendered the world at all and found six
+  classes of fault in four seconds. Round 2 found six more. The world
+  sheet then cost seven minutes a round.
+- **`stroke()` ROUNDS EVERY CORNER YOU GIVE IT.** It draws quadratics
+  through the midpoints of its points — right for a hedge, a hull and a
+  tree, and it turns any polygon of straight runs into a lozenge. The
+  first texture sheet was a canyon full of domes, a shed like a haystack
+  and a cistern like an egg. Both new texture files carry a `hardPoly()`
+  that draws an edge as an edge. **Paper does not tear along a curve is
+  a rule about the DRAWING as much as about the height field.**
+- **NOTHING STANDS ON A SCARP, INCLUDING THE THING THE SCARP IS MADE
+  OF.** Round 3 stood wall panels up both faces of the canyon at half
+  their height and built a tunnel with the ends bricked up. The terrain
+  hatches a cliff down its own fall line and does it better than a
+  cutout can; what the floor needs from the prop box is the near layer
+  the ground cannot give it.
+- **THE CAMERA IS FOURTEEN UNITS BEHIND THE WALKER, SO EVERYTHING
+  BEHIND THE WALKER IS IN FRONT OF THE CAMERA.** The Bleach Flats' rain
+  catch stood on the track's line eight units north of the cistern and
+  THE SHOT came back as a close-up of a boarded deck.
+- **A FADE DRAWN AFTER A MARK ERASES THE MARK.** The doorstep — the
+  highest of the four chalk marks and the one the whole fable turns on —
+  disappeared into the crown gradient that softens the slab's top edge,
+  and it is the one fault on this sheet that would have SHIPPED, because
+  it is a thing that is missing rather than a thing that is ugly.
+- **A PERSON CROUCHING READS AS AN ANIMAL AT FORTY UNITS** if their head
+  goes below their hips. And a figure in this world is CLOTH FIRST: a
+  filled coat, a real head, limbs with pen in them. Two stick figures
+  went into round 1 and neither survived it.
+- **A RADIAL STAIN ON A TILE THAT REPEATS ALONG ITS OWN LENGTH DRAWS A
+  ROW OF DISCS.** Session 10's `stain()` rule has a second half: a
+  worn path is a strip, so its colour is a linear gradient across it and
+  uniform along it.
+- **CHECK WHICH WAY YOU ARE FACING BEFORE YOU BOOK THE FRAMING.** North
+  is −Z. Two framings on the first sheet photographed the back of the
+  walker's head.
+- **AND SOME CONTENT CANNOT BE PHOTOGRAPHED STANDING STILL.**
+  `THE-STRANGERS` C22 is a thing that happens while you walk AWAY from
+  something with the camera looking the way it always looks. It is a
+  DRIVEN framing or it is nothing.
+
+### Standing debts, carried
+
+- **WHERE THE ROAD STOPS** (THE BLEACH FLATS) passed and was not
+  praised: two posts and some cracked ground at the end of the longest
+  road in the world. It is the sixth place in a land that had five.
+- **The stooked field** and **the Penwood's east arc** (Session 10).
+- **The rowboat's first meeting at THE RIVER MOUTH** — **five** gates
+  have now passed it without praising it. *(It matters more than it did:
+  `route:the-river` is what resolves Holt, so that boat is now the front
+  door of a wait.)*
+- **Brim Square is full.**
+- **READ THE PROCLAMATION** on Greyweather's barbican is a compromise.
+- **Holt's lit window** is one warm pixel at forty units; it is the only
+  lit window in the east half of the world and it deserves a glow.
+- **THE EAR GATE and THE FEEL GATE are still the owner's**, and this
+  session added six more sounds nobody has heard to the first of them.
+
 ## Session 10 — 2026-08-30 — farm & forest
 
 *The first of five land sessions in a row with nothing structural left

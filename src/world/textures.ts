@@ -84,55 +84,6 @@ export function pineTexture(seed: number): THREE.CanvasTexture {
   });
 }
 
-export function palmTexture(seed: number): THREE.CanvasTexture {
-  return makeTexture(192, 224, seed, (ctx, r) => {
-    const lean = (r() - 0.5) * 40;
-    const topX = 96 + lean;
-    stroke(ctx, [[96 - lean * 0.3, 218], [92, 160], [topX - 6, 96], [topX, 64]], r,
-      { width: 5, alpha: 0.9, jitter: 2 });
-    line(ctx, 96 - lean * 0.3 - 6, 214, 96 - lean * 0.3 + 10, 214, r, { width: 2, alpha: 0.5 });
-    for (let i = 0; i < 7; i++) {
-      const a = -Math.PI * 0.95 + (i / 6) * Math.PI * 0.9 + (r() - 0.5) * 0.2;
-      const len = 58 + r() * 22;
-      const midx = topX + Math.cos(a) * len * 0.55;
-      const midy = 62 + Math.sin(a) * len * 0.4;
-      const endx = topX + Math.cos(a) * len;
-      const endy = 62 + Math.sin(a) * len * 0.62 + 26;
-      fillPoly(ctx, [[topX, 62], [midx, midy - 5], [endx, endy]], WASH.forest, 0.28);
-      stroke(ctx, [[topX, 62], [midx, midy], [endx, endy]], r, { width: 2.6, alpha: 0.8 });
-      for (let f = 1; f < 5; f++) {
-        const t = f / 5;
-        const bx = topX + (midx - topX) * t * 1.6;
-        const by = 62 + (midy - 62) * t * 1.6;
-        line(ctx, bx, by, bx + (r() - 0.5) * 8, by + 12 + r() * 8, r, { width: 1.3, alpha: 0.5, passes: 1 });
-      }
-    }
-    // coconuts
-    scribbleCircle(ctx, topX - 8, 70, 6, r, { width: 1.6, alpha: 0.7 });
-    scribbleCircle(ctx, topX + 7, 74, 5, r, { width: 1.6, alpha: 0.7 });
-  });
-}
-
-export function cactusTexture(seed: number): THREE.CanvasTexture {
-  return makeTexture(128, 192, seed, (ctx, r) => {
-    fillPoly(ctx, [[56, 184], [56, 60], [64, 40], [74, 60], [74, 184]], WASH.forest, 0.35);
-    poly(ctx, [[56, 184], [56, 60], [60, 44], [68, 44], [74, 60], [74, 184]], r,
-      { width: 2.4, alpha: 0.85 });
-    // arms
-    stroke(ctx, [[56, 110], [38, 106], [32, 88], [33, 70]], r, { width: 2.2, alpha: 0.85 });
-    stroke(ctx, [[33, 70], [40, 66], [44, 76], [44, 102], [56, 106]], r, { width: 2.2, alpha: 0.8 });
-    stroke(ctx, [[74, 128], [92, 122], [97, 102], [96, 88]], r, { width: 2.2, alpha: 0.85 });
-    stroke(ctx, [[96, 88], [88, 84], [85, 96], [85, 118], [74, 124]], r, { width: 2.2, alpha: 0.8 });
-    // ribs and spines
-    for (const x of [61, 66, 71]) line(ctx, x, 60, x, 180, r, { width: 1, alpha: 0.3, passes: 1 });
-    for (let i = 0; i < 22; i++) {
-      const x = 54 + r() * 22;
-      const y = 50 + r() * 130;
-      line(ctx, x, y, x + (r() - 0.5) * 7, y - 3 - r() * 4, r, { width: 0.9, alpha: 0.5, passes: 1 });
-    }
-  });
-}
-
 export function boulderTexture(seed: number): THREE.CanvasTexture {
   return makeTexture(160, 112, seed, (ctx, r) => {
     const pts: [number, number][] = [[20, 100], [16, 62], [44, 30], [92, 20], [132, 38], [146, 76], [138, 100]];
@@ -140,72 +91,6 @@ export function boulderTexture(seed: number): THREE.CanvasTexture {
     poly(ctx, pts, r, { width: 2.4, alpha: 0.85, jitter: 2 });
     stroke(ctx, [[44, 34], [58, 58], [60, 96]], r, { width: 1.4, alpha: 0.4, passes: 1 });
     hatch(ctx, 86, 40, 56, 58, 0.8, 7, r, { alpha: 0.3 });
-  });
-}
-
-/** A canyon wall: one huge striated slab, drawn to stand at the cell edge. */
-export function mesaTexture(seed: number, w = 512, h = 288): THREE.CanvasTexture {
-  return makeTexture(w, h, seed, (ctx, r) => {
-    const top: [number, number][] = [];
-    const n = 10;
-    for (let i = 0; i <= n; i++) {
-      const x = (i / n) * (w - 20) + 10;
-      top.push([x, 26 + Math.sin(i * 1.7 + seed) * 10 + r() * 12]);
-    }
-    const base: [number, number][] = [[w - 8, h - 6], [8, h - 6]];
-    fillPoly(ctx, [...top, ...base], WASH.canyon, 0.88);
-    stroke(ctx, top, r, { width: 3, alpha: 0.85, jitter: 2.6 });
-    line(ctx, 10, h - 8, w - 10, h - 8, r, { width: 2.4, alpha: 0.7 });
-    // strata
-    for (let s = 0; s < 5; s++) {
-      const y = 60 + s * ((h - 100) / 5) + r() * 10;
-      const pts: [number, number][] = [];
-      for (let i = 0; i <= n; i++) {
-        pts.push([(i / n) * (w - 30) + 15, y + Math.sin(i * 0.9 + s) * 6 + r() * 5]);
-      }
-      stroke(ctx, pts, r, { width: 1.4, alpha: 0.35, passes: 1, jitter: 2 });
-    }
-    // vertical cracks + shadow hatch
-    for (let cx = 40; cx < w - 30; cx += 70 + r() * 60) {
-      stroke(ctx, [[cx, 40 + r() * 30], [cx + (r() - 0.5) * 20, h * 0.55], [cx + (r() - 0.5) * 30, h - 12]],
-        r, { width: 1.6, alpha: 0.45, passes: 1 });
-    }
-    hatch(ctx, 12, h * 0.62, w - 24, h * 0.34, 1.2, 9, r, { alpha: 0.2 });
-  });
-}
-
-export function archRockTexture(seed: number): THREE.CanvasTexture {
-  return makeTexture(288, 224, seed, (ctx, r) => {
-    const outer: [number, number][] = [[30, 214], [22, 120], [52, 52], [128, 24], [212, 44],
-      [252, 110], [258, 214]];
-    fillPoly(ctx, outer, WASH.canyon, 0.88);
-    poly(ctx, outer, r, { width: 2.8, alpha: 0.85, jitter: 2.4 });
-    // the window
-    ctx.save();
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.ellipse(142, 168, 58, 62, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-    scribbleCircle(ctx, 142, 168, 58, r, { width: 2.4, alpha: 0.8 }, 1.05);
-    for (let s = 0; s < 3; s++) {
-      const y = 60 + s * 30;
-      stroke(ctx, [[50, y + 10], [120, y - 6], [210, y + 8]], r, { width: 1.3, alpha: 0.35, passes: 1 });
-    }
-    hatch(ctx, 190, 90, 60, 110, 1.1, 8, r, { alpha: 0.24 });
-  });
-}
-
-export function duneDecal(seed: number): THREE.CanvasTexture {
-  return makeTexture(256, 128, seed, (ctx, r) => {
-    for (let i = 0; i < 3; i++) {
-      const y = 34 + i * 32 + r() * 10;
-      const pts: [number, number][] = [];
-      for (let x = 0; x <= 8; x++) {
-        pts.push([16 + x * 28, y + Math.sin(x * 0.9 + i * 2 + seed) * 9]);
-      }
-      stroke(ctx, pts, r, { width: 1.8, alpha: 0.4 - i * 0.08, passes: 1, jitter: 1.6 });
-    }
   });
 }
 
@@ -240,29 +125,6 @@ export function bushTexture(seed: number): THREE.CanvasTexture {
         { width: 1.6, alpha: 0.55, jitter: 2 }, 1.4);
     }
     scribbleCircle(ctx, 64, 56, 40, r, { width: 2, alpha: 0.7, jitter: 2.6 }, 1.05);
-  });
-}
-
-export function tumbleweedTexture(seed: number): THREE.CanvasTexture {
-  return makeTexture(96, 96, seed, (ctx, r) => {
-    for (let i = 0; i < 9; i++) {
-      scribbleCircle(ctx, 48 + (r() - 0.5) * 10, 50 + (r() - 0.5) * 10, 12 + r() * 22, r,
-        { width: 1.1, alpha: 0.4, jitter: 3.2, passes: 1 }, 1.6);
-    }
-  });
-}
-
-export function skullTexture(seed: number): THREE.CanvasTexture {
-  return makeTexture(96, 80, seed, (ctx, r) => {
-    fillBlob(ctx, 44, 38, 24, r, '#efece2', 0.7, 0.85);
-    poly(ctx, [[22, 52], [18, 32], [30, 16], [56, 14], [70, 28], [68, 46], [58, 52],
-      [56, 64], [30, 64]], r, { width: 2, alpha: 0.85 });
-    scribbleCircle(ctx, 34, 38, 5, r, { width: 1.6, alpha: 0.85 });
-    scribbleCircle(ctx, 52, 36, 5, r, { width: 1.6, alpha: 0.85 });
-    // horns
-    stroke(ctx, [[20, 34], [6, 26], [4, 12]], r, { width: 2.2, alpha: 0.8 });
-    stroke(ctx, [[68, 30], [84, 24], [88, 10]], r, { width: 2.2, alpha: 0.8 });
-    for (const x of [32, 40, 48]) line(ctx, x, 56, x, 63, r, { width: 1, alpha: 0.5, passes: 1 });
   });
 }
 
