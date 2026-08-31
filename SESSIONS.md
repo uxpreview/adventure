@@ -1,5 +1,80 @@
 # SESSIONS — the handoff log
 
+## 2026-08-31 — owner direction, after Session 11 merged (no code)
+
+**THE FEEL GATE WAS RUN AND IT RETURNED NOT YET.**
+
+`QUALITY-BAR.md` §2 has listed two gates as the owner's since Sessions 8
+and 9, on the grounds that no tool in this repository can perform them.
+The owner played the merged build and reported, verbatim:
+
+> *"the desktop camera movements make it hard to play — makes me kind of
+> sick — and you can also the mobile controls exists on desktop as well,
+> and the keyboard controls lack the ability to run."*
+
+All three were reproduced against `bc174a5` before this entry was
+written. They are diagnosed in full in `PROMPT.md` §1; the short form:
+
+| defect | measured |
+|---|---|
+| **the camera** | driven round a normal circuit from the spawn, the frame swings **43°** for one change of mind about which way to walk, at up to **20°/second**, while the camera dollies **8 units** in and out and its height wanders |
+| **the joystick** | a mouse drag at 1280×720 raises the touch stick's ring under the cursor (`joy active running`, 96×96, opacity 1). The only guard in `Input.ts` is an ASPECT-RATIO test, and aspect ratio is not the question — pointer type is |
+| **the run** | the wiring is intact. Shift is read, `input.run` climbs, and the walker measurably goes **1.46×** faster. What is broken is that the only place the game says Shift exists is a six-second hint fired once, and the only *visible* run affordance in the game is the phone stick's ring — which on desktop is the defect above |
+
+### AND THE THING WORTH MORE THAN THE FIX
+
+**Every automated check stayed green while all of that was true.**
+`check-camera.mjs` still asserts, correctly, that the envelope never
+leaks, that the bearing is continuous round the whole circle of travel,
+and that a stopped walker comes home to exactly zero in 2.5 game
+seconds. Session 9 wrote in its own log that none of those was the
+question. It was right, and then the question went unasked for three
+sessions.
+
+What no check ever measured is **the RATE** — how fast the frame can
+rotate, in degrees a second, under an input a player can produce. That
+is the number the owner felt. It is the assertion Session 12 owes.
+
+`QUALITY-BAR.md` §2 now carries the corollary this earned:
+
+> **A system whose gate has not been run is not done. It is SHIPPED AND
+> UNJUDGED, and those are two different words.** A green check is
+> evidence that the thing does what its author described. It is not
+> evidence that what its author described is worth doing.
+
+And the cheaper half of the lesson: this was found in an afternoon of
+play by the one person who had never been asked to play, three sessions
+after it shipped. **The gates this project cannot run should be handed
+over the week they are owed, not carried in a list.** The EAR GATE is
+still in that state, and it is now twenty-five WAVs and an authored
+silence deep.
+
+### THE LADDER IS RE-CUT, BY THIS PROJECT'S OWN LAW
+
+`PLAN.md`'s ordering rule — *systems that change how a land is authored
+must land before the lands are authored* — decides it. The camera is the
+most load-bearing example of that rule in the file: every composition in
+this game is framed through it, and THE SHOT of all eight built lands
+was chosen by looking down it. Three more lands built on a camera that
+has to change is three lands re-opened, which is the exact mistake the
+rule was written after Session 3 to prevent.
+
+- **12 — THE HANDS AND THE EYE** (was: three lands). Fix all three
+  defects, assert the missing rate, prove the resting composition did
+  not move.
+- **13 — THE NOW**: MAPLE COURT + GREYLINE CITY.
+- **14 — THE 8:15**: THE CUBICLE MILE, its wait, and the mount.
+- 15 the paper plane, 16 motion & life, 17 the juror.
+
+Session 11 had already recommended splitting 12 on scope grounds; that
+split is taken as well.
+
+**One constraint makes Session 12's work checkable and it should be
+stated here because it is easy to miss:** a stopped walker is due north
+by contract, and **every protected framing is shot standing still with
+the bearing pinned.** A correct fix to the MOVING camera should
+therefore come back from `diff-sheets.mjs` at **92 of 92 bit-identical.**
+
 ## Session 11 — 2026-08-31 — the dry lands
 
 *Two lands, two waits, two named inhabitants — and the first session in
