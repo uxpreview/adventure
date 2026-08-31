@@ -82,7 +82,7 @@ game never says whether that is madness or readiness.**
 | **THE RIVERHEAD** | 301, −106 | 9 | the water comes out of the ground here and goes west across four lands to the sea. Above it the channel is dry. Same channel. **The trail rounds the top of it**, because there is no bridge on this river and a river with no bridge is a wall |
 | **THE TOP OF THE CLIMB** | 297, −120 | 8 | somebody's boots, side by side, laced, pointing up the canyon (`THE-STRANGERS` C20). Nobody says whose |
 | **THE MOUTH** | 291, −134 | 9 | where the trail goes under the level of the land. The page is only scratched here; walk north and it opens. **There is no other way in and no way out at the far end** |
-| **THE OVERLOOK** | 280, −176 | 10 | on the west lip, the one place the whole cut is visible end to end. The other rim is forty units away and about an hour |
+| **THE OVERLOOK** | 272, −178 | 10 | on the west lip, the one place the whole cut is visible end to end. The other rim is forty units away and about an hour |
 | **THE NEEDLE ARCH** | 300, −181 | 9 | spanning the channel at its midpoint. The one curve in this land, because it is the one thing here water made rather than tore. It is the only thing in SPLITROCK you pass THROUGH |
 | **THE TRESTLES** | 300, −232 | 11 | **HOLT's.** The boat, the marks, the shed, and the end of the walk. THE SHOT stands twenty units south of it |
 
@@ -257,7 +257,7 @@ game and that is deliberate.
 | THE RIVERHEAD | 301, −106 | LOOK AT WHERE IT STARTS | *it comes out of the ground here and goes west. above it the channel is dry and has been dry a long time. same channel.* |
 | THE TOP OF THE CLIMB | 297, −120 | — | *somebody left their boots here. side by side, laced, pointing up the canyon. they have been rained on twice.* |
 | THE MOUTH | 291, −134 | GO DOWN | *the page is only scratched here. walk north and it opens. there is no other way in and no way out at the far end.* |
-| THE OVERLOOK | 276, −170 | — | *the whole cut, end to end, from the one place you can see it from. the other rim is forty units away and about an hour.* |
+| THE OVERLOOK | 272, −178 | — | *the whole cut, end to end, from the one place you can see it from. the other rim is forty units away and about an hour.* |
 | THE NEEDLE ARCH | 300, −181 | STAND UNDER IT | *a hole worn through solid rock by weather and insistence. you stand under it. it holds.* |
 | THE TRESTLES | 300, −232 | LOOK AT THE MARKS | *a boat, keel up, off the ground, oiled. there are marks up the wall behind it. the lowest one is the height of the boat.* |
 
