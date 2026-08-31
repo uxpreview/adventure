@@ -23,6 +23,7 @@
 //   node tools/shoot-map.mjs
 import { chromium } from 'playwright';
 import { mkdirSync } from 'fs';
+import { CHROMIUM } from './pw.mjs';
 
 const VIEWPORTS = [
   { name: 'desktop', width: 1280, height: 720 },
@@ -32,7 +33,7 @@ const VIEWPORTS = [
 
 const out = process.env.OUT ?? 'shots-map';
 const url = process.env.URL ?? 'http://localhost:4173/?debug';
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await chromium.launch({ executablePath: CHROMIUM });
 
 // what the crossroads signpost names, which is the first note in the game
 const HEARD = ['name:kingdom', 'name:beach', 'name:downs'];

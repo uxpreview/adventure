@@ -43,6 +43,21 @@ export type SaveData = {
    * a thing you have to row in one sitting.
    */
   passed: string[];
+  /**
+   * WHETHER ANYBODY HAS EVER TOLD THIS PLAYER ABOUT THE RUN.
+   *
+   * Session 12, and it is a save field rather than a session flag on
+   * purpose: a control you are taught twice is a control the game
+   * thinks you are stupid about, and a control you are taught once, in
+   * a six-second toast, on the frame where you first walk into a new
+   * land and are looking at the land, is a control nobody has been
+   * taught at all. That was the defect (the owner, having played the
+   * game: "the keyboard controls lack the ability to run" — they do
+   * not; Shift works, and has since Session 6). So it is taught ONCE,
+   * EVER, and at the moment it becomes useful rather than at the
+   * moment the player arrives somewhere.
+   */
+  taughtRun: boolean;
 };
 
 const KEY = 'inklands-save-v1';
@@ -58,6 +73,7 @@ const DEFAULTS: SaveData = {
   hour: null,
   known: [],
   passed: [],
+  taughtRun: false,
 };
 
 export class Save {

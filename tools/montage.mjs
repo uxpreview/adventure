@@ -10,6 +10,7 @@
 import { chromium } from 'playwright';
 import { readFileSync } from 'fs';
 import { basename } from 'path';
+import { CHROMIUM } from './pw.mjs';
 
 const [dir, out, ...names] = process.argv.slice(2);
 const cols = Number(process.env.COLS ?? 2);
@@ -20,7 +21,7 @@ const imgs = names.map((n) => ({
   data: readFileSync(`${dir}/${n}`).toString('base64'),
 }));
 
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await chromium.launch({ executablePath: CHROMIUM });
 const page = await browser.newPage({ viewport: { width: cols * cw + 24, height: 800 } });
 await page.setContent(`<body style="margin:0;background:#e7e3d8;padding:8px;
   display:grid;grid-template-columns:repeat(${cols},${cw}px);gap:8px;

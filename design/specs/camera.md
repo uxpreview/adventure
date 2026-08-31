@@ -1,10 +1,203 @@
-# THE BEARING — the Session 9 camera
+# THE BEARING — the Session 9 camera, corrected by Session 12
 
 *Session 9, 2026-08-30. Not a land spec: one cross-cutting system that
 changes how all six built lands feel and how the remaining five will be
 authored. `QUALITY-BAR.md` governs how it is judged; `WORLD-SYSTEMS.md`
 §2 is what asked for it — and §2 is also the thing this session had to
 correct.*
+
+***SESSION 12, 2026-08-31: THE OWNER PLAYED IT AND IT MADE THEM SICK,
+AND EVERY CHECK IN THIS FILE WAS GREEN WHILE THAT WAS TRUE. §0 below is
+what was found and what was done about it, and it changes the shipped
+system. Read it before you read anything under it: §1–§8 are Session 9's
+reasoning, they are kept whole because a design that gets corrected is
+worth more written down than quietly replaced, and §0 says exactly which
+sentences in them no longer describe the build.***
+
+---
+
+## 0. THE FEEL GATE, RUN AT LAST, AND WHAT IT COST
+
+`QUALITY-BAR.md` §2 has listed this gate as owed to the owner since
+Session 9, which wrote in its own log that it could not perform it:
+
+> *"the bearing can be asserted — the envelope never leaks, the bearing
+> is continuous round the whole circle of travel, a stopped walker comes
+> home to exactly zero in 2.5 game seconds, the walk south sees three
+> times the page it did — and not one of those is the question, which is
+> whether it HELPS or whether the world wobbles."*
+
+It wobbles. Verbatim, 2026-08-31, three sessions after it shipped:
+
+> *"the desktop camera movements make it hard to play — makes me kind of
+> sick"*
+
+**And `node tools/check-camera.mjs` was green on that build**, on all
+six of its claims. That is the clearest evidence this project has
+produced that a measured system is not a judged one, and it is worth
+more than the fix.
+
+### 0.1 THE NUMBER NOBODY HAD ASKED FOR
+
+Every claim in §5 is about **where the camera ends up**. None of them
+asked about the journey between two of those places, and **a rotation
+rate is the whole of what vection sickness is made of.**
+
+Sampled every tick — which matters, because the first table anybody drew
+of this sampled every third of a second and averaged the peak away,
+reporting 20°/s where the frame was doing 35 — driving the circuit a
+player actually walks (north, north-east, east, south-east, south, west,
+stop):
+
+| | swing | rotation | dolly | page east | page south |
+|---|---|---|---|---|---|
+| **as shipped** | **51.2°** | **34.7°/s** | 7.9 u @ **5.3 u/s** | +3.2 | +6.0 |
+| the astern alone | 0.0° | 0.0°/s | 8.0 u @ 5.3 u/s | +0.0 | +6.0 |
+| the yaw alone | 51.2° | 34.7°/s | 2.7 u @ 2.1 u/s | +3.2 | +0.0 |
+
+*"page east" and "page south" are the extra units of ground the
+component puts in front of the walker on that heading, over the same rig
+with the bearing pinned. The 2.1 u/s left in the yaw-alone row is
+`camRise` on the terrain and belongs to Session 4.*
+
+**Fifty-one degrees of swing for one change of mind about which way to
+walk, at thirty-five degrees a second, coupled to a dolly that recedes
+faster than the walker walks.** Nobody asked for any of it: the player
+pressed a direction key.
+
+### 0.2 WHICH OF THE TWO COMPONENTS WAS IT — AND THE ANSWER IS ARITHMETIC
+
+The prompt for this session required an answer in writing, and the two
+components separate perfectly, so it is not a judgement call:
+
+- **THE YAW IS A HUNDRED PER CENT OF THE ROTATION AND TWELVE PER CENT OF
+  THE GAIN IT WAS BUILT FOR.** It buys 3.2 more units of page walking
+  east — on top of **27 units the pinned rig already had** — and charges
+  a fifty-one degree swing at thirty-five degrees a second for them. The
+  walk east never had a warning deficit. §3 of this file measured the
+  walk SOUTH at 3.5 units of warning and called it the defect; walking
+  east the same rig showed 27, which is six and a half seconds. **The
+  yaw was solving a problem the geometry says was not there.**
+- **THE ASTERN IS A HUNDRED PER CENT OF THE WALK SOUTH AND ROTATES
+  NOTHING.** Five units of warning to eleven, and it is a retreat and a
+  drop, not a turn: the field of view does not rotate at all.
+
+**So the yaw is the sickness and the astern is the gain**, and that is
+what shipped.
+
+### 0.3 WHAT CHANGED
+
+**1. THE AUTOMATIC YAW COMES OFF BOTH RIGS.** Not reduced to 8–10°: a
+small unrequested rotation is a small dose of the same thing, and at 8°
+it would still be buying under a unit of page. Portrait loses it too,
+even though the complaint was a desktop one — 12° across portrait's
+26.5° frame is **45%** of the frame's width against desktop's 36%, so
+in frame-relative terms portrait's automatic turn was the *worse* of the
+two.
+
+```ts
+yawWant = ((rig.peekYaw * Math.PI) / 180) * this.input.peek;
+```
+
+**THE ENVELOPE SURVIVES WHOLE. It is the PEEK'S envelope now**, and
+every reason it is 26° and 12° — the standee table in §3, the frame
+widths, WORLD-SYSTEMS §8 — is unchanged and still governs. The field
+`rig.yaw` is renamed `rig.peekYaw`, because a name that lies costs
+sessions.
+
+**The distinction the sickness actually turns on is agency, not
+degrees.** A large field rotating because you pressed a *walking* key is
+vection. The same rotation, at the same rate, because you are holding
+the key that means *look*, is a head turn — you asked for it, you know
+you asked, and you let go when you are done. So the peek keeps its full
+deflection and its 32°/s, and walking keeps none.
+
+**2. THE ASTERN STAYS, AND ITS EASE IS SLOWED.** `asternEase` 1.4 → 0.85,
+which is 5.3 units a second of give to 3.4. At 1.4 the rig gave ground
+at 5.3 against a walk of 4.1,
+so turning south the page flowed backwards under a walker who was going
+forwards — the one part of the astern opening that was a motion nobody
+asked for. The new ceiling is **the walk itself**. It costs nothing that
+matters: the opening is measured after six seconds of southward travel
+and its steady state is untouched, so the walk south still sees the same
+page it earned its verdict on.
+
+**3. AND THE LEAD IS UNTOUCHED**, deliberately. Raising it was the
+obvious way to buy back the yaw's 3.2 units without a rotation, and it
+is refused: at a walk the lead is capped by `leadSec` at 3.7 units, and
+buying 3.2 more would sit the walker **70% of the way to the edge of the
+frame** in every east–west walk. This session removes a motion. It does
+not add one and hope.
+
+### 0.4 WHAT WAS LOST, STATED SO NOBODY HAS TO GUESS
+
+**The lean.** `critique-camera-1` awarded WOWED for two things and this
+was one of them: *a frame that answers travel*. Walking east or west the
+frame no longer leans into the crossing.
+
+It is worth **3.2 units of page out of 30.2**, and it is still there on
+`,` and `.` — the peek reaches the same 26°, from any heading, whenever
+a hand asks for it. **What is not lost is the walk south**, which was
+the other half of that verdict and the whole of the defect Session 9
+existed to close.
+
+And the crossing did not go nowhere. `design/specs/controls.md` §3b:
+**the crossing component of travel leans the WALKER now** — the same
+term, moved off the field of view and onto the forty pixels of ink in
+the middle of it, where it rotates nothing anybody is looking through.
+
+### 0.5 AND THE ASSERTION THAT WOULD HAVE CAUGHT IT
+
+`check-camera.mjs` has a seventh claim, sampled every tick:
+
+| | ceiling | shipped | before |
+|---|---|---|---|
+| deflection from **travel**, desktop / portrait | — | **0.00° / 0.00°** | 25.99° / 12.00° |
+| rotation under **walking input alone** | 1°/s | **0.00°/s** | 34.7°/s |
+| rotation under a **held peek** | 45°/s | 32.0°/s | — |
+| rotation under a **peek reversed mid-turn** | 80°/s | 64.0°/s | 60.1°/s |
+| the rig **giving ground**, desktop / portrait | 4.1 u/s (the walk) | **3.35 / 3.38 u/s** | 5.25 / 5.27 u/s |
+| the walk south, page ahead | ≥ 15 u, ×1.45 | 17.4 u, ×1.61 | 17.4 u, ×1.61 |
+
+*Every figure in both columns is `check-camera.mjs` on the same
+instrument: the "before" column is this build with the automatic yaw put
+back and `asternEase` returned to 1.4, so the two columns differ by the
+change and by nothing else. The reversed peek is four degrees a second
+FASTER than before, and that is not a regression but the old formula
+being replaced: the peek used to enter quadratically (`env · pk²` for a
+standing walker) and it is linear now, so it gets going sooner. It is
+still a rotation nobody gets without holding a key down.*
+
+1°/s is a way of writing ZERO that an easing term and a float tick can
+both live inside. It is not a comfort threshold borrowed from anywhere —
+it is the assertion that **walking does not turn the frame in this
+game**, and a build that drifts off it fails there rather than in
+somebody's stomach three sessions later.
+
+**And §5's continuity claim is superseded rather than kept.** It
+asserted that the bearing was continuous round the whole circle of
+travel, guarding a coin toss at due south. There is nothing left to be
+continuous: a discontinuity cannot exist in a term that is identically
+zero. The check asserts the stronger thing — *no direction of travel
+turns the frame, thirty-six headings, all exactly zero* — which fails
+the moment anybody puts travel back into the yaw.
+
+### 0.6 AND THE COMPOSITIONS DID NOT MOVE
+
+`node tools/diff-sheets.mjs` against `047649f`, 92 framings, bearing
+pinned, twelve game seconds of settle:
+
+> **THE PAGE: 92/92 bit-identical, 0 over 0.000%.**
+
+Which is the whole claim. A stopped walker is due north by contract, so
+taking a term out of a *moving* camera must not touch a composition —
+and it did not touch a pixel.
+
+Seven framings moved in THE WRITING OVER IT and all seven are one
+deliberate edit: the arrival hint dropped from five controls to four
+(`controls.md` §3a), so it is narrower. All seven are in THE COMMON at
+hour 12, which is the only place the hint fires, and the changed box is
+the hint element's own rectangle measured in the running game.
 
 ---
 

@@ -52,6 +52,9 @@ export class Character {
    *  1.5× the walker starts to out-run their own frame and the world
    *  arrives as a smear instead of as a place. */
   runMult = 1.5;
+  /** How far a body leans into a crossing at full effort, in radians —
+   *  eleven degrees. See THE LEAN in `update`. */
+  private static LEAN = 0.19;
   /**
    * HOW HARD THE PLAYER IS ASKING TO GO, 0..1 of flat out. Set by App
    * from `Input.run`; continuous, and there is no state behind it.
@@ -342,6 +345,39 @@ export class Character {
         this.sprite.position.y = -0.02 + Math.sin(this.walkPhase * 1.15) * 0.05;
       } else {
         this.setFrame(1 + (Math.floor(this.walkPhase) % 6));
+        /* ---- THE LEAN (Session 12) --------------------------------
+         * THE CROSSING COMPONENT OF TRAVEL USED TO TURN THE CAMERA. IT
+         * LEANS THE WALKER NOW.
+         *
+         * Session 12 took the automatic yaw off the camera because it
+         * was making the owner sick, and that cost the game the one
+         * thing critique-camera-1 praised about east–west travel: a
+         * frame that answers the crossing. This gives it back at the
+         * one place in the picture that is never cropped and never
+         * rotates the field of view — the figure itself, which is dead
+         * centre of every frame in both viewports at every bearing.
+         *
+         * It has to be here rather than in the trail, and that is a
+         * MEASURED point, not a taste one: the prints are laid BEHIND
+         * the walker and the frame's bottom edge is three and a half
+         * units behind them, so a run and a walk photographed at the
+         * same spot are the same three dots on the same frame edge.
+         * The run's whole affordance was drawn in the strip of page
+         * this camera crops.
+         *
+         * Continuous, like everything else about the run: it is the
+         * crossing velocity times `effort`, which is zero standing
+         * still (so every protected framing is untouched), about five
+         * and a half degrees at a walk across the frame, and eleven
+         * flat out. Nothing steps, nothing thresholds, and there is
+         * still no sprint state anywhere in this game.
+         *
+         * `rotation.z` survives the sprite's mirror: the mirror is a
+         * scale and the rotation is applied after it, so a lean to
+         * screen-right is a lean to screen-right whichever way the
+         * walker is facing. */
+        const cross = Math.max(-1, Math.min(1, this.vel.x / this.maxSpeed));
+        this.sprite.rotation.z = -Character.LEAN * this.effort * cross;
       }
 
       if (this.wobble > 0) {

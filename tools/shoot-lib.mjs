@@ -23,6 +23,7 @@
 //     "sprint as ink weight" show a run and a walk that were identical.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'fs';
+import { CHROMIUM } from './pw.mjs';
 
 export const VIEWPORTS = [
   { name: 'desktop', width: 1280, height: 720 },
@@ -83,7 +84,7 @@ export async function shoot({ out, framings, url, map = false, hour, extra, bear
   // day cycle is not done until dusk is as good as noon.
   if (hour === undefined && process.env.HOUR) hour = Number(process.env.HOUR);
   const target = url ?? process.env.URL ?? 'http://localhost:4173/?debug';
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  const browser = await chromium.launch({ executablePath: CHROMIUM });
 
   for (const vp of VIEWPORTS.filter((v) => !ONLY || v.name === ONLY)) {
     const dir = `${out}/${vp.name}`;

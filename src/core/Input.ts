@@ -2,8 +2,14 @@ import * as THREE from 'three';
 
 /**
  * Unified input: WASD/arrows on keyboard, and a drag virtual joystick
- * that serves both touch and mouse. Exposes one normalized move vector
- * (x = right, y = toward camera-forward/−Z).
+ * THAT SERVES TOUCH AND PEN AND NOT THE MOUSE. Exposes one normalized
+ * move vector (x = right, y = toward camera-forward/−Z).
+ *
+ * That sentence used to read "serves both touch and mouse", and it was
+ * accurate, and it was the bug (Session 12): a mouse drag anywhere on
+ * the desktop canvas raised the phone's ring under the cursor. See the
+ * pointerdown handler, and `design/specs/controls.md` for why
+ * click-drag-to-walk is not a desktop control in this game.
  *
  * Session 4, portrait as a first-class viewport (WORLD-SYSTEMS §8): "the
  * joystick must never sit under the thing it is steering toward." On a
@@ -100,6 +106,22 @@ export class Input {
     window.addEventListener('blur', () => this.keys.clear());
 
     canvas.addEventListener('pointerdown', (e) => {
+      /* THE STICK IS A THUMB'S CONTROL AND A MOUSE IS NOT A THUMB.
+       * Session 12, and it is the FIRST line of this handler so that a
+       * mouse never even enters `pts` — otherwise a hybrid laptop with a
+       * finger and a mouse down at once reads as two fingers and takes
+       * a peek. The only guard here used to be an ASPECT-RATIO test,
+       * which decides WHERE the stick may be grabbed and never whether
+       * it should exist, so a mouse drag anywhere on a 1280×720 canvas
+       * raised the ring under the cursor and walked the walker.
+       *
+       * Aspect ratio was never the question; POINTER TYPE is, and the
+       * event carries it. `e.pointerType` beats
+       * matchMedia('(pointer: coarse)') because it is per-EVENT: a
+       * touchscreen laptop answers "fine" to the media query, and this
+       * gives it the stick the moment a finger lands on the glass and
+       * never when the mouse moves. */
+      if (e.pointerType === 'mouse') return;
       this.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (!this.enabled) return;
       /* TWO FINGERS ARE A LOOK, NOT A WALK. The second one down ends

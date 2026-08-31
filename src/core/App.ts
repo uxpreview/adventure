@@ -79,6 +79,8 @@ export class App {
   private camGround = 0;
   /** How much higher the ground ahead is than the ground here, damped. */
   private camRise = 0;
+  /** The rig's commanded trail distance — see `bearing().back`. */
+  private camBack = 0;
   /* ---- THE BEARING (Session 9) ------------------------------------- *
    * Radians east of due north, damped, and hard-clamped by the rig's own
    * envelope; and how much of the walker's travel is coming AT the lens,
@@ -425,6 +427,19 @@ export class App {
           yaw: (this.camYaw * 180) / Math.PI,
           astern: this.camAstern,
           peek: this.input.peek,
+          /* HOW FAR THE RIG IS TRAILING (Session 12). The distinction
+           * is the whole of the dolly assertion: the camera orbits the
+           * aim point, and the aim point leads the walker, so a peek
+           * moves the camera nearer to and further from the WALKER
+           * without the rig dollying at all, and the LEAD lurches the
+           * camera-to-aim-point distance on every change of direction.
+           * Measured either of those ways a turn reads as a dolly, and
+           * a check that
+           * cannot tell a turn from a dolly cannot hold a ceiling on
+           * either. So this is the rig's own COMMANDED trail distance —
+           * `rig.back` plus the rise retreat plus the astern retreat —
+           * which is the dolly and nothing but. */
+          back: this.camBack,
         }),
       };
     }
@@ -468,17 +483,81 @@ export class App {
     knowledge.learn(`name:${this.region.id}`);
     this.ui.showRegionCard(this.region.kicker, this.region.name);
     if (fresh || newLand) {
-      /* The hint IS the control list, and running is a control now
-       * (WORLD-SYSTEMS §0 rule 1 forbids UI where the world can say
-       * it — the world says how FAST you are going, in the trail, but
-       * it cannot say which gesture produces it). */
+      /* THE HINT IS THE CONTROL LIST AND IT WAS TOO LONG TO BE ONE.
+       * Session 12 took the run out of it: five items fired once for
+       * six seconds on the frame a player walks into a new land is a
+       * list nobody reads, and the owner proved it by not finding the
+       * run at all. The run is taught on its own, at the moment it is
+       * worth having (`teachTheRun`); what is left here is what you
+       * need in the first ten seconds of a place, and it is four
+       * things instead of five. */
       this.ui.showHint(
         'ontouchstart' in window
-          ? 'drag to walk, further to run — two fingers to lean — tap to look'
-          : 'wasd to walk — shift to run — E to look — , . to lean — M for the map',
+          ? 'drag to walk — two fingers to lean — tap to look'
+          : 'wasd to walk — E to look — , . to lean — M for the map',
         6000
       );
     }
+  }
+
+  /* ================================================================ *
+   * TEACHING THE RUN — AND WHY THIS IS THE ONE THING IN THE GAME THAT
+   * IS ALLOWED TO BE TOLD.
+   *
+   * Session 12. The owner played the game and could not run. Shift
+   * works and has worked since Session 6 — driven on the harness clock
+   * it is 4.84 units a second against 7.07, a real 1.46× — so nothing
+   * was broken. What was broken is that the game said Shift existed
+   * exactly once, for six seconds, in a five-item list, fired on the
+   * frame the player walks into a new land, which is the one frame
+   * they are certainly looking at the land instead of at a line of
+   * type.
+   *
+   * WORLD-SYSTEMS §0 rule 1 is no UI where the WORLD can say it, and
+   * the world cannot say "Shift". It can say how fast you are going —
+   * that is the trail, the stride, the lean, the step and the score,
+   * and Session 12 measured that the trail alone could not, because
+   * the prints are laid behind the walker and the frame's bottom edge
+   * is three and a half units behind them. But no drawing anywhere on
+   * this page can name a key. That is why a hint exists at all, and it
+   * is the whole of the licence.
+   *
+   * So the fix is not a louder hint, a longer hint or a legend in the
+   * corner. It is TIMING: teach one control, once, at the moment it
+   * becomes worth having — the first time this player has walked
+   * without stopping for long enough to want to be going faster.
+   *
+   *  · once EVER, not once per land (`save.taughtRun`);
+   *  · never if they already found it, because holding Shift at any
+   *    point clears the flag without a word being printed;
+   *  · never to the harness, which is not a player and does not need
+   *    teaching — and which would otherwise print chrome into a
+   *    protected contact sheet.
+   * ================================================================ */
+  private walkHeld = 0;
+  private teachTheRun(dt: number) {
+    if (this.save.data.taughtRun || !this.started || this.char.frozen) return;
+    // the harness drives with `hold`; a player does not
+    if (this.input.hold !== null) return;
+    if (this.input.run > 0.15) {
+      // they found it on their own. Nothing is printed, ever.
+      this.save.data.taughtRun = true;
+      this.save.persist();
+      return;
+    }
+    const moving = Math.hypot(this.char.vel.x, this.char.vel.z) > 1.2;
+    this.walkHeld = moving ? this.walkHeld + dt : 0;
+    /* SIX SECONDS OF UNBROKEN WALKING. Long enough that this is a
+     * journey and not a step off a kerb, short enough that it lands
+     * inside the first minute for anybody who sets out and keeps
+     * going. */
+    if (this.walkHeld < 6) return;
+    this.save.data.taughtRun = true;
+    this.save.persist();
+    this.ui.showHint(
+      'ontouchstart' in window ? 'drag further to run' : 'hold shift to run',
+      3400
+    );
   }
 
   /* ================================================================ *
@@ -664,12 +743,12 @@ export class App {
      *
      *  `yaw` and `lead` are Session 9's, and they are per-rig for the
      *  same reason everything else here is: see THE BEARING below. */
-    desktop: { back: 13.0, up: 6.0, look: 3.4, fov: 42, yaw: 26, lead: 4.2 },
-    portrait: { back: 14.4, up: 6.9, look: 4.0, fov: 54, yaw: 12, lead: 2.0 },
+    desktop: { back: 13.0, up: 6.0, look: 3.4, fov: 42, peekYaw: 26, lead: 4.2 },
+    portrait: { back: 14.4, up: 6.9, look: 4.0, fov: 54, peekYaw: 12, lead: 2.0 },
     /** The poster, before you set out. The bearing is dead here: nobody
      *  is walking, and the poster is a composition. */
-    posterDesktop: { back: 15.2, up: 6.4, look: 5.0, fov: 42, yaw: 0, lead: 0 },
-    posterPortrait: { back: 16.6, up: 7.0, look: 5.8, fov: 54, yaw: 0, lead: 0 },
+    posterDesktop: { back: 15.2, up: 6.4, look: 5.0, fov: 42, peekYaw: 0, lead: 0 },
+    posterPortrait: { back: 16.6, up: 7.0, look: 5.8, fov: 54, peekYaw: 0, lead: 0 },
     /** Where the camera looks for ground worth revealing. */
     aheadNear: 34,
     aheadMid: 60,
@@ -785,10 +864,65 @@ export class App {
      * WOWED verdicts valid, the same clause that protected them through
      * Session 4's rebuild.
      * ================================================================ */
+    /* ================================================================ *
+     * SESSION 12 — AND THE OWNER PLAYED IT AND IT MADE THEM SICK.
+     *
+     * The feel gate above was owed from Session 9 and was run for the
+     * first time on 2026-08-31. It returned NOT YET, in four words:
+     * "makes me kind of sick". Every check in check-camera.mjs was
+     * green while that was true, because no check asked the question
+     * the owner was answering — HOW FAST DOES THE FRAME TURN.
+     *
+     * Measured tick by tick, driving a normal circuit (north, north-
+     * east, east, south-east, south, west, stop):
+     *
+     *                        swing    rotation   dolly    east    south
+     *   as shipped          51.2°    34.7°/s   5.3 u/s   +3.2    +6.0
+     *   the astern alone     0.0°     0.0°/s   5.3 u/s   +0.0    +6.0
+     *   the yaw alone       51.2°    34.7°/s   2.1 u/s   +3.2    +0.0
+     *
+     * ("east" and "south" are the extra units of PAGE the component
+     * puts in front of the walker on that heading, over a rig with the
+     * bearing pinned. The 2.1 u/s left in the yaw-alone row is camRise
+     * on the terrain and belongs to Session 4.)
+     *
+     * SO THE TWO COMPONENTS SEPARATE CLEANLY AND THE VERDICT IS
+     * ARITHMETIC. The yaw is a hundred per cent of the rotation and
+     * twelve per cent of the gain it was built for — it bought 3.2 more
+     * units of page walking east, on top of 27 the pinned rig already
+     * had, and charged a fifty-one degree swing at thirty-five degrees
+     * a second for them. The astern is a hundred per cent of the walk
+     * south — five units of warning to eleven, which is the defect
+     * Session 9 existed to close — and it does not rotate the frame at
+     * all.
+     *
+     * THE YAW IS THE SICKNESS AND THE ASTERN IS THE GAIN. So:
+     *
+     *   1. THE AUTOMATIC YAW COMES OFF BOTH RIGS. Not reduced: a small
+     *      unrequested rotation is a small dose of the same thing, and
+     *      at 8° it would still be buying under a unit of page. The
+     *      envelope BELOW SURVIVES WHOLE — it is the PEEK'S envelope
+     *      now, and every reason it is 26° and 12° is unchanged.
+     *      Rotation in this game is a thing the player ASKS FOR. That
+     *      is the distinction the sickness actually turns on: a large
+     *      field rotating because you pressed a walking key is vection;
+     *      the same rotation, at the same rate, because you are holding
+     *      the key that means "look", is a head turn.
+     *   2. THE ASTERN STAYS, and its ease is slowed so the rig can
+     *      never give ground faster than the walker covers it —
+     *      5.3 u/s to 3.4, against a walk of 4.1.
+     *
+     * WHAT IS LOST, STATED SO NOBODY HAS TO GUESS: the lean. Walking
+     * east or west the frame no longer leans into the crossing, and
+     * critique-camera-1 praised that lean. It is worth 3.2 units of
+     * page out of 30.2, and it is still available on `,` and `.` — the
+     * peek reaches the same 26°, from any heading, whenever a hand asks
+     * for it. What is NOT lost is the walk south, which was the other
+     * half of that verdict and the whole of the defect.
+     * ================================================================ */
     /** Degrees off north, per rig — the table in §1 above is the reason,
-     *  and it is not a knob. Nothing in this game ever puts the camera
-     *  past its rig's envelope: the peek does not add to the yaw, it
-     *  takes it over. */
+     *  and it is not a knob. Since Session 12 nothing but THE PEEK ever
+     *  reaches it, and nothing in this game may exceed it. */
     yawEase: 2.2,
     /** A stopped walker is in the SHIPPED composition, not asymptotically
      *  near it. Under this much the bearing is set to exactly zero. */
@@ -801,7 +935,16 @@ export class App {
      *  its aim drops to lay that ground out. §3 above is the reason. */
     asternBack: 5.5,
     asternLook: -1.6,
-    asternEase: 1.4,
+    /** SESSION 12: 1.4 GAVE GROUND FASTER THAN THE WALKER COVERED IT.
+     *  At 1.4 the rig recedes at 5.3 units a second against a walk of
+     *  4.1, so turning south the ground flowed backwards under a walker
+     *  who was going forwards — the one part of the astern opening that
+     *  was a motion nobody asked for. The ceiling is the walk itself,
+     *  and 0.85 measures 3.35 on desktop and 3.38 in portrait. It costs nothing that matters:
+     *  the opening is measured after six seconds of southward travel
+     *  and its steady state is untouched, so the walk south still sees
+     *  the same page it earned its verdict on. */
+    asternEase: 0.85,
   };
 
   private camRig() {
@@ -932,6 +1075,7 @@ export class App {
       this.char.grade = 0;
     }
     this.char.update(dt, this.input.move);
+    this.teachTheRun(dt);
 
     /* WHAT THE PAGE REFUSES — and it refuses the exact opposite of
      * itself depending on what you are sitting in.
@@ -1271,11 +1415,11 @@ export class App {
     let yawWant = 0;
     let asternWant = 0;
     if (this.bearingOn && this.started && !this.char.frozen) {
-      const env = (rig.yaw * Math.PI) / 180;
-      const cross = Math.max(-1, Math.min(1, this.char.vel.x / vmax));
-      const auto = env * cross;
-      const pk = this.input.peek;
-      yawWant = auto + (env * pk - auto) * Math.abs(pk);
+      /* THE ONLY THING THAT TURNS THE FRAME IS A HAND ON A KEY. Session
+       * 12: `this.input.peek` is already clamped to ±1 and already
+       * ramped, so the whole of the yaw is one multiply now, and there
+       * is no term in it that a walk can reach. */
+      yawWant = ((rig.peekYaw * Math.PI) / 180) * this.input.peek;
       asternWant = Math.max(0, Math.min(1, this.char.vel.z / vmax));
     }
     this.camYaw += (yawWant - this.camYaw) * (1 - Math.exp(-dt * C.yawEase));
@@ -1321,6 +1465,16 @@ export class App {
      * is aimed at never moves on the page when the bearing changes —
      * only what is around it does. */
     const dBack = rig.back + this.camRise * C.riseBack + this.camAstern * C.asternBack;
+    /* HOW FAR THE RIG IS ASKING TO SIT, kept for the harness. Session 12
+     * asserts a ceiling on how fast this may CHANGE — the rig may not
+     * give ground faster than the walker covers it — and neither of the
+     * two distances you can measure from outside will do. Camera to
+     * WALKER moves when a peek swings the camera round a lead-offset
+     * aim point, which is a turn and not a dolly; camera to AIM POINT
+     * moves when the lead itself lurches on a change of direction,
+     * which is the frame translating and not a dolly either. This is
+     * the dolly: the two terms that retreat, and nothing else. */
+    this.camBack = dBack;
     const sy = Math.sin(this.camYaw);
     const cy = Math.cos(this.camYaw);
     const camX = this.camTarget.x - dBack * sy;

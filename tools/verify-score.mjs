@@ -13,6 +13,7 @@
 // at the graph it built. Same division of labour as Session 7:
 // `shoot-story` photographs the wait, `verify-story` PLAYS it.
 import { chromium } from 'playwright';
+import { CHROMIUM } from './pw.mjs';
 
 const URL = process.env.URL ?? 'http://localhost:4173/?debug';
 let fails = 0;
@@ -20,7 +21,7 @@ const fail = (m) => { console.log('  ✗ ' + m); fails++; };
 const ok = (m) => console.log('  · ' + m);
 
 const browser = await chromium.launch({
-  executablePath: '/opt/pw-browsers/chromium',
+  executablePath: CHROMIUM,
   // an AudioContext with no user gesture is SUSPENDED, and a suspended
   // context's currentTime does not advance — every ramp in here would
   // sit at its start value forever and every assertion would be a lie

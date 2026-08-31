@@ -7,21 +7,48 @@
 // the interact prompt are the half of this game the player reads, and
 // they were being judged by nobody.
 //
-// So this shoots the chrome, at four widths, in portrait only — because
-// the chrome is where portrait actually breaks (QUALITY-BAR §3: mobile
-// and desktop are both first-class, and a composition that only works
-// in landscape is not done).
+// So this shoots the chrome, at four widths, in portrait — because the
+// chrome is where portrait actually breaks (QUALITY-BAR §3: mobile and
+// desktop are both first-class, and a composition that only works in
+// landscape is not done).
+//
+// AND FROM SESSION 12 IT SHOOTS THE DESKTOP TOO, WHICH IS WHERE THE
+// SECOND HALF OF THE OWNER'S FEEL GATE FAILED. "The chrome is shot" had
+// only ever meant "the chrome is shot on a phone", and the defect that
+// hid in that gap was the phone's own joystick appearing under a mouse
+// cursor on a 1280×720 desktop — a control from the wrong device, on
+// screen, in the shipped build, for three sessions. A mouse was never
+// pointed at this game by any tool in this repository.
+//
+// So the joystick step is now an ASSERTION as well as a photograph, and
+// it runs on both rigs with the opposite expectation on each:
+//
+//   · a TOUCH drag raises the stick   (and a phone that does not is broken)
+//   · a MOUSE drag raises NOTHING     (and a desktop that does is the bug)
+//
+// The touch drag is dispatched over CDP rather than through
+// `page.mouse`, which is how the old version drove it — and driving a
+// touch control with a mouse is exactly the confusion that shipped the
+// defect. `Input.dispatchTouchEvent` produces a real pointer, so
+// `pointerType` is genuinely 'touch' and `setPointerCapture` works.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'fs';
+import { CHROMIUM } from './pw.mjs';
 
 // the narrow end of the real world, the two common iPhones, and a large
 // Android. 320 is an iPhone SE in a browser with the chrome showing.
-const PHONES = [
-  { name: '320-narrow', width: 320, height: 568 },
-  { name: '360-android', width: 360, height: 800 },
-  { name: '390-iphone', width: 390, height: 844 },
-  { name: '430-max', width: 430, height: 932 },
+const RIGS = [
+  { name: '320-narrow', width: 320, height: 568, touch: true },
+  { name: '360-android', width: 360, height: 800, touch: true },
+  { name: '390-iphone', width: 390, height: 844, touch: true },
+  { name: '430-max', width: 430, height: 932, touch: true },
+  // AND THE RIG THE OWNER ACTUALLY PLAYED ON.
+  { name: '1280-desktop', width: 1280, height: 720, touch: false },
 ];
+
+let fails = 0;
+/** One rig, for iterating: `RIG=1280-desktop node tools/shoot-mobile.mjs`. */
+const ONLY = process.env.RIG;
 
 // THE LONGEST NOTE IN THE GAME, and one of the shortest, so the card is
 // judged at both ends of its range.
@@ -36,16 +63,16 @@ const SHORT = 'THE MOAT POOL';
 
 const out = process.env.OUT ?? 'shots-mobile';
 const url = process.env.URL ?? 'http://localhost:4173/?debug';
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await chromium.launch({ executablePath: CHROMIUM });
 
-for (const vp of PHONES) {
+for (const vp of RIGS.filter((r) => !ONLY || r.name === ONLY)) {
   const dir = `${out}/${vp.name}`;
   mkdirSync(dir, { recursive: true });
   const page = await browser.newPage({
     viewport: { width: vp.width, height: vp.height },
     deviceScaleFactor: 2,
-    isMobile: true,
-    hasTouch: true,
+    isMobile: vp.touch,
+    hasTouch: vp.touch,
   });
   await page.addInitScript(() => localStorage.clear());
   page.on('pageerror', (e) => console.log(`[${vp.name}] EXCEPTION:`, e.message));
@@ -111,18 +138,148 @@ for (const vp of PHONES) {
   await page.keyboard.press('KeyM');
   await page.waitForTimeout(400);
 
-  // and the joystick, planted where a thumb actually lands
-  await page.touchscreen.tap(vp.width * 0.5, vp.height * 0.82);
-  await page.mouse.move(vp.width * 0.5, vp.height * 0.82);
-  await page.mouse.down();
-  await page.mouse.move(vp.width * 0.5 + 10, vp.height * 0.82 - 70, { steps: 8 });
-  await page.waitForTimeout(700);
-  await page.screenshot({ path: `${dir}/07-joystick-running.png` });
-  await page.mouse.up();
+  /* ---- THE STICK, AND WHETHER IT BELONGS HERE ---------------------- *
+   * Same drag on both rigs, dispatched with the pointer each rig
+   * actually has, and the two rigs want opposite answers. */
+  /* AND IT HAS TO LAND ON THE PAGE, AND THE PAGE HAS TO STAY THERE.
+   * The walker is put on empty meadow first — (−80, 80), the same open
+   * ground `check-camera` sweeps in, chosen because nothing is there —
+   * and the transient chrome is swept. Otherwise the walk from the note
+   * framings leaves the walker at THE MOAT POOL with a `look` prompt
+   * under the drag, and the prompt is not even STILL: Session 9 made it
+   * re-place itself beside whatever it names, every frame, on whichever
+   * side the walker is not. So `elementFromPoint` would answer "the
+   * page" and the touch a moment later would land on a button — which
+   * is exactly what happened, and it is why the hit target is
+   * re-checked at dispatch time below rather than trusted. */
+  await page.evaluate(() => {
+    window.__inklands.goto(-80, 80);
+    window.__inklands.quiet();
+  });
+  await page.waitForTimeout(900);
 
-  console.log(`  ${vp.name}: 8 frames → ${dir}`);
+  /* AND IT HAS TO LAND ON THE PAGE, NOT ON A CONTROL. The old version
+   * dragged from (0.5w, 0.82h) unconditionally, and at THE MOAT POOL —
+   * which is where the note walk leaves the walker — that is exactly
+   * where the `look` prompt sits, so the drag was being swallowed by a
+   * button and the frame was filed as "07-joystick-running.png"
+   * anyway. It was PHOTOGRAPHED and never ASSERTED, which is the same
+   * mistake in miniature as the one this whole session is about. So
+   * the origin is SEARCHED for: the lowest point in the legal walk
+   * band whose hit target is actually the renderer's canvas. */
+  const origin = await page.evaluate(({ w, h }) => {
+    const cv = document.querySelector('#app > canvas');
+    for (const fy of [0.82, 0.76, 0.7, 0.64, 0.58, 0.5]) {
+      for (const fx of [0.5, 0.28, 0.72, 0.16, 0.84]) {
+        const x = w * fx;
+        const y = h * fy;
+        if (document.elementFromPoint(x, y) === cv) return { x, y };
+      }
+    }
+    return null;
+  }, { w: vp.width, h: vp.height });
+  /* AND THE TOOL SAYS WHERE IT DRAGGED FROM, because "the stick did not
+   * come up" and "the drag never landed on the page" are different
+   * failures and the first one hid the second for a whole session. */
+  await page.evaluate(() => {
+    window.__pd = [];
+    window.addEventListener(
+      'pointerdown',
+      (e) => window.__pd.push(`${e.pointerType}→${e.target.tagName}.${e.target.className}`),
+      true
+    );
+  });
+  if (!origin) {
+    console.log(`  ✗ ${vp.name}: no point in the walk band is the page — chrome covers it`);
+    fails++;
+    await page.close();
+    continue;
+  }
+  const stillPage = await page.evaluate(
+    (o) => document.elementFromPoint(o.x, o.y) === document.querySelector('#app > canvas'),
+    origin
+  );
+  if (!stillPage) {
+    console.log(`  ✗ ${vp.name}: chrome moved under the drag point between the search and the drag`);
+    fails++;
+    await page.close();
+    continue;
+  }
+  const x0 = origin.x;
+  const y0 = origin.y;
+  const x1 = x0 + 10;
+  const y1 = y0 - 70;
+  if (vp.touch) {
+    const cdp = await page.context().newCDPSession(page);
+    const touch = (type, x, y) =>
+      cdp.send('Input.dispatchTouchEvent', {
+        type,
+        touchPoints: type === 'touchEnd' ? [] : [{ x, y, radiusX: 12, radiusY: 12, force: 1 }],
+      });
+    await touch('touchStart', x0, y0);
+    for (let i = 1; i <= 8; i++) {
+      await touch('touchMove', x0 + ((x1 - x0) * i) / 8, y0 + ((y1 - y0) * i) / 8);
+    }
+    await page.waitForTimeout(700);
+  } else {
+    await page.mouse.move(x0, y0);
+    await page.mouse.down();
+    await page.mouse.move(x1, y1, { steps: 8 });
+    await page.waitForTimeout(700);
+  }
+  await page.screenshot({ path: `${dir}/07-joystick.png` });
+  const landed = await page.evaluate(() => window.__pd);
+  const inp = await page.evaluate(() => {
+    const i = window.__inklands?.input;
+    return i
+      ? { enabled: i.enabled, pointerId: i.pointerId, pts: i.pts.size, peek: i.peekIds.length }
+      : null;
+  });
+  const joy = await page.evaluate(() => {
+    const el = document.querySelector('.joy');
+    if (!el) return { cls: '(no .joy element)', shown: false };
+    const r = el.getBoundingClientRect();
+    return {
+      cls: el.className,
+      shown:
+        el.classList.contains('active') &&
+        getComputedStyle(el).opacity !== '0' &&
+        r.width > 0,
+    };
+  });
+  if (vp.touch) {
+    await page.evaluate(() => {}); // touch is released by closing the page
+    if (joy.shown) {
+      console.log(`  ✓ ${vp.name}: a thumb raises the stick ("${joy.cls}")`);
+    } else {
+      console.log(
+        `  ✗ ${vp.name}: a thumb did NOT raise the stick ("${joy.cls}") — ` +
+        `dragged from ${Math.round(x0)},${Math.round(y0)}; the drag hit [${landed.join(' ')}]; ` +
+        `input ${JSON.stringify(inp)}`
+      );
+      fails++;
+    }
+  } else {
+    await page.mouse.up();
+    if (joy.shown) {
+      console.log(
+        `  ✗ ${vp.name}: A MOUSE DRAG RAISED THE PHONE'S STICK ("${joy.cls}") — ` +
+        `dragged from ${Math.round(x0)},${Math.round(y0)}; the drag hit [${landed.join(' ')}]; ` +
+        `input ${JSON.stringify(inp)}`
+      );
+      fails++;
+    } else {
+      console.log(`  ✓ ${vp.name}: a mouse drag raises nothing ("${joy.cls}")`);
+    }
+  }
+
+  console.log(`     ${vp.name}: 8 frames → ${dir}`);
   await page.close();
 }
 
 await browser.close();
 console.log('done →', out);
+if (fails) {
+  console.log(`\n${fails} FAILURE(S) — a control is on the wrong device`);
+  process.exit(1);
+}

@@ -75,6 +75,242 @@ by contract, and **every protected framing is shot standing still with
 the bearing pinned.** A correct fix to the MOVING camera should
 therefore come back from `diff-sheets.mjs` at **92 of 92 bit-identical.**
 
+## Session 12 — 2026-08-31 — the hands and the eye
+
+*Not a land session. The FEEL GATE — owed to the owner since Session 9
+and listed in `QUALITY-BAR.md` §2 as one of the two gates no tool in
+this repository can run — was run for the first time, and it returned
+NOT YET. Three defects, all reproduced, all fixed. And the reason this
+displaced three lands is the ordering rule: every composition in this
+game is framed through the camera, and THE SHOT of all eight built lands
+was chosen by looking down it.*
+
+### THE ONE THING TO KNOW: SIX GREEN CHECKS AND A SICK PLAYER
+
+`node tools/check-camera.mjs` was **green on all six of its claims** on
+the build that made the owner ill. Every one of those claims is about
+**where the camera ends up**. Not one asked about the journey between
+two of those places — and **a rotation rate is the whole of what vection
+sickness is made of.**
+
+Sampled every tick, driving the circuit a player actually walks:
+
+```
+  yaw span        -25.4° .. 25.9°  = 51.2° of swing
+  WORST ROTATION  34.7°/s
+  back span       12.6 .. 20.5     = 7.9 units of dolly at 5.3 u/s
+```
+
+The owner's own table sampled every third of a second and reported
+20°/s. **The averaging hid nearly half of it.** A rate you can feel
+lives inside a frame, not inside a third of a second, and any future
+check of a motion in this project should sample at the tick.
+
+### WHICH OF SESSION 9'S TWO COMPONENTS WAS IT — AND IT IS ARITHMETIC
+
+Both were measured alone, by taking the other one to zero and rebuilding:
+
+| | swing | rotation | dolly | page east | page south |
+|---|---|---|---|---|---|
+| **as shipped** | **51.2°** | **34.7°/s** | 5.3 u/s | +3.2 | +6.0 |
+| the astern alone | 0.0° | 0.0°/s | 5.3 u/s | +0.0 | +6.0 |
+| the yaw alone | 51.2° | 34.7°/s | 2.1 u/s | +3.2 | +0.0 |
+
+- **THE YAW IS 100% OF THE ROTATION AND 12% OF THE GAIN IT WAS BUILT
+  FOR.** It buys 3.2 more units of page walking east — **on top of 27
+  the pinned rig already had** — and charges a fifty-one degree swing at
+  thirty-five degrees a second for them. `camera.md` §3 measured the
+  walk SOUTH at 3.5 units of warning and called it the defect; walking
+  east the same rig showed 27, which is six and a half seconds. **The
+  yaw was solving a problem the geometry says was not there.**
+- **THE ASTERN IS 100% OF THE WALK SOUTH AND ROTATES NOTHING.** Five
+  units of warning to eleven. It is a retreat and a drop, not a turn.
+
+**So: the yaw is the sickness and the astern is the gain.**
+
+### WHAT SHIPPED
+
+**1. The automatic yaw comes off both rigs.** Not reduced to 8–10°: a
+small unrequested rotation is a small dose of the same thing, and at 8°
+it would still buy under a unit of page. Portrait lost it too — 12°
+across portrait's 26.5° frame is 45% of its width against desktop's 36%,
+so in frame-relative terms portrait's automatic turn was the *worse* of
+the two.
+
+**THE ENVELOPE SURVIVES WHOLE AS THE PEEK'S**, and every reason it is
+26° and 12° is unchanged. `rig.yaw` is renamed `rig.peekYaw`, because a
+name that lies costs sessions. **The distinction the sickness turns on
+is agency, not degrees:** a large field rotating because you pressed a
+WALKING key is vection; the same rotation, at the same rate, because you
+are holding the key that means LOOK, is a head turn.
+
+**2. `asternEase` 1.4 → 0.85.** At 1.4 the rig gave ground at 5.3 units
+a second against a walk of 4.1, so turning south the page flowed
+backwards under a walker who was going forwards. The ceiling is now the
+walk itself. Steady state is untouched, so the walk south still sees
+17.4 units — exactly what it earned its verdict on.
+
+**3. The lead is untouched, deliberately.** Buying the yaw's 3.2 units
+back with a bigger lead was tried and refused: at a walk the lead is
+capped by `leadSec` at 3.7 units, and 3.2 more would sit the walker
+**70% of the way to the frame edge** in every east–west walk. **This
+session removes a motion; it does not add one and hope.**
+
+**WHAT WAS LOST, so nobody has to guess:** the lean.
+`critique-camera-1` awarded WOWED for two things and *a frame that
+answers travel* was one of them. It is worth 3.2 units of page out of
+30.2, and it is still on `,` and `.`. The walk south — the other half of
+that verdict, and the whole of the defect Session 9 existed to close —
+is untouched.
+
+**And the crossing did not go nowhere.** It leans the WALKER now
+(`Character.LEAN`): the same term, moved off the field of view and onto
+the forty pixels of ink in the middle of it, where it rotates nothing
+anybody is looking through.
+
+### THE PHONE'S JOYSTICK ON THE DESKTOP, AND WHY THE GUARD LOOKED LIKE ONE
+
+The only guard in `Input.ts` was an **aspect-ratio test**, and it is a
+real rule that is still there — but read what it decides: **WHERE on a
+tall screen the stick may be grabbed**, protecting the vista band. It
+was never asked, and cannot answer, whether the stick should exist on
+this device. **A guard that answers a different question than the one
+you have is worse than no guard, because it looks like one.**
+
+The fix is `e.pointerType === 'mouse'`, as the **first** line of the
+handler so a mouse never enters the live-pointer map either — otherwise
+a hybrid laptop with a finger and a mouse down at once reads as *two
+fingers* and takes a peek. It beats `matchMedia('(pointer: coarse)')`
+because it is per-EVENT: a touchscreen laptop answers `fine` to the
+media query and still gets the stick the moment a finger lands.
+
+**And click-drag-to-walk is removed from the desktop, with the argument
+written down** (`controls.md` §2): there is no desktop device without a
+keyboard, the drag drew phone chrome into desktop frames the art
+director has never been shown, and it was **the only visible run
+affordance in the game on desktop** — the run's signal was attached to a
+control the desktop should not have had.
+
+### THE RUN WAS NEVER BROKEN — DO NOT GO LOOKING FOR A DEAD KEY PATH
+
+Shift is read, `Input.run` ramps, the walker goes 1.46× faster, and it
+has worked since Session 6. Two design faults, not a bug:
+
+**You could not FIND it.** The game said Shift existed exactly once: a
+six-second toast listing FIVE controls, fired on the frame a player
+walks into a new land — the one frame they are certainly looking at the
+land and not at a line of type. Fixed by TIMING, not volume: the arrival
+hint drops to four items, and the run is taught **once ever**, at the
+first moment the player has walked unbroken for six seconds, and **never
+to a player who already found it** (holding Shift sets the flag
+silently). `save.taughtRun`. Never fires for the harness.
+
+**You could not SEE it, and that is a measured claim.** The prints are
+laid BEHIND the walker and the frame's bottom edge is three and a half
+units behind them. Shot at the same spot, seven game seconds apiece, a
+walk and a run are **the same three dots on the same frame edge**. *The
+run's whole affordance was drawn in the strip of page this camera
+crops.* So the signal moved to the one place never cropped: the figure,
+which is dead centre of every frame in both viewports at every bearing.
+
+### AND THE TOOLS FOUND THE SAME CLASS OF FAULT IN THEMSELVES
+
+- **`shoot-mobile.mjs` drove a TOUCH control with `page.mouse`.** A tool
+  that tests a touch control by moving a mouse cannot find a touch
+  control responding to a mouse. It dispatches real touch over CDP now,
+  and shoots **five rigs including 1280×720 desktop**.
+- **Its joystick step was a photograph and never an assertion**, and it
+  had been dragging from a point where the `look` prompt sits — so the
+  drag was landing on a BUTTON and the frame was filed as
+  `07-joystick-running.png` anyway. The stick step now puts the walker
+  on empty meadow, searches for a point that is actually the page, and
+  **re-checks the hit target at dispatch time** — because Session 9 made
+  the prompt re-place itself every frame, so `elementFromPoint` can
+  answer "the page" and the touch a moment later land on a control.
+- **The gate was proved against the defect**: with the pointer-type
+  guard removed, `RIG=1280-desktop` prints
+  *"A MOUSE DRAG RAISED THE PHONE'S STICK ("joy active running")"*.
+- **All nineteen tools hard-coded `/opt/pw-browsers/chromium`**, so
+  every gate in this repository failed at its first line on any machine
+  but the build sandbox — **including the owner's, which is where the
+  feel gate is run.** `tools/pw.mjs` resolves it now (`$PW_CHROMIUM`,
+  then the sandbox path, then Playwright's own). A gate the owner cannot
+  run is a gate that does not get run, and this session exists because a
+  gate did not get run.
+
+### THE GAUNTLET, AND THE ONE THING THAT MOVED
+
+```
+check-terrain    all terrain checks pass  (SPLITROCK's floor still -10.8)
+check-audio      the score renders, and every assertion holds
+check-fields     nine lands, 2928 instances, none half inked in
+check-camera     all camera checks pass, both viewports, three new rates
+shoot-mobile     5/5 rigs — a thumb raises the stick, a mouse raises nothing
+diff-sheets      THE PAGE: 92/92 BIT-IDENTICAL, 0 over 0.000%
+```
+
+**THE PAGE DID NOT MOVE AT ALL**, which is the claim this session had to
+make: a stopped walker is due north by contract, and taking a term out
+of a moving camera must not touch a single composition. It did not touch
+a single pixel.
+
+**Seven framings moved in THE WRITING OVER IT, and all seven are the
+same deliberate edit.** Every one is in THE COMMON at hour 12 — the
+spawn, where the arrival hint fires — and the changed box is the hint
+element itself, confirmed by measuring it:
+
+| | the diff's box | the hint's own rect |
+|---|---|---|
+| desktop | x 369–908, y 666–691 | x 420–860, y 663–694 |
+| portrait | x 21–367, y 762–813 | x 24–366, y 759–818 |
+
+The old line was wider because it listed five controls; it lists four
+now, and the run is taught on its own. **Nothing else in the writing
+layer moved past label jitter** (`crease-east-road` 0.11%,
+`barbican` 0.02%, `street-shot` 0.02%).
+
+**No new art verdict is claimed, and that is deliberate.** This session
+authored no land and no prop, so there is nothing for the art director
+to judge that they have not already passed. THE SHOT of all nine built
+framings was re-shot down the new lens in both viewports
+(`tools/shoot-session12.mjs`, montaged) and looked at: the walker is
+centred and upright in every one and the compositions are the ones that
+earned their verdicts. **The pixel proof is the 92/92, and a session
+that awarded itself a WOWED for changing nothing would be inventing
+one.**
+
+### FOR THE NEXT SESSION
+
+- **THE LADDER:** Session 13 is THE NOW (Maple Court + Greyline City),
+  14 is THE 8:15. `PLAN.md` carries it. **§3.2's rim composition is shot
+  FIRST, not last** — and it is now also the first framing to be judged
+  through a camera that no longer leans, so shoot it and look at it
+  rather than assuming the pin covers it.
+- **THE FEEL GATE IS STILL THE OWNER'S AND IT IS OWED AGAIN.** Nothing
+  in this repository can say whether the fix feels better, whether 4.1
+  is the right walk, whether 1.5× is the right run, or whether an eleven
+  degree lean reads at forty pixels on a real screen. **Hand it over the
+  week it is owed, not in a list.**
+- **THE EAR GATE has still never been run.** Twenty-five WAVs and one
+  authored silence, unperformed since Session 8.
+  `node tools/render-wavs.mjs`.
+- **A LAW VIOLATION FOUND IN PASSING AND DELIBERATELY NOT FIXED:**
+  `src/ui/map.ts:246` letters `"N of 11 lands walked — M strides of
+  ink"` onto the map. That is a count and a total, which
+  `QUALITY-BAR`'s short form forbids outright ("no count, no list, no
+  percentage, anywhere, for anything") and which `Save.ts`'s own comment
+  claims does not exist ("there is no count kept anywhere and nothing
+  reads `.length`" — `state.discovered.length` is read on the line
+  above). It is left alone because the map earned a WOWED in
+  `critique-story-1` and un-writing a judged composition needs its own
+  gate, not a drive-by. **Somebody has to decide which of the two rules
+  is real.**
+- The standing debts are unchanged and are in `PLAN.md`: the rowboat's
+  first meeting at THE RIVER MOUTH (now passed and not praised by five
+  gates, and it is the front door of Holt's wait), the Downs' stooked
+  field, the Penwood's east arc, THE BLEACH FLATS' `WHERE THE ROAD
+  STOPS`, Holt's lit window, and THE PAPER PLANE.
+
 ## Session 11 — 2026-08-31 — the dry lands
 
 *Two lands, two waits, two named inhabitants — and the first session in

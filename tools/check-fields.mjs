@@ -33,6 +33,7 @@
 // It drives the walker AT each land's animals first, because a posture
 // that is never taken is a posture whose birth is never checked.
 import { chromium } from 'playwright';
+import { CHROMIUM } from './pw.mjs';
 
 const URL = process.env.URL ?? 'http://localhost:4173/?debug';
 
@@ -56,7 +57,7 @@ const CASES = [
   ['THE BLEACH FLATS', 303, 92, 0, -1, 8],
 ];
 
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await chromium.launch({ executablePath: CHROMIUM });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 page.on('pageerror', (e) => console.log('PAGE EXCEPTION:', e.message));
 await page.goto(URL, { waitUntil: 'networkidle' });

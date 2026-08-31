@@ -23,6 +23,7 @@
 import { build } from 'esbuild';
 import { chromium } from 'playwright';
 import { mkdirSync } from 'fs';
+import { CHROMIUM } from './pw.mjs';
 
 export const LANDS = [
   'meadow', 'kingdom', 'castle', 'beach', 'ocean', 'forest',
@@ -341,7 +342,7 @@ window.__booth = (() => {
 /** Open a page that can render the score. Remember to `close()`. */
 export async function openBooth() {
   const file = await bundleAudio();
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  const browser = await chromium.launch({ executablePath: CHROMIUM });
   const page = await browser.newPage();
   await page.goto('about:blank');
   await page.addScriptTag({ path: file });

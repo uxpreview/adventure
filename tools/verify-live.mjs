@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
+import { CHROMIUM } from './pw.mjs';
 const url = process.env.URL;
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await chromium.launch({ executablePath: CHROMIUM });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 page.on('pageerror', (e) => console.log('PAGE EXCEPTION:', e.message));
 page.on('console', (m) => { if (m.type() === 'error') console.log('CONSOLE ERROR:', m.text()); });
