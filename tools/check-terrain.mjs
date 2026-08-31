@@ -95,6 +95,21 @@ const SPOTS = [
   ['gatehouse', -45, -189], ['bailey', -45, -211], ['keep', -45, -234],
   ['moat pool', -100, -200], ['ridge west', -120, -182],
   ['forest', 145, -190], ['canyon lip', 266, -150], ['desert', 300, 45],
+  /* SESSION 11 — SPLITROCK's places, and the two that matter most are
+   * on the floor of a tear whose walls refuse everywhere. If the mouth
+   * ever stops being a ramp, the boat, the marks, the shed and Holt all
+   * become unreachable at once and nothing else in this file would
+   * notice. And HOLT'S, which is on the rim ABOVE the head wall: the
+   * only way to it is the long way round, which is the joke and is also
+   * a claim about the height field. */
+  ['the canyon mouth', 291, -134], ['the channel floor', 298, -172],
+  ['the needle arch', 300, -181], ['the trestles', 302, -232],
+  ['the mark slab', 304, -244], ["holt's", 302, -270],
+  ['the west rim', 272, -178], ['the east bench', 331, -206],
+  /* THE BLEACH FLATS — the two ends of Amos's forty units, and the two
+   * ends of the land. */
+  ['the oasis', 305, 66], ['the catch', 302, 100], ['the pale', 268, 52],
+  ['where the road stops', 348, 22],
   ['downs', 148, -5], ['beach', -205, 60], ['ocean', -270, 60],
   ['maple court', -45, 195], ['city', 148, 205], ['office', 280, 205],
   // the coast (Session 5)
@@ -649,6 +664,25 @@ console.log("\nbrack's round — the road keeps his forty units:");
   else console.log('  and it is walkable all the way down, from every side \u2713');
 }
 
+/* ---- 5b. THE TEAR (Session 4; MOVED AND RESHAPED, Session 11) ------ *
+ * Four claims SPLITROCK CANYON makes in its geometry rather than in a
+ * note, and the first of them is somebody else's errand:
+ *
+ *   1. THE FLOOR IS 10.8 UNITS DOWN. `THE-STRANGERS` S5 is ODD, who has
+ *      measured this canyon *"ten point eight units from lip to floor,
+ *      taken twice, with a line"*, and that number has been what this
+ *      check prints since Session 4. Session 11 moved the tear forty
+ *      units west and re-tuned the amplitude until it printed −10.8
+ *      again. **A session may move a landform. It may not move a number
+ *      somebody else's content stands on.**
+ *   2. THE MOUTH IS THE ONLY WAY IN. The walls hold |∇h| past the walk
+ *      limit along the whole length; the south end is a ramp.
+ *   3. THE HEAD REFUSES. The walk stops at a wall, which is the
+ *      composition the land is staged around.
+ *   4. AND THE TRAIL NEVER LEAVES THE CHANNEL — every point of it north
+ *      of the mouth is `tearX(z)` sampled, so the road's shoulders are
+ *      on the floor and not on a cliff.
+ */
 console.log('\nthe tear:');
 let deepest = 0, deepAt = null;
 for (let z = -280; z <= -100; z += 4) {
@@ -656,7 +690,61 @@ for (let z = -280; z <= -100; z += 4) {
   const h = H(x, z);
   if (h < deepest) { deepest = h; deepAt = [Math.round(x), z]; }
 }
-console.log(`  floor ${deepest.toFixed(1)} at ${deepAt}; lip at (300,-150) y=${H(300, -150).toFixed(1)}`);
+console.log(`  floor ${deepest.toFixed(1)} at ${deepAt} (S5 measures 10.8 — do not move it)`);
+if (Math.abs(deepest + 10.8) > 0.15) fail(`the tear's floor is ${deepest.toFixed(2)}, not −10.8 (THE-STRANGERS S5)`);
+{
+  // the lips stand proud, and the walls refuse, all the way along
+  let lipLo = 1e9;
+  let breaches = 0;
+  let breachAt = null;
+  /* SOUTH OF z = −182 THE RIP IS STILL OPENING and its walls are
+   * deliberately gentle — that is the MOUTH, it is the only way in, and
+   * asserting that it refuses would be asserting that the land is
+   * sealed. The claim is about the channel proper. */
+  for (let z = -252; z <= -182; z += 2) {
+    const ax = E.tearX(z);
+    for (const side of [-1, 1]) {
+      lipLo = Math.min(lipLo, H(ax + side * 23, z));
+      // the face: is there anywhere on it a stride could climb?
+      let worst = 0;
+      for (let d = 10; d <= 18; d += 1) worst = Math.max(worst, S(ax + side * d, z));
+      if (worst <= MAX) { breaches++; breachAt = [Math.round(ax + side * 14), z]; }
+    }
+  }
+  console.log(`  the lips stand at y=${lipLo.toFixed(1)} the whole length`);
+  if (breaches) fail(`the tear's wall is climbable in ${breaches} places (first ${breachAt})`);
+  else console.log('  and the walls refuse everywhere below the ramp \u2713');
+  // and the MOUTH does not: the ramp is walkable from end to end, which
+  // is the whole of this land's traversal design
+  let rampWorst = 0;
+  let rampAt = null;
+  for (let z = -124; z >= -190; z -= 2) {
+    const sl = S(E.tearX(z), z);
+    if (sl > rampWorst) { rampWorst = sl; rampAt = [Math.round(E.tearX(z)), z]; }
+  }
+  console.log(`  the mouth's ramp: worst gradient ${rampWorst.toFixed(2)} at ${rampAt} (walk limit ${MAX})`);
+  if (rampWorst > MAX) fail('the mouth is not walkable — the canyon has no way in');
+  else console.log('  so you walk in at the shallow end and there is no stair anywhere \u2713');
+  // the head wall: you cannot walk out of the north end
+  let headOk = false;
+  for (let z = -254; z >= -270; z -= 1) {
+    if (S(E.tearX(z), z) > MAX) headOk = true;
+  }
+  const headProf = [];
+  for (let z = -250; z >= -270; z -= 4) headProf.push(H(E.tearX(z), z).toFixed(1));
+  console.log(`  the head, floor to rim: ${headProf.join(' \u2192 ')}`);
+  if (!headOk) fail('the head of the canyon does not refuse — the channel is not a dead end');
+  else console.log('  and the walk stops at a wall \u2713');
+  // the trail lies in the bottom of the channel
+  const trail = L.ROADS[9];
+  let offAxis = 0;
+  for (const [x, z] of trail.pts) {
+    if (z > -136) continue;
+    offAxis = Math.max(offAxis, Math.abs(x - E.tearX(z)));
+  }
+  console.log(`  the trail's worst offset from the channel's centreline: ${offAxis.toFixed(1)} units`);
+  if (offAxis > 4) fail('the canyon trail has wandered onto the wall');
+}
 
 /* ---- 6. the fold the east road dives through ---------------------- */
 console.log('\nthe crease:');
@@ -665,6 +753,28 @@ const fx = E.foldX(fz);
 const prof = [];
 for (let d = -34; d <= 34; d += 6) prof.push(H(fx + d, fz).toFixed(1));
 console.log(`  at z=${fz} the fold runs through x=${fx.toFixed(0)}; profile ${prof.join(' ')}`);
+
+/* ---- 5c. THE PAN (Session 11) -------------------------------------- *
+ * `THE-WAITS` §5's forty units are UPHILL both ways, and that is a claim
+ * about the height field rather than a line in a note: the oasis sits at
+ * the bottom of the Bleach Flats' one dish and Amos's cistern sits on
+ * its rim. Nobody in the game will ever measure it. This does.
+ */
+console.log('\nthe pan — the forty units Amos carries are uphill:');
+{
+  const OASIS = [305, 55];
+  const CATCH = [302, 95];
+  const lo = H(OASIS[0], OASIS[1] + 12);   // the bank, not the water
+  const hi = H(CATCH[0], CATCH[1]);
+  const d = Math.hypot(CATCH[0] - OASIS[0], CATCH[1] - OASIS[1]);
+  console.log(`  the oasis bank y=${lo.toFixed(1)}, the cistern y=${hi.toFixed(1)}, ${d.toFixed(1)} units apart`);
+  if (hi <= lo) fail('the cistern is not above the oasis — the carry is downhill');
+  else console.log(`  he climbs ${(hi - lo).toFixed(1)} units with two full cans, every night \u2713`);
+  if (Math.abs(d - 40) > 1.5) fail(`the track is ${d.toFixed(1)} units, and THE-WAITS §5 says forty`);
+  // and the pan is bounded well clear of the protected curl-rim framing
+  const rim = H(370, 16);
+  console.log(`  and curl-rim's own ground is untouched at y=${rim.toFixed(1)}`);
+}
 
 console.log(fails ? `\n${fails} FAILURE(S)` : '\nall terrain checks pass');
 rmSync('.tmp', { recursive: true, force: true });

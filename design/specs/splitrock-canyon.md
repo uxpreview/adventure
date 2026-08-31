@@ -289,6 +289,27 @@ None. `elevation.ts` gained two exported helpers (`tearFloorK`,
 `tearMouth`) and `terrain.ts` gained one paint pass, both of which are
 the exact shape of Session 5's `holdfastK`.
 
+**`tools/check-terrain.mjs` grew five proofs**, because five of this
+land's claims are geometry rather than prose and geometry can be
+asserted:
+
+```
+the tear:
+  floor -10.8 at 304,-184 (S5 measures 10.8 — do not move it)
+  the lips stand at y=4.3 the whole length
+  and the walls refuse everywhere below the ramp ✓
+  the mouth's ramp: worst gradient 0.33 at 292,-152 (walk limit 0.72)
+  so you walk in at the shallow end and there is no stair anywhere ✓
+  the head, floor to rim: -10.5 → -10.1 → -7.1 → -1.6 → 3.3 → 5.8
+  and the walk stops at a wall ✓
+  the trail's worst offset from the channel's centreline: 0.0 units
+```
+
+Plus eight new standing places in the reachability flood fill — the
+channel floor, the arch, the trestles, the mark slab, **HOLT'S** (on the
+rim above the head wall, and the only way to it is the long way round)
+and the east bench (ditto, from the other side).
+
 ---
 
 ## 10. WHAT THE GATE FOUND, IN ORDER

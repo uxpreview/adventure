@@ -231,6 +231,16 @@ None. `elevation.ts` gained THE PAN, bounded on four sides;
 `knowledge.ts` gained `fact:the-fold`, which is authored as a two-post
 route and adds no geometry to any land.
 
+**`tools/check-terrain.mjs` grew one proof**, and it is the one this
+land's wait stands on:
+
+```
+the pan — the forty units Amos carries are uphill:
+  the oasis bank y=1.5, the cistern y=2.9, 40.1 units apart
+  he climbs 1.4 units with two full cans, every night ✓
+  and curl-rim's own ground is untouched at y=6.8
+```
+
 ---
 
 ## 10. WHAT THE GATE FOUND, IN ORDER
