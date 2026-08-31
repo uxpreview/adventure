@@ -297,6 +297,32 @@ export const ROADS: Road[] = [
     [113.6, -174], [108, -195], [113.6, -216], [129, -231.4], [150, -237],
     [171, -231.4], [186.4, -216], [192, -195],
   ] },
+  /* ================================================================ *
+   * MAPLE COURT — the street the land is named after (Session 13).
+   *
+   * `THE-WAITS` §3 gives Val a street to hold the line of, and until now
+   * MAPLE COURT was a land with no Maple Court in it: the neighbourhood
+   * had one road through it and it was the king's road under another
+   * name. So the court is authored the way the Penwood's ring was — as
+   * a POLYLINE, because the shape of the road is the shape of what the
+   * people on it believe.
+   *
+   * **It leaves the king's road, goes eighteen units, and comes back to
+   * itself.** A stem and a turning circle: a street you can walk the
+   * whole of and end up where you started, with eleven houses on it and
+   * one porch light. Nothing in Maple Court runs off the edge of its own
+   * drawing (`textures-now.ts` carries the same rule for every mark in
+   * the land), and the road is the largest instance of it.
+   *
+   * The carry is the second lowest on the sheet, just above Brack's
+   * ring, and for the same reason: a road that carried you round a
+   * circle would be funny once and a bug afterwards.
+   * ================================================================ */
+  { width: 3.6, carry: 0.26, pts: [
+    [-45, 146], [-54, 147], [-64, 147], [-72, 146.5],
+    [-78, 146], [-73, 143], [-72, 140], [-73, 137], [-78, 134],
+    [-83, 137], [-84, 140], [-83, 143], [-78, 146],
+  ] },
   // the market lane: Brim Square east to the Wood Gate (Session 3)
   { width: 3.4, carry: 0.42, pts: [[-40, -86], [-12, -96], [18, -104], [42, -109], [55, -110]] },
   /* ================================================================ *

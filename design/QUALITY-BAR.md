@@ -113,8 +113,23 @@ on that number. **HOLT's four chalk marks are a sightline, not a note** —
 four heights that line up with four things you can see from where they
 are read, and a fifth that lines up with a roof — and AMOS carries water
 forty units uphill both ways every night on a track that is not a road
-(WOWED, critique-art-7). Every other land is a scatter draft and is
-presumed NOT YET.
+(WOWED, critique-art-7); **THE NOW** — MAPLE COURT and GREYLINE CITY,
+the only two lands in this world whose subject is the present day and
+therefore the two the ballpoint does not flatter for free. They are
+drawn AT RIGHT ANGLES TO EACH OTHER: **in Maple Court every mark closes**
+(a hedge is a loop, a lawn is a kerb that comes back to itself, and the
+street is a dead end with a turning circle on the end of it) and **in
+Greyline City every mark leaves the frame** — which is also the first
+land in this game to make the FRAME-TOP CEILING its subject rather than
+its constraint, because a downtown is the one place where a building
+cropped by the top of the picture is the correct picture. **THE END OF
+THE SURVEY** is built and left unlettered, and `THE-LINE` §3.2's
+protected corridor is an ASSERTION now (`tools/check-sightline.mjs`)
+rather than a paragraph — the shipped draft broke it twice, in a
+signpost and in a scatter, and nothing in this repository would ever
+have said so. Plus two waits, both ends of one stranger, and **a fable
+told in a paving slab** (WOWED, critique-art-8). **THE CUBICLE MILE is
+the last scatter draft in the world** and is presumed NOT YET.
 
 **AND FROM SESSION 9 A REGRESSION IS A DIFF AND NOT AN OPINION.**
 "Unregressed" has meant a person looking at two contact sheets a week

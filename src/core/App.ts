@@ -258,6 +258,15 @@ export class App {
         save: this.save,
         terrain: this.terrain,
         scene: this.scene,
+        /* THE WORLD, and specifically its SKYLINE (Session 9's grid of
+         * how tall the page is at a point). Session 13 needs it from
+         * outside: `THE-LINE.md` §3.2 protects a two-hundred-unit
+         * sightline up the king's road, and the only way to assert that
+         * nothing tall is standing in it is to ask the world how tall
+         * it is along it — which it already knows, for free, because
+         * every one-off standee in the game records its top as it is
+         * built. `tools/check-sightline.mjs` is the assertion. */
+        world: this.world,
         renderer: this.renderer,
         region: () => this.region.id,
         /* THE HOUR, for the harness. Every protected framing is shot at

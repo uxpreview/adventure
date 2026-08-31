@@ -236,9 +236,33 @@ async function shootSide(port, vp) {
           },
           [x, z, SETTLE]
         );
-        // long enough for any CSS transition the frame carries (the
-        // region card, a label fading in) to have finished on both sides
-        await page.waitForTimeout(650);
+        /* SWEEP THE TRANSIENTS, ON BOTH SIDES, IN BOTH PASSES.
+         *
+         * Session 13. The bare pass has always hidden the region card
+         * and the control hint with a stylesheet, for the reason in the
+         * comment below: they are real-time transients on setTimeouts,
+         * and whether one is still up when the shutter fires depends on
+         * wall clock. The FULL pass did not, and so it reported them —
+         * Session 13's writing pass came back with seven frames moved
+         * by 0.02–0.16%, every one of them a band 424 pixels wide and
+         * 24 tall at the bottom of the screen, which is where the hint
+         * is. It was not a moved label: the head build simply has two
+         * more lands' worth of drawings to build at stream-in, so it
+         * arrives at each framing a few hundred milliseconds later in
+         * the hint's own six-second fade.
+         *
+         * A gate that reports noise teaches people to ignore it. So the
+         * chrome is swept before the shutter, exactly as every contact
+         * sheet in this project does it, and what is left in the full
+         * pass is the world's own writing — the labels and the prompt,
+         * which are the things a session deliberately re-places.
+         * (`QUALITY-BAR`'s "the chrome is shot too" is
+         * `shoot-mobile.mjs`'s job and it is an assertion about widths,
+         * not a regression diff.) */
+        await page.evaluate(() => window.__inklands.quiet?.());
+        await page.waitForTimeout(1400);
+        await page.evaluate(() => window.__inklands.step?.(1 / 60, 1));
+        await page.waitForTimeout(120);
       } else {
         await page.evaluate(([tx, tz]) => window.__inklands.goto(tx, tz), [x, z]);
         await page.waitForTimeout(4000);

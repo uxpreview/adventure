@@ -209,8 +209,33 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       s.m.position.y = ctx.groundY(s.cx, s.cz) + 4.6 + Math.sin(a * 3.1) * 1.2;
       s.m.scale.x = Math.sin(a) > 0 ? -Math.abs(s.m.scale.x) : Math.abs(s.m.scale.x);
     }
-    // the keep vista holds only at meadow distance
-    vistaMat.opacity = 0.8 * Math.max(0, Math.min(1, (pz - 12) / 22));
+    /* THE KEEP VISTA HOLDS ONLY AT MEADOW DISTANCE — and until Session 13
+     * that sentence was only half true, because the fade had a near
+     * bound and no far one.
+     *
+     * This standee is FALSE PERSPECTIVE with `fog = false`: a pencil
+     * keep at (−52, −52) standing in for a castle a hundred and eighty
+     * units further out. It ramps in as the walker comes south down the
+     * Common and then never lets go, so from the world's SOUTH RIM —
+     * three hundred and twenty-four units away, in a land this file has
+     * never heard of — Greyweather stood on the horizon at full
+     * opacity, at the vanishing point of the king's road.
+     *
+     * That is the one thing `THE-LINE.md` §3.2 says the end of the
+     * survey must not do. *"You cannot see where it ends. You can see
+     * that it does not stop."* A game that shows you the castle from
+     * the south rim has answered the question, and this one had been
+     * answering it since Session 2 in a frame nobody had ever shot.
+     *
+     * So it lets go over the first forty units of MAPLE COURT: full
+     * through the whole Common and over its border (the three chairs
+     * look north through their hedge at z ≈ 132 and this is what they
+     * see), gone by z = 168, which is the near side of the river. No
+     * framing north of there has moved by a pixel — `diff-sheets`
+     * carries eleven of them and every one is at z ≤ 120. */
+    const near = Math.max(0, Math.min(1, (pz - 12) / 22));
+    const far = 1 - Math.max(0, Math.min(1, (pz - 136) / 32));
+    vistaMat.opacity = 0.8 * near * far;
   };
 };
 

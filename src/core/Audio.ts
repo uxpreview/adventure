@@ -1241,6 +1241,63 @@ export class Audio {
         break;
       }
 
+      case 'sprinkler': {
+        /* MAPLE COURT. A rotary sprinkler two gardens over: the long
+         * hiss of the sweep and then the tick-tick-tick of the head
+         * coming back. **Nothing anywhere in this land is drawn making
+         * this sound**, and the note on THE GREEN has said so since
+         * Session 1 — *you never do find the lawn it is on.* */
+        this.surge(0.5, 1.1, 5200, 3000, 0.0042, 0, 'bandpass');
+        for (let i = 0, at = 1.5; i < 7; i++) {
+          this.knock(2400 + Math.random() * 700, 0.0034 - i * 0.0003, at);
+          at += 0.085;
+        }
+        break;
+      }
+
+      case 'far-dog': {
+        /* Two streets over, twice, and then it stops. A suburb at four
+         * in the afternoon is mostly other people's afternoons, heard
+         * through a hedge. */
+        const j = 0.9 + Math.random() * 0.2;
+        this.glide(420 * j, 300 * j, 0, 0.16, 0.0060, 'triangle');
+        this.glide(400 * j, 285 * j, 0.42, 0.18, 0.0048, 'triangle');
+        break;
+      }
+
+      case 'screen-door': {
+        /* A door on a spring, and the second bounce is the whole
+         * sound: nobody in this world closes a door carefully. */
+        this.knock(190, 0.0090);
+        this.knock(230, 0.0044, 0.13);
+        break;
+      }
+
+      case 'crossing-tick': {
+        /* GREYLINE CITY. The box at the crossing, ticking for people
+         * waiting to cross — and all four lights are green, so it has
+         * been ticking for nobody for years. Dead even, no jitter, and
+         * it is the only sound in this game with no humanity in its
+         * timing at all. */
+        for (let i = 0, at = 0; i < 5; i++) {
+          this.knock(1750, 0.0030, at);
+          at += 0.24;
+        }
+        break;
+      }
+
+      case 'heels': {
+        /* SOMEBODY ELSE'S FOOTSTEPS, GOING AWAY. The only land in this
+         * game where you hear a step that is not yours, and it never
+         * comes towards you: six steps, each one quieter than the last,
+         * and no seventh. */
+        for (let i = 0, at = 0; i < 6; i++) {
+          this.knock(1420 + Math.random() * 220, 0.0042 * (1 - i * 0.15), at);
+          at += 0.34 + Math.random() * 0.03;
+        }
+        break;
+      }
+
       case 'can-knock': {
         /* Two full cans, out on the track, at night. It is the sound of
          * a man forty units from anywhere carrying water uphill, and

@@ -1,5 +1,210 @@
 # SESSIONS — the handoff log
 
+## Session 13 — 2026-08-31 — the now
+
+*Two lands, two waits, two people, and the first land session judged
+through a camera that does not lean. MAPLE COURT and GREYLINE CITY are
+the only lands in this world whose subject is the present day, and the
+whole session turns on what that costs a ballpoint.*
+
+### THE ONE THING TO KNOW: THE TWO LANDS ARE DRAWN AT RIGHT ANGLES
+
+Every other land in this game is old, weathered or empty, and the pen
+flatters all three for free — a cracked pan, a stook, a wall with the
+mortar gone. **A suburb and a downtown drawn in the same pen look like a
+tech demo the instant the drawing is generic**, because nothing about a
+bungalow is inherently interesting to a line.
+
+So the pair got a rule each, and the rules are opposites:
+
+| land | rule | why |
+|---|---|---|
+| **MAPLE COURT** | **every mark CLOSES** — a hedge is a loop, a lawn is a kerb that comes back to itself, a fence is a rectangle round a garden, and **the street is a dead end with a turning circle on the end of it** | `THE-WAITS` §3: the street believes that leaving is temporary |
+| **GREYLINE CITY** | **every mark LEAVES** — towers cropped by the top of the frame, window rules running off both sides of the buildings they are drawn on, fire escapes arriving above the drawing and leaving below it, and **not one closed silhouette anywhere in the land** | `THE-WAITS` §11: everybody is going somewhere and nobody arrives |
+
+It is the SPLITROCK / BLEACH FLATS pairing (verticals against level
+dashes) done for the two hardest lands in the world, and it is the whole
+answer to "what does a suburb look like in ink".
+
+**AND THE FRAME-TOP CEILING BECAME THE SUBJECT.** Session 3 wrote down
+that the camera shows about ten units of height at thirty-three units
+out, and every land since has designed around it — *height contests are
+won by spread, not by scale.* A downtown is the one place in this world
+where a building going out of the top of the frame is the correct
+picture, and near-towers-crop / far-towers-stand-whole is most of what
+makes GREYLINE read as a city instead of a village with taller huts.
+
+### THE SIGHTLINE IS ASSERTED NOW, AND THE SHIPPED DRAFT BROKE IT TWICE
+
+`THE-LINE.md` §3.2 has said since Session 7, in the file, because *later
+is too late*: **nothing tall may stand within about eight units of
+x = −45 between z = 120 and z = 278.** Act III is a two-hundred-unit look
+north up an empty straight road from the world's south rim.
+
+The draft had a 4.1-unit signpost at (−40, 196) — five units off the
+axis — and thirty street trees on a `scatter` whose only bound was the
+road's own PAINT, which is five units wide against a corridor that is
+sixteen. Neither would have failed a single check in this repository,
+and neither is visible in any contact sheet of MAPLE COURT.
+
+**`node tools/check-sightline.mjs`** is the assertion, and the shape of
+it is the useful part: it reads every prop in the world — one-off
+standees from their own geometry, instanced fields straight off their
+instance matrices — and **a drawing is IN the corridor if any part of
+the DRAWING is, not its origin.** Nine things had to move to make it
+green. The king's road's own bridge is the one structure allowed to
+stand in there, and the tool names it rather than skipping it.
+
+### AND THE CASTLE WAS ON THE HORIZON FROM THE END OF THE SURVEY
+
+Shooting the rim FIRST, before placing anything — which the prompt
+insisted on and which paid for itself in the first four seconds — found
+Greyweather standing at the vanishing point of the king's road, three
+hundred and twenty-four units away, at full opacity.
+
+It is the meadow's keep vista: a pencil stand-in with `fog = false`,
+authored in Session 2 for the Common's own poster, with a fade that had
+a near bound and no far one. So it ramped in as the walker came south
+and then never let go. **`THE-LINE` §3.2's whole claim is that you
+cannot see where the road ends — you can see that it does not stop** —
+and this game had been answering that question since Session 2 in a
+frame nobody had ever shot. It now lets go over the first forty units of
+Maple Court: full through the Common and over the border, where the
+three chairs look north through their hedge at it, and gone by the
+river.
+
+### WHAT THE TWO WAITS COST, AND WHAT THEY ARE MADE OF
+
+- **VAL** (`THE-WAITS` §3). Her porch light is on at every hour,
+  including the ones nobody is awake for — the only light in this game
+  whose dusk fade does not reach zero. Eleven houses round her circle
+  and six of the twenty-one in the land light up at dusk; the rest do
+  not, which is the turn: **the light is not for the people who left, it
+  is for the street.** Come back holding `name:castle` and the gap in
+  the hedge at the bottom of the garden is cut back open, and stays cut,
+  and through it Greyweather is on the skyline of a back garden.
+- **THE MAN AT THE JUNCTION** (`THE-WAITS` §11). **The only permanent
+  change in this game with no knowledge gate: you stop walking.** Stand
+  within nine units of him without moving for four seconds and he goes
+  and sits on the bench twenty units off that nobody has ever used, and
+  he is sitting there in every later save. The test measures MOVEMENT
+  and not input, so a player being carried by the road is not standing
+  still.
+- **And the wear is the wait.** The pavement worn into two lanes curving
+  round a clean lens the size of a person is `wornPathsDecal`: sixty-two
+  walks drawn by TAKING THE STONE AWAY, the island redrawn at full
+  strength inside a clip, and the lanes are what is left over rather
+  than what was drawn. **The bench is NORTH of him on purpose**, so one
+  standpoint holds the wear, the man and the bench in a single frame —
+  and holds the same frame after he moves, with the wear exactly where
+  it was.
+- **S3, THE ELEVEN UNITS, is built at both ends**, which is only
+  possible in this session: June's latch plate is worn down to bright
+  metal (drawn by taking the ink out with `destination-out`), and once
+  you have stopped for him she is at the fence at the end of the road,
+  in every later save, and **nothing in this game ever says why.**
+
+### THREE THINGS THIS SESSION GOT WRONG AND HAD TO UNDO
+
+Worth the space, because two of them are general:
+
+1. **A fence at the end of a road runs ACROSS it.** Round 5 laid June's
+   border fence north–south, which is where a border fence goes — and
+   the camera only ever looks north, so five panels came back as one
+   grey streak. *A thing you walk ALONG runs north–south; a thing you
+   LOOK AT runs east–west.* Session 5 learned this with a boardwalk and
+   it is still true about a fence and about a hedge's returns.
+2. **The wear had to become darker to be seen.** The drawing's own
+   argument was that wear is pale, because stone loses its ink — true,
+   and invisible on a page that is already the colour of paper. What a
+   hundred years of shoes leaves is a polish, and a polish is darker
+   than the stone round it. (Also: the slabs were three and a half
+   metres across, so the missing lines read as gaps in a very coarse
+   grid rather than as a worn lane.)
+3. **THE HOLLOW's fold could not be drawn from a region builder.** The
+   city's crease falls three units over six, which is under the
+   terrain's hatching threshold, so the shader shades it and draws
+   nothing — an airbrushed hillside, which `QUALITY-BAR` §3 forbids in
+   capitals. Round 6 tried forty hatch decals down the fall line and a
+   full run of retaining walls: the decals read as CORDUROY (an array,
+   in the one quadrant of the world that already has a harrow in it) and
+   a five-unit wall on a slope has its feet in the air at both ends. It
+   ships with short walls at the toe of the cut where the ground is
+   nearly flat, and **the fold itself is still shaded rather than
+   drawn.** That is a debt, it is recorded in `PLAN.md`, and it belongs
+   to `elevation.ts` rather than to a land.
+
+### AND ONE DECISION WENT TO THE OWNER AND CAME BACK BIGGER
+
+Session 12 found a live contradiction and deliberately left it: the map
+prints *"N of 12 lands walked — N strides of ink"* (`src/ui/map.ts:246`)
+and the law's short form says **no count, no list, no percentage,
+anywhere, for anything.** Session 13 put it to the owner as instructed,
+with four options. The owner picked none of them:
+
+> *"I don't understand why that law exists. Progression, collection, and
+> advancements are part of what makes games fun."*
+
+**Nothing was changed.** The count is still on the map, the law is still
+in every prompt, and the question is no longer about one line of
+lettering: it is whether this game has progression the player can SEE.
+The argument on both sides is written out in `PLAN.md`'s standing debts
+so the next session does not have to reconstruct it, and the one thing
+it says not to do is split the difference quietly. Either the law holds
+and the line loses its numbers, or the law is amended in
+`QUALITY-BAR.md` and `QUESTS.md` §7 with the owner's reasoning written
+into it.
+
+### State
+
+- Build green. `check-terrain`, `check-audio`, `check-fields`,
+  `check-camera`, `check-sightline` and `shoot-mobile` (five rigs, and
+  the joystick assertion holds on all of them) all pass.
+- **`diff-sheets`: 92 of 92 bit-identical on THE PAGE, and 92 of 92 on
+  THE PAGE AND ITS WRITING.** Two lands rebuilt, a road added, a
+  landform's neighbour re-lit, and not one protected framing moved by a
+  pixel.
+- **And the writing pass had to be fixed to say that.** Its first run
+  came back with seven frames moved by 0.02–0.16%, every one of them a
+  band 424 pixels wide and 24 tall at the bottom of the screen — which
+  is where the six-second control hint lives. It was not a moved label:
+  the head build has two more lands' worth of drawings to build at
+  stream-in, so it arrives at each framing a few hundred milliseconds
+  further into the hint's own fade. The isolated re-shoot of the worst
+  frame was byte-identical, twice, and `diff-sheets` now sweeps the
+  chrome before the shutter in BOTH passes — the bare pass had hidden
+  those transients since Session 9 and the full pass had not. **A gate
+  that reports noise teaches people to ignore it.**
+- Two new specs: `design/specs/maple-court.md`,
+  `design/specs/greyline-city.md`. Gate logged in
+  `design/critiques/critique-art-8.md`.
+- **Ten lands hold a verdict. THE CUBICLE MILE is the last draft in the
+  world**, and it is Session 14's, with the mount and the 8:15.
+
+### Gotchas (new; everything from Sessions 1–12 still applies)
+
+- **A `learn` in a shoot script is for the rest of the page.** Round 4's
+  sheet had the man sitting on his bench in the framing that was
+  supposed to show him standing, because a framing eleven rows earlier
+  had handed the walker `fact:the-man-at-the-junction`. Knowledge
+  framings go LAST in a shoot list, or in their own page.
+- **A pale standee with `fog = false` is a promise about ONE distance.**
+  Both the meadow's keep vista and this session's first far-skyline
+  panels turned the fog off, and both then hung in the air over a rise
+  in a land they were never meant to be seen from. A skyline is the haze
+  layer; it does not get to opt out of the haze.
+- **Decals draw in the order they were made and they cover each other.**
+  Two ordinary paving squares laid on the corners of the junction went
+  over the wear that the whole of GREYLINE CITY's wait is drawn in.
+- **`ctx.standee` and the SKYLINE are the same choke point**, which is
+  why `check-sightline` can exist at all — but a FIELD does not go
+  through it, so any assertion about what is standing where has to read
+  instance matrices as well or it will miss exactly the thing that went
+  wrong (thirty street trees).
+- **People are people-sized.** The walker is about 1.9 units; the first
+  pass drew the man and the commuters at 2.6–2.75, which is a land full
+  of giants standing over the person the game is about.
+
 ## 2026-08-31 — owner direction, after Session 11 merged (no code)
 
 **THE FEEL GATE WAS RUN AND IT RETURNED NOT YET.**
