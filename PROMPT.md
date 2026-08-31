@@ -1,193 +1,182 @@
-# PROMPT — Session 11: THE DRY LANDS
+# PROMPT — Session 12: THE NOW
 
 You are continuing INKLANDS in `uxpreview/adventure`. Read, in order:
 `design/QUALITY-BAR.md` (binding), `design/LAND-SPEC-TEMPLATE.md`,
-`design/WORLD-SYSTEMS.md` §1 and §4, **`design/THE-WAITS.md` §4 (HOLT)
-and §5 (AMOS), which are the two waits this session authors**,
-`design/THE-STRANGERS.md` (S5 lives in both of these lands and is the
-only three-land stranger in the game), then `PLAN.md`, `README.md`,
-`SESSIONS.md`.
+`design/WORLD-SYSTEMS.md` §1, §5 and §10, **`design/THE-WAITS.md` §3
+(VAL) and §11 (THE MAN AT THE JUNCTION), which are the two waits this
+session authors**, **`design/THE-LINE.md` §3.2, which is the riskiest
+un-shot frame in the game and is in your rect**, then `PLAN.md`,
+`README.md`, `SESSIONS.md`.
 
-**Session 10's handoff especially.** It is the first land session that
-worked against a page it could prove had not moved, and the second half
-of its entry is a list of things it got wrong first and the rule each
-one produced. Every one of them will bite here.
+**Session 11's handoff especially.** It moved a piece of the sheet six
+verdicts had been awarded on, and the second half of its entry is a list
+of things it got wrong first with the rule each one produced. Four of
+them will bite here and one of them — the size of a person — will bite
+in the first hour.
 
 ---
 
 ## The job
 
-### 1. SPLITROCK CANYON and THE BLEACH FLATS
+### 0. THE SESSION WAS THREE LANDS AND IT IS NOW TWO
 
-Two lands, and they are each other's opposite the way the last two were:
-**a hole in the page against the flattest ground in the world.** One is
-the most vertical thing on the sheet; the other is the only land whose
-whole thesis is that the answer is somewhere else.
+`PLAN.md` had Session 12 as MAPLE COURT + GREYLINE CITY + THE CUBICLE
+MILE *plus the 8:15 drawn into existence*. **Session 11 split it, in
+writing, in `PLAN.md`, which is what the ladder asked the session that
+noticed to do.** THE CUBICLE MILE and the 8:15 are Session 13, because
+the 8:15 is not a land's worth of work — it is a MOUNT, an ACT, and the
+payoff the whole road has been walking toward since the first minute,
+and putting it third on a list is how it gets built in the last hour of
+something.
 
-The scope, from the ladder: **corridor drama, and the oasis as reward.**
-Read `design/specs/` for how the seven finished lands are written up and
-write these two the same way.
+So: **two lands, two waits, two named inhabitants, one gate.** That is
+the shape that has now held twice.
+
+### 1. SHOOT §3.2's FRAME FIRST. NOT LAST.
+
+`design/THE-LINE.md` §3.2 and `PLAN.md` have both said for five sessions
+that **Act III is a two-hundred-unit look north up an empty straight
+road from the world's south rim, and nothing tall may stand within about
+eight units of x = −45 between z = 120 and z = 278.** That corridor runs
+up the middle of MAPLE COURT, which is one of your two lands, and it has
+**never been photographed.**
+
+Stand at (−45, 262) and look north before you place anything. Then
+place, and shoot it again after every round. Session 5 lost two rounds
+to a boardwalk laid the wrong way; this is the same mistake available
+one more time, in the one composition that cannot afford it. Main
+street's houses, trees, cars and hedges go BESIDE the king's road, never
+on its axis.
+
+### 2. TWO LANDS, AND THEY ARE BOTH ABOUT A STREET
+
+The scope from the ladder is **street rhythm, lit windows at dusk, the
+junction.** Read `design/specs/` for how the nine finished lands are
+written up and write these two the same way.
 
 **Every land ships its places AND its wait AND its named inhabitant:**
 
-- **HOLT** and the boat on the trestles (`THE-WAITS.md` §4). He keeps a
-  boat, upside down, oiled, at the top of a dry channel. The marks up
-  the wall are not flood records — **they are a list, in the order
-  things would float**, and the boat is at the bottom of it. His
-  permanent change is that the boat comes off the trestles and goes
-  right way up on the dry channel floor, and **the game never says
-  whether that is madness or readiness.**
-- **AMOS** and the cistern (`THE-WAITS.md` §5). The rain-catch is in
-  good order and the cistern is full and it has always been full,
-  because he carries the water forty units from the oasis by hand, at
-  night, and there is nobody out here to fool. He is not faking a
-  rainfall — **he is keeping the thing that catches rain in working
-  order.** His permanent change is that the lid comes off.
+- **VAL** and the porch light (`THE-WAITS.md` §3). The light is on at
+  every hour, including the ones nobody is awake for, and it is not on
+  for the people who left — **it is on for the STREET**, because a dark
+  house on this road means the family went. Her permanent change is
+  that a gap in a hedge is cut back open and Greyweather's ridge is on
+  the skyline of a back garden. **§3 carries an authoring note written
+  for you: the three chairs face NORTH, because the whole beat is a
+  sightline and the castle is three hundred units up the sheet on the
+  same axis as the line.** Do not put the gap on the east side toward
+  the city however much the fiction wants it.
+- **THE MAN AT THE JUNCTION** (`THE-WAITS.md` §11). He stands still in
+  the one land where standing still is shameful, and the pavement round
+  him is worn into the paths everybody takes to avoid him. He is not
+  waiting to be met. **He is waiting to be ASKED**, and asking costs
+  four seconds of stopping, which nobody in this city will spend. His
+  wait needs no knowledge at all: **you stop walking**, near him, long
+  enough that it is unmistakably a choice, and he goes and sits on the
+  bench. **The worn paths stay worn**, curving round a place where
+  nobody is standing any more. **He has no name and the map never marks
+  him.**
 
 Both authored *in the world* — in geometry, placement and routine. No
 dialogue trees, nothing announced, no count and no list (QUALITY-BAR).
-**Session 10's lesson is the one to carry in:** a turn that can be built
-into the GEOGRAPHY should never be written into a note. The Penwood's
-whole fable is a polyline, and Splitrock has at least as much geometry
-to say things with.
 
-### 2. THREE FACTS ABOUT THE GROUND YOU ARE INHERITING, AND ONE OF THEM IS A PROBLEM
+### 3. THE THING SESSION 11 WOULD TELL YOU IF IT COULD ONLY SAY ONE
 
-Read these before you draw anything. They are all measurable today with
-`node tools/check-terrain.mjs`.
+**AUTHOR THE GROUND FIRST, AND SIZE EVERYTHING AGAINST A PERSON.**
 
-- **THE TEAR IS REAL AND IT IS IN THE WRONG PLACE.** Session 4 authored
-  it: `tearX(z) ≈ 338 ± 11`, a floor at −10.8 and lips standing proud,
-  walls that refuse a walker. But 338 is **forty units from the world's
-  curled east margin** (`curlE` starts at x = 344), the tear only exists
-  between about z = −272 and z = −132, and **the canyon trail runs at
-  x = 255–305 and never goes near it.** So the land called SPLITROCK is
-  currently a scatter of mesas with the split off in the corner.
-  **Decide this first**, before a single prop: either the tear moves
-  west into the middle of its own land — which is a layout-wide audit
-  (elevation, the trail, the river's source, the map) and is allowed —
-  or the land is re-laid along the tear where it is and the trail is
-  brought to it. Either is defensible. Doing neither is what the draft
-  already does.
-- **THE CANYON IS TEN POINT EIGHT UNITS DEEP AND A STRANGER'S WHOLE
-  ERRAND TURNS ON THAT NUMBER.** `THE-STRANGERS.md` S5: *"ODD has
-  measured the canyon: ten point eight units from lip to floor, taken
-  twice, with a line."* `check-terrain` prints `floor -10.8`. If you
-  change the tear's depth, **you change S5 and you say so in the file**;
-  if you keep it, it is the most satisfying coincidence in this project
-  and it should be left exactly alone.
-- **THE RIVER RISES AT THE CANYON'S MOUTH AND THE CHANNEL ABOVE IT IS
-  DRY. THIS IS NOT A BUG.** `RIVER[0]` is (318, −108), just inside the
-  canyon's southern edge; the tear runs north of it. That is Holt's wait
-  already true in the height field — *the river that cut this canyon is
-  now somebody else's river* — and the dry channel he keeps his boat
-  above is the tear itself. **Do not "fix" it.**
+A doodle-folk figure is **1.7 units wide and 2.75 tall** — Brack, Joan,
+Hallows, Holt and Amos all are. Nothing wrote that down until Session
+11's handoff, and round 2 of its gate was one finding: the whole of both
+its lands had been drawn half again life size, and the first framing of
+its flagship land was a sixteen-unit wireframe hoop filling half the
+screen. **Scale first, then place.** A car is about 4.5 × 1.6. A
+two-storey house is about 8 wide and 6 to the ridge. A tower in Greyline
+is the only thing in either land allowed to break that, and it should
+break it on purpose.
 
-### 3. AND ONE THING THE FLATS' WAIT NEEDS THAT DOES NOT EXIST
-
-`THE-WAITS.md` §0 says THE BLEACH FLATS turns on **`fact:the-fold`**,
-earned by *walking the crease, both faces*. Grep the source: the ids
-actually wired today are `fact:brim-hour`, `fact:the-place-kept`,
-`fact:the-tarn`, `name:beach`, `name:downs`, `name:kingdom`,
-`name:ocean`, `reason:brim`, `route:the-line`. **There is no
-`fact:the-fold` and nothing teaches it.**
-
-So Amos's wait cannot resolve until this session authors the EARNING as
-well as the spending — and the crease is at `foldX(z) ≈ 78 ± 13`, which
-is on the Common/Downs border, in two lands this session is not
-building. That is fine and it is the point of the whole content system
-(`WORLD-SYSTEMS` §6: you carry a fact across a border), but it means
-**the Flats' wait has a dependency in somebody else's land and you must
-budget for it.** Session 10's Penwood earned its fact by ARRIVAL —
-twenty units of proximity, no note, no prompt — and that is the cheapest
-honest mechanism available; the crease has two faces, so *both* is the
-condition, which is a two-post route rather than a proximity test.
-
-**Whatever you do there must not move THE COMMON's protected framings.**
-Session 10 got caught putting grass on their horizon and had to pull it
-back east of x = 96. Read that part of `SESSIONS.md`.
+And the ground: MAPLE COURT and GREYLINE CITY have `COCKLE` of 0.75 and
+0.22, which is most of what their terrain is today. The Downs got a
+harrow, the Penwood got a bowl and the Flats got a pan, and in every
+case twenty minutes of `elevation.ts` is why the land composes. **A city
+grid on dead flat paper is the one land in this game that might be
+right to leave flat — but that has to be a DECISION, written down, not
+the absence of one.**
 
 ---
 
-## The things Session 10 paid for and you get free
+## The things Sessions 10 and 11 paid for and you get free
 
 - **`node tools/shoot-textures.mjs`** — every drawing in a prop box, at
   actual size, on paper, with no camera and no land in the way, in four
-  seconds. **Shoot this FIRST and the world second.** Session 10's first
-  gate round had four separate faults in it and it took three full world
-  re-shoots to work out which drawing caused which; the texture sheet
-  answered all four in one look.
+  seconds. **Shoot this FIRST and the world second.** Session 11 ran its
+  entire first gate round on it and it found six faults in one look,
+  four of which would have cost a world re-shoot each to isolate. *(It
+  needs the DEV server — `npx vite --port 4173` — because it imports
+  `/src/...`, not `dist`.)*
 - **`node tools/montage.mjs <dir> <out.png> a.png b.png …`** — a land on
-  one sheet instead of one frame at a time. A fault invisible in one
-  frame (every hedge the same height; a drove that fords a river) is
-  obvious across ten.
-- **`node tools/check-fields.mjs`** — new, and it exists because the
-  owner found that every animal in the game had been invisible the
-  moment it changed posture since Session 5. Run it whenever anything is
-  drawn as an instanced field and **especially anything that moves.**
+  one sheet. Three of Session 11's five mandatory findings are invisible
+  in any single frame and obvious across six.
+- **`node tools/check-fields.mjs`** — run it whenever anything is drawn
+  as an instanced field and **especially anything that moves.** Add your
+  two lands to its `CASES`.
 - **`node tools/diff-sheets.mjs`** — run it BEFORE you think you are
-  finished. It found a corrugation that had run out of its own land onto
-  the world's rim, in a land that session never opened, and nothing else
-  would have.
+  finished.
 - **The harness owns the clock.** `__inklands.setTime` / `step(dt, n)` /
   `drive` / `learn`. Shoot settled PAST the ink-in cascade (thirteen
   game seconds), drive at least one framing per land, and **photograph
-  both states of each wait** — `learn` hands the walker the knowledge so
-  a sheet does not have to play the game to get it.
+  both states of each wait**.
 
 ## The laws that will bite these two lands in particular
 
-- **THE CAMERA'S RESTING BEARING IS DUE NORTH AND IT DECIDES LAYOUT.**
-  A thing you walk ALONG runs north–south; a thing you LOOK at is north
-  of where you stand. **The tear already obeys this** — `tearX` is a
-  function of z, so the canyon runs the right way — which is most of why
-  it is worth keeping rather than re-cutting. The trail comes in from
-  the south-west and that is the part to watch.
-- **PLANAR FACES.** This is the land the rule was written for. A canyon
-  wall is the biggest run of cliff in the game and the terrain hatches
-  down the fall line: keep the walls in straight runs with corners
-  between them, the way `HOLD_PLAN` does for the Holdfast, and the way
-  paper actually tears.
-- **BOUND EVERY TERM IN `elevation.ts` ON ALL FOUR SIDES.** Session 10's
-  harrow shipped with no east bound and ran across two other lands.
-  These two lands sit against the curled east rim and against each
-  other; you will be authoring next to three protected framings
-  (`curl-rim`, `tear-lip`, `crease-east-road`).
-- **A DECAL IS A FLAT QUAD AT ONE HEIGHT.** Eleven or twelve units is
-  the ceiling on curved ground; nineteen buries one side and draws a
-  hard straight edge across your land.
-- **NEVER USE A FILLED POLYGON AS A COLOUR.** Use the `stain()` helper
-  both new texture files carry.
-- **SHARE DRAWINGS, INSTANCE PLACEMENTS.** Variety comes from the plan
-  and from placement, not from giving every instance its own canvas.
+- **THE CAMERA'S RESTING BEARING IS DUE NORTH AND IT DECIDES LAYOUT** —
+  and this session has the two lands where that is hardest, because a
+  city is a GRID and half a grid runs east–west. Main street runs
+  east–west across your rect today (`layout.ROADS`) and it is part of
+  THE LINE. **A cross street is a thing you look ALONG only if it runs
+  north.** Session 11 lost a round to a place that was right at a
+  standing point that was ninety degrees wrong; a city can lose four.
+- **THE PROTECTED CORRIDOR** (§3.2, above). It is not a guideline.
+- **BOUND EVERY TERM IN `elevation.ts` ON ALL FOUR SIDES.** Bumps are
+  bounded by construction; smoothsteps are not, and Session 10's harrow
+  ran across two lands because of one missing bound.
+- **A DECAL IS A FLAT QUAD AT ONE HEIGHT** on flat ground — but on a
+  slope it lies along the page's NORMAL, which is what makes it work on
+  a wall (Session 11). Eleven or twelve units is the ceiling on curved
+  ground.
+- **NEVER USE A FILLED POLYGON AS A COLOUR.** Use `stain()`. The one
+  exception Session 11 found: a filled polygon IS allowed as a
+  SILHOUETTE, because rock is opaque and a stain fades to nothing
+  exactly where a solid thing needs to be solid.
+- **SHARE DRAWINGS, INSTANCE PLACEMENTS.** A city is the land where this
+  matters most and where it is most dangerous: a street of identical
+  houses is a bar violation, and a street of unique canvases is thirty
+  megabytes. Variety comes from the PLAN.
 - **A HIDDEN INSTANCE MUST STILL SAY WHERE IT IS** —
-  `StandeeField.hide(i, x, z)`, never `set(i, x, -4000, …)`.
-- **Nobody crosses a border but the walker.** Holt cannot leave
-  Splitrock; Amos cannot leave the Flats — **and Amos's whole wait is a
-  forty-unit walk he makes every night**, so his track must stay inside
-  his own land and must not touch the oasis's border.
-- **`ctx.standee` is the choke point** for the skyline. And Session 10
-  found its limit the hard way: **the skyline lifts a name above what is
-  standing UNDER it and cannot know what is standing BEHIND it.** In a
-  land of tall thin mesas that will happen constantly. Height does not
-  solve it; angle does.
+  `StandeeField.hide(i, x, z)`.
+- **Nobody crosses a border but the walker.**
+- **AND THE SKYLINE CANNOT KNOW WHAT IS BEHIND A LABEL.** In a city of
+  towers that will happen constantly. Height does not solve it; angle
+  does.
 
 ---
 
-## One thing that is owed and is your call
+## What is owed, and what this session should decide
 
-**THE PAPER PLANE.** `WORLD-SYSTEMS` §4: one mount per quadrant, *"the
-paper plane — the wilds — launched from height — refuses being steered,
-mostly"*, and `PLAN.md` says mounts arrive with their quadrant's land
-session. The wilds are the east half, Session 10 did not take it, and
-**Splitrock's lip and the curled east rim are the two best launch
-heights in the world.** So it is overdue and this is its natural home.
-
-It is also a mount, on top of two lands and two waits, and the bar is
-explicit that a session that cannot meet it **ships less scope, never a
-lower bar**. So: take it, or defer it **in writing** in `SESSIONS.md`
-with the reason and the session you are handing it to. What is not
-acceptable is it quietly not happening for a third session.
+1. **THE STORY GATE'S SECOND MANDATORY FINDING IS ACT IV's AND IT IS
+   SESSION 13's** (`critique-story-2.md`): the ending's default witness
+   sees one stop, so the likeliest single ending in the game is a train
+   stopping at an empty platform. The fix is that the 8:15 **arrives
+   already carrying the lands above you**. Do not build it here; do not
+   build anything that makes it harder.
+2. **THE STORY GATE'S FIRST FINDING IS ACT I's**: everything downstream
+   of *nobody can leave* and *you can* hangs on Nell stopping at the
+   Brim border, which only happens to a player who walks north having
+   met her — and the co-walker wants to be a rule of the world on any
+   road out of any land. **MAPLE COURT is on the line and has roads out
+   of it in three directions**, so if you want to take that finding,
+   this is the cheapest session in which to prove the rule.
+3. **`design/QUESTS.md` §8's seventh content tier, THE LOCAL RULE**, is
+   still proposed and not ratified. Not yours unless the owner rules.
 
 ---
 
@@ -197,16 +186,16 @@ acceptable is it quietly not happening for a third session.
    `node tools/check-camera.mjs` and `node tools/check-fields.mjs` all
    pass.
 2. `node tools/diff-sheets.mjs` — and **say what moved and why, with the
-   bounding boxes.** Session 10 could not hold 92 of 92 because a
-   protected framing looks into a land it was building; it said which,
-   by how much, where in the frame, and what the verdict was actually
-   awarded on. That is the standard: not silence, and not a shrug.
+   bounding boxes and the sentence each verdict was actually awarded
+   on.** Session 11 moved four framings by up to seventy-five per cent
+   and said exactly which, by how much, where in the frame, and what was
+   still intact. That is the standard: not silence, and not a shrug.
 3. **The art director**, on a new sheet: both lands, both viewports, two
-   hours, at least one driven framing each, **both states of both
-   waits**, and **each land's SHOT**. A land with no composition people
-   would share unprompted is not done.
+   hours (and a city wants **dusk** more than any land in this world —
+   `HOUR=19.6`), at least one driven framing each, **both states of both
+   waits**, **each land's SHOT**, and **§3.2's corridor**.
 4. Iterate to WOWED. Log the verdicts verbatim in
-   `design/critiques/critique-art-7.md`.
+   `design/critiques/critique-art-8.md`.
 
 ---
 
@@ -232,44 +221,44 @@ session: pushed, `SESSIONS.md` handoff updated, verdicts logged.
 They live in `PLAN.md` as well as here, because this file is overwritten
 every session.
 
+- **THE MARKS in SPLITROCK reads as a standing stone rather than as a
+  face of the wall**, and **the west bench is a place a player can stand
+  inside a cluster of rock and see four flat cutouts overlapping**
+  (Session 11, `critique-art-7`). The second is the oldest problem this
+  engine has and that land avoids it rather than solving it.
 - **The rowboat's first-meeting composition at THE RIVER MOUTH** is a
-  lot of sand. **Four** gates have now passed it and pointedly not
-  praised it. *(Note for this session: the rowboat is how
-  `route:the-river` is earned, and `route:the-river` is what resolves
-  Holt. You will be in that machinery anyway.)*
+  lot of sand. **Five** gates have now passed it and pointedly not
+  praised it — and it matters more than it did, because
+  `route:the-river` is what resolves HOLT two hundred units away.
 - **THE HARROW DOWNS' stooked field** and **THE PENWOOD's east arc**
-  (Session 10, `critique-art-6`): both passed, neither praised.
+  (Session 10): both passed, neither praised.
 - **Brim Square is full.** The next authored thing in that plaza
   displaces something Session 3 earned.
 - **The prompt on a very wide subject is still on the subject.** READ
-  THE PROCLAMATION is legible on Greyweather's barbican and it is a
-  compromise (`critique-camera-1.md`, round 3, noted-not-blocking).
+  THE PROCLAMATION on Greyweather's barbican is a compromise.
 
 ## Not this session's job, and recorded so nobody re-derives them
 
-- **§3.2's rim composition is the riskiest un-shot frame in the game**
-  and **Session 12 shoots it FIRST, not last.** Act III is a
-  two-hundred-unit look north up an empty straight road from the world's
-  south rim, and nothing tall may stand within about eight units of
-  x = −45 between z = 120 and z = 278.
-- **SESSION 12 IS THREE LANDS** (Maple Court, Greyline City, the Cubicle
-  Mile) plus the 8:15 drawn into existence, against Session 10's and 11's
-  two apiece. If that is going to be split, the session that notices
-  should say so in `PLAN.md` rather than the one that runs out of room.
-- **The story gate returned NOT YET** (`critique-story-2.md`), with two
-  mandatory findings belonging to the sessions that build Acts I and IV.
+- **SESSION 13 IS THE CUBICLE MILE AND THE 8:15**: a land, DENNIS's
+  wait, the mount, and Act IV's machinery including the story gate's
+  ending fix.
+- **SESSION 14 IS MOTION & LIFE, AND IT OWNS THE PAPER PLANE.** Session
+  11 deferred it in writing with its reason (`PLAN.md`, `SESSIONS.md`):
+  a mount that *refuses being steered, mostly* is a motion system before
+  it is a vehicle, and by then SPLITROCK's lip will have held a verdict
+  for three sessions, so the launch height is settled ground.
 - The remaining WAITS, the eight STRANGERS and the three inventories are
   the authoring queue.
 
 ## Waiting on the owner, and none of it blocks you
 
 1. **THE EAR GATE on the score.** Nineteen WAVs handed over unperformed
-   (`critique-score-1.md` §4), and Session 10 added six more voices and
-   one authored silence to them. **Nobody has heard the game.**
-2. **THE FEEL GATE on the camera.** Session 9 shipped a bearing it could
-   measure and could not judge. The evidence is `shots-s9/`: the walk
-   south, every station shot twice. **Does it help, or does the world
-   wobble?**
+   (`critique-score-1.md` §4); Sessions 10 and 11 have added twelve more
+   voices and one authored silence to them. **Nobody has heard the
+   game.**
+2. **THE FEEL GATE on the camera.** The evidence is `shots-s9/`: the
+   walk south, every station shot twice. **Does it help, or does the
+   world wobble?**
 3. **Whether the STORY GATE becomes a standing critic**, and whether its
    NOT YET blocks Acts I and IV or merely annotates them.
 4. **The STORY EDITOR**, proposed as a third standing critic.

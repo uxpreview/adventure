@@ -34,17 +34,55 @@ retired; the chosen story is **THE 8:15** (`design/STORY.md`).
 | 8 | **The score** ✓ 2026-08-30 | Five synthesised instruments over twelve lands, doubled by FAMILY (music box, plucked string — Karplus–Strong, rendered rather than wired — bowed voice, struck metal, air), each land's assignment authored with its register and its one-line reason; a BED per land, and it is the quietest thing in the mix; a border that is a three-and-a-half second EQUAL-POWER crossfade of both the room and the instrument; and a mix that answers the walk and the hour. **And the proof, which was the hard half:** `check-audio.mjs` renders the score offline and asserts it, `verify-score.mjs` proves the wiring in the running game, `shoot-sound.mjs` draws it in ink, and `render-wavs.mjs` hands the ear gate to the owner — because it is the first product in this project that cannot be screenshotted. Gate to WOWED (`critique-score-1.md`). See `WORLD-SYSTEMS.md` §9. |
 | 9 | **The bearing** ✓ 2026-08-30 | **Foundations, and the last of them.** The camera answers TRAVEL, in two components: the part that CROSSES the frame turns it (26° on desktop, 12° in portrait, the envelope authored off the standee table), and the part that comes AT THE LENS opens the ground at the walker's feet (the astern terms) — because a bounded yaw cannot help the walk south and `WORLD-SYSTEMS` §2 was wrong to say it could. Plus the PEEK (a gesture, never a state) and a lead capped per rig. **And the proof, which was half the session:** `tools/diff-sheets.mjs` — a regression is a diff and not an opinion — standing on a harness that pins all four of the game's clocks so two shots of one framing are one picture, and `tools/check-camera.mjs`, which asserts the envelope, the continuity and the walk south in units of page. **And the oldest visible defect closed:** THE SKYLINE, so a name is written over the thing it names instead of across it. Gate to WOWED (`critique-camera-1.md`). |
 | 10 | **Farm & forest** ✓ 2026-08-30 | THE HARROW DOWNS + THE PENWOOD, and the first land session that could prove the page had not moved while it worked. **THE HARROW** authored into `elevation.ts` (the land is named for a thing that rakes a field into parallel lines, and it is now the ground), the mill rise, and the tarn's bowl. **THE PENWOOD HAS ONE ROAD AND IT IS A CIRCLE** — BRACK'S ROUND, forty-two units about the water, with the track from Brim running in and stopping at it: `THE-WAITS` §7's turn told entirely in a polyline, said by the map and by nothing else. Eleven authored FIELDS as polygons, one state each, hedged along the grain; four authored stands of pine with the voids between them doing as much work as the trees; THE FORD (`layout.FORDS` — the bed rises, the water does not fall, so `route:the-river` survives). **Both waits end to end:** JOAN HARROW's second setting, put away every evening and laid every morning until you sit down, and BRACK's quarter turn. Six ambient voices and one authored silence. Gate to WOWED (`critique-art-6.md`). See `design/specs/harrow-downs.md` and `design/specs/the-penwood.md`. |
-| 11 | **The dry lands** | SPLITROCK CANYON (a tear in the page) + THE BLEACH FLATS: corridor drama, the oasis as reward. |
-| 12 | **The now** | MAPLE COURT + GREYLINE CITY + THE CUBICLE MILE: street rhythm, lit windows at dusk, the junction — and the 8:15 drawn into existence. |
-| 13 | **Motion & life** | Systems pass: wind everywhere, sails and windmills turning, NPC routines, road encounters. (The score moved out of this session to 8 — see the ordering rule.) |
-| 14 | **The juror** | Awwwards pass on the whole build: title, first minute, map, UI feel, mobile portrait, performance audit, then the full-gauntlet critique. |
+| 11 | **The dry lands** ✓ 2026-08-31 | SPLITROCK CANYON + THE BLEACH FLATS, and they are each other's opposite: a hole in the page against the flattest ground in the world. **THE TEAR MOVED** — thirty-eight units west into the middle of its own land, and, more importantly, from two sines plus value noise to a POLYLINE: nine straight runs with eight corners, because paper tears along its fibres and the old line hatched as herringbone the moment anybody stood on the floor. It has two ends now and no other way in. **THE BLEACH FLATS' ground** (THE PAN, THE CATCH'S RISE, the oasis' hollow). **Both waits end to end:** HOLT's boat comes off the trestles and goes right way up on dry stone, and the bottom mark of the chalk ladder is where it lands; AMOS's lid comes off — and he is on his track with a yoke every night, which no note mentions. **`fact:the-fold` authored, earning and spending**, in two lands this session did not build. Six voices. Gate to WOWED (`critique-art-7.md`). See `design/specs/splitrock-canyon.md` and `design/specs/the-bleach-flats.md`. |
+| 12 | **The now** | MAPLE COURT + GREYLINE CITY: street rhythm, lit windows at dusk, the junction. VAL's wait and THE MAN AT THE JUNCTION's. **And §3.2's rim composition is shot FIRST, not last.** |
+| 13 | **The 8:15** | THE CUBICLE MILE, DENNIS's wait, and **the 8:15 drawn into existence** — the mount, the line's payoff and the machinery of Act IV, including the fix `critique-story-2` asked for (the train arrives already carrying the lands above you). |
+| 14 | **Motion & life** | Systems pass: wind everywhere, sails and windmills turning, NPC routines, road encounters — **and THE PAPER PLANE**, the wilds' mount, deferred here in writing by Session 11 (see below). |
+| 15 | **The juror** | Awwwards pass on the whole build: title, first minute, map, UI feel, mobile portrait, performance audit, then the full-gauntlet critique. |
+
+**SESSION 12 WAS THREE LANDS AND IT IS NOW TWO, AND SESSION 11 IS THE
+ONE SAYING SO** — which is what this ladder asked for: *"if that is
+going to be split, the session that notices should say so in PLAN.md
+rather than the one that runs out of room."* Session 11 took two lands
+and used every hour of itself doing it, and Session 12 as written was
+three lands, three waits, a mount, the ending's machinery and the
+riskiest un-shot frame in the game. THE CUBICLE MILE and the 8:15 are
+now their own session, because the 8:15 is not a land's worth of work —
+it is a MOUNT, an ACT, and the payoff the whole road has been walking
+toward since the first minute, and putting it third on a list is how it
+gets built in the last hour of something.
+
+**AND THE PAPER PLANE IS DEFERRED IN WRITING, TO SESSION 14** (Session
+11, and `PROMPT.md` explicitly required this to be a decision and not a
+silence). It is owed: `WORLD-SYSTEMS` §4 gives one mount per quadrant,
+the wilds' is the paper plane launched from height, and Session 11 built
+the two best launch heights in the world — SPLITROCK's lip and the
+curled east rim — and did not build the thing that launches off them.
+
+The reason is the bar, not the appetite. `QUALITY-BAR` §1: *a session
+that cannot meet the bar ships less scope, never a lower bar.* Session
+11 was two lands, two waits, two named inhabitants, a layout-wide
+audit of a moved tear, a new piece of knowledge authored at both ends,
+and five rounds of a gate. A mount is a controller, a camera case, a
+refusal rule and a gate of its own; the rowboat was half of Session 6.
+Dropping it into the last hour of this one would have produced a glider
+nobody had judged.
+
+**Session 14 is its home and the reason is not scheduling**: a mount
+that *refuses being steered, mostly* is a MOTION system before it is a
+vehicle, and Session 14 is the motion pass. The two lands it launches
+from will have held a verdict for three sessions by then, so the
+heights are settled and the plane can be built against ground nobody is
+still moving.
 
 **FIVE LAND SESSIONS NOW RUN IN A ROW WITH NOTHING STRUCTURAL LEFT TO
 INTERRUPT THEM.** Session 9 took the last foundations item on the board;
 everything below it shifted by one, and from Session 10 on every land
 session ships its places **and** its wait **and** its named inhabitant.
 **Session 10 was the first of them and the shape held**: two lands, two
-waits, two named inhabitants, one gate, one number.
+waits, two named inhabitants, one gate, one number. **Session 11 was the
+second and it held again — and it is the size of a land session.** Two
+lands is a session. Three is two sessions with a gate missing.
 
 **This ladder does not reach the owner's target yet, and it should say
 so.** The target is now HOURS of play, not a short walk

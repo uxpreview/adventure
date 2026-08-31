@@ -1114,6 +1114,56 @@ export class App {
               this.ambientAcc = 5 + Math.random() * 6;
             }
           }
+        } else if (this.region.id === 'canyon') {
+          /* SPLITROCK CANYON, and it is a ROOM before it is a land.
+           * `ROOMS.canyon` carries the longest delay on the sheet, so
+           * every one of these is heard twice and the second time is
+           * quieter and later — which is the only way this game has of
+           * saying how big a place is without measuring it.
+           *
+           * THE HULL TAP IS GATED ON DISTANCE, and the gate is the
+           * point: past twenty-five units you hear a man working on
+           * something and cannot see him, and inside it you can see
+           * him doing it and a sound would be a caption. */
+          const toHolt = Math.hypot(this.char.pos.x - 306, this.char.pos.z + 226);
+          const onFloor = this.char.pos.z < -120 && this.char.pos.z > -240;
+          const roll = Math.random();
+          if (toHolt > 25 && toHolt < 120 && roll > 0.52) {
+            this.audio.event('hull-tap');
+            this.ambientAcc = 13 + Math.random() * 12;
+          } else if (roll > 0.72) {
+            this.audio.event('kite-cry');
+            this.ambientAcc = 17 + Math.random() * 16;
+          } else {
+            this.audio.event('stone-fall');
+            // down on the floor the walls are close and things come off
+            // them more often; up on the rim it is nearly silent
+            this.ambientAcc = (onFloor ? 9 : 20) + Math.random() * 11;
+          }
+        } else if (this.region.id === 'desert') {
+          /* THE BLEACH FLATS. The only land in the game whose BED is
+           * louder than anything that happens in it — so the default is
+           * wind with nothing in it, and the two things that are not
+           * wind are both attached to the two places in the land where
+           * anybody has ever done anything.
+           *
+           * And `catch-tick` only exists after the light goes, which is
+           * also the only time AMOS is on his track. Nothing says the
+           * two are connected. */
+          const toOasis = Math.hypot(this.char.pos.x - 305, this.char.pos.z - 55);
+          const toCatch = Math.hypot(this.char.pos.x - 301, this.char.pos.z - 95);
+          const dark = dayClock.hour < 5.4 || dayClock.hour > 20.4;
+          const roll = Math.random();
+          if (toOasis < 22 && roll > 0.34) {
+            this.audio.event('palm-clatter');
+            this.ambientAcc = 7 + Math.random() * 8;
+          } else if (dark && toCatch < 16 && roll > 0.4) {
+            this.audio.event('catch-tick');
+            this.ambientAcc = 11 + Math.random() * 9;
+          } else {
+            this.audio.event('dry-wind');
+            this.ambientAcc = 12 + Math.random() * 12;
+          }
         } else {
           this.ambientAcc = 5;
         }

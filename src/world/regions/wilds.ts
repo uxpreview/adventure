@@ -1,8 +1,15 @@
 import * as THREE from 'three';
 import {
-  mesaTexture, archRockTexture, boulderTexture, cactusTexture, duneDecal,
-  skullTexture, tumbleweedTexture, palmTexture, signpostTexture,
-} from '../textures';
+  splitFinTexture, fallenSlabTexture, wallPanelTexture, markWallTexture,
+  needleArchTexture, boatTexture, trestleTexture, holtTexture, holtPlaceTexture,
+  bedGravelDecal, driftwoodTexture, kiteTexture,
+  panCrustDecal, strandLineDecal, flatsGritDecal, wornTrackDecal,
+  saguaroTexture, deadScrubTexture, palmTexture, reedRunTexture,
+  cisternTexture, catchFrameTexture, amosTexture, tumbleweedTexture,
+  skullTexture, bootTexture, milepostTexture, type Reg as DryReg,
+} from '../textures-dry';
+import { signpostTexture } from '../textures';
+import { tearX, panDist } from '../elevation';
 import {
   leafLitterDecal, hedgerowTexture, leanGrassTexture, wornGroundDecal,
 } from '../textures-common';
@@ -705,103 +712,754 @@ export const FOREST_POIS: WorldPOI[] = [
 ];
 
 /* ================================================================== *
- * SPLITROCK CANYON — striated walls, balanced stone, one arch you
- * will try to walk under (you can).
+ * SPLITROCK CANYON — a hole in the page, and the only land in this
+ * world whose middle is empty and whose edges are the event.
+ *
+ * Session 11, to design/specs/splitrock-canyon.md. THE-WAITS §4 is the
+ * brief and it is one sentence: **the marks are a list, in the order
+ * things would float, and the game never says whether Holt is mad or
+ * ready.**
+ *
+ * THE GROUND WAS AUTHORED FIRST AND IT IS MOST OF THE LAND. Session 4
+ * cut the tear at x = 338, forty units off the world's curled margin,
+ * and this session moved it to 300 — the middle of its own rect — and
+ * gave it two ends: a head that ramps in from the north and a mouth
+ * that ramps in from the south, with ten units of unclimbable wall
+ * everywhere else. So the corridor, the two ways in, the recession and
+ * the drama are all in `elevation.ts`, and everything below is what
+ * stands on the floor of it.
+ *
+ * The draft this replaces was six mesas ranked along the north edge at
+ * twenty-four-unit spacing, four more at the world's rim (in a
+ * protected framing's far field, which nobody had noticed), a
+ * forty-six-boulder Poisson scatter and fourteen cacti. All of it is
+ * cut. The rule that replaces it:
+ *
+ *   **NOTHING HERE IS SCATTERED. The page tore, and everything in this
+ *   land is either a piece that came off the edge or a thing one man
+ *   carried down.**
  * ================================================================== */
 
+/** The channel's axis at z, and a point across it. The floor is six
+ *  units either side of the axis; past that is wall. */
+const chan = (z: number, u = 0): [number, number] => [tearX(z) + u, z];
+
+/** THE FINS — three runs on three bearings, on the west bench. A group
+ *  of split rock is PARALLEL or it is wrong: rock splits along its
+ *  bedding the way paper tears along its fibres, so each run is one
+ *  line and the three lines disagree with each other. The voids between
+ *  them are as authored as the runs. */
+/* AND EVERY RUN GOES NORTH, which round 1 of the world sheet did not:
+ * it laid them east-west off a bearing and pushed half the fins across
+ * the canyon and out onto the far rim. Two rules meet here and they
+ * agree — the camera's (a thing you LOOK at recedes north away from you,
+ * so a group seen in depth has to run that way) and the rock's (a
+ * fracture set is parallel). The lean off north is small and it is a
+ * DIFFERENT small for each run, which is what stops three parallel
+ * groups reading as one grid. */
+const FIN_RUNS: { x: number; z: number; lean: number; n: number; step: number; s: number }[] = [
+  { x: 252, z: -150, lean: -0.10, n: 7, step: 14, s: 1.0 },
+  { x: 262, z: -126, lean: -0.05, n: 6, step: 13, s: 0.8 },
+  { x: 240, z: -196, lean: 0.05, n: 5, step: 12, s: 0.9 },
+  // and three on the north rim, so the head has a horizon rather than a
+  // beige void: they are the far register and they are barely there
+  { x: 292, z: -272, lean: 0.9, n: 3, step: 17, s: 0.62 },
+];
+
+const BOAT = { x: 310, z: -226 };
+const MARKS = { x: 314.5, z: -216 };
+/* HOLT'S PLACE IS DUE NORTH OF HIS BOAT, and it is the second time this
+ * session that the camera's law decided a placement rather than
+ * commented on one. Round 1 put it out on the east bench, thirty
+ * degrees off the channel's axis — inside desktop's field of view by
+ * three degrees and a long way outside portrait's, so half the players
+ * in the world would never have seen the thing the marks are measured
+ * against. It stands on the north rim above the head instead, straight
+ * up the channel from the boat, and the walk up the trail ends at it. */
+const HOLTS = { x: 300, z: -252 };
+
 export const buildCanyon: RegionBuilder = (ctx) => {
-  const { r, rect } = ctx;
+  const { r, terrain } = ctx;
 
-  // the walls: big slabs lining the north edge and a broken inner ridge
-  for (let i = 0; i < 6; i++) {
-    const x = rect.minX + 14 + i * 24 + r() * 6;
-    ctx.standee(mesaTexture(300 + i, 512, 288), 26, 15, x, rect.minZ + 10 + r() * 5);
+  /* ---- THE BENCHES: the fins ------------------------------------- *
+   * Four shared drawings over twenty-odd instances, in three registers.
+   * Session 10's law: share drawings, instance placements — a hundred
+   * and forty unique canvases for the hedges of one land was thirty-two
+   * megabytes and it cost that session a performance round.           */
+  const finTex: [THREE.Texture, DryReg][] = [
+    [splitFinTexture(7100, 0), 0],
+    [splitFinTexture(7101, 1), 1],
+    [splitFinTexture(7102, 1), 1],
+    [splitFinTexture(7103, 2), 2],
+  ];
+  /* AND THE SIZES ARE CALIBRATED OFF A PERSON, which round 1 of the
+   * world sheet was not. A doodle-folk figure in this game is 1.7 units
+   * wide and 2.75 tall (Brack, Joan, Hallows), so the tear is four
+   * people deep and a fin on the bench is three or four of them — not
+   * the twenty-two-unit tower round 1 shipped, which made the canyon a
+   * quarry full of shipping containers and put a rank of what read as
+   * houses along its rim. Everything in these two lands is now sized
+   * against 2.75, and it is written here because it is the number the
+   * next session will get wrong. */
+  const finFields = finTex.map(([tex, reg]) =>
+    ctx.field(tex, 12, { w: 9.5 - reg * 1.6, h: 9 - reg * 1.5 }));
+  const finCount = new Array(4).fill(0);
+  for (const run of FIN_RUNS) {
+    for (let i = 0; i < run.n; i++) {
+      // along the run, with the spacing itself uneven — a fracture set
+      // is parallel, it is not regular
+      const d = i * run.step + (r() - 0.5) * 5;
+      const x = run.x + Math.sin(run.lean) * d + (r() - 0.5) * 7;
+      const z = run.z - Math.cos(run.lean) * d + (r() - 0.5) * 6;
+      if (terrain.slopeAt(x, z) > 0.4) continue;
+      /* AND NOTHING TALL STANDS WHERE THE LENS IS. Round 2 of the world
+       * sheet had two near-register fins within five units of the trail
+       * on the west bench and the frame was two transparent brown crates
+       * — the Penwood's law, restated: full ballpoint pressure and full
+       * height belong to things you walk PAST, never to things you walk
+       * THROUGH. */
+      if (terrain.roadAt(x, z)) continue;
+      // the near register is for the ones you walk past, and there are
+      // never more than two of those in a run
+      const k = i === 1 ? 0 : i === run.n - 1 ? 3 : 1 + (i % 2);
+      const f = finFields[k];
+      const idx = finCount[k]++;
+      if (idx >= 12) continue;
+      f.set(idx, x, z, run.s * (0.5 + r() * 0.95), 0, r() > 0.5);
+    }
   }
-  for (let i = 0; i < 4; i++) {
-    const x = rect.maxX - 12;
-    ctx.standee(mesaTexture(310 + i, 512, 288), 24, 14, x, rect.minZ + 40 + i * 36, { rotY: -Math.PI / 2 });
+  for (let k = 0; k < 4; k++) {
+    for (let i = finCount[k]; i < 12; i++) finFields[k].hide(i, FIN_RUNS[0].x, FIN_RUNS[0].z);
   }
-  // an inner shelf the trail winds past
-  ctx.standee(mesaTexture(320, 512, 288), 30, 13, 268, -160, { rotY: 0.35 });
-  ctx.standee(mesaTexture(321, 512, 288), 26, 12, 330, -200, { rotY: -0.3 });
 
-  ctx.standee(archRockTexture(331), 13, 10, 305, -148, { rotY: 0.1 });
+  /* ---- THE FLOOR: gravel, sorted across the channel ---------------- *
+   * Coarse at the feet of the walls, fine down the centreline. It is
+   * the only thing in the canyon that says water was ever here, and it
+   * says it without a drop and without a word.                        */
+  const gravel = [0, 1, 2].map((g) =>
+    ctx.field(bedGravelDecal(7900 + g, g as 0 | 1 | 2), 16, {
+      w: 7.5, h: 7.5, decal: true, baseOpacity: 0.85,
+    }));
+  const gCount = [0, 0, 0];
+  for (let z = -224; z <= -122; z += 4.5) {
+    for (const u of [-7.5, -3.4, 0.6, 4.2, 7.8]) {
+      const [x, zz] = chan(z + (r() - 0.5) * 3, u + (r() - 0.5) * 2.2);
+      const g = Math.abs(u) > 6 ? 0 : Math.abs(u) > 3 ? 1 : 2;
+      if (gCount[g] >= 16) continue;
+      gravel[g].set(gCount[g]++, x, zz, 0.85 + r() * 0.5, r() * Math.PI, r() > 0.5);
+    }
+  }
+  for (let g = 0; g < 3; g++) {
+    for (let i = gCount[g]; i < 16; i++) gravel[g].hide(i, ...chan(-180, 0));
+  }
 
-  const rocks = ctx.field(boulderTexture(340), 46, { w: 3.2, h: 2.2 });
-  ctx.scatter(46, { minDist: 5 }).forEach(([x, z], i) =>
-    rocks.set(i, x, z, 0.6 + r() * 0.9, 0, r() > 0.5));
+  /* ---- THE FALLEN: slabs, and they get bigger toward the walls ----- *
+   * Because that is where they came from. Nothing lies in the middle of
+   * the bed except gravel.                                            */
+  const slabs = [0, 1].map((k) =>
+    ctx.field(fallenSlabTexture(7200 + k, 1), 9, {
+      w: k === 0 ? 4.6 : 3.0, h: k === 0 ? 2.0 : 1.3,
+    }));
+  const sCount = [0, 0];
+  for (let i = 0; i < 9; i++) {
+    const z = -222 + r() * 96;
+    const side = r() > 0.5 ? 1 : -1;
+    const u = side * (4.4 + r() * 3.4);
+    const [x, zz] = chan(z, u);
+    const k = Math.abs(u) > 6 ? 0 : 1;
+    if (sCount[k] >= 9) continue;
+    slabs[k].set(sCount[k]++, x, zz, 0.7 + r() * 0.6, (r() - 0.5) * 0.7, side < 0);
+  }
+  for (let k = 0; k < 2; k++) {
+    for (let i = sCount[k]; i < 9; i++) slabs[k].hide(i, ...chan(-180, 0));
+  }
 
-  const cacti = ctx.field(cactusTexture(341), 14, { w: 2.6, h: 3.9 });
-  ctx.scatter(14, { minDist: 12 }).forEach(([x, z], i) =>
-    cacti.set(i, x, z, 0.6 + r() * 0.5, 0, r() > 0.5));
+  /* ---- THE WALLS, where the corridor bends ------------------------ *
+   * The height field draws the canyon's faces in hatching down their
+   * fall line, which is what makes them a cliff. These are what makes
+   * them a cliff somebody DREW: eight panels at the two places the
+   * channel turns, standing at the wall's foot with their ends erased
+   * so a run reads as one face and not as a row of cards.             */
+  /* AND THEY ARE DECALS, NOT STAND-UPS, which is the whole difference
+   * between round 1 and this one. A wall panel stood on the floor at the
+   * cliff's foot is a flat card hanging in the air in front of a slope —
+   * round 1's sheet had eight of them and they read as scaffolding.
+   * `ctx.decal` lays a mark along the page's own SURFACE NORMAL, so on a
+   * sixty-degree wall the drawing lies ON the wall. It is what
+   * `lieOnGround` was built for and no land had ever needed it on
+   * anything but the flat. */
+  const walls = [0, 1].map((k) =>
+    ctx.field(wallPanelTexture(7300 + k, 1), 7, {
+      w: 9, h: 12, decal: true, baseOpacity: 0.5,
+    }));
+  const wCount = [0, 0];
+  for (const [z0, side] of [[-214, 1], [-202, 1], [-188, -1], [-176, -1],
+    [-162, -1], [-150, 1], [-232, -1], [-140, -1], [-196, 1],
+    [-168, 1], [-222, 1], [-158, -1]] as [number, number][]) {
+    const [x, zz] = chan(z0, side * 11.5);
+    if (terrain.slopeAt(x, zz) < 0.6) continue;
+    const k = wCount[0] <= wCount[1] ? 0 : 1;
+    if (wCount[k] >= 7) continue;
+    walls[k].set(wCount[k]++, x, zz, 0.9 + r() * 0.3, side > 0 ? -0.3 : 0.3, side < 0);
+  }
+  for (let k = 0; k < 2; k++) {
+    for (let i = wCount[k]; i < 7; i++) walls[k].hide(i, ...chan(-180, 0));
+  }
+
+  /* ---- THE DRIFTWOOD, on the east bench, at the lip's height ------ *
+   * Thirteen units above the floor, a very long way from any water, and
+   * nothing in this game will ever mention it.                        */
+  const drift = ctx.field(driftwoodTexture(7950), 3, { w: 3.2, h: 1.2 });
+  [[330, -204], [336, -178], [327, -158]].forEach(([x, z], i) =>
+    drift.set(i, x, z, 0.8 + r() * 0.4, (r() - 0.5) * 1.2, r() > 0.5));
+
+  /* ---- THE LIP, and the head's own stones -------------------------- *
+   * Four slabs on the east lip where the walk along it goes, and three
+   * at the head, so neither of those two places is a label standing in
+   * an empty frame. They are the FAR register: what they are for is a
+   * silhouette against the sky at the edge of a drop.               */
+  const lipStones = ctx.field(fallenSlabTexture(7210, 2), 8, { w: 3.4, h: 1.5 });
+  ([[321, -170], [323, -152], [318, -140], [325, -184],
+    [300, -244], [311, -246], [294, -240], [308, -256]] as [number, number][])
+    .forEach(([x, z], i) => lipStones.set(i, x, z, 0.8 + r() * 0.6, (r() - 0.5) * 1.4, r() > 0.5));
+
+  /* ---- THE NEEDLE -------------------------------------------------- *
+   * A slot worn through a standing block at the channel's west edge,
+   * and you can walk under it, which is the whole of why it is here.  */
+  ctx.standee(needleArchTexture(7500), 7.6, 5.8, ...chan(-168, -6.2), { rotY: 0.16 });
+
+  /* ================================================================ *
+   * HOLT.
+   *
+   * THE-WAITS §4. He keeps a boat, upside down, on trestles, at the top
+   * of the dry channel, and it is oiled. The marks up the wall beside
+   * it are not flood records — **they are a list, in the order things
+   * would float**, and the boat is at the bottom of it.
+   *
+   * NOTHING SAYS ANY OF THAT. What the land does instead is put three
+   * things in one frame and let the arithmetic happen:
+   *
+   *   · the boat, on the floor, at −9.7;
+   *   · THE MARKS, on the east wall beside it — two low and close
+   *     together, then a long blank stretch, then three at the top;
+   *   · and HOLT'S PLACE, on the bench over the lip, whose DOORSTEP is
+   *     at y = 4.12 while the fourth chalk mark on the wall below comes
+   *     out at y = 4.10.
+   *
+   * Two centimetres. The mark is level with the doorstep because the
+   * man measured it, and the only help the game gives is that you can
+   * see both of them at once.
+   * ================================================================ */
+  const boatOver = ctx.standee(boatTexture(7600, true), 6.2, 3.2, BOAT.x, BOAT.z, { rotY: -0.22 });
+  // she sits ON the trestles, so she is lifted off the stone and their
+  // legs show under her: a boat resting on the ground and a boat kept
+  // out of the weather are two different pictures
+  boatOver.position.y += 1.25;
+  const boatUp = ctx.standee(boatTexture(7601, false), 6.2, 3.3, BOAT.x, BOAT.z + 2.2, { rotY: -0.18 });
+  const trestles = ctx.standee(trestleTexture(7602), 3.4, 2.3, BOAT.x, BOAT.z, { rotY: -0.22 });
+  // 17 units of wall standing on a floor at −10.14: the marks land where
+  // the numbers above say they land, and check-fields walks up to them
+  /* 13.56 UNITS OF SLAB ON A FLOOR AT −10.24, AND EVERY NUMBER IN IT IS
+   * LOAD-BEARING.
+   *
+   *   · the top comes out at 3.32, which is a unit BELOW the rim — so
+   *     the slab never breaks the skyline, and reads as a face of the
+   *     canyon rather than as a chimney standing in it. Four rounds of
+   *     the world sheet were spent finding that out;
+   *   · the fourth chalk mark comes out at y = 2.69, and the ground
+   *     HOLT's doorstep stands on at (300, −252) is 2.694;
+   *   · and the LOWEST mark comes out at 0.6 of a unit above the
+   *     channel floor — which is the waterline of a boat sitting on the
+   *     stone, not of one up on trestles. **The bottom of the list
+   *     describes where the boat is not, and the wait is what puts her
+   *     there.** Nothing says so. */
+  ctx.standee(markWallTexture(7400), 6.0, 13.56, MARKS.x, MARKS.z, { rotY: -0.42 });
+  ctx.standee(holtPlaceTexture(7800), 13, 6.0, HOLTS.x, HOLTS.z, { rotY: 0.06 });
+
+  const holtWork = ctx.standee(holtTexture(7700, true), 1.9, 2.8, BOAT.x - 4, BOAT.z);
+  const holtStand = ctx.standee(holtTexture(7701, false), 1.75, 2.8, BOAT.x - 4, BOAT.z);
+  holtStand.visible = false;
+
+  /* ---- THE KITE, and it is the only thing in the strip of sky ----- */
+  const kite = ctx.standee(kiteTexture(7960), 1.5, 1.0, ...chan(-180, 0));
+  kite.position.y = ctx.groundY(...chan(-180, 0)) + 26;
+
+  /* ---- THE DUST, hanging in the light between the walls ----------- *
+   * Four motes, and they are one-off meshes rather than a field because
+   * a field stands its instances ON the ground and these are in the
+   * air. Four draw calls for the second idle motion in a land whose
+   * whole subject is stillness is a bargain.                          */
+  const motes = [0, 1, 2, 3].map((i) => {
+    const [x, z] = chan(-206 + i * 22, (i % 2 ? 4 : -4));
+    const m = ctx.standee(bedGravelDecal(7970 + i, 2), 1.4, 1.4, x, z, { opacity: 0.2 });
+    m.position.y = ctx.groundY(x, z) + 3.5 + i * 1.6;
+    return { m, x, z, y0: m.position.y, ph: i * 1.9 };
+  });
+
+  /* ---- THE WALLS LET GO, and it is the land's answer to the player - *
+   * Come within fourteen units of a wall's foot on the channel floor
+   * and a few stones come off above you and find the bottom — and it
+   * fires `stone-fall`, which the canyon's own room says again a beat
+   * later. It is the only land besides the Penwood that answers you,
+   * and this is the one where you can see it as well as hear it.      */
+  const pebbles = [0, 1, 2].map((i) =>
+    ctx.standee(bedGravelDecal(7980 + i, 2), 0.8, 0.8, ...chan(-190, 6), { opacity: 0 }));
+  const fall = { t: -1, cool: 0, x: 0, z: 0, top: 0 };
+
+  return (dt: number, t: number, px: number, pz: number) => {
+    /* THE BOAT COMES OFF THE TRESTLES.
+     *
+     * You have rowed the river, salt to source, under all three bridges,
+     * and you are the only thing in this world that has. Come up the
+     * canyon holding the route and the boat is on the ground, right way
+     * up, on dry stone, and the trestles are still there and they are
+     * empty. **The game never says whether that is madness or
+     * readiness**, and the empty trestles are the half that makes it a
+     * question rather than an announcement. */
+    const launched = knowledge.has('route:the-river');
+    boatOver.visible = !launched;
+    boatUp.visible = launched;
+    void trestles;
+
+    /* HOLT WORKS THE HULL, out and back, all day, in one of two
+     * drawings — and after the boat comes down he does exactly the same
+     * thing to a boat that is the right way up. */
+    const lap = 26;
+    const u = (t % lap) / lap;
+    const swing = u < 0.5 ? u * 2 : 2 - u * 2;
+    const hx = BOAT.x - 6.2 + swing * 5.6;
+    const hz = BOAT.z + (launched ? 3.4 : 0) + 1.2;
+    const reaching = swing > 0.22 && swing < 0.86;
+    for (const m of [holtWork, holtStand]) m.position.set(hx, ctx.groundY(hx, hz), hz);
+    holtWork.visible = reaching;
+    holtStand.visible = !reaching;
+
+    /* THE KITE turns on a slow ellipse it never leaves. */
+    const ka = t * 0.19;
+    const kx = tearX(-186) + Math.cos(ka) * 15;
+    const kz = -186 + Math.sin(ka) * 34;
+    kite.position.set(kx, ctx.groundY(...chan(-186, 0)) + 25 + Math.sin(t * 0.4) * 2.2, kz);
+    kite.rotation.y = -ka * 0.4;
+
+    /* THE DUST hangs, and drifts, and does not settle. */
+    for (const d of motes) {
+      d.m.position.set(
+        d.x + Math.sin(t * 0.31 + d.ph) * 1.9,
+        d.y0 + Math.sin(t * 0.22 + d.ph * 1.7) * 1.1,
+        d.z + Math.cos(t * 0.24 + d.ph) * 1.4
+      );
+    }
+
+    /* THE WALLS LET GO. */
+    fall.cool -= dt;
+    if (fall.t < 0 && fall.cool <= 0) {
+      const off = px - tearX(pz);
+      if (pz > -230 && pz < -128 && Math.abs(off) > 3.6 && Math.abs(off) < 9) {
+        const side = Math.sign(off);
+        fall.x = tearX(pz - 16) + side * 8.5;
+        fall.z = pz - 16;
+        fall.top = ctx.groundY(fall.x + side * 12, fall.z) + 1.5;
+        fall.t = 0;
+        say('stone-fall');
+      }
+    }
+    if (fall.t >= 0) {
+      fall.t += dt;
+      const floorY = ctx.groundY(fall.x, fall.z);
+      for (let i = 0; i < 3; i++) {
+        const tt = Math.max(0, fall.t - i * 0.18);
+        const y = fall.top - 9.8 * 0.5 * tt * tt * 1.4;
+        const done = y <= floorY;
+        pebbles[i].position.set(fall.x + i * 0.8 - 0.8, done ? floorY + 0.3 : y, fall.z + i * 0.6);
+        (pebbles[i].material as THREE.MeshBasicMaterial).opacity = done ? 0 : 0.85;
+      }
+      if (fall.t > 2.4) {
+        fall.t = -1;
+        fall.cool = 7 + Math.random() * 9;
+        for (const p of pebbles) (p.material as THREE.MeshBasicMaterial).opacity = 0;
+      }
+    }
+  };
 };
 
 export const CANYON_POIS: WorldPOI[] = [
   {
-    x: 305, z: -148, radius: 8, label: 'THE NEEDLE ARCH',
+    x: 301, z: -104, radius: 9, label: 'THE RIVERHEAD',
+    note: {
+      title: 'the riverhead',
+      body: 'this is where it starts. you could stand with one foot either side of it. two hundred paces down it is a river with bridges on it and a boat, and here it is a wet patch under a stone, and it has been doing this the whole time.',
+    },
+  },
+  {
+    x: 292, z: -152, radius: 12, label: 'THE DRY CHANNEL',
+    note: {
+      title: 'the dry channel',
+      body: 'flat, all the way. the stones are big at the sides and small down the middle, which is what water does, and there has not been any for longer than anybody can say. it is the easiest walking in the land and nobody uses it.',
+    },
+  },
+  {
+    x: 291, z: -168, radius: 8, label: 'THE NEEDLE',
     prompt: 'STAND UNDER IT',
     note: {
-      title: 'the needle arch',
+      title: 'the needle',
       body: 'a hole worn through solid rock by nothing but weather and insistence. you stand under it. it holds. it has been holding since before anything out here was named.',
     },
   },
-  { x: 318, z: -108, radius: 9, label: 'THE RIVERHEAD' },
+  {
+    x: 311, z: -213, radius: 9, label: 'THE MARKS',
+    note: {
+      title: 'the marks',
+      body: 'somebody has been up this wall with a piece of chalk. the marks are level, which takes doing, and they have been gone over. the top one is level with the doorstep up there.',
+    },
+  },
+  {
+    x: 303, z: -228, radius: 10, label: 'THE BOAT',
+    note: {
+      title: 'the boat',
+      body: 'upside down on trestles, out of the weather, oiled this week. the nearest water is about a foot wide and a hundred paces down the canyon, and it is going the other way.',
+    },
+  },
+  {
+    x: 303, z: -248, radius: 11, label: 'THE HEAD',
+    note: {
+      title: 'the head',
+      body: 'the canyon starts here, or stops here, depending which way you came. the ground just leans. a hundred paces on there are two walls over your head and you never noticed either of them arrive.',
+    },
+  },
+  {
+    /* IT WAS 'THE EAST RIM' AT (358, −196) AND IT WAS AN EMPTY BEIGE
+     * FRAME, because from out there the canyon is due WEST and the
+     * camera looks north. The place was right and the standing point was
+     * ninety degrees wrong. On the lip the cut falls away at your feet
+     * and runs north, which is the same view and is a composition. */
+    x: 320, z: -158, radius: 11, label: 'THE LIP',
+    note: {
+      title: 'the lip',
+      body: 'the edge, where the ground stops being ground. it runs away north and gets deeper as it goes and you can see the bottom of it the whole way. behind your other shoulder the world goes up and then stops.',
+      learns: ['name:desert'],
+    },
+  },
 ];
 
 /* ================================================================== *
- * THE BLEACH FLATS — dune script, saguaros, one green secret.
+ * THE BLEACH FLATS — the flattest ground in the world, and the only
+ * land whose whole thesis is that the answer is somewhere else.
+ *
+ * Session 11, to design/specs/the-bleach-flats.md. THE-WAITS §5: **the
+ * cistern is full, it has always been full, and AMOS is not faking a
+ * rainfall — he is keeping the thing that catches rain in working
+ * order.**
+ *
+ * The draft this replaces was sixty dune decals on a Poisson scatter,
+ * forty-two saguaros on another, two loose skulls and eight tumbleweeds
+ * that marched east at 2.2 + i × 0.24 units a second and teleported
+ * back to x = 236, which is an array that moves and is worse than an
+ * array that does not. All of it is cut. The rule that replaces it:
+ *
+ *   **NOTHING IN THE FLATS IS SCATTERED. Everything loose has been
+ *   SORTED, and it has been sorted the same way, by the same wind, for
+ *   a very long time.**
+ *
+ * So every field in this land is placed on a RING of `panDist` — a
+ * strand line, a place a wash stopped — or along AMOS's track, and the
+ * ground between the rings is bare because things have been taken off
+ * it rather than because nothing was put there.
  * ================================================================== */
 
+const OASIS = { x: 305, z: 55 };
+const CATCH = { x: 301, z: 95 };
+/** Where the wash stopped, and stopped again, and stopped again. */
+const STRANDS = [30, 44, 58];
+
+/** A point on a strand line, by angle. */
+const strandPt = (ring: number, a: number): [number, number] =>
+  [272 + Math.cos(a) * ring, 58 + (Math.sin(a) * ring) / 0.78];
+
 export const buildDesert: RegionBuilder = (ctx) => {
-  const { r } = ctx;
+  const { r, terrain, rect } = ctx;
 
-  const dunes = ctx.field(duneDecal(400), 60, { w: 11, h: 5.5, decal: true, baseOpacity: 0.8 });
-  ctx.scatter(60, { minDist: 8 }).forEach(([x, z], i) =>
-    dunes.set(i, x, z, 0.8 + r() * 0.8, r() * Math.PI, r() > 0.5));
+  const inLand = (x: number, z: number) =>
+    x > rect.minX + 10 && x < 336 && z > rect.minZ + 8 && z < rect.maxZ - 8;
 
-  const cacti = ctx.field(cactusTexture(401), 42, { w: 2.8, h: 4.2 });
-  const oasisAvoid = (x: number, z: number) => Math.hypot(x - 305, z - 55) < 20;
-  ctx.scatter(42, { minDist: 7, avoid: oasisAvoid }).forEach(([x, z], i) =>
-    cacti.set(i, x, z, 0.55 + r() * 0.7, 0, r() > 0.5));
+  /* ---- THE PAN's floor -------------------------------------------- */
+  const crust = [0, 1].map((k) =>
+    ctx.field(panCrustDecal(8000 + k), 18, { w: 10, h: 10, decal: true, baseOpacity: 0.9 }));
+  const cCount = [0, 0];
+  for (let i = 0; i < 36; i++) {
+    const a = r() * Math.PI * 2;
+    const d = Math.pow(r(), 0.6) * 28;
+    const [x, z] = strandPt(d, a);
+    if (!inLand(x, z) || terrain.waterAt(x, z) > 0.03) continue;
+    const k = cCount[0] <= cCount[1] ? 0 : 1;
+    if (cCount[k] >= 18) continue;
+    crust[k].set(cCount[k]++, x, z, 0.9 + r() * 0.5, r() * Math.PI, r() > 0.5);
+  }
+  for (let k = 0; k < 2; k++) {
+    for (let i = cCount[k]; i < 18; i++) crust[k].hide(i, 272, 58);
+  }
 
-  ctx.standee(skullTexture(410), 2.2, 1.8, 292, -30);
-  ctx.standee(skullTexture(411), 1.8, 1.5, 342, 88);
+  /* ---- THE STRAND LINES ------------------------------------------- *
+   * Three rings, laid end to end with their ends erased, each one a
+   * place the water stopped. The land is a diagram of something
+   * leaving, and it is the only thing in the Flats that is a shape
+   * rather than a colour.                                             */
+  const strand = [0, 1].map((k) =>
+    ctx.field(strandLineDecal(8100 + k), 22, { w: 13, h: 3.4, decal: true, baseOpacity: 1 }));
+  const stCount = [0, 0];
+  for (let s = 0; s < STRANDS.length; s++) {
+    const ring = STRANDS[s];
+    const n = 13 + s * 4;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + s * 0.4;
+      const [x, z] = strandPt(ring + (r() - 0.5) * 3, a);
+      if (!inLand(x, z) || terrain.waterAt(x, z) > 0.03 || terrain.roadAt(x, z)) continue;
+      const k = stCount[0] <= stCount[1] ? 0 : 1;
+      if (stCount[k] >= 22) continue;
+      // laid ALONG the ring, so a run of them is one line
+      strand[k].set(stCount[k]++, x, z, 0.85 + r() * 0.4, -a + Math.PI / 2, r() > 0.5);
+    }
+  }
+  for (let k = 0; k < 2; k++) {
+    for (let i = stCount[k]; i < 22; i++) strand[k].hide(i, 272, 58);
+  }
 
-  // the oasis: palms leaning over the one wet thing for miles
-  ctx.standee(palmTexture(420), 7.5, 8.8, 295, 48);
-  ctx.standee(palmTexture(421), 8, 9.4, 314, 50);
-  ctx.standee(palmTexture(422), 7, 8.2, 306, 66);
-  ctx.standee(palmTexture(423), 6.5, 7.6, 296, 62);
+  /* ---- THE GRIT, everywhere, on one bearing ------------------------ */
+  const grit = ctx.field(flatsGritDecal(8200), 34, {
+    w: 12, h: 12, decal: true, baseOpacity: 0.85,
+  });
+  const gp = ctx.scatter(34, { minDist: 13, avoid: (x, z) => x > 334 || panDist(x, z) < 20 });
+  gp.forEach(([x, z], i) => grit.set(i, x, z, 1, 0.14, false));
+  for (let i = gp.length; i < 34; i++) grit.hide(i, 260, 20);
 
-  ctx.standee(signpostTexture(430), 3.4, 4.1, 248, 12);
+  /* ---- AMOS'S TRACK ------------------------------------------------ *
+   * The only line on the ground in a hundred and fifty units, and it
+   * has two edges. It is THE SHOT's subject: a look straight up it, and
+   * the green at the end of it forty units off.                       */
+  const track = [0, 1].map((k) =>
+    ctx.field(wornTrackDecal(8300 + k), 6, { w: 3.4, h: 4.6, decal: true, baseOpacity: 0.95 }));
+  const tCount = [0, 0];
+  for (let i = 0; i <= 10; i++) {
+    const t = i / 10;
+    const x = CATCH.x + (OASIS.x - CATCH.x) * t + Math.sin(t * 4.1) * 1.1;
+    const z = CATCH.z + (OASIS.z - CATCH.z) * t;
+    const k = tCount[0] <= tCount[1] ? 0 : 1;
+    if (tCount[k] >= 6) continue;
+    track[k].set(tCount[k]++, x, z, 1, Math.atan2(OASIS.x - CATCH.x, OASIS.z - CATCH.z), false);
+  }
+  for (let k = 0; k < 2; k++) {
+    for (let i = tCount[k]; i < 6; i++) track[k].hide(i, CATCH.x, CATCH.z);
+  }
 
-  // tumbleweeds that actually tumble
-  const weeds = ctx.field(tumbleweedTexture(440), 8, { w: 2.2, h: 2.2 });
-  const weedPos = ctx.scatter(8, { minDist: 10 });
-  weedPos.forEach(([x, z], i) => weeds.set(i, x, z, 0.6 + r() * 0.6, 0, false));
-  const state = weedPos.map(([x, z]) => ({ x, z, spin: 0 }));
-  return (dt: number) => {
-    for (let i = 0; i < state.length; i++) {
-      const s = state[i];
-      s.x += dt * (2.2 + i * 0.24);
-      s.spin -= dt * (2 + i * 0.2);
-      if (s.x > 374) s.x = 236;
-      weeds.set(i, s.x, s.z, 0.6 + (i % 3) * 0.2, s.spin, false);
+  /* ---- THE THREE SAGUAROS ------------------------------------------ *
+   * In a row, on the pan's outer strand line, and they are the only
+   * things in the land taller than a knee outside the oasis. Three, in
+   * a line, is not an array — it is a fact about where water was.     */
+  const sag = [0, 1].map((k) => ctx.field(saguaroTexture(8400 + k, 2 - k), 3, { w: 2.3, h: 4.7 }));
+  const sagAt: [number, number][] = [
+    strandPt(STRANDS[2], -1.16), strandPt(STRANDS[2], -0.86), strandPt(STRANDS[2], -0.56),
+  ];
+  sagAt.forEach(([x, z], i) => {
+    const f = sag[i % 2];
+    const idx = Math.floor(i / 2);
+    f.set(idx, x, z, 0.82 + i * 0.1, 0, i === 1);
+  });
+  sag[1].hide(1, sagAt[0][0], sagAt[0][1]);
+  sag[0].hide(2, sagAt[0][0], sagAt[0][1]);
+  sag[1].hide(2, sagAt[0][0], sagAt[0][1]);
+
+  /* ---- THE DEAD SCRUB, on the strand lines and nowhere else ------- *
+   * It carries the land's shimmer: a very small, very fast `wind` at a
+   * hundred units reads as heat rather than as movement.              */
+  const scrub = [0, 1, 2].map((k) =>
+    ctx.field(deadScrubTexture(8500 + k), 12, {
+      w: 1.9, h: 1.4, wind: { amp: 0.055, freq: 3.1 },
+    }));
+  const scCount = [0, 0, 0];
+  for (let s = 0; s < STRANDS.length; s++) {
+    for (let i = 0; i < 13; i++) {
+      const a = r() * Math.PI * 2;
+      const [x, z] = strandPt(STRANDS[s] + (r() - 0.5) * 6, a);
+      if (!inLand(x, z) || terrain.waterAt(x, z) > 0.03 || terrain.roadAt(x, z)) continue;
+      const k = s;
+      if (scCount[k] >= 12) continue;
+      scrub[k].set(scCount[k]++, x, z, 0.7 + r() * 0.6, 0, r() > 0.5);
+    }
+  }
+  for (let k = 0; k < 3; k++) {
+    for (let i = scCount[k]; i < 12; i++) scrub[k].hide(i, 272, 58);
+  }
+
+  /* ---- THE OASIS --------------------------------------------------- *
+   * A single dense knot, twelve units across, and it is the only knot
+   * in a hundred and fifty units. Full ballpoint pressure lives here
+   * and in Amos's guttering and nowhere else in the land.             */
+  const palms: [number, number, number][] = [
+    [297, 48, 0.22], [313, 50, -0.3], [307, 65, 0.12], [296, 62, -0.18], [316, 61, 0.3],
+  ];
+  const palmTex = [palmTexture(8600, 0.2), palmTexture(8601, -0.35)];
+  const palmField = [0, 1].map((k) =>
+    ctx.field(palmTex[k], 3, { w: 4.8, h: 7.6, wind: { amp: 0.11, freq: 0.7 } }));
+  palms.forEach(([x, z], i) => {
+    const f = palmField[i % 2];
+    f.set(Math.floor(i / 2), x, z, 0.86 + (i % 3) * 0.1, 0, i % 3 === 1);
+  });
+  palmField[1].hide(2, palms[0][0], palms[0][1]);
+  /* AND THE REEDS GO ALL THE WAY ROUND, because round 1 of the world
+   * sheet had the water reading as a swimming pool: a flat blue ellipse
+   * on flat pale sand with five tufts beside it. The hollow in
+   * `elevation.ts` does half the work and this does the other half — a
+   * closed ring of uprights at the waterline, ends erased, so the edge
+   * of the water is a DRAWN edge and not a shape. */
+  const reeds = ctx.field(reedRunTexture(8700), 11, {
+    w: 5.2, h: 1.9, wind: { amp: 0.08, freq: 1.4 },
+  });
+  for (let i = 0; i < 11; i++) {
+    const a = (i / 11) * Math.PI * 2 + 0.4;
+    const rr = 11.0 + (i % 3) * 0.9;
+    const x = OASIS.x + Math.cos(a) * rr;
+    const z = OASIS.z + Math.sin(a) * rr;
+    reeds.set(i, x, z, 0.85 + r() * 0.35, -a + Math.PI / 2, r() > 0.5);
+  }
+
+  /* ================================================================ *
+   * AMOS.
+   *
+   * THE-WAITS §5. The rain-catch is in good order. The cistern is full.
+   * It has always been full. He carries the water forty units from the
+   * oasis by hand, at night, because it is cooler, and there is nobody
+   * out here to fool.
+   *
+   * NOTHING SAYS ANY OF THAT EITHER. What the land does is put him on
+   * the track after the light goes, with a yoke, every night — and if
+   * you never come out here after dark you will simply think the
+   * cistern is full. The day cycle has never earned its keep harder
+   * than it does here.
+   * ================================================================ */
+  ctx.standee(catchFrameTexture(8900), 5.4, 4.4, CATCH.x + 2.2, CATCH.z + 0.9, { rotY: -0.22 });
+  const lidOn = ctx.standee(cisternTexture(8800, false), 2.2, 1.8, CATCH.x, CATCH.z);
+  const lidOff = ctx.standee(cisternTexture(8801, true), 2.2, 1.8, CATCH.x, CATCH.z);
+  lidOff.visible = false;
+  const amosWalk = ctx.standee(amosTexture(9000, true), 2.2, 2.8, CATCH.x - 2, CATCH.z - 3);
+  const amosStand = ctx.standee(amosTexture(9001, false), 1.8, 2.8, CATCH.x - 1.7, CATCH.z + 1.4);
+
+  /* ---- SOMEBODY'S LONG WALK ---------------------------------------- *
+   * A skull and one boot, forty units apart, both pointing the same
+   * way. It is the only joke in either of these two lands and it is not
+   * funny.                                                             */
+  ctx.standee(skullTexture(9200), 1.15, 0.9, 288, -34, { rotY: 0.3 });
+  ctx.standee(bootTexture(9300), 0.6, 0.6, 286, -74, { rotY: 0.3 });
+  ctx.standee(milepostTexture(9400), 2.6, 3.7, 248, 12, { rotY: -0.2 });
+
+  /* ---- THE DRIFT --------------------------------------------------- *
+   * Four weeds, each with its own life. They hang up on scrub and then
+   * go, they all go the same way as everything else that is loose out
+   * here, and coming near a hung-up one sets it off — which is the only
+   * thing in this land that reacts to a person.                       */
+  const weeds = ctx.field(tumbleweedTexture(9100), 4, { w: 1.3, h: 1.3 });
+  const drift = [0, 1, 2, 3].map((i) => ({
+    x: 244 + i * 24, z: -60 + i * 44, spin: 0, hold: 2 + i * 3.4, speed: 0,
+  }));
+  drift.forEach((d, i) => weeds.set(i, d.x, d.z, 0.7 + (i % 3) * 0.18, 0, false));
+
+  return (dt: number, t: number, px: number, pz: number) => {
+    void t;
+    /* THE LID COMES OFF.
+     *
+     * You have walked the crease — both faces of the world's one real
+     * fold, which is where any water on this sheet would actually go —
+     * and you have carried that two hundred units east over a border
+     * nobody but you may cross. The lid is off the cistern, leaning
+     * against it, and it stays off. He has decided to find out.
+     * **The game does not say whether that is despair or nerve.** */
+    const opened = knowledge.has('fact:the-fold');
+    lidOn.visible = !opened;
+    lidOff.visible = opened;
+
+    /* HIS DAY, AND HIS NIGHT.
+     *
+     * By day he is at the catch with one hand on the frame, which is
+     * the pose of a man checking a thing he has already checked. After
+     * the light goes he is on the track with the yoke, going one way or
+     * the other, and it takes him a long time because it is heavy. */
+    const h = clock.hour;
+    const night = h < 5.4 || h > 20.4;
+    amosStand.visible = !night;
+    amosWalk.visible = night;
+    if (night) {
+      // one round trip an hour, and he is never at either end for long
+      const u = ((h < 5.4 ? h + 24 : h) - 20.4) % 1;
+      const along = u < 0.5 ? u * 2 : 2 - u * 2;
+      const ax = CATCH.x + (OASIS.x - CATCH.x) * along;
+      const az = CATCH.z + (OASIS.z + 12 - CATCH.z) * along;
+      amosWalk.position.set(ax, ctx.groundY(ax, az), az);
+      // he faces the way he is going, which is north half the night
+      amosWalk.rotation.y = u < 0.5 ? 0 : 0;
+    }
+
+    /* THE DRIFT. */
+    for (let i = 0; i < drift.length; i++) {
+      const d = drift[i];
+      const near = Math.hypot(d.x - px, d.z - pz) < 11;
+      if (d.hold > 0) {
+        d.hold -= dt * (near ? 6 : 1);
+        if (d.hold <= 0) d.speed = 3.4 + i * 0.8;
+      } else {
+        d.speed = Math.max(0, d.speed - dt * 0.55);
+        d.x += dt * d.speed * 0.96;
+        d.z += dt * d.speed * 0.28;
+        d.spin -= dt * (0.7 + d.speed * 0.5);
+        if (d.speed <= 0.05) d.hold = 6 + Math.random() * 14;
+        if (d.x > 332 || d.z > 124) {
+          d.x = 240 + Math.random() * 14;
+          d.z = rect.minZ + 10 + Math.random() * 40;
+          d.hold = 4 + Math.random() * 10;
+        }
+      }
+      weeds.set(i, d.x, d.z, 0.7 + (i % 3) * 0.18, d.spin, false);
     }
   };
 };
 
 export const DESERT_POIS: WorldPOI[] = [
   {
+    x: 248, z: 12, radius: 8, label: 'THE MILEPOST',
+    prompt: 'READ IT',
+    note: {
+      title: 'the milepost',
+      body: 'two boards on a post, and one of them has dropped. whatever was painted on them went years ago. the road it is standing on goes east, and then it goes on going east, and there is nothing on either arm to argue with.',
+      learns: ['name:canyon', 'name:office'],
+    },
+  },
+  {
+    x: 288, z: -34, radius: 7, label: 'SOMEBODY’S LONG WALK',
+    note: {
+      title: 'somebody’s long walk',
+      body: 'a skull. forty paces on, one boot, upright, laces done up. both of them pointing the same way, which is the way you are going.',
+    },
+  },
+  {
+    x: 268, z: 58, radius: 16, label: 'THE PAN',
+    note: {
+      title: 'the pan',
+      body: 'the lowest ground for a hundred paces in any direction, cracked into plates, with three faint rings round it where something stopped and then stopped again. nothing has ever been in it. the only water out here is up the slope and to the east, which is not how water works.',
+    },
+  },
+  {
     x: 305, z: 55, radius: 12, label: 'THE OASIS',
     prompt: 'DRINK',
     note: {
       title: 'the oasis',
-      body: 'green, out here, is a rumor you can stand in. the water is the same blue as the sea, which is a long way west, and nobody has ever worked out how it gets here or where it goes afterwards.',
+      body: 'green, out here, is a rumor you can stand in. the water is the same blue as the sea, which is a long way west, and it is about a hand deep, and nobody has ever worked out how it gets here or where it goes afterwards.',
       learns: ['name:beach'],
     },
   },
-  { x: 292, z: -30, radius: 6, label: 'SOMEBODY’S LONG WALK' },
+  {
+    x: 301, z: 95, radius: 10, label: 'THE CATCH',
+    note: {
+      title: 'the catch',
+      body: 'the guttering is straight, the fall is graded, the lid is on, and there is not a leaf in the trap. it has not rained here in anyone’s memory. the cistern is full.',
+    },
+  },
 ];
 
 

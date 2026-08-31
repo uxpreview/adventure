@@ -1169,6 +1169,98 @@ export class Audio {
         this.knock(800 * j, 0.004, 0.16 + Math.random() * 0.08);
         break;
       }
+
+      /* ---- THE DRY LANDS (Session 11) ----------------------------- *
+       * Six voices for two lands, and both lands' problem is the same
+       * one from opposite ends: there is nothing out here to make a
+       * noise. SPLITROCK's answer is that it is a ROOM — `ROOMS.canyon`
+       * already carries the longest delay on the sheet (0.42s, 0.46
+       * feedback, 0.55 mix), so every event below is written to be
+       * worth hearing twice, and the canyon says all three of them
+       * again a beat later without a line of code here. THE BLEACH
+       * FLATS' answer is the opposite: it is the only land whose bed
+       * is louder than anything that happens in it.                  */
+
+      case 'stone-fall': {
+        /* A stone letting go somewhere up the wall and finding the
+         * bottom. It ACCELERATES — three knocks at closing intervals
+         * and falling pitch — and then a scatter of small ones, which
+         * is the sound of it breaking up when it lands. The room
+         * repeats the lot, which is the point. */
+        const j = 0.86 + Math.random() * 0.28;
+        this.knock(520 * j, 0.011, 0);
+        this.knock(390 * j, 0.013, 0.19);
+        this.knock(300 * j, 0.016, 0.33);
+        this.knock(210 * j, 0.02, 0.42);
+        for (let i = 0; i < 4; i++) {
+          this.knock((600 + Math.random() * 900) * j, 0.005, 0.47 + i * 0.05 + Math.random() * 0.05);
+        }
+        break;
+      }
+
+      case 'hull-tap': {
+        /* A mallet on a hull, twice, a long way up the channel. It is
+         * the only sound of WORK in either of these lands, and it fires
+         * only when the walker is too far off to see Holt doing it —
+         * up close it would be a caption. The interval is a fifth,
+         * because a boat has two sides and he checks both. */
+        const j = 0.96 + Math.random() * 0.08;
+        this.knock(196 * j, 0.016);
+        this.tone(147 * j, 0.02, 0.28, 0.009);
+        this.knock(294 * j, 0.013, 0.46);
+        this.tone(220 * j, 0.48, 0.24, 0.007);
+        break;
+      }
+
+      case 'kite-cry': {
+        /* One thin descending cry a very long way up, with almost no
+         * body in it. It is the only living thing in SPLITROCK that is
+         * not a man, and it never lands. */
+        const j = 0.92 + Math.random() * 0.16;
+        this.glide(2300 * j, 1180 * j, 0, 0.5, 0.0075);
+        this.glide(1720 * j, 980 * j, 0.06, 0.4, 0.004, 'triangle');
+        break;
+      }
+
+      case 'dry-wind': {
+        /* Wind with nothing in it. No pitch centre and no arrival: a
+         * long high-passed sift that comes from nowhere, goes nowhere,
+         * and is the same at both ends. THE BLEACH FLATS' default, and
+         * it is deliberately the least eventful sound in this file. */
+        const f = 900 + Math.random() * 700;
+        this.surge(2.6 + Math.random() * 1.4, 3.4 + Math.random() * 1.8,
+          f, f * (0.72 + Math.random() * 0.5), 0.0075, 0, 'highpass');
+        break;
+      }
+
+      case 'palm-clatter': {
+        /* Dry fronds knocking. Six knocks, uneven, high, falling away —
+         * and it is the only thing in a hundred and fifty units that
+         * sounds like something alive, which is why it belongs to the
+         * oasis and to nowhere else in the land. */
+        const j = 0.9 + Math.random() * 0.22;
+        let at = 0;
+        for (let i = 0; i < 6; i++) {
+          this.knock((1300 - i * 90) * j * (0.92 + Math.random() * 0.16),
+            0.0085 - i * 0.0011, at);
+          at += 0.045 + Math.random() * 0.075;
+        }
+        break;
+      }
+
+      case 'catch-tick': {
+        /* Tin cooling after the light goes. Four thin metallic notes at
+         * long uneven gaps, and it is a sound a thing in GOOD ORDER
+         * makes: nothing else in the Bleach Flats makes any sound at
+         * all, so the one piece of engineering in the land is also the
+         * only thing in it with a voice. */
+        const j = 0.98 + Math.random() * 0.05;
+        this.tone(1976 * j, 0, 0.09, 0.0055);
+        this.tone(2349 * j, 0.34 + Math.random() * 0.2, 0.07, 0.004);
+        this.tone(1760 * j, 0.9 + Math.random() * 0.3, 0.1, 0.0045);
+        this.tone(2637 * j, 1.7 + Math.random() * 0.4, 0.06, 0.003);
+        break;
+      }
     }
   }
 

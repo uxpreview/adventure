@@ -199,16 +199,93 @@ export function foldX(z: number): number {
   return 78 + Math.sin(z * 0.011) * 9 + Math.sin(z * 0.031 + 1.1) * 4;
 }
 
-/** Where the page is torn. SPLITROCK CANYON is this line. */
+/**
+ * WHERE THE PAGE IS TORN. SPLITROCK CANYON is this line.
+ *
+ * ── SESSION 11 MOVED IT, AND THE REASON IS THE WHOLE LAND ──────────
+ *
+ * Session 4 cut the tear at x = 338 and cut it well: the floor is at
+ * −10.8, the lips stand proud where the fibres pulled up, the walls
+ * refuse a walker, and you can see the desk through the bottom of it,
+ * which is the image `critique-art-3` awarded its verdict on. None of
+ * that changes here and none of it may.
+ *
+ * What was wrong was WHERE. Three hundred and thirty-eight is **forty
+ * units from the world's curled east margin** — `curlE` starts lifting
+ * at x = 344 — so the canyon's east wall and the rim of the page were
+ * the same piece of ground, the land's whole event happened in a
+ * forty-unit strip against the edge of the sheet, and the canyon trail,
+ * which runs at x = 255..305, never went anywhere near it. The land
+ * called SPLITROCK was a scatter of mesas with the split off in the
+ * corner.
+ *
+ * So the line moves thirty-eight units west, to the middle of its own
+ * land (the rect is 230..380; the axis now wanders 289..310), and
+ * everything else about it is left exactly alone. What that buys:
+ *
+ *   · fifty units of west approach — mesa country, and the trail comes
+ *     up it;
+ *   · a real east bench, and then the rim beyond it, which is now a
+ *     SECOND place instead of the same one;
+ *   · **ten point eight units from lip to floor, untouched**, because
+ *     a stranger's whole errand turns on that number
+ *     (`THE-STRANGERS.md` S5: Odd has measured it, twice, with a line);
+ *   · and a canyon the trail can arrive at.
+ *
+ * ── AND IT IS A POLYLINE NOW, WHICH IS THE OTHER HALF OF THE FIX ──
+ *
+ * Session 4 wrote the line as two sines plus eight units of value noise
+ * at a nine-unit wavelength, and the comment above it said the right
+ * thing — *paper does not tear along a curve, it tears along its
+ * fibres* — while the code did the opposite. Nobody could see it,
+ * because until this session nobody had ever stood on the floor: from
+ * the rim at forty units a wobble is a wobble. From four units it is
+ * **HERRINGBONE**, and herringbone is the exact failure `WORLD-SYSTEMS`
+ * §1 and `HOLD_PLAN` were written about — a surface whose fall line
+ * rotates from node to node has no direction for the shader to hatch
+ * down, so it hatches every direction at once and the wall reads as a
+ * smeared thumb.
+ *
+ * So the tear is authored the way the Holdfast is authored and the way
+ * paper actually behaves: **nine straight runs with eight corners
+ * between them.** Every face is planar, every face has one constant
+ * fall line, and the hatching runs down each of them in parallel
+ * strokes the way a hand draws a cliff. The corners are what give the
+ * canyon its bends, and they are why you cannot see the whole of it
+ * from anywhere inside it.
+ */
+export const TEAR_LINE: [number, number][] = [
+  // z, x — north to south, and every run between two of these is dead
+  // straight. Nine runs, eight corners.
+  [-292, 308], [-262, 305], [-244, 306], [-222, 311], [-206, 309],
+  [-190, 302], [-172, 297], [-150, 290], [-128, 291], [-108, 295],
+  [-92, 301],
+];
+
 export function tearX(z: number): number {
-  // paper does not tear along a curve — it tears along its fibres, so
-  // the lip wanders at two scales and is ragged at the smaller one
-  return (
-    338 +
-    Math.sin(z * 0.02 + 0.4) * 7 +
-    Math.sin(z * 0.055) * 4 +
-    (vnoise(z * 0.11, 7.3) - 0.5) * 8
-  );
+  const P = TEAR_LINE;
+  if (z <= P[0][0]) return P[0][1];
+  for (let i = 0; i < P.length - 1; i++) {
+    if (z <= P[i + 1][0]) {
+      const t = (z - P[i][0]) / (P[i + 1][0] - P[i][0]);
+      return P[i][1] + (P[i + 1][1] - P[i][1]) * t;
+    }
+  }
+  return P[P.length - 1][1];
+}
+
+/**
+ * HOW FAR (x, z) IS FROM THE MIDDLE OF THE PAN — THE BLEACH FLATS.
+ *
+ * Exported for the same reason `duneX` and `tearX` are: the land's own
+ * builder places against it. Every strand line, every saguaro and every
+ * stone in that land lives on a RING of this number, because the pan is
+ * a record of something drying inward and everything loose out there was
+ * sorted by the same retreat. Slightly wide east–west, because the wash
+ * ran off the page that way.
+ */
+export function panDist(x: number, z: number): number {
+  return Math.hypot(x - 272, (z - 58) * 0.78);
 }
 
 /** Where the dune line runs behind LONGSHORE. */
@@ -559,11 +636,62 @@ function landHeight(x: number, z: number): number {
 
   /* ---- the tear ---------------------------------------------------- *
    * The page ripped and you can see a long way down. Its lips stand
-   * proud where the fibres pulled up; its walls are unwalkable. Session
-   * 9 builds SPLITROCK on this cut — the ground is already here. */
+   * proud where the fibres pulled up; its walls are unwalkable.
+   *
+   * ── SESSION 11: THE TEAR NOW HAS TWO ENDS, AND ONE WAY IN ────────
+   *
+   * The cut itself is Session 4’s and is untouched: thirteen units of
+   * fall, six units of floor, ten of wall, and a proud lip nineteen off
+   * the axis. `check-terrain` prints the floor at −10.8, and that number
+   * is a stranger’s whole errand (`THE-STRANGERS.md` S5 — Odd has
+   * measured it, twice, with a line), so it stays exactly where it is.
+   *
+   * What Session 11 authors is the tear’s LENGTH, as the two ends a rip
+   * actually has:
+   *
+   *   THE HEAD, over thirty-four units, from z = −256 down to −222. A
+   *     tear starts at a point: the fibres at the head of a rip are bent
+   *     rather than parted, so the page there DIPS before it splits. The
+   *     north factor used to be smoothstep(−292, −272, z), which closed
+   *     the rip eight units off the world's north margin — the canyon
+   *     ran off the edge of the page and its head was somewhere nobody
+   *     could stand. Thirty-four units of z against thirteen of fall is
+   *     a gradient of about four sevenths, and the walk limit is
+   *     seventy-two hundredths, so **THE HEAD IS THE OTHER WAY IN** —
+   *     and it is a way in that had to be authored, because a corridor
+   *     with one end is a cul-de-sac and every land in this game is a
+   *     place you go THROUGH.
+   *
+   *     Note what it does NOT do: the SIDES stay cliffs the whole way
+   *     (they are a function of |td| and the head only scales them), so
+   *     coming over the north rim the page sinks under you and two walls
+   *     come up on either hand while you keep walking. Nothing is
+   *     carved, nothing is a ramp bolted onto anything. It is the shape
+   *     the end of a rip has.
+   *
+   *   THE MOUTH, at z ≈ −114, unchanged and never to be “fixed”. The
+   *     same thirteen units of fall over thirty-six of z is a gradient of
+   *     about a half, and half is WALKABLE. **That is the only way down
+   *     onto the channel floor, and it is not a designed entrance — it
+   *     is what the far end of a rip looks like.** You go in at the
+   *     mouth, which is where `RIVER[0]` is, which is where the river
+   *     rises: the walk up SPLITROCK begins at the exact point the water
+   *     begins and goes up the bed the water is not in. Nothing anywhere
+   *     says that, and Holt never mentions it.
+   */
+  /* AND THE DEPTH TERM IS 13.3 RATHER THAN 13, WHICH IS NOT A CHANGE OF
+   * MIND. `THE-STRANGERS.md` S5 has ODD measuring this canyon — "ten
+   * point eight units from lip to floor, taken twice, with a line" —
+   * and `check-terrain.mjs` printed exactly −10.8 because the deepest
+   * node the tear happened to sit over was a particular trough of the
+   * cockle. Move the line thirty-eight units west and it is over
+   * different paper: the same 13 came out at −10.5. Thirteen point three
+   * puts it back at −10.807, which prints −10.8, at (293, −156). The
+   * number a stranger quotes is not the kind of number a session is
+   * allowed to lose by a tenth on the way past. */
   const td = x - tearX(z);
-  const mouth = smoothstep(-96, -132, z) * smoothstep(-292, -272, z);
-  const tear = (-13 * (1 - smoothstep(6, 16, Math.abs(td))) + 1.7 * bump((Math.abs(td) - 19) / 7)) * mouth;
+  const mouth = smoothstep(-96, -132, z) * smoothstep(-256, -222, z);
+  const tear = (-13.3 * (1 - smoothstep(6, 16, Math.abs(td))) + 1.7 * bump((Math.abs(td) - 19) / 7)) * mouth;
 
   /* ---- THE HARROW (Session 10) ------------------------------------ *
    * The land is called the Harrow Downs and until this session that was
@@ -644,6 +772,63 @@ function landHeight(x: number, z: number): number {
                 + 0.9 * bump((tarnD - 50) / 14)) * bowlK;
   const penBasin = -2.8 * bump((x - 146) / 62) * bump((z + 192) / 54);
 
+  /* ---- THE BLEACH FLATS (Session 11) ------------------------------ *
+   * The flattest ground in the world, and that is the land's thesis
+   * rather than a shortcut: SPLITROCK is a hole in the page and the
+   * Flats are what the page does everywhere else. So there are two
+   * terms here and there will never be a third.
+   *
+   * THE PAN. The lowest ground on the east half of the sheet, and it is
+   * a diagram of something leaving. A wash that dries on a flat sheet
+   * retreats toward its own middle and leaves its pigment in a ring at
+   * every place it stopped, and the last thing to go is the deepest
+   * part — so the Flats have one very shallow, very wide dish with a
+   * strand line round it, and NOTHING IS IN IT AND NOTHING EVER HAS
+   * BEEN. The only water in the land is the oasis, seventy units
+   * east-north-east, on ground that is a metre and a half higher. The
+   * land is shaped to hold water in one place and holds it in another,
+   * and the game never once mentions this.
+   *
+   * It is a DISH, which is doubly curved, and that is safe here for the
+   * same reason the tarn's bowl was safe in Session 10 and for no
+   * other: two point four units of fall over thirty is a gradient of
+   * about one in fourteen, which is a fifth of the hatching threshold,
+   * so there is no fall line for the shader to draw down and no thumb
+   * print to draw it as.
+   *
+   * BOUNDED ON ALL FOUR SIDES BY CONSTRUCTION: both terms are gaussian
+   * in x AND in z, so they are already nothing at three radii. The pan
+   * is at four ten-thousandths of a unit by the time it reaches the
+   * Downs' border and the harrow's mistake cannot be made with a bump.
+   */
+  const panD = panDist(x, z);
+  const pan = -2.4 * bump(panD / 30) + 0.55 * bump((panD - 44) / 12);
+
+  /* THE CATCH'S RISE. A rain-catch goes on the highest ground a man can
+   * find, for exactly the reason a windmill does, and out here the
+   * highest ground a man can find is a swell you would not notice
+   * walking over it. One and seven tenths of a unit over twenty-six.
+   *
+   * It is authored for a COMPOSITION and the composition is the land's
+   * shot: from AMOS's cistern you look north and the ground falls away
+   * from you the whole forty units to the oasis, so the track he wears
+   * every night reads as a line going away rather than as a smudge at
+   * your feet. Without the swell the track is invisible past ten units
+   * and the whole fable is invisible with it. */
+  const catchRise = 1.7 * bump((x - 300) / 26) * bump((z - 96) / 20);
+
+  /* THE OASIS SITS IN A HOLLOW, because water does. Round 1 of the
+   * world sheet had it as a flat blue disc lying on flat pale sand,
+   * which reads as a swimming pool — the same fault Session 10 found at
+   * the tarn and fixed the same way. One and a quarter units of dish
+   * over eighteen, which is a gradient of a fourteenth: you cannot feel
+   * it underfoot and you can see straight down it, and it is what makes
+   * the green read as somewhere rather than as a shape. Doubly curved,
+   * and safe for the tarn's reason and no other — nothing on it comes
+   * within a tenth of the hatching threshold. */
+  const oasisD = Math.hypot(x - 305, z - 55);
+  const oasis = -1.25 * bump(oasisD / 18) + 0.3 * bump((oasisD - 24) / 9);
+
   /* ---- the curl: the margins lift off the desk -------------------- *
    * Three sides only. The west margin is where the sea runs off the
    * torn edge, and wet paper does not curl — it sags. */
@@ -674,7 +859,7 @@ function landHeight(x: number, z: number): number {
   land = smax(land, downsA, 4);
   land = smax(land, millRise, 4);
 
-  let h = land + buckle + crease + penBasin + bowl + harrow + sourGround + sag + tear;
+  let h = land + buckle + crease + penBasin + bowl + harrow + sourGround + sag + tear + pan + catchRise + oasis;
 
   /* ---- THE CUT ----------------------------------------------------- *
    * A ledge is not a ramp bolted onto a cliff — it is stone TAKEN AWAY,

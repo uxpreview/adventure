@@ -128,6 +128,48 @@ export const ROUTES: Route[] = [
     reach: 18,
     posts: posts(SANDBAR, 2),
   },
+  {
+    /**
+     * THE FOLD — and it is the only piece of knowledge in this game
+     * that is a FACT earned by a ROUTE.
+     *
+     * `THE-WAITS.md` §0 has said since Session 7 that THE BLEACH FLATS
+     * turns on `fact:the-fold`, *earned by walking the crease, both
+     * faces*, and Session 11 found that nothing in the world taught it:
+     * the id did not exist and nothing granted it, so AMOS's wait could
+     * never have resolved. This is the earning, and it is deliberately
+     * authored in the two lands that are NOT this session's — which is
+     * the content system working exactly as WORLD-SYSTEMS §6 describes
+     * it, a thing you carry two hundred units east across a border
+     * nobody else may cross.
+     *
+     * A fact is normally a LOOK. This one cannot be, because what there
+     * is to notice about a fold is not visible from either side of it:
+     * standing on the west shoulder you are on a rise, standing on the
+     * east shoulder you are on a rise, and only somebody who has been on
+     * both knows the world has a low line down the middle of it — which
+     * is where any water on this sheet would actually go, which is the
+     * whole of what Amos is wrong about and right about at once.
+     *
+     * So it is a two-post route, and the posts are at OPPOSITE ENDS of
+     * the fold on OPPOSITE FACES: the west shoulder up at Brim's east
+     * edge, the east shoulder a hundred and eighty units south in the
+     * Downs. Crossing the fold once on the east road — which every
+     * player does on their way east — is deliberately not enough, or the
+     * lid would already be off the cistern the first time anybody
+     * reached it, and the whole of Amos would arrive pre-resolved.
+     *
+     * The x's are `elevation.foldX(z) ∓ 16`, which is the crest of each
+     * shoulder (the crease is a six-unit trough with a one-point-nine
+     * shoulder standing eighteen units out either side). They are
+     * written here rather than computed because `knowledge` may not
+     * depend on the height field, and `check-terrain.mjs` asserts they
+     * are still on their shoulders.
+     */
+    id: 'fact:the-fold',
+    reach: 14,
+    posts: [[52, -70], [98, 104]],
+  },
 ];
 
 /* ------------------------------------------------------------------ */

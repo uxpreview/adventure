@@ -46,6 +46,14 @@ const CASES = [
   ['THE WIDE BLUE', -258, 84, -1, 0, 8],
   ['THE HARROW DOWNS', 101, 116, 0, -1, 8],
   ['THE PENWOOD', 132, -206, 0, -1, 8],
+  /* SESSION 11. Two lands and one of them has the only field in the
+   * game whose instances are placed on a RING rather than on a scatter,
+   * plus four tumbleweeds that move on their own and a walker-triggered
+   * stone fall — which is exactly the shape of the bug this file was
+   * built for. The canyon's walk goes UP the channel, because the
+   * channel floor is where every field in that land lives. */
+  ['SPLITROCK CANYON', 300, -140, 0, -1, 9],
+  ['THE BLEACH FLATS', 292, 84, 0, -1, 9],
 ];
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });

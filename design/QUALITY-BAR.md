@@ -101,7 +101,16 @@ in the game (a name printed across the thing it names) is closed
 lands built on ground authored for them (THE HARROW, the mill rise, the
 tarn's bowl) and the first land session whose "unregressed" is a number,
 with both waits shipped end to end and **the Penwood's whole fable told
-in a polyline: one road, and it is a circle** (WOWED, critique-art-6).
+in a polyline: one road, and it is a circle** (WOWED, critique-art-6);
+**THE DRY LANDS** — SPLITROCK CANYON and THE BLEACH FLATS, a hole in the
+page against the flattest ground in the world, with the tear moved into
+the middle of its own land and re-cut as a POLYLINE (nine straight runs,
+eight corners — the old one hatched as herringbone the moment anybody
+stood on the floor), a canyon with two ends and no other way in, both
+waits shipped end to end, and **`fact:the-fold` authored at both ends —
+the first piece of knowledge in this game whose earning and whose
+spending were built in the same session and two hundred units apart**
+(WOWED, critique-art-7).
 Every other land is a scatter draft and is presumed NOT YET.
 
 **AND FROM SESSION 9 A REGRESSION IS A DIFF AND NOT AN OPINION.**

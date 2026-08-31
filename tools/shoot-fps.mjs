@@ -20,6 +20,10 @@ const SPOTS = [
   // in the game and the drove is the densest hedge in it
   ['the downs shot', 145, 34], ['the drove', 101, 108], ['the mill', 148, 6],
   ['the round', 150, -146], ['the deep pines', 188, -240], ['the thicket', 108, -180],
+  // THE DRY LANDS (Session 11)
+  ['canyon THE SHOT', 305, -196], ['the boat', 310, -206], ['the mouth', 294, -118],
+  ['the lip', 320, -158], ['the west bench', 258, -172],
+  ['flats THE SHOT', 301, 93], ['the oasis', 305, 80], ['the pan', 272, 84],
 ];
 
 const url = process.env.URL ?? 'http://localhost:4173/?debug';

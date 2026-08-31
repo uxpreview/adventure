@@ -30,11 +30,20 @@ here, what a footstep sounds like, whether the page takes your ink.
 | THE COMMON | where you woke | the crossroads, the old well, three oaks |
 | MAPLE COURT | the neighborhood | porch lights, picket fences, the green |
 | THE PENWOOD | under the pines | the tarn, the round, the deep pines |
-| SPLITROCK CANYON | the deep cut | striated walls, the Needle Arch |
+| SPLITROCK CANYON | the deep cut | the dry channel, the marks, the boat, the lip |
 | THE HARROW DOWNS | farm country | the mill, the headland, the ford, the drove |
-| THE BLEACH FLATS | the desert | dune script, saguaros, tumbleweeds, the oasis |
+| THE BLEACH FLATS | the desert | the pan, the track, the oasis, the catch |
 | GREYLINE CITY | downtown | hatched towers, lit windows, the Junction |
 | THE CUBICLE MILE | the office park | ruled glass, hedges, the 8:15 stop |
+
+The page is torn down the middle of SPLITROCK — nine straight runs with
+eight corners, because paper tears along its fibres — and the cut is ten
+and a half units deep with walls that refuse you. It has exactly two ways
+in and neither of them was designed: a rip is shallow where it starts and
+shallow where it runs out, so you walk in at the head or at the mouth,
+and the mouth is where the river rises. The walk up SPLITROCK therefore
+begins at the exact point the water begins, and goes up the bed the water
+is not in.
 
 A river rises in the canyon, crosses the whole sheet and meets the sea
 past the boardwalk; three plank bridges carry the roads over it, and one
@@ -157,6 +166,7 @@ terrain probes, frame cost, audio, and the harness clock — `setTime`,
 
 ```sh
 node tools/check-terrain.mjs   # assert the height field, off-screen
+node tools/check-fields.mjs    # no instanced field is ever half inked in
 node tools/check-camera.mjs    # assert the BEARING: the envelope, the
                                #   continuity, the walk home, the walk south
 node tools/diff-sheets.mjs     # A REGRESSION IS A DIFF AND NOT AN OPINION
@@ -166,6 +176,10 @@ node tools/shoot-first-minute.mjs
 node tools/shoot-oldworld.mjs
 node tools/shoot-coast.mjs      # LONGSHORE + THE WIDE BLUE
 node tools/shoot-traversal.mjs # the ink weight, the roads, the boat, the day
+node tools/shoot-farm-forest.mjs  # THE HARROW DOWNS + THE PENWOOD
+node tools/shoot-dry.mjs       # SPLITROCK CANYON + THE BLEACH FLATS
+node tools/shoot-textures.mjs  # THE PROP BOX, at actual size, on paper
+node tools/montage.mjs DIR OUT.png a.png b.png …   # a land on one sheet
 HOUR=19.6 node tools/shoot-first-minute.mjs   # any sheet, at any hour
 node tools/shoot.mjs           # all twelve lands, walkability smoke test
 node tools/shoot-mobile.mjs    # the CHROME, at 320/360/390/430 points

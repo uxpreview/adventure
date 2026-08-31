@@ -1,5 +1,323 @@
 # SESSIONS — the handoff log
 
+## Session 11 — 2026-08-31 — the dry lands
+
+*Two lands that are each other's opposite — a hole in the page against
+the flattest ground in the world — and the first session in this project
+that had to MOVE a piece of the sheet six verdicts had already been
+awarded on. It moved it twice: thirty-eight units west, and then from a
+formula to a polyline.*
+
+### THE ONE THING TO KNOW: THE TEAR WAS A WOBBLE AND IT SHOULD HAVE BEEN A RIP
+
+Session 4 cut SPLITROCK as `tearX(z) = 338 + sin + sin + eight units of
+value noise at a nine-unit wavelength`, and wrote the right thing in the
+comment directly above it: *paper does not tear along a curve — it tears
+along its fibres.* The code did the opposite, and nobody could see it for
+seven sessions because **nobody had ever stood on the floor.** From the
+rim at forty units a wobble is a wobble. From four units it is
+**herringbone** — the fall line rotates from grid node to grid node, the
+shader has no direction to hatch down, so it hatches every direction at
+once and ten units of cliff read as a smeared thumb.
+
+That is the exact failure `WORLD-SYSTEMS` §1 describes, that `HOLD_PLAN`
+exists because of, and that Session 5 spent three rounds of a gate
+learning. `elevation.TEAR_LINE` is now **nine straight runs with eight
+corners between them.** Every face is planar, every face has one constant
+fall line, and the hatching runs down each of them in parallel strokes
+the way a hand draws a cliff.
+
+**And it bought a second thing nobody designed:** the corners mean you
+cannot see the whole canyon from anywhere inside it.
+
+### AND THE LAND HAS TWO ENDS AND NO OTHER WAY IN
+
+The tear used to close eight units off the world's north margin, so the
+canyon ran off the edge of the page and its head was somewhere nobody
+could stand. It closes at z = −222 now, over thirty-four units:
+
+- **THE HEAD** puts thirteen units of fall into thirty-four of z, which
+  is a gradient of four sevenths against a walk limit of seventy-two
+  hundredths — so you can walk in from the north, and the page sinks
+  under you while two walls come up on either hand.
+- **THE MOUTH** does the same over thirty-six units at the south end,
+  and it is where `RIVER[0]` rises. **The walk up SPLITROCK begins at
+  the exact point the river begins and goes up the bed the river is not
+  in.** Nothing says that. Holt never mentions it.
+- Everything else is ten units of wall that refuses, and
+  `check-terrain.mjs` proves the whole design in one test: the floor is
+  reachable, it is reachable with the head sealed, it is reachable with
+  the mouth sealed, and **with both sealed it is not reachable at all.**
+
+Neither end is a designed entrance. A rip is shallow where it starts and
+shallow where it runs out, and that is all either of them is.
+
+**The number that did not move: −10.8.** `THE-STRANGERS` S5 has ODD
+measuring this canyon lip to floor, twice, with a line, and
+`check-terrain` printed exactly that because the deepest node the old
+tear sat over happened to be a particular trough of the cockle. Move the
+line thirty-eight units and it is over different paper: the same 13 came
+out at −10.5. The depth term is **13.3** now, which prints −10.807 at
+(293, −156). A number a stranger quotes is not the kind of number a
+session may lose by a tenth on the way past.
+
+### The two waits, end to end
+
+**HOLT** (`THE-WAITS` §4) keeps a boat upside down on trestles at the top
+of the dry channel and it is oiled. The marks up the wall are not flood
+records — **they are a list, in the order things would float.** Come up
+the canyon holding `route:the-river` and the boat comes off the trestles
+and goes right way up on dry stone, and **the trestles stay, and they are
+empty.** The game never says whether that is madness or readiness, and
+the empty trestles are the half that makes it a question.
+
+**Three numbers carry it and not one of them is written in the game:**
+
+- the panel is 13.56 units tall on a floor at −10.24, so its top comes
+  out a unit BELOW the rim and it never breaks the skyline;
+- **the fourth chalk mark comes out at y = 2.69, and the ground Holt's
+  doorstep stands on at (300, −252) is 2.694.** The only help the game
+  gives is that from the channel floor you can see both in one frame;
+- and **the lowest mark is 0.6 of a unit above the floor**, which is the
+  waterline of a boat sitting on the stone — not of one up on trestles.
+  **The bottom of the list describes where the boat is not, and the wait
+  is what puts her there.**
+
+**AMOS** (`THE-WAITS` §5) has a rain-catch in good order and a full
+cistern, and it has always been full. Walk the crease, both faces, and
+**the lid comes off and stays off.** But the turn is not the lid:
+
+> **After the light goes he is on the track with a yoke, going one way
+> or the other, and he does it every night.**
+
+Nothing tells you to come back after dark. No note mentions an hour. A
+player who never does will simply believe the cistern is full — which is
+a *correct* belief and is not the truth. It is the day cycle finally
+earning what Session 6 paid for it, and it cost eleven lines.
+
+### `fact:the-fold`, AND IT IS THE FIRST OF ITS KIND
+
+`THE-WAITS` §0 has said since Session 7 that the Flats' wait turns on
+`fact:the-fold`, *earned by walking the crease, both faces* — and the id
+did not exist and nothing taught it, so Amos's wait could never have
+resolved. This session authored **both ends of it, in the same session,
+two hundred units apart, in two lands it did not build**: a two-post
+route in `knowledge.ts` on the crease's west shoulder at Brim's east edge
+and its east shoulder down in the Downs.
+
+They are a hundred and eighty units apart on purpose. Crossing the fold
+once on the east road — which every player does going east — is
+deliberately not enough, or the lid would already be off the first time
+anybody reached the cistern and the whole of Amos would arrive
+pre-resolved. `check-terrain.mjs` asserts the posts are on opposite
+faces, on their shoulders, on walkable ground, and far enough apart that
+one crossing takes neither pair.
+
+### The rest of what shipped
+
+**SPLITROCK CANYON** — `design/specs/splitrock-canyon.md`. Seven places:
+THE MOUTH, THE DRY CHANNEL, THE NEEDLE, THE MARKS, THE TRESTLES, THE
+HEAD, THE LIP. The canyon trail re-laid from the east road all the way up
+the channel floor to Holt's — eighteen points, the in-channel ones
+sampled off `tearX` and asserted by `check-terrain` to stay inside the
+six-unit floor. `RIVER[0]` moved to the mouth (and `RIVER[1]` swung west
+so the trail never has to cross it).
+
+**THE BLEACH FLATS** — `design/specs/the-bleach-flats.md`. Six places:
+THE MILEPOST, SOMEBODY'S LONG WALK, THE PAN, THE OASIS, THE TRACK, THE
+CATCH. **Nothing in this land is scattered — everything loose has been
+SORTED, by the same wind, for a very long time**, so every field in it is
+placed on a RING of `panDist` or along Amos's track, and the ground
+between the rings is bare because things have been taken off it.
+
+**THE GROUND, authored not sprinkled** (`elevation.ts`): **THE PAN** (a
+two-and-a-half-unit dish, the lowest ground in the east half of the
+world, with a strand line round it — *the land is shaped to hold water
+and holds none, and the only water in it is up the slope and to the
+east*), **THE CATCH'S RISE** (one and seven tenths, because a rain-catch
+goes on the highest ground a man can find, and because without it Amos's
+track is invisible past ten units and the whole fable is invisible with
+it), and **THE OASIS' HOLLOW** (added at round 4 of the gate: a flat blue
+disc on flat pale sand is a swimming pool). All three are gaussian in x
+AND z, so all three are bounded on all four sides by construction —
+**the harrow's mistake cannot be made with a bump.**
+
+**SIX VOICES** (`Audio.event`, `App`'s ambient scheduler): `stone-fall`
+(and the canyon's own room says it again a beat later, which is why every
+one of these is written to be worth hearing twice), `hull-tap` — **gated
+on distance, and the gate is the point: past twenty-five units you hear
+a man working on something and cannot see him, and inside it you can see
+him doing it and a sound would be a caption** — `kite-cry`, `dry-wind`,
+`palm-clatter`, and `catch-tick`, which only exists in the two hours
+after the light goes, which is also the only time Amos is on his track,
+and nothing says the two are connected.
+
+### The gate
+
+- `check-terrain.mjs` ✓ — and it grew four proofs: **the channel has two
+  ends and nothing else** (open / head sealed / mouth sealed / both
+  sealed), **the trail keeps to the channel** (0.4 units off the axis at
+  worst), **Amos walks forty units and never comes within eight of a
+  border**, and **the fold's two posts are on the fold's two faces**.
+  `flood()` takes a predicate now, which is what made the first of those
+  possible.
+- `check-audio.mjs` ✓ · `check-camera.mjs` ✓ · `check-fields.mjs` ✓ (and
+  it grew the two new lands — the Flats have the only field in the game
+  placed on a ring, plus four tumbleweeds that move on their own)
+- **critique-art-7: WOWED at round 5.**
+
+### THE REGRESSION NUMBER, AND IT IS THE LARGEST ONE THIS PROJECT HAS PRINTED
+
+`node tools/diff-sheets.mjs`, ninety-two framings against `origin/main`,
+bearing pinned, twelve game seconds of settle:
+
+```
+THE PAGE (the world, writing hidden):
+  80/92 bit-identical, 12 over 0.000%
+   75.3644%  desktop/tear-lip@12          at 0,0,1280,720
+   68.8309%  desktop/tear-lip@19.6        at 0,0,1280,720
+   59.9845%  portrait/tear-lip@12         at 0,161,390,683
+   49.7767%  portrait/tear-lip@19.6       at 0,161,390,683
+    3.9998%  desktop/curl-rim@19.6        at 0,126,675,300
+    3.4942%  desktop/curl-rim@12          at 0,126,676,300
+    3.1766%  portrait/curl-rim@19.6       at 0,221,225,263
+    2.2533%  portrait/curl-rim@12         at 0,221,226,189
+    0.0346%  portrait/crease-east-road@12 at 57,324,291,271
+    0.0283%  portrait/crease-east-road@19.6
+    0.0262%  desktop/crease-east-road@12  at 46,194,1231,343
+    0.0224%  desktop/crease-east-road@19.6
+```
+
+**`tear-lip` moved three quarters of its frame and it was ALWAYS going to,
+because `tear-lip` IS the tear.** The framing stands at (312, −140) and
+the thing it looks at moved thirty-eight units. It was the west lip of
+the old cut; it is the east lip of the new one, which is the same kind of
+place seen from the other hand.
+
+**What the verdict was actually awarded on is intact.** `critique-art-3`
+round 7, verbatim: *"Walk to SPLITROCK and the page is torn and you can
+see the desk through the tear, which is the single best image this
+project has produced."* The page is torn, the lips stand proud, the walls
+refuse, the floor is at −10.8 and you can see the desk through it. All
+five of those are Session 4's and none of them changed. What changed is
+that the cut is now in the middle of its own land, its faces are planar,
+and there is a canyon at the bottom of it. **The art director re-awarded
+the framing on this session's own sheet** (`shots-s11/*/52-tear-lip.png`,
+critique-art-7 round 5: *"THE LIP is the frame I would put on a
+poster"*).
+
+**`curl-rim` moved between two and four per cent, and the bounding box is
+the whole answer.** On desktop it is `0,126,675,300` — the LEFT half of
+the frame, at mid height. The right half of that frame is where the
+walker stands, where the page lifts, where it ends and where the wood
+under it shows, and it is **bit-for-bit what it was**: x 676..1280 did not
+move by a pixel, and neither did anything below y = 426. What moved is
+the far field to the north-west at the fog limit: the canyon's east bench
+is different ground now, and a clump of the west bench's rock stands at
+about thirty-four degrees off the axis, right on the edge of the frame.
+`curl-rim` was awarded on the curl (`critique-art-3`: *"the paper LIFTS,
+and ends, and there is wood under it"*), and the curl is untouched —
+`curlE` was not opened.
+
+**`crease-east-road` moved three hundredths of a per cent** and the
+bounding box is a wide thin band, which in this project always means one
+thing: a strip of horizon. The cause is not a prop. It is that
+`RIVER[0]` and `RIVER[1]` moved, which changed the river polyline's
+total length, which shifts `riverBed(t)` and the width taper by a hair
+along the WHOLE river — including at the east road's bridge fifty units
+from that framing. It is the cheapest possible reminder that the river
+is one object.
+
+**And three framings moved in the WRITING pass and not on the page** —
+`portrait/curtain-wall` at both hours and `portrait/tide-line@12`. Their
+PAGE diffs are bit-identical, so nothing in the world moved; what moved
+is the DOM region card mid-fade, which is the one clock in this game the
+harness does not own. Session 10 logged the same class for the same
+reason.
+
+**THE RULE IS UNCHANGED AND THIS IS NOT A LICENCE.** A protected framing
+may not move for a session's convenience. Two of these moved because the
+land inside them was the scope and one moved because a polyline it is
+downstream of got two units shorter, and every one of them is named
+above with its number, its bounding box and the sentence its verdict was
+actually awarded on.
+
+### THE PAPER PLANE IS DEFERRED, IN WRITING, TO SESSION 14
+
+`PROMPT.md` required this to be a decision rather than a silence, and it
+is one. `WORLD-SYSTEMS` §4 owes the wilds a mount, this session built
+the two best launch heights in the world and did not build the thing
+that launches off them.
+
+The reason is `QUALITY-BAR` §1 — *a session that cannot meet the bar
+ships less scope, never a lower bar.* A mount is a controller, a camera
+case, a refusal rule and a gate of its own; the rowboat was half of
+Session 6. This session was two lands, two waits, two named inhabitants,
+a layout-wide audit of a moved tear, a new piece of knowledge authored at
+both ends, and five rounds of a gate. Dropping a glider into the last
+hour would have produced something nobody had judged.
+
+**Session 14 is its home and the reason is not scheduling:** a mount that
+*refuses being steered, mostly* is a MOTION system before it is a
+vehicle, and Session 14 is the motion pass. By then SPLITROCK's lip will
+have held a verdict for three sessions, so the height is settled and the
+plane can be built against ground nobody is still moving. It is written
+into `PLAN.md` as well as here, because this file persists and
+`PROMPT.md` does not.
+
+### For the next land session — read this part
+
+- **EVERYTHING IS SIZED AGAINST A PERSON, AND THE PERSON IS 1.7 × 2.75.**
+  Brack, Joan and Hallows have been that since Session 10 and nothing
+  wrote it down. Round 2 of this session's gate was one finding: the
+  whole of both lands was drawn half again life size — an eleven-unit
+  boat in a twelve-unit channel, a sixteen-unit arch filling the frame,
+  and eleven twenty-two-unit fins on the rim that read as a row of
+  shacks. Scale first, then place.
+- **A DECAL LIES ALONG THE PAGE'S NORMAL, WHICH MEANS IT WORKS ON A
+  CLIFF.** `lieOnGround` has been in `regions/index.ts` since Session 4
+  and no land had ever used it on anything but the flat. A wall panel
+  stood at a cliff's foot is a card hanging in front of a slope; the same
+  drawing laid as a decal is a mark ON the rock. It needs fading on all
+  four sides, not two.
+- **ROCK IS OPAQUE AND FOLIAGE IS NOT.** The Penwood's registers carry a
+  deliberately thin wash because you see a wood through a wood. Reusing
+  that number on rock gave a walker standing between two fins a view of
+  the canyon through both of them. `textures-dry.ts`'s `REG` carries a
+  fourth number, `mass`, for exactly this.
+- **CHALK IS TWO SHADES OFF PAPER, BY DESIGN.** A pale mark on a pale
+  wall is nothing at all. If a drawing needs white, the thing under it
+  has to be stained to full strength first — and give the mark a shadow.
+- **A LABEL IS NOT THE ONLY THING THE CAMERA'S LAW GOVERNS.** THE EAST
+  RIM was a real place at a real viewpoint and it photographed as an
+  empty beige frame, because from out there the canyon is due WEST. The
+  place was right and the standing point was ninety degrees wrong. Check
+  the bearing of what a place is FOR, not just of the walk to it.
+- **AND THE SKYLINE'S LIMIT BIT AGAIN, from the other side.** Session 10
+  found that a name is lifted over what stands UNDER it and cannot know
+  what stands BEHIND it. This session found the twin: eleven rock fins on
+  a rim, with two of a man's actual buildings among them, read as one
+  row of the same thing. Height does not solve that either. **Silhouette
+  does** — the fins' tops now slope hard across, one end standing and one
+  gone, and the buildings have gables and eaves.
+
+### Standing debts, carried
+
+- **THE MARKS still reads as a standing stone rather than as a face of
+  the wall**, and the west bench is a place a player can stand inside a
+  cluster of rock and see four flat cutouts overlapping. Both passed at
+  round 5; neither was praised, and the second one is the oldest problem
+  this engine has.
+- **The stooked field** and **the Penwood's east arc** (Session 10).
+- **The rowboat's first meeting at THE RIVER MOUTH** — **five** gates
+  have now passed it without praising it. *(It matters more than it did:
+  `route:the-river` is what resolves Holt, so that rowboat is now the
+  key to a wait two hundred units away.)*
+- **Brim Square is full.**
+- **READ THE PROCLAMATION** on Greyweather's barbican is a compromise.
+- **THE EAR GATE and THE FEEL GATE are still the owner's**, and this
+  session added six more sounds nobody has heard to the first of them.
+
 ## Session 10 — 2026-08-30 — farm & forest
 
 *The first of five land sessions in a row with nothing structural left

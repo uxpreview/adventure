@@ -27,6 +27,14 @@ await build({
   logLevel: 'error',
 });
 Object.assign(L, await import('../.tmp/layout.mjs'));
+await build({
+  entryPoints: ['src/world/knowledge.ts'],
+  bundle: true,
+  format: 'esm',
+  outfile: '.tmp/knowledge.mjs',
+  logLevel: 'error',
+});
+const K = await import('../.tmp/knowledge.mjs');
 
 const field = new E.HeightField();
 const H = (x, z) => field.heightAt(x, z);
@@ -94,7 +102,7 @@ const SPOTS = [
   ['castle reveal', -45, -163], ['banner avenue', -45, -172],
   ['gatehouse', -45, -189], ['bailey', -45, -211], ['keep', -45, -234],
   ['moat pool', -100, -200], ['ridge west', -120, -182],
-  ['forest', 145, -190], ['canyon lip', 300, -150], ['desert', 300, 45],
+  ['forest', 145, -190], ['canyon lip', 272, -150], ['desert', 300, 45],
   ['downs', 148, -5], ['beach', -205, 60], ['ocean', -270, 60],
   ['maple court', -45, 195], ['city', 148, 205], ['office', 280, 205],
   // the coast (Session 5)
@@ -121,13 +129,22 @@ for (const [name, x, z] of SPOTS) {
 const GS = 2;
 const gw = Math.round((L.WORLD.maxX - L.WORLD.minX) / GS) + 1;
 const gh = Math.round((L.WORLD.maxZ - L.WORLD.minZ) / GS) + 1;
-function flood(blockGate) {
+/**
+ * Flood the walkable page from the spawn. `block` is an extra refusal —
+ * a boolean for the castle-gate seal this has always had, or (Session
+ * 11) a predicate, so a land can prove that sealing its two doors makes
+ * its floor unreachable and sealing one does not.
+ */
+function flood(block) {
   const seen = new Uint8Array(gw * gh);
+  const fn = typeof block === 'function' ? block : null;
+  const gate = block === true;
   const walkable = (gx, gz) => {
     const x = L.WORLD.minX + gx * GS;
     const z = L.WORLD.minZ + gz * GS;
     if (S(x, z) > MAX) return false;
-    if (blockGate && x > -70 && x < -20 && z > -215 && z < -180) return false;
+    if (gate && x > -70 && x < -20 && z > -215 && z < -180) return false;
+    if (fn && fn(x, z)) return false;
     return true;
   };
   const sx = Math.round((L.SPAWN.x - L.WORLD.minX) / GS);
@@ -477,7 +494,7 @@ console.log('\nthe rowboat — its ground is water, and it refuses every other:'
     ['under the boardwalk bridge', -200, 210], ['the long reach', -108, 192],
     ["the king's road bridge", -45, 170], ['the meadow bend', 52, 100],
     ['the east road bridge', 110, 45], ['the downs', 168, 8],
-    ['the canyon mouth', 285, -70], ['the source', 318, -108],
+    ['the canyon mouth', 274, -72], ['the source', 301, -104],
   ];
   for (const [n, x, z] of UP) if (!afloat(x, z)) fail(`the river is not rowable at ${n}`);
   console.log('  the river carries an oar from the sea to the source, under all three bridges \u2713');
@@ -649,6 +666,118 @@ console.log("\nbrack's round — the road keeps his forty units:");
   else console.log('  and it is walkable all the way down, from every side \u2713');
 }
 
+/* ---- 4e. SPLITROCK AND THE FLATS (Session 11) ---------------------- *
+ * Four claims these two lands make in their GEOMETRY rather than in a
+ * note, so they are asserted rather than trusted:
+ *
+ *   1. THE CHANNEL HAS TWO ENDS AND NOTHING ELSE. The floor of the tear
+ *      is reachable on foot; it is reachable with the head sealed and
+ *      reachable with the mouth sealed; and with BOTH sealed it is not
+ *      reachable at all. That is the whole traversal design of the land
+ *      in one test — a corridor with two doors and ten units of
+ *      unclimbable wall everywhere else.
+ *   2. THE TRAIL IS IN THE CHANNEL. Every point of the canyon trail
+ *      north of the mouth sits inside the tear's six-unit floor. The
+ *      polyline is authored in `layout.ts` and cannot import `tearX`, so
+ *      this is the thing that stops the two drifting apart.
+ *   3. AMOS WALKS FORTY UNITS AND NEVER LEAVES HIS LAND. The catch, the
+ *      oasis, the distance between them, and the whole of the track,
+ *      inside THE BLEACH FLATS' rect with a margin — because nobody
+ *      crosses a border but the walker, and his wait IS the walk.
+ *   4. THE FOLD'S TWO POSTS ARE ON THE FOLD'S TWO SHOULDERS, opposite
+ *      faces, opposite ends, on walkable ground, and far enough apart
+ *      that one crossing of the east road cannot take both.
+ */
+const CHANNEL = { headZ: [-256, -222], mouthZ: [-136, -96], deepZ: [-220, -140] };
+console.log('\nsplitrock — the channel has two ends and nothing else:');
+{
+  const floorAt = (z) => [E.tearX(z), z];
+  const prof = [];
+  for (let z = -256; z <= -100; z += 12) prof.push(H(...floorAt(z)).toFixed(1));
+  console.log(`  head to mouth: ${prof.join(' → ')}`);
+
+  let worst = 0;
+  for (let z = CHANNEL.deepZ[0]; z <= CHANNEL.deepZ[1]; z += 1) {
+    const sl = S(...floorAt(z));
+    if (sl > worst) worst = sl;
+  }
+  console.log(`  worst gradient on the deep floor: ${worst.toFixed(2)} (walk limit ${MAX})`);
+  if (worst > MAX) fail('the channel floor refuses a walker');
+
+  // the two doors, and then neither
+  const target = floorAt(-180);
+  const seal = (bands) => (x, z) => {
+    if (x < 250 || x > 360) return false;
+    return bands.some(([a, b]) => z > a && z < b);
+  };
+  const reach = (bands) => flood(bands.length ? seal(bands) : null)(target[0], target[1]);
+  const open = reach([]);
+  const noHead = reach([CHANNEL.headZ]);
+  const noMouth = reach([CHANNEL.mouthZ]);
+  const neither = reach([CHANNEL.headZ, CHANNEL.mouthZ]);
+  console.log(`  the floor at (${target[0].toFixed(0)}, ${target[1]}): open ${open}, head sealed ${noHead}, mouth sealed ${noMouth}, both sealed ${neither}`);
+  if (!open) fail('the channel floor is unreachable on foot');
+  if (!noHead) fail('the mouth alone does not get a walker onto the channel floor');
+  if (!noMouth) fail('the head alone does not get a walker onto the channel floor');
+  if (neither) fail('the tear has a third way in — its walls do not refuse');
+}
+
+console.log('\nthe canyon trail keeps to the channel:');
+{
+  const trail = L.ROADS[9];
+  let worstOff = 0, worstAt = null;
+  for (const [x, z] of trail.pts) {
+    if (z > -104) continue;
+    const off = Math.abs(x - E.tearX(z));
+    if (off > worstOff) { worstOff = off; worstAt = [x, z]; }
+  }
+  console.log(`  furthest any in-channel point strays from the tear's axis: ${worstOff.toFixed(1)} units at ${worstAt}`);
+  if (worstOff > 6) fail(`the trail leaves the channel floor by ${worstOff.toFixed(1)} units`);
+}
+
+console.log('\namos — forty units, and never over a border:');
+{
+  const CATCH = { x: 301, z: 95 };
+  const OASIS = L.PONDS[1];
+  const d = Math.hypot(CATCH.x - OASIS.x, CATCH.z - OASIS.z);
+  const rect = L.REGION_SPECS.find((r) => r.id === 'desert').rect;
+  console.log(`  the catch (${CATCH.x}, ${CATCH.z}) to the oasis (${OASIS.x}, ${OASIS.z}): ${d.toFixed(1)} units`);
+  if (d < 36 || d > 44) fail(`amos's walk is ${d.toFixed(1)} units, not forty`);
+  let steep = 0, outside = 0;
+  for (let t = 0; t <= 1; t += 0.01) {
+    const x = CATCH.x + (OASIS.x - CATCH.x) * t;
+    const z = CATCH.z + (OASIS.z - CATCH.z) * t;
+    if (S(x, z) > MAX) steep++;
+    if (x < rect.minX + 8 || x > rect.maxX - 8 || z < rect.minZ + 8 || z > rect.maxZ - 8) outside++;
+  }
+  if (steep) fail(`amos's track refuses a walker in ${steep} places`);
+  else console.log('  and he can walk it, every night, both ways ✓');
+  if (outside) fail(`amos's track comes within eight units of a border in ${outside} places`);
+  else console.log('  and it never comes within eight units of a border ✓');
+  console.log(`  the catch stands at y=${H(CATCH.x, CATCH.z).toFixed(1)} and the oasis at y=${H(OASIS.x, OASIS.z - OASIS.r - 4).toFixed(1)}: he carries it uphill`);
+}
+
+console.log('\nthe fold — both faces, both ends:');
+{
+  const route = K.ROUTES.find((r) => r.id === 'fact:the-fold');
+  if (!route) fail('fact:the-fold does not exist');
+  else {
+    const [a, b] = route.posts;
+    const fa = a[0] - E.foldX(a[1]);
+    const fb = b[0] - E.foldX(b[1]);
+    console.log(`  west post ${a} sits ${fa.toFixed(1)} off the fold (y=${H(a[0], a[1]).toFixed(1)})`);
+    console.log(`  east post ${b} sits ${fb.toFixed(1)} off the fold (y=${H(b[0], b[1]).toFixed(1)})`);
+    if (fa > -12 || fb < 12) fail('the fold’s posts are not on opposite faces');
+    if (Math.abs(Math.abs(fa) - 16) > 4 || Math.abs(Math.abs(fb) - 16) > 4) {
+      fail('the fold’s posts have drifted off the shoulders');
+    }
+    if (S(a[0], a[1]) > MAX || S(b[0], b[1]) > MAX) fail('a fold post stands on unwalkable ground');
+    const apart = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    console.log(`  and they are ${apart.toFixed(0)} units apart, so one crossing takes neither pair`);
+    if (apart < 2 * route.reach * 3) fail('the fold can be learned by crossing the east road once');
+  }
+}
+
 console.log('\nthe tear:');
 let deepest = 0, deepAt = null;
 for (let z = -280; z <= -100; z += 4) {
@@ -656,7 +785,7 @@ for (let z = -280; z <= -100; z += 4) {
   const h = H(x, z);
   if (h < deepest) { deepest = h; deepAt = [Math.round(x), z]; }
 }
-console.log(`  floor ${deepest.toFixed(1)} at ${deepAt}; lip at (300,-150) y=${H(300, -150).toFixed(1)}`);
+console.log(`  floor ${deepest.toFixed(1)} at ${deepAt}; west lip at (272,-150) y=${H(272, -150).toFixed(1)}`);
 
 /* ---- 6. the fold the east road dives through ---------------------- */
 console.log('\nthe crease:');

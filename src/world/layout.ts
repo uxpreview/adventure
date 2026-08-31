@@ -299,10 +299,38 @@ export const ROADS: Road[] = [
   ] },
   // the market lane: Brim Square east to the Wood Gate (Session 3)
   { width: 3.4, carry: 0.42, pts: [[-40, -86], [-12, -96], [18, -104], [42, -109], [55, -110]] },
-  // canyon trail: downs NE corner up the canyon mouth
-  // barely a road: a trail carries you the way a trail does, which is
-  // hardly at all
-  { width: 3, carry: 0.3, pts: [[225, 8], [255, -40], [280, -85], [300, -130], [305, -175]] },
+  /* ================================================================ *
+   * THE CANYON TRAIL — and Session 11 re-laid the whole of it, because
+   * the tear moved and the trail had never once gone near the tear.
+   *
+   * Session 4 cut SPLITROCK at x = 338; this trail ran at x = 255..305
+   * and stopped in open country a hundred and seventy units short of
+   * the only thing in the land. Now the tear runs down the middle of
+   * its own rect (`elevation.tearX`, base 300) and the trail does the
+   * one thing a trail into a canyon has to do: **it goes in.**
+   *
+   * It leaves the east road, climbs the flats' north-west shoulder on
+   * the far bank of the young river, and then, at the MOUTH — the one
+   * place a rip's walls are shallow enough to walk down, and the exact
+   * place `RIVER[0]` rises — it drops onto the channel floor and runs
+   * ninety units up the dry bed to the head, where HOLT keeps his boat.
+   *
+   * THE POINTS FROM z = −118 NORTH ARE THE TEAR'S OWN LINE, sampled off
+   * `tearX` and written down here because layout may not import
+   * elevation (elevation imports layout). They are authored numbers
+   * like every other polyline in this file, and `check-terrain.mjs`
+   * asserts that every one of them stays inside the channel's six-unit
+   * floor — the same way it asserts Brack keeps his forty.
+   *
+   * The carry is 0.3, which is what it always was: a trail carries you
+   * the way a trail does, which is hardly at all.
+   * ================================================================ */
+  { width: 3, carry: 0.3, pts: [
+    [225, 8], [246, -14], [268, -38], [286, -62], [294, -84],
+    [296, -106], [293, -118], [291, -130], [290, -142], [291, -154],
+    [295, -166], [299, -178], [302, -190], [307, -202], [310, -214],
+    [310, -226], [307, -238], [306, -248],
+  ] },
 ];
 
 /* ------------------------------------------------------------------ *
@@ -397,7 +425,22 @@ export const ROAD_BAND_MAX = Math.max(...ROADS.map((r) => r.width * 0.5 + 4.2));
  * ------------------------------------------------------------------ */
 
 export const RIVER: [number, number][] = [
-  [318, -108], [285, -70], [250, -38], [205, -12], [168, 8], [138, 26],
+  // SESSION 11 MOVED THE SOURCE, because the tear moved and the source
+  // is the tear's. `RIVER[0]` was (318, −108), which is thirty-eight
+  // units east of where the canyon is now — out on the east bench, in
+  // the open, rising from nothing. It rises AT THE MOUTH again, six
+  // units east of the channel's axis so the trail can come down the
+  // west side of the same gap without ever crossing it, and the second
+  // point swings the water decisively south-west so it clears the
+  // trail's whole run.
+  //
+  // The one number this had to respect: the source's LAND must sit at
+  // or above `riverBed(0)`, or the channel takes the ground instead of
+  // the bed and the river climbs out of its own canyon — which is the
+  // "water cannot climb a hill" law failing in the one place nobody
+  // would look. At z = −104 the mouth's taper is barely a tenth open,
+  // the ground is 1.7, and the bed is 1.7. It falls from there.
+  [301, -104], [274, -72], [250, -38], [205, -12], [168, 8], [138, 26],
   [110, 45], [82, 72], [52, 100], [18, 128], [-22, 158], [-62, 178],
   [-108, 192], [-150, 200], [-200, 210], [-260, 222], [-330, 232],
 ];
