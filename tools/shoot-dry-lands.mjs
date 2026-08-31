@@ -34,7 +34,7 @@ const CANYON = [
   ['11-the-mouth',            293, -142],
   ['12-channel-mid',          298, -172],
   ['13-needle-arch',          299, -158],
-  ['14-the-overlook',         280, -176],
+  ['14-the-overlook',         279, -182],
   ['15-the-riverhead',        300, -100],
   ['16-the-far-side',         324, -196],
   ['17-the-trestles',         304, -228],
@@ -63,7 +63,7 @@ const FLATS_DRIVEN = [
    * whole of it is that you are walking AWAY from the water while the
    * camera looks the way it always looks. So it is driven SOUTH, and
    * what the frame shows is a stand of palms with nothing under them. */
-  ['33-oasis-from-the-north-DRIVEN', 305, 20, S, 3.4],
+  ['33-oasis-from-the-north-DRIVEN', 313, 10, S, 2.5],
 ];
 
 /* ---- THE WAITS, BEFORE AND AFTER --------------------------------- *

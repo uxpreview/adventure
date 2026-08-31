@@ -725,7 +725,17 @@ export function holtHouseTexture(seed: number, lit: boolean): THREE.CanvasTextur
      * window in the east half of the world, and the only way a walker
      * on the channel floor after dark can tell that anybody lives up
      * there at all. */
-    if (lit) fillPoly(ctx, [[82, 216], [82, 172], [122, 172], [122, 216]], '#ffd79a', 0.85);
+    /* AT NIGHT THERE IS A LIGHT IN IT, and it is the only lit window in
+     * the east half of the world — the one way a walker standing on the
+     * channel floor after dark can tell that anybody lives up there at
+     * all. It is drawn bigger and brighter than the shut version, with
+     * the spill on the ground under it, because a warm pixel forty
+     * units away and six above the lip has to survive the night grade. */
+    if (lit) {
+      stain(ctx, 102, 194, 78, '#ffd79a', 0.5);
+      fillPoly(ctx, [[78, 220], [78, 166], [126, 166], [126, 220]], '#ffe0aa', 0.96);
+      fillPoly(ctx, [[168, 278], [168, 194], [212, 194], [212, 240]], '#ffd79a', 0.35);
+    }
     hardPoly(ctx, [[82, 216], [82, 172], [122, 172], [122, 216]], r, { width: 2.2, alpha: 0.8 });
     line(ctx, 102, 172, 102, 216, r, { width: 1.4, alpha: 0.5, passes: 1 });
     const door: [number, number][] = [[168, 278], [168, 194], [212, 194], [212, 278]];

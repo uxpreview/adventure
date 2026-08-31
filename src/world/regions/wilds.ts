@@ -1094,7 +1094,13 @@ export const CANYON_POIS: WorldPOI[] = [
     },
   },
   {
-    x: 276, z: -170, radius: 10, label: 'THE OVERLOOK',
+    /* WEST AND NORTH OF WHERE ROUND 4 PUT IT. From THE SHOT's standpoint
+     * on the channel floor the overlook was twenty-eight degrees off
+     * north — right on the desktop rig's frame edge — so its name was
+     * written half off the screen and the land's best composition had
+     * the word "look" clipped into its left margin. It is thirty-six
+     * degrees out now, which is outside the frame in both viewports. */
+    x: 272, z: -178, radius: 10, label: 'THE OVERLOOK',
     note: {
       title: 'the overlook',
       body: 'the whole cut, end to end, from the one place you can see it from. the other rim is forty units away and about an hour.',

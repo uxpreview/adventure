@@ -202,7 +202,7 @@ wants it — a vista you cannot look along is not a vista.
 
 ---
 
-### 4. SPLITROCK CANYON — **HOLT**
+### 4. SPLITROCK CANYON — **HOLT** *(authored end to end, Session 11)*
 
 | | |
 |---|---|
@@ -241,9 +241,19 @@ madness or readiness.
 **Never says:** where the river went. That it is not coming. That
 anybody else has one.
 
+*Built, Session 11 (`design/specs/splitrock-canyon.md`). The marks are
+four chalk strokes on a wall face at the head of the channel plus a
+fifth chalked on the rock ABOVE the lip, and their heights are the boat,
+the trestles, the shed's ridge, the doorstep and the house — every one
+of which is a thing you can see from where the marks are read. **The
+list is a sightline, not a note.** The tear was moved forty units west
+to put the channel in the middle of its own land; the depth was tuned
+until `check-terrain` printed −10.8 again, because S5 is an errand about
+that number.*
+
 ---
 
-### 5. THE BLEACH FLATS — **AMOS**
+### 5. THE BLEACH FLATS — **AMOS** *(authored end to end, Session 11)*
 
 | | |
 |---|---|
@@ -279,6 +289,15 @@ not say whether that is despair or nerve.
 
 **Never says:** that it will not rain. That he carries the water. That
 anybody has noticed.
+
+*Built, Session 11 (`design/specs/the-bleach-flats.md`). The forty units
+are real and they are UPHILL both ways: `elevation.ts` gained THE PAN,
+one shallow dish that is the Flats' only shape, and the oasis sits at
+the bottom of it while the cistern sits on its rim. The track is not in
+`layout.ROADS` and never will be — a road in this world is a thing
+everybody uses, and this is wear. `fact:the-fold` was authored in the
+same session: §0 has specified it since Session 7 and there had never
+been such an id in the source.*
 
 ---
 

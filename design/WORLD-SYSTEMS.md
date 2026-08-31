@@ -380,6 +380,21 @@ does not leave the shore**, because a boat that goes anywhere wet would
 delete the sandbar that cost Session 5 a whole session, and because the
 torn west edge is not this session's to spend.
 
+**THE PAPER PLANE IS OVERDUE BY TWO SESSIONS AND IS NOW DEFERRED IN
+WRITING** (Session 11). The wilds are the east half — the Penwood, the
+Downs, Splitrock and the Bleach Flats — and the two sessions that built
+all four of them (10 and 11) both passed on the mount. Session 11 says
+so out loud rather than letting it slip a third time silently, and hands
+it on with a brief so nobody re-derives it: **it launches from the east
+lip of the tear or from the curled rim above it** (both are authored
+ground as of Session 11, and both hold about eight units of drop into
+open air); **it refuses being steered mostly**, which means the player
+has one input and it is not a rudder; it is found in the world and left
+in the world; and the one thing it must not do is trivialise the walk
+back round the canyon's mouth, which is the geography lesson SPLITROCK
+teaches by making you walk it. The reason for the deferral and the
+session it is handed to are in `PLAN.md`.
+
 **The 8:15 is the best payoff available to us and it is already set up.**
 The existing office-park note reads: *"the timetable says the 8:15 is
 coming. the 8:15 is drawn nowhere on this sheet. everyone waiting knows

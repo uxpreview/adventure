@@ -34,10 +34,66 @@ retired; the chosen story is **THE 8:15** (`design/STORY.md`).
 | 8 | **The score** ✓ 2026-08-30 | Five synthesised instruments over twelve lands, doubled by FAMILY (music box, plucked string — Karplus–Strong, rendered rather than wired — bowed voice, struck metal, air), each land's assignment authored with its register and its one-line reason; a BED per land, and it is the quietest thing in the mix; a border that is a three-and-a-half second EQUAL-POWER crossfade of both the room and the instrument; and a mix that answers the walk and the hour. **And the proof, which was the hard half:** `check-audio.mjs` renders the score offline and asserts it, `verify-score.mjs` proves the wiring in the running game, `shoot-sound.mjs` draws it in ink, and `render-wavs.mjs` hands the ear gate to the owner — because it is the first product in this project that cannot be screenshotted. Gate to WOWED (`critique-score-1.md`). See `WORLD-SYSTEMS.md` §9. |
 | 9 | **The bearing** ✓ 2026-08-30 | **Foundations, and the last of them.** The camera answers TRAVEL, in two components: the part that CROSSES the frame turns it (26° on desktop, 12° in portrait, the envelope authored off the standee table), and the part that comes AT THE LENS opens the ground at the walker's feet (the astern terms) — because a bounded yaw cannot help the walk south and `WORLD-SYSTEMS` §2 was wrong to say it could. Plus the PEEK (a gesture, never a state) and a lead capped per rig. **And the proof, which was half the session:** `tools/diff-sheets.mjs` — a regression is a diff and not an opinion — standing on a harness that pins all four of the game's clocks so two shots of one framing are one picture, and `tools/check-camera.mjs`, which asserts the envelope, the continuity and the walk south in units of page. **And the oldest visible defect closed:** THE SKYLINE, so a name is written over the thing it names instead of across it. Gate to WOWED (`critique-camera-1.md`). |
 | 10 | **Farm & forest** ✓ 2026-08-30 | THE HARROW DOWNS + THE PENWOOD, and the first land session that could prove the page had not moved while it worked. **THE HARROW** authored into `elevation.ts` (the land is named for a thing that rakes a field into parallel lines, and it is now the ground), the mill rise, and the tarn's bowl. **THE PENWOOD HAS ONE ROAD AND IT IS A CIRCLE** — BRACK'S ROUND, forty-two units about the water, with the track from Brim running in and stopping at it: `THE-WAITS` §7's turn told entirely in a polyline, said by the map and by nothing else. Eleven authored FIELDS as polygons, one state each, hedged along the grain; four authored stands of pine with the voids between them doing as much work as the trees; THE FORD (`layout.FORDS` — the bed rises, the water does not fall, so `route:the-river` survives). **Both waits end to end:** JOAN HARROW's second setting, put away every evening and laid every morning until you sit down, and BRACK's quarter turn. Six ambient voices and one authored silence. Gate to WOWED (`critique-art-6.md`). See `design/specs/harrow-downs.md` and `design/specs/the-penwood.md`. |
-| 11 | **The dry lands** | SPLITROCK CANYON (a tear in the page) + THE BLEACH FLATS: corridor drama, the oasis as reward. |
-| 12 | **The now** | MAPLE COURT + GREYLINE CITY + THE CUBICLE MILE: street rhythm, lit windows at dusk, the junction — and the 8:15 drawn into existence. |
+| 11 | **The dry lands** ✓ 2026-08-31 | SPLITROCK CANYON + THE BLEACH FLATS, and the session that MOVED A LANDFORM. Session 4's tear was cut at x = 338, six units from the foot of the world's curled east margin, and the trail that is the only way into that land never came within thirty units of it; it is at x = 300 now, in the middle of its own rect, with the river's source moved with it, the trail re-laid, and the depth tuned so `check-terrain` still prints **floor −10.8** — because `THE-STRANGERS` S5 is an errand about that number. **THE ONLY ROAD IN SPLITROCK IS A RIVERBED**: the trail rounds the head of the river (there is no bridge on this water), drops down the mouth, and runs a hundred and twelve units north along the floor of the tear itself, every point of it `tearX(z)` sampled. **HOLT's** four chalk marks are the only horizontal marks in a land drawn entirely in verticals and their heights are the boat, the trestles, the shed's ridge and the lip; the fifth is above the lip and behind it is his house. **AMOS** carries water forty units UPHILL both ways every night, on a track that is not a road; the gutter runs downhill from the cistern and nothing mentions it. Plus **`fact:the-fold`**, authored end to end for the first time — the design's own dependency, missing from the source since Session 7. Gate to WOWED (`critique-art-7.md`). See `design/specs/splitrock-canyon.md` and `design/specs/the-bleach-flats.md`. |
+| 12 | **The now** | MAPLE COURT + GREYLINE CITY + THE CUBICLE MILE: street rhythm, lit windows at dusk, the junction — and the 8:15 drawn into existence. **AND IT IS THREE LANDS AND A MOUNT AGAINST EVERY OTHER LAND SESSION'S TWO — see the note below, which Session 11 was asked to write and did.** |
+| 12b | **The mount, and the wilds' reward** | **THE PAPER PLANE** (`WORLD-SYSTEMS` §4), deferred in writing by Session 11 with its reason and its brief. |
 | 13 | **Motion & life** | Systems pass: wind everywhere, sails and windmills turning, NPC routines, road encounters. (The score moved out of this session to 8 — see the ordering rule.) |
 | 14 | **The juror** | Awwwards pass on the whole build: title, first minute, map, UI feel, mobile portrait, performance audit, then the full-gauntlet critique. |
+
+**SESSION 12 IS THREE LANDS AND SHOULD BE SPLIT, AND SESSION 11 IS THE
+SESSION THAT NOTICED, WHICH IS WHAT THE LADDER ASKED FOR.**
+
+Session 10 and Session 11 were each two lands and two waits, and both of
+them spent a full third of their budget on the gate rather than on the
+building — Session 11 ran five rounds and threw away a whole placement
+plan in the middle of them. Session 12 as written is **three lands, three
+waits, three named inhabitants, THE LINE's riskiest un-shot framing
+(§3.2), and the 8:15 drawn into existence**, which is a MOUNT and the
+payoff of the entire story. That is not two sessions' work wearing one
+number; it is closer to three.
+
+The split this ladder recommends, and the reason for the cut:
+
+- **12 — THE NOW.** MAPLE COURT and GREYLINE CITY. Two lands, two waits,
+  the shape every land session since 10 has held. §3.2's rim composition
+  is shot FIRST, not last, because Maple Court's houses, trees, cars and
+  hedges are the only things that can break it.
+- **12b — THE 8:15.** THE CUBICLE MILE, its wait, and the mount. The
+  reward for finishing that land is that **you draw the 8:15 into
+  existence and it arrives**, and `THE-LINE.md` §5 is settled on it. A
+  railway ruled across the one quadrant drawn with a straightedge is the
+  best payoff this project has and it should not be built in the last
+  fifth of a session that has already built three lands.
+
+**THE PAPER PLANE IS DEFERRED, IN WRITING, AND THIS IS THE WRITING.**
+`WORLD-SYSTEMS` §4 gives every quadrant a mount and the wilds' is the
+paper plane, *launched from height, refuses being steered, mostly.*
+Session 10 took the wilds' northern half and did not take it; Session 11
+took the wilds' eastern half, which contains **the two best launch
+heights in the world** — Splitrock's east rim and the curled margin
+above it — and did not take it either. It is now overdue by two
+sessions and this ladder says so out loud rather than letting it slip a
+third time silently.
+
+**The reason it was deferred:** Session 11's scope was two lands, two
+waits, two named inhabitants, a MOVED LANDFORM (a layout-wide audit
+across elevation, the road web, the river, the map and two protected
+framings), and one piece of missing content-system plumbing the design
+had been assuming since Session 7. A mount is a traversal system with a
+launch, a flight model, a refusal rule and a camera — the rowboat was
+half of Session 6 — and the bar is explicit that **a session that cannot
+meet it ships less scope, never a lower bar.**
+
+**The brief it is handed with**, so the next session does not re-derive
+it: it launches from the east lip of the tear or from the curled rim
+(both are authored ground now and both hold about eight units of drop
+into open air); it refuses being steered *mostly*, which means the
+player has one input and it is not a rudder; it is found in the world
+and left in the world; and the one thing it must NOT do is trivialise
+the walk down and back round the canyon's mouth, which is the geography
+lesson SPLITROCK teaches by making you walk it. **It goes to Session
+12b or to Session 13 (Motion & life), whichever the owner prefers — but
+it does not go to Session 12, which is already over-scoped.**
 
 **FIVE LAND SESSIONS NOW RUN IN A ROW WITH NOTHING STRUCTURAL LEFT TO
 INTERRUPT THEM.** Session 9 took the last foundations item on the board;
@@ -121,6 +177,12 @@ file that does not persist.
   (Session 10, `critique-art-6`): both passed, neither praised. The
   sheaves recede but the field around them is thin; the east arc is a
   road through a wood and not a place.
+- **THE BLEACH FLATS' `WHERE THE ROAD STOPS`** (Session 11,
+  `critique-art-7`): passed, not praised. Four hundred units of the
+  world's longest road end at two posts and some cracked ground, and the
+  frame is honest emptiness rather than composed emptiness. It is the
+  one place in either of Session 11's lands that is there because the
+  land needed a sixth place.
 - **The prompt on a very wide subject is still on the subject.** READ
   THE PROCLAMATION is legible on Greyweather's barbican and clear of
   anything with detail in it, but it is a compromise and Session 9 wrote
@@ -186,3 +248,25 @@ Rules of the ladder:
   harrow took twenty minutes and it is why both of that session's lands
   compose: it gives the camera something to recede along before a single
   drawing is placed.
+- **AND A LANDFORM IN THE WRONG PLACE MAY BE MOVED** (Session 11). The
+  tear was authored at x = 338 in Session 4 and the land named for it was
+  built round the fact that it was somewhere else. Moving it is a
+  layout-wide audit — elevation, the road web, the river's source, the
+  reachability proof, two protected framings and the map — and it took a
+  morning and it was the right call. **What may not move is a NUMBER
+  somebody else's content stands on**: `check-terrain` prints the tear's
+  floor at −10.8 and `THE-STRANGERS` S5 is an errand about that figure,
+  so the amplitude was re-tuned until it printed −10.8 again in its new
+  position.
+- **NOTHING STANDS ON A SCARP, AND THAT INCLUDES THE THING THE SCARP IS
+  MADE OF** (Session 11). A canyon's walls are drawn by the terrain,
+  which hatches down the fall line and does it better than a cutout can.
+  Round 1 of that session's world sheet stood wall panels up both faces
+  at half their height and built a tunnel with the ends bricked up.
+- **AND `stroke()` ROUNDS EVERY CORNER YOU GIVE IT.** It draws
+  quadratics through the midpoints of its points, which is right for a
+  hedge, a hull and a tree, and turns any polygon of straight runs into
+  a lozenge. Session 11's first texture sheet was a canyon full of domes
+  and a cistern like an egg. Both new texture files carry a `hardPoly()`
+  that draws an edge as an edge; **paper does not tear along a curve is
+  a rule about the DRAWING as much as about the height field.**

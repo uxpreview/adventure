@@ -30,19 +30,22 @@ here, what a footstep sounds like, whether the page takes your ink.
 | THE COMMON | where you woke | the crossroads, the old well, three oaks |
 | MAPLE COURT | the neighborhood | porch lights, picket fences, the green |
 | THE PENWOOD | under the pines | the tarn, the round, the deep pines |
-| SPLITROCK CANYON | the deep cut | striated walls, the Needle Arch |
+| SPLITROCK CANYON | the deep cut | the mouth, the Needle Arch, the marks on the wall |
 | THE HARROW DOWNS | farm country | the mill, the headland, the ford, the drove |
-| THE BLEACH FLATS | the desert | dune script, saguaros, tumbleweeds, the oasis |
+| THE BLEACH FLATS | the desert | the Hands, the Pale, the track, the oasis |
 | GREYLINE CITY | downtown | hatched towers, lit windows, the Junction |
 | THE CUBICLE MILE | the office park | ruled glass, hedges, the 8:15 stop |
 
-A river rises in the canyon, crosses the whole sheet and meets the sea
-past the boardwalk; three plank bridges carry the roads over it, and one
-farm lane simply goes through it at a ford, where the water shallows and
-goes light over a gravel bar. On the coast, a strip the wash never took
-runs a hundred and eighty units out into the sea — dry paper, so you can
-walk it, out past the surf and back ashore at the foot of the cliff
-path. And in the pine dark there is a road that goes round.
+A river rises at the mouth of the canyon, crosses the whole sheet and
+meets the sea past the boardwalk; three plank bridges carry the roads
+over it, and one farm lane simply goes through it at a ford, where the
+water shallows and goes light over a gravel bar. On the coast, a strip
+the wash never took runs a hundred and eighty units out into the sea —
+dry paper, so you can walk it, out past the surf and back ashore at the
+foot of the cliff path. In the pine dark there is a road that goes
+round. And in the canyon there is a road that is a riverbed: the only
+way in is round the top of the water, and then a hundred and twelve
+units north along the floor of the tear, ending at a wall.
 
 Every border crossing changes the music's mood, the footstep underfoot,
 and deals a region card — nothing else, because the sheet is continuous.
@@ -166,6 +169,11 @@ node tools/shoot-first-minute.mjs
 node tools/shoot-oldworld.mjs
 node tools/shoot-coast.mjs      # LONGSHORE + THE WIDE BLUE
 node tools/shoot-traversal.mjs # the ink weight, the roads, the boat, the day
+node tools/shoot-farm-forest.mjs # THE HARROW DOWNS + THE PENWOOD
+node tools/shoot-dry-lands.mjs  # SPLITROCK CANYON + THE BLEACH FLATS
+node tools/shoot-textures.mjs  # EVERY DRAWING IN A PROP BOX, AT ACTUAL SIZE
+node tools/montage.mjs <dir> <out.png> a.png b.png …   # a land on one sheet
+node tools/check-fields.mjs    # no instanced field is ever half inked in
 HOUR=19.6 node tools/shoot-first-minute.mjs   # any sheet, at any hour
 node tools/shoot.mjs           # all twelve lands, walkability smoke test
 node tools/shoot-mobile.mjs    # the CHROME, at 320/360/390/430 points
