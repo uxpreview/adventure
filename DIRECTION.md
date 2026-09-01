@@ -256,3 +256,17 @@ spectacle; and it needs nothing we have not already planned to build.
 Note: blots-as-caves (the `BLOT` inverted palette) stay parked until a
 story needs them — a cave system with no reason to exist is Skyrim's
 weakest content, not something to copy.
+
+---
+
+## 2026-09-01 — THE FUN PASS
+
+The story is still THE 8:15 and this file is still the record of how it
+was chosen. **What changed on 2026-09-01 is what comes before the story
+is rewritten.** The owner played twelve finished lands and said the
+game is beautiful and not fun: empty walks, no choices, a confusing
+start, one emotional key. The brief, the diagnosis, the five law
+amendments, the new bar for a land, the tonal re-key, the cast, the
+opening and the re-cut ladder are all in **`design/THE-FUN-PASS.md`**,
+which is binding the way `STORY.md` is. The story rewrite is Session
+22, on top of whatever turns out to be fun.

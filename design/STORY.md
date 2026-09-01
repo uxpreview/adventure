@@ -228,6 +228,14 @@ as you walk east-by-south, because the geography argues time
 | **THE MAN AT THE JUNCTION** | Greyline City | stands still in the one land where standing still is shameful, waiting for somebody. Everyone walks around him. He has no name yet and that is the point |
 | **DENNIS** | The Cubicle Mile | the desk plate says D. HALL. Has the timetable memorised. Has never once suggested the train is not coming, and would be embarrassed for you if you did |
 
+**And from 2026-09-01 the cast is wider** (`THE-FUN-PASS.md` §10, all
+kept by the owner): the Vikings on the Holdfast, the aliens in the Pale,
+the surfers at the Cut, the barista at Greyline's junction, the design
+studio in the Cubicle Mile's atrium, the monsters that are never seen
+whole, and animals in every land. None of them gets a wait; the twelve
+stay twelve. None of them crosses a border. None of them explains
+anything.
+
 Plus the standing device from WORLD-SYSTEMS §5: **the co-walker** —
 somebody who falls in beside you for a stretch and stops dead at their
 land's border. That mechanic is now a fact about the world rather than
@@ -246,6 +254,10 @@ Binding on anybody writing content for this world.
 2. **The world never explains itself.** Twelve centuries coexist on one
    landmass and nobody finds it odd. Played straight it produces both
    the comedy and the melancholy; explained, it produces neither.
+   *(Amended 2026-09-01, `THE-FUN-PASS.md` §2.5: absolute for the
+   anachronism, the turn and the ending. Relaxed for wayfinding —
+   people may point, signs may say what they are for, a note may
+   carry an instruction when the instruction is the invitation.)*
 3. **The humour is deadpan and structural**, never a gag. A
    civilisation sincerely organised around a train with no track is
    funny in proportion to how straight everyone plays it. Nobody in
@@ -253,6 +265,11 @@ Binding on anybody writing content for this world.
 4. **Nothing is urgent. There is no villain.** The opposition is the
    waiting, and the waiting is nobody's fault. If a session finds
    itself writing an antagonist, it has taken a wrong turn.
+   *(Amended 2026-09-01, `THE-FUN-PASS.md` §2.3: still no villain, no
+   combat, no fail state, no timer. **Local stakes are allowed** —
+   weather, the dark, water, a bull, a thing on a beach that chases
+   you off it, a sound in a wood that stops. Fear never needs an
+   enemy and never kills you.)*
 5. **Nobody says the turn.** Not the narrator, not a note, not a
    character, not the ending. The player assembles it or they do not.
 6. **A land's own story is told in its own century's register.**

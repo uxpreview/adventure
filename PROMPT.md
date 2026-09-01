@@ -1,238 +1,176 @@
-# PROMPT — Session 15: THE FIRST HOUR
+# PROMPT — Session 15: THE VERBS AND THE LAW
 
 You are continuing INKLANDS in `uxpreview/adventure`. Read, in order:
-`design/QUALITY-BAR.md` (binding), **`design/critiques/critique-story-2.md`
-in full** (it is the only gate this project has ever failed and it is
-one finding from being closeable), `design/THE-LINE.md` **§1**,
-`design/THE-WAITS.md` **§1, §6, §8, §9 and §13**,
-`design/THE-STRANGERS.md` **S1, S4 and S6**, then `PLAN.md`, `README.md`,
-`SESSIONS.md`.
+**`design/THE-FUN-PASS.md` in full** (it is the owner's brief and it is
+binding), `design/QUALITY-BAR.md` §3 (the five amendments and the
+permission to regress), `design/QUESTS.md` §3, §6 Tier 1 and §8,
+`design/specs/controls.md`, then `PLAN.md`, `README.md`, `SESSIONS.md`.
 
-**Session 14's handoff first.** It built the ending. That is what makes
-this session what it is.
+**The owner's direction of 2026-09-01 first.** The owner played all
+twelve lands and said the game is beautiful and not fun. That is what
+makes this session what it is.
 
 ---
 
-## 0. THE ENDING EXISTS NOW, SO THE BEGINNING IS THE WEAKEST THING LEFT
+## 0. THE GAME WAS BUILT TO BE READ, AND THIS IS THE FIRST SESSION THAT BUILDS IT TO BE PLAYED
 
-Twelve lands hold a verdict. Act III is built, Act IV is built, and the
-8:15 comes down the line and stops twelve times. Eight of the twelve
-waits are authored end to end.
+Twelve lands hold a verdict. The ending exists. And the owner's verdict
+on the whole of it, in their words:
 
-**Act I is one optional beat on one road.**
+> *"I read things but that's not fun. I wish I had choices like
+> Fallout, and those choices did things."*
 
-`critique-story-2.md` — the only gate this project has ever failed —
-said so in its first finding, and nothing has touched it since:
+> *"It almost feels like a chore going from one place to another."*
 
-> Everything downstream of *nobody can leave* and *you can* hangs on
-> Nell stopping at the Brim border, which only happens to a player who
-> walks north having met her. Two of the three facts, and the entire
-> premise of the walker, are downstream of one optional, directional
-> beat.
-
-**MANDATORY 2 was closed by Session 14** (the 8:15 arrives already
-carrying the lands above you). **MANDATORY 1 is yours.** Close it and
-the story gate can be re-run, and **this project has never earned a
-WOWED on its story.** That is the session.
-
-**And the four remaining waits are all buildable today, on ground that
-already holds a verdict, with every dependency they need already in the
-source.** Session 14 was the one that made NELL possible: her fourth
-name is the timetable in the Cubicle Mile, and until last session there
-was no timetable to read.
+This is a **foundations session**, by the ordering rule in `PLAN.md`:
+the verbs and the choice card change how every land is authored, so
+they land before any land is re-opened. Nothing in this session is a
+land. Everything in it is a system that every later session in the fun
+pass stands on.
 
 ---
 
 ## 1. THE JOB
 
-### 1. THE CO-WALKER, AS A RULE OF THE WORLD
+### 1. THE VERBS — touch, carry, sit, throw, on one key
 
-`critique-story-2` MANDATORY 1, verbatim:
+`THE-FUN-PASS.md` §5 is the spec. One context key: the one the game
+already uses to look (`E`, or tap). What it does depends on what is in
+reach, and the prompt says which, hand-lettered, in the house voice.
 
-> Make it a rule of the world rather than a scripted beat: **anybody the
-> walker is travelling near stops at their own border**, on any road out
-> of any land. Then whichever of the four names on the signpost the
-> player picks, somebody walks with them and somebody stops, and I.7's
-> second instance is a matter of time rather than of route. It is also
-> cheaper than the scripted version and truer to `STORY.md` §8 rule 1,
-> which is a law and not a set piece.
+| verb | ships as |
+|---|---|
+| **touch** | a `touch` field on a standee or decal, and the world's answer: a sound, a motion, a change. One-shot |
+| **carry** | one carried-object slot on the walker, drawn in hand; pick up, walk, put down; never more than one; no inventory anywhere |
+| **sit** | a `sit` field; a walker pose; the camera does not move; time passes and routines go by. Joan's wait already resolves on it, so it must not regress her |
+| **throw** | the one carried thing, underarm, a few units, with an arc, a landing and a sound |
 
-It is a SYSTEM, not a beat: an inhabitant who is near you when you set
-off down a road falls in beside you, keeps station for as long as you
-are both going the same way, **and stops dead at the edge of their own
-rect** — and does not explain, and does not follow, and is there again
-tomorrow. `THE-LINE` §1 rows I.3 and I.7 are the whole specification.
-Twelve lands have standing people in them now; every one of them is a
-teacher of fact two.
+**What it must never become:** an inventory, a hotbar, crafting, a
+weapon, or anything you can hold two of. And **the walk must not get
+worse**: the key that touches is the key that looks, and a player who
+never touches anything should not notice the game changed.
 
-**What it must never become:** a companion, an escort quest, a thing
-that talks, or a thing that gets in the frame. It is a person walking
-beside you who stops when the ground under them runs out, and **the
-player is the one who notices, on the second or third one.**
+### 2. THE CHOICE CARD
 
-### 2. THE FOUR REMAINING WAITS, AND THEY NEED NO NEW LAND
+`THE-FUN-PASS.md` §2.2 and §6. A hand-lettered card, in the note card's
+own system (`src/ui/`), with two or three options. It appears at a
+moment that matters and nowhere else. Both doors are visible before
+either is taken. It is drawn on a canvas, so **it is measured at every
+width `shoot-mobile` shoots** and it is added to the chrome that tool
+asserts.
 
-Every one of these stands on ground that is already WOWED, and **every
-resolving condition already exists in `knowledge.ts` or is learned by a
-note that already ships.** Nothing here needs a rect opened.
+**No faces, no talking heads, no wheel.** It is a card, it says what
+the two things are, and choosing one changes the world.
 
-| land | person | resolves on | the permanent change | source |
-|---|---|---|---|---|
-| **THE COMMON** | **NELL** | `fact:the-timetable` — the fourth name on the signpost, read off the board in the Cubicle Mile, **built last session** | the hay cart is loaded, and turned north. It does not leave | `THE-WAITS` §9 |
-| **CASTLE GREYWEATHER** | **WICK** | Marget's cloth in Brim (`reason:brim` and/or a new `fact:` on the stall's dye) | a **fifth banner** on the avenue, in Brim's colours, in every later save | `THE-WAITS` §1 |
-| **LONGSHORE** | **PYE** | `name:ocean` — the bell buoy, which nobody in Longshore has seen | an **eighth pot**, further out than the seven, on a bearing he has never rowed | `THE-WAITS` §6 |
-| **THE WIDE BLUE** | **WREN** | `route:the-bar` — a hundred and eighty units of dry paper, walked | a **second mark** at the bar's far end. Two marks make a line | `THE-WAITS` §8 |
+### 3. A SCHEDULED-EVENT CLOCK
 
-Read all four entries in full before you place anything. Three notes:
+`THE-FUN-PASS.md` §9. `daylight.ts` has one clock and everything reads
+it. This session adds the thing that lets a land say *at this hour, in
+this place, this happens* without every land builder rolling its own:
+an event registered against an hour and a place, that fires whether or
+not the walker is there, with a `platform`-shaped export so a land can
+know an event is in progress. It is the plumbing for Session 17.
 
-- **NELL IS ACT I'S CLASSROOM AND THE GATE HAS ALREADY WARNED YOU ABOUT
-  HER.** I.2 asks a player to read *straighten → settle* on a standee
-  with no face at the shipping camera. Session 7's gotcha, quoted back
-  at you by the story gate: *a silent system still has to be visible —
-  the map's registers needed THREE signals, not one, because the
-  difference did not survive the scale.* Nell's straighten is currently
-  one signal. **Assume it needs three** — the posture, the gate she is
-  leaning on, and where her feet point — and **shoot it before you
-  believe it.**
-- **WICK'S FIFTH BANNER is the first time two lands are visible in one
-  frame and neither of them crossed anything to do it.** It is worth
-  more than it costs.
-- **BRIM SQUARE IS FULL** (standing debt). Wick's dependency lives
-  there. Read the cloth, do not add a stall.
+### 4. THE THREE PROOFS
 
-### 3. THE THRESHOLD GOES BACK TO SEVEN
+A system session ships proof that the systems are worth having, and
+each proof is a thing the owner can play in the play sheet:
 
-`knowledge.WAITS_FOR_THE_LINE` is **five** and the comment on it says
-why: eight of twelve waits existed, and a threshold of seven against
-eight would put somebody on almost every platform, and IV.3 is only an
-ending because the platforms DIFFER. **Build the other four and it goes
-to seven**, which is what `THE-LINE` §4.1 proposed. Change the constant
-and the comment together, and re-shoot the ending at both states.
+1. **A toy on the Common.** THE WELL answers a shout (`THE-STRANGERS`
+   U7 says it already does, on too long a delay); make the shout a
+   touch. And **THE HAY CART can be pushed**: it rolls, it stops at the
+   border of the Common, and it stays where you left it. The first
+   local rule in the game and the first thing the walker has ever
+   moved.
+2. **A choice card at the toppled king.** GREYWEATHER's second door
+   (`THE-FUN-PASS` §6): put him back on the plinth, or leave him. Both
+   doors built. Put him back and Wick is relieved: the banners come
+   down, the avenue goes quiet, the moat pool clears, and it stays that
+   way in every later save. Leave him and nothing changes, which is
+   also a choice. **Nothing says which was right.**
+3. **One scheduled event.** THE DROVE moves at dawn: the thirteen
+   sheep that already part for the walker walk the lane from the fold
+   to the field at first light, whether anybody is there or not, and
+   stand in the field all day. Session 10 built the sheep; this session
+   gives them an hour.
 
-### 4. THE TWO RECOMMENDED FINDINGS, AND BOTH ARE CHEAP
+### 5. THE LAW, EXECUTED
 
-- **RECOMMENDED 2 is about a thing Session 14 built and knowingly left
-  open.** The Cubicle Mile's wait resolves on reading the board, full
-  stop — so a player who walks east in their first ten minutes is handed
-  the shape of the answer and spends eleven lands confirming a thesis
-  instead of building one. The gate's own fix, and it is in-fiction
-  rather than a lock: **a timetable is a list of place-names, and it
-  should mean nothing until some of the names on it do.** Let
-  `fact:the-timetable` require holding several lands' NAMES — which the
-  map already tracks in three registers and which the player earns by
-  having been places. Early it is a list of words; late it is the order
-  of the world. **Nothing may announce the difference.**
-- **RECOMMENDED 1**: four of the twelve waits carry reciprocity and eight
-  say only *my answer is over there*. The cheapest pair to fix is
-  LONGSHORE and THE WIDE BLUE, which are one relationship written from
-  one side twice — **and you are building both of them this session.**
-  If Wren's second mark is visibly the thing Pye was missing, the pair
-  becomes reciprocal for no new content at all. Then update
-  `THE-WAITS` §13, because §13 is the artifact the gate reads cold.
+The five amendments are written into `QUALITY-BAR.md` §3 already. This
+session executes them where they live in the source and the specs:
+`design/specs/controls.md` gains the verbs; `QUESTS.md` §3's four ways
+a quest starts get their loudness back; and **the local-rule tier is a
+tier** (`QUESTS.md` §8), with the well and the cart as its first two
+entries.
 
-### 5. THE GAUNTLET, AND THIS TIME THE DIFF IS THE POINT
+### 6. THE PLAY SHEET
 
-`check-terrain`, `check-audio`, `check-fields`, `check-camera`,
-`check-sightline`, `diff-sheets`, `shoot-mobile`, and the art director
-on both viewports.
-
-**`diff-sheets` matters more this session than it has ever mattered.**
-Every other land session worked in a rect nobody had judged. **You are
-working inside four lands that hold verdicts** — the Common (which
-carries the title framing and the first minute), Greyweather, Longshore
-and the Wide Blue — and the co-walker rule touches *every land in the
-world*. A framing may not move for a session's convenience. When one
-moves because the land inside it was the scope, say which, by how much,
-and what the verdict was awarded on.
-
-### 6. THEN RE-RUN THE STORY GATE
-
-It is in `QUALITY-BAR` §2, it needs no build, and it has returned NOT
-YET exactly once. Run it as an **adversarial read**, not a review — *a
-critic who is trying to find the shrug is worth ten who are trying to
-enjoy it* — and log it as `critique-story-3.md`. It should now be able
-to answer Q1 and Q3 with the systems in front of it rather than the
-prose.
+`THE-FUN-PASS.md` §13. Ten minutes for the owner, written as *stand
+here, do this, then this*, with the build link. This session's is:
+wake, shout down the well, push the cart to the Brim border, walk to
+the toppled king, choose, watch the avenue tomorrow, and be in the
+Downs at dawn. **Say in the log that the gate was handed over and not
+run.**
 
 ---
 
 ## 2. WHAT SESSION 14 LEFT YOU
 
 - **`src/engine/Eight15.ts`** — the last mount and the ending's
-  instrument. It runs `layout.THE_LINE`, stops twelve times, and it is
-  not in the world until it has run. **It exports `platform`**, module
-  scope, which is how a land knows not to draw its own person while
-  they are standing on a platform — you will want the same shape for
-  the co-walker, and for the same reason.
-- **`layout.THE_LINE`, `LINE_ARC`, `lineAt`, `nearestOnLine`,
-  `LINE_STOPS`, `LINE_STOP_S`** — the drawn line as one polyline,
-  assembled from the roads rather than authored twice.
-- **`knowledge.WAIT_ANSWERS`** — the only place in the source where the
-  twelve are written down as twelve, with four entries missing on
-  purpose. **Filling those four in is most of job 2's bookkeeping**, and
-  a land with no entry has a platform that is always empty.
-  `knowledge.answered(id)` and `answeredWaits()` are the readers, and
-  `answeredWaits()` has exactly one caller and no path to a pixel.
-- **`src/world/textures-office.ts`** — thirty drawings and the third
-  rule (*every mark ruled, and every mark stops short*).
-- **`check-terrain` has two new proofs**: the office park is the
-  flattest ground in the world and no other land is as flat, and the
-  line is continuous with all twelve stops on ground you can stand on.
-- **`render-wavs.mjs` renders `Audio.event` now.** Fifty-three WAVs,
-  thirty-four of them land voices that had never been heard by anybody.
-  If you add a voice, it is in the pack for free.
-- **The count law is amended** — see the short form below. It is not
-  the law every prompt before this one repeated.
+  instrument. **It exports `platform`**, module scope, which is how a
+  land knows not to draw its own person while they are on a platform.
+  The scheduled-event clock wants the same shape.
+- **`src/world/knowledge.ts`** — a NAME, a FACT, a ROUTE, a REASON, and
+  `WAIT_ANSWERS` with four entries missing on purpose. **A door is a
+  piece of knowledge with a name a human could read**, the same as a
+  fact, so the choice card writes to this and nothing else.
+- **`src/world/daylight.ts`** — one clock, module scope, forty minutes
+  a day. Brim's lamps, the shelter's light and Amos's night walk all
+  read it; none of them is registered anywhere, which is what §1.3
+  fixes.
+- **`src/engine/Character.ts`** — the walker, the walk cycle, the ink
+  weight, the lean. The carried thing and the sit pose go here.
+- **`src/ui/UI.ts`, `lettering.ts`** — the note card, the region card,
+  the hint, the prompt. The choice card is a fifth thing they letter.
+- **`tools/shoot-mobile.mjs`** — five rigs, every piece of chrome at
+  every width. The choice card joins the list.
+- **`design/THE-STRANGERS.md` Part Two** — twenty errands, one line
+  each, every one of which needs carry or touch. Do not build them;
+  they are Session 18's. Do make them buildable.
 
 ---
 
 ## 3. THREE THINGS THAT CONSTRAIN THE WHOLE SESSION
 
-1. **NOBODY CROSSES A BORDER BUT THE WALKER.** It is the engine of the
-   whole story and this session is the one that could break it by
-   accident, because it is building a system whose entire job is to walk
-   people down roads. The co-walker exists to make the border VISIBLE.
-   The moment one of them steps over it, the game has retracted itself.
-2. **NOTHING TAKES THE CONTROLS AND NOBODY EXPLAINS ANYTHING.**
-   `THE-LINE` §3.4 and `STORY.md` §8 rule 5. Nell does not tell you she
-   cannot leave. Wick does not tell you the king is dead. No note in any
-   of these four lands gains a sentence that says what the wait is.
-3. **THE FIRST MINUTE HOLDS A VERDICT FROM SESSION 2** and the title
-   poster is one of `diff-sheets`' protected framings. The Common is
-   where this session does its most delicate work and it is also the
-   most-shot land in the game.
+1. **NOBODY CROSSES A BORDER BUT THE WALKER.** The cart stops at the
+   Common's edge. A thrown thing that lands in another land is a bug.
+   The sheep walk a lane inside the Downs. The border rule was not
+   amended and it is the engine of the ending.
+2. **THE MEDIUM IS THE STYLE, NEVER THE SUBJECT.** A well, a cart and a
+   king are subject. The prompt for the well says SHOUT, not anything
+   about ink.
+3. **THE FIRST MINUTE HOLDS A VERDICT AND THE COMMON IS THE MOST-SHOT
+   LAND IN THE GAME.** `QUALITY-BAR` §3 now gives permission to move a
+   protected framing when the land inside it is the scope. The cart is
+   in the spawn framing. **Say which framing moved and by how much, and
+   re-shoot the title.** Permission to regress is not permission to
+   not measure.
 
 ---
 
-## 4. THE GATES THAT ARE THE OWNER'S, AND ONE DECISION THAT IS ALSO THEIRS
+## 4. THE GATES THAT ARE THE OWNER'S
 
-`QUALITY-BAR` §2, and Session 12 is the whole argument for taking this
-seriously:
+`QUALITY-BAR` §2. Three now.
 
-> **A system whose gate has not been run is not done. It is SHIPPED AND
-> UNJUDGED, and those are two different words.**
-
-1. **THE EAR GATE.** `node tools/render-wavs.mjs` writes fifty-three
-   files to `out/sound/` now — twelve lands, three borders, four hours,
-   and **thirty-four land voices that had never been rendered to
-   anything a person could play.** Nobody has heard this game.
-2. **THE FEEL GATE**, owed again since Session 12 closed the camera.
-3. **AND ONE DESIGN DECISION IS THE OWNER'S AND IT IS THE LARGEST THING
-   LEFT IN THE STORY.** When the 8:15's doors close, the people who got
-   on are back where they stand tomorrow. Making the departure permanent
-   is one clause per land — `Eight15.ts` already exports `platform` and
-   every routine is already gated on the hour and on knowledge — but it
-   re-opens the authored routine of seven lands that hold verdicts, and
-   it changes what Val's porch light MEANS. `THE-LINE` §5 does not
-   require it. **Do not decide it in a land builder.** Put it to the
-   owner as a question with the cost written down.
-4. **AND ONE THING HAS NOW BEEN DEFERRED THREE TIMES AND SHOULD STOP
-   BEING DEFERRED.** `WORLD-SYSTEMS` §4 promises every quadrant a mount
-   and the wilds' is **THE PAPER PLANE**. Sessions 10, 11, 13 and 14 all
-   judged it below the line, in writing, with the brief unchanged each
-   time. Four sessions is not an accident, it is a verdict nobody has
-   written down. **Either it gets a session of its own, or it is retired
-   in `WORLD-SYSTEMS` §4 with the reason in it.** Ask.
+1. **THE PLAY GATE** — new, and this session's whole point. The play
+   sheet is the handover.
+2. **THE EAR GATE** — fifty-three WAVs in `out/sound/`, unheard. Any
+   new sound this session (the well's answer, the cart's wheels, the
+   thrown thing landing) goes into the pack for free.
+3. **THE FEEL GATE** — owed since Session 12. The verbs add input; the
+   camera must not move for any of them. `check-camera` still has to
+   pass, and sitting is the one new state where a stopped walker is
+   still due north.
 
 ---
 
@@ -246,54 +184,58 @@ resting bearing is due north, walking does not turn the frame, and a
 stopped walker is always in the shipped composition**; the medium is the
 style and never the subject; **nobody crosses a border but the walker**;
 60fps mobile with DPR capped at 2; the chrome is shot too, on the
-desktop as well as the phone; build green before every push; the walker
-has two dots and nobody else has a face; nothing reads as an array;
-nothing is generated, ever; no fifth reward; **a number may record where
-the player has been and may never grade what they did** — amended by the
-owner 2026-08-31, executed Session 14, `QUESTS.md` §7.1 has the argument,
-and **the ending is out of scope and stays absolute: nothing counts the
-platforms**; portrait is judged, not checked. End the session: pushed,
-`SESSIONS.md` handoff updated, verdicts logged.
+desktop as well as the phone, **and the choice card is chrome**; build
+green before every push; the walker has two dots and nobody else has a
+face; nothing reads as an array; nothing is generated, ever; no fifth
+reward; a number may record where the player has been and may never
+grade what they did, and the ending stays absolute; portrait is judged,
+not checked. **AND FROM 2026-09-01:** looking is the first verb and not
+the only one; a choice card is allowed and a dialogue wheel is not;
+local stakes are allowed and a villain is not; districts are allowed
+and more sheet is not; the world may point the way and may never say
+the turn; **a protected framing may move when the land inside it is
+the scope, measured**. End the session: pushed, `SESSIONS.md` handoff
+updated, verdicts logged, **play sheet written**.
 
 ## Standing debts, carried forward
 
 They live in `PLAN.md` too, because this file is overwritten every
 session.
 
-- **THE ENDING HAS NO CONSEQUENCE THAT LASTS** — §4.3 above, and it is
-  the owner's.
+- **THE ENDING HAS NO CONSEQUENCE THAT LASTS** — the departure is not
+  permanent. It is the owner's call and it is executed either way in
+  Session 21.
+- **THE PAPER PLANE** — Session 18, and the fourth deferral is the
+  last. It is a throw from height, so the throw verb this session
+  builds is its first half.
 - **The rowboat's first-meeting composition at THE RIVER MOUTH.** Seven
-  gates have passed it and pointedly not praised it, and `route:the-river`
-  is what resolves HOLT — so that boat is the front door of a wait.
-  **And this session is in Longshore anyway.**
+  gates have passed it and not praised it, and it is the front door of
+  HOLT's wait.
 - **THE HARROW DOWNS' stooked field**, **THE PENWOOD's east arc**, **THE
   BLEACH FLATS' `WHERE THE ROAD STOPS`** and **GREYLINE CITY's THE
-  HOLLOW**: all passed, none praised. The last one is a fold too shallow
-  for the terrain to draw and too deep to ignore, and the fix belongs to
-  `elevation.ts` rather than to a land.
-- **Holt's lit window** is one warm pixel at forty units. It is the only
-  lit window in the east half of the world and it deserves a glow.
-- **Brim Square is full.** The next authored thing in that plaza
-  displaces something Session 3 earned — **and Wick's dependency is in
-  it.**
-- **READ THE PROCLAMATION** on Greyweather's barbican is a compromise
-  (`critique-camera-1.md`, round 3, noted-not-blocking) — **and so is
-  THE 8:15 STOP's label** (`critique-art-9.md`), for the same reason and
-  in the same system. Two now. Whoever next opens the SKYLINE should
-  take both.
+  HOLLOW**: all passed, none praised. The last one belongs to
+  `elevation.ts`.
+- **Holt's lit window** is one warm pixel at forty units.
+- **Brim Square is full**, and it is about to get a crowd (Session 17)
+  and a second door (Session 21). Whoever opens it next opens it once.
+- **READ THE PROCLAMATION** on the barbican and **THE 8:15 STOP's
+  label** are both compromises in the SKYLINE. Whoever next opens it
+  takes both.
+- **`critique-story-2` RECOMMENDED 2** — the timetable should mean
+  nothing until some of the names on it do. Session 22's, beside the
+  story gate.
 
 ## Not this session's job, and recorded so nobody re-derives them
 
-- **The four un-numbered sessions** `PLAN.md` sizes at the end —
-  interiors (the roofless cutaway, `WORLD-SYSTEMS` §11), weather,
-  inhabitants-and-routine, and one authoring pass for the story's
-  evidence — are what takes this from six hours to twelve. The
-  co-walker is the first brick of the third of them and the rest is not
-  yours.
-- **THE JUROR** (`PLAN.md` row 17): the Awwwards pass on the whole build
-  — title, first minute, one full land crossing, the map. It wants a
-  game whose first hour works, which is why it is after this one and not
-  before it.
-- **A land may be improved and may not be regressed.** If a framing in
-  the Common, Greyweather, Longshore or the Wide Blue moves, it moves
-  because the land inside it was the scope, and you say so with a number.
+- **The opening** (`THE-FUN-PASS` §11: the bull, the four lures, the
+  Common as the plateau) is Session 16's. This session makes the cart
+  pushable; Session 16 makes it get away.
+- **The co-walker as a rule of the world** is Session 16's, with NELL.
+- **Districts** are Session 18's. Do not add a layer to `layout.ts`
+  this session; the scheduled-event clock is enough new plumbing.
+- **The cast** (`THE-FUN-PASS` §10) is Sessions 19 and 20. Not one
+  Viking this session.
+- **Second doors for the other eleven waits** are Sessions 19 to 21.
+  This session builds one, at the king, as the proof.
+- **THE JUROR** (`PLAN.md` row 24) wants a game whose first hour works,
+  which is why it is last.

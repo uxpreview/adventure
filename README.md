@@ -138,7 +138,10 @@ tier, and the errand / encounter / unmarked inventories).
 `design/INSPIRATION.md` credits everything this project is learning
 from, from Calvino to Goat Simulator, and scopes each to the one thing
 it contributes. `DIRECTION.md` is the record of how the story was
-chosen.
+chosen. **`design/THE-FUN-PASS.md` is what comes next**: the owner's
+brief after playing all twelve lands, five laws amended, a second bar
+for what a land has to play like, a wider cast, a new opening, and the
+ladder from Session 15 on.
 
 ## Run it
 

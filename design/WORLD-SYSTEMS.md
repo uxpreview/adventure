@@ -365,7 +365,7 @@ already established: walking east-by-south is growing up.
 | **the bicycle** | Maple Court — the childhood one | finishing the neighborhood | sand, and stairs |
 | **the rowboat** ✓ S6 | the river and the coast | *found, not earned — see below* | dry land, and the open sea |
 | **the 8:15** | GREYLINE CITY → THE CUBICLE MILE | finishing the office park | everywhere the line is not drawn |
-| **the paper plane** | the wilds | launched from height | being steered, mostly |
+| **the paper plane** | the wilds | launched from height — **Session 18, and not deferred again** (`THE-FUN-PASS.md` §14) | being steered, mostly |
 
 **THE ROWBOAT SHIPPED FIRST, and it broke one line of this table on
 purpose** (Session 6). Every other mount is the reward for finishing its
@@ -394,6 +394,12 @@ in the world; and the one thing it must not do is trivialise the walk
 back round the canyon's mouth, which is the geography lesson SPLITROCK
 teaches by making you walk it. The reason for the deferral and the
 session it is handed to are in `PLAN.md`.
+
+**AND AFTER THE ENDING THE 8:15 RUNS EVERY DAY** (2026-09-01,
+`THE-FUN-PASS.md` §8): once it has come the whole length of the world
+for the first time, it comes every morning at 8:15 and stops twelve
+times, which is the in-fiction fast travel the whole world was waiting
+for. Before the first run it is still drawn nowhere on this sheet.
 
 **The 8:15 is the best payoff available to us and it is already set up.**
 The existing office-park note reads: *"the timetable says the 8:15 is
@@ -464,6 +470,11 @@ up for it:
   trees, no combat. Everything the player will ever learn, they learn by
   going somewhere and noticing. That is a constraint on every other
   system and a gift to this one.
+  *(Amended 2026-09-01, `THE-FUN-PASS.md` §2.1 and §5: looking is the
+  FIRST verb. The walker also touches, carries, sits and throws, on one
+  context key, with at most one thing in hand and no inventory. Knowledge
+  is still the only progression; the new verbs are for toys, errands,
+  choices and chaos.)*
 - **Knowledge is the inventory.** Not an item, not a journal entry — a
   NAME, a FACT, a ROUTE, a REASON. Places open because you now know
   where to go and what you are looking at, not because a flag flipped.
