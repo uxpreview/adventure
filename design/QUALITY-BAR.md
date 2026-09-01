@@ -128,8 +128,29 @@ protected corridor is an ASSERTION now (`tools/check-sightline.mjs`)
 rather than a paragraph — the shipped draft broke it twice, in a
 signpost and in a scatter, and nothing in this repository would ever
 have said so. Plus two waits, both ends of one stranger, and **a fable
-told in a paving slab** (WOWED, critique-art-8). **THE CUBICLE MILE is
-the last scatter draft in the world** and is presumed NOT YET.
+told in a paving slab** (WOWED, critique-art-8); **THE 8:15** — THE
+CUBICLE MILE, which was the last scatter draft in the world, and the
+mount that is the ending of the game. **The third present-day land takes
+the third thing a line can do**: Maple Court's marks close, Greyline's
+leave the frame, and here **every mark is ruled and every mark stops
+short of the one it was going to meet**, which is what a promise looks
+like drawn — and *a timetable is a promise, and a promise is enough* is
+what the land argues. **Every roofline in it is at the same height** (a
+second horizon three units above the real one, one building breaking it
+because it was phase two) and **nothing touches the top of the frame**,
+which is the exact opposite of Greyline in the one measurement the
+camera cares about. **It is the only land in the world that authors NO
+GROUND** — flat to 0.45 units across 110 × 116 against 15.8 anywhere
+else, asserted both ways in `check-terrain` — so what recedes is PAINT.
+**THE 8:15 IS BUILT**: twelve stops in the surveyors' order, taken from
+the road the player walked rather than authored twice; it starts on
+knowledge and nothing else; Joan Harrow's platform is empty; it arrives
+already carrying the lands above you (`critique-story-2`'s second
+mandatory finding, closed as asked); and it is drawn front-on down the
+king's road and broadside at every stop. Plus DENNIS, the survey
+schedule, the shelter's light, and `THE-STRANGERS` S8 at both ends
+(WOWED, critique-art-9). **THERE ARE NO SCATTER DRAFTS LEFT IN THIS
+WORLD.**
 
 **AND FROM SESSION 9 A REGRESSION IS A DIFF AND NOT AN OPINION.**
 "Unregressed" has meant a person looking at two contact sheets a week
@@ -388,6 +409,29 @@ regression check it always was.
   expectation on each: a touch drag must raise the stick, a mouse drag
   must raise nothing. A control is a thing that can be on the wrong
   device, and that is a defect class no world screenshot can hold.
+- **A NUMBER MAY RECORD WHERE THE PLAYER HAS BEEN. A NUMBER MAY NEVER
+  GRADE WHAT THEY DID.** *(Amended by the owner, 2026-08-31; executed
+  Session 14. `QUESTS.md` §7.1 carries the full argument and the owner's
+  words.)* This law used to read **no count, no list, no percentage,
+  anywhere, for anything**, and it was repeated in that form in every
+  session prompt from Session 7 — while the shipped map printed *"N of
+  12 lands walked"* the whole time and nobody minded. Put to the owner,
+  they did not choose an option, they challenged the rule:
+
+  > *"I don't understand why that law exists. Progression, collection,
+  > and advancements are part of what makes games fun."*
+
+  They are right about the half it overreached on. The law came out of a
+  SIZING argument — *a collection caps at about two hours* — which is an
+  argument against collections, not against numbers, and this game
+  already keeps a record of where you have been and makes Act III's
+  whole beat out of it. So: what you have walked, seen and gone may be
+  counted, in the map's own place. A completion percentage, a checklist
+  of things to go and get, a count of the twelve WAITS or their answers,
+  a score, a grade, a rank, or any number that pops up to tell you that
+  you did a thing — refused, exactly as before. **And the ending is out
+  of scope and stays absolute** (`THE-LINE.md` §4.2, settled): nothing
+  counts the platforms.
 - **Inherited rules must be re-ratified or dropped.** This engine was
   ported whole from margins, and some of its laws are margins' story
   rather than our design — the flat ground was one, and it cost us a

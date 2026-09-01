@@ -77,6 +77,45 @@ for (const h of [12, 18, 21, 23]) {
     `THE PENWOOD at ${h}:00 — nightness ${A.mixLevels('forest', { hour: h }).night.toFixed(2)}`);
 }
 
+/* ================================================================== *
+ * AND THE LAND VOICES — thirty-four one-shots, and NOT ONE OF THEM HAS
+ * EVER BEEN HEARD (Session 14).
+ *
+ * `Audio.event` has grown every land session since Session 5 and its
+ * whole output has been invisible to this pack, because Session 8's
+ * offline render could only reach the SCORE — the beds and the phrases.
+ * The note the owner has been reading since then says so in as many
+ * words. Four more went in this session and it was not defensible to
+ * add a fifth un-heard voice to a list of thirty.
+ *
+ * They are grouped by the land they belong to, because that is the
+ * question worth asking about them: does a land's ambient event sound
+ * like the same PLACE as its instrument, or like a sound effect somebody
+ * dropped on top of it?
+ * ================================================================== */
+const VOICES = [
+  ['the-common', ['lark', 'well-plink']],
+  ['brim', ['brim-bell', 'market-murmur', 'pigeon-flap']],
+  ['castle-greyweather', ['banner-snap', 'rook-caw']],
+  ['longshore', ['surf-break', 'gull-cry', 'halyard', 'oar', 'oar-ship']],
+  ['the-wide-blue', ['bell-buoy']],
+  ['the-harrow-downs', ['mill-creak', 'sheep', 'field-work']],
+  ['the-penwood', ['axe-far', 'tarn-drip', 'pine-tick']],
+  ['splitrock-canyon', ['stone-fall', 'slot-wind', 'hull-rag']],
+  ['the-bleach-flats', ['grit-run', 'palm-rattle', 'can-knock']],
+  ['maple-court', ['sprinkler', 'far-dog', 'screen-door']],
+  ['greyline-city', ['crossing-tick', 'heels']],
+  ['the-cubicle-mile', ['plant-shift', 'door-hiss', 'cup-turn', 'car-door']],
+];
+console.log('');
+for (const [land, names] of VOICES) {
+  for (const name of names) {
+    await write(`voice-${land}-${name}`,
+      { kind: 'event', name, land: 'meadow', seconds: 5, silent: true },
+      `${land}: ${name}`);
+  }
+}
+
 writeFileSync('out/sound/WHAT-TO-LISTEN-FOR.txt', `INKLANDS — the score, Session 8
 ================================
 
@@ -84,7 +123,7 @@ Every file here was synthesised from src/core/Audio.ts by
 tools/render-wavs.mjs. There are no audio assets in this project and
 there never will be.
 
-All nineteen files carry THE SAME 16x gain and nothing else. In the
+Every file carries THE SAME 16x gain and nothing else. In the
 game the score is mixed about twenty-six decibels below full scale,
 so that the footsteps and each land's own voices have room on top of
 it; at that level a file is unplayably quiet. The gain is uniform on
@@ -125,14 +164,34 @@ So the ear gate is yours. What it is worth asking:
    instrument's top closes. Is eleven at night still the same
    place, or has it become a different one?
 
+4. VOICE-*.wav — THE THIRTY-FOUR LAND VOICES, added Session 14, and
+   until now not one of them had ever been rendered to anything a
+   person could play. They are the one-shots each land fires as you
+   walk it: the lark and the well chain in the Common, the belfry
+   and the market in Brim, the surf and the gulls and the oar on
+   the coast, the mill and the sheep on the Downs, the axe and the
+   drip and the tick of a pine in the Penwood, stone falling in the
+   canyon, grit and two full water cans in the Flats, a sprinkler
+   and a dog and a screen door in Maple Court, a crossing box
+   ticking for nobody in the city, and the plant on the roof of the
+   Cubicle Mile.
+
+   Each file is ONE firing, from the top, in five seconds of
+   silence — no bed and no phrases under it, so you are hearing the
+   voice alone, which is not how it ever sounds in the game.
+
+   What is worth asking: does the voice belong to the same PLACE as
+   the instrument in that land's LAND-*.wav, or does it sound like
+   a sound effect dropped on top of one? And is any of them too
+   often, too loud, or too obviously a synthesiser?
+
 WHAT IS NOT IN THESE FILES
 --------------------------
-The footsteps and the one-shot voices of each land (the lark, the
-belfry, the gulls, the surf, the oars). They are bound to the live
-audio context and are not part of the offline render, so what you
-are hearing is the SCORE alone, with the rest of the world's sound
-turned off. In the game they sit on top of this, which is why the
-score is mixed twenty decibels below full scale.
+The footsteps, and the score under the voices (the voice files are
+dry, on purpose). What you are hearing in LAND-*.wav is the SCORE
+alone with the rest of the world's sound turned off; in the game
+the two sit on top of each other, which is why the score is mixed
+twenty decibels below full scale.
 
 ${notes.join('\n')}
 `);

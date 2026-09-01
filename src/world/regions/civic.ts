@@ -20,6 +20,15 @@ import {
   hollowWallTexture,
 } from '../textures-now';
 import {
+  officeBlockTexture, officeBlockLitTexture, atriumTexture, atriumLitTexture,
+  slidingDoorsTexture, shelterTexture, shelterLitTexture, timetableTexture,
+  dennisTexture, barrierTexture, gatehouseTexture, lampStandardTexture,
+  lampStandardLitTexture, flagpolesTexture, officeFlagTexture, plannedShrubTexture,
+  bollardTexture, officeBinTexture, officeCarTexture, backOfHouseTexture,
+  musterSignTexture, officeFolkTexture, paperCupTexture, estateBoardTexture,
+  bayRunDecal, apronDecal, slabDecal, musterDecal, smokedPatchDecal,
+} from '../textures-office';
+import {
   brimWallTexture, wallTowerTexture, brimGateTexture, gatePennantTexture,
   wornGroundDecal, wheelRutsDecal, longFenceTexture,
   hedgerowTexture, reedsTexture, swallowTexture,
@@ -35,6 +44,10 @@ import {
 } from '../textures-oldworld';
 import { clock } from '../daylight';
 import { knowledge } from '../knowledge';
+/* WHOEVER IS ON A PLATFORM RIGHT NOW (Session 14, `Eight15.ts`).
+ * Nobody may be in two places at once: while the 8:15's doors are open
+ * at a land's stop, that land's own person is the one standing on it. */
+import { platform } from '../../engine/Eight15';
 import type { RegionBuilder, WorldPOI } from './index';
 
 /* ------------------------------------------------------------------ *
@@ -414,7 +427,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     }
     stallShut.visible = outNow > 0.02 && !open;
     stallOpen.visible = outNow > 0.02 && open;
-    marget.visible = outNow > 0.02;
+    marget.visible = outNow > 0.02 && platform.land !== 'kingdom';
     marketBoard.visible = open;
 
     if (!open) {
@@ -842,7 +855,17 @@ export const CASTLE_POIS: WorldPOI[] = [
     prompt: 'READ THE PLINTH',
     note: {
       title: 'the toppled king',
-      body: 'a king fell over and was left where he landed, sceptre a body\'s length away. the plinth says he was beloved. the rooks say he is comfortable.',
+      /* THE NAME ON THE PLINTH (`THE-STRANGERS` S8, beat two), and it
+       * cost this session one clause and one id and no geometry at all
+       * in a land that holds a verdict.
+       *
+       * The plinth says he was beloved, and above that it says where he
+       * was beloved OF, and it is spelled the old way, which is the way
+       * it is said. Four hundred and eighty units south a man has been
+       * saying it wrong for thirty years and has never once been told.
+       * Nothing here mentions him and nothing there mentions this. */
+      body: 'a king fell over and was left where he landed, sceptre a body\'s length away. the plinth says he was beloved of graweder, which is this place with the old spelling still on it. the rooks say he is comfortable.',
+      learns: ['fact:the-old-name'],
     },
   },
   {
@@ -1234,7 +1257,8 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
      * street; the bin, once, early. She is not in shot at night and she
      * is not in shot in the middle of the day. */
     const pose = h > 18.2 && h < 20.8 ? 0 : h > 7.2 && h < 8.4 ? 1 : -1;
-    for (let p = 0; p < 2; p++) val[p].visible = p === pose;
+    const valBoarding = platform.land === 'neighborhood';
+    for (let p = 0; p < 2; p++) val[p].visible = p === pose && !valBoarding;
 
     /* JUNE. At her gate in the evening — and at the fence, always, once
      * you have brought back what you saw at the junction. */
@@ -1635,8 +1659,9 @@ export const buildCity: RegionBuilder = (ctx) => {
         stood = 0;
       }
     }
-    man[0].visible = !told;
-    man[1].visible = told;
+    const manBoarding = platform.land === 'city';
+    man[0].visible = !told && !manBoarding;
+    man[1].visible = told && !manBoarding;
 
     /* the door turns, and it turns whether or not anybody is going
      * through it */
@@ -1710,60 +1735,639 @@ export const CITY_POIS: WorldPOI[] = [
 ];
 
 /* ================================================================== *
- * THE CUBICLE MILE — glass, hedges, one bus stop, and the long lunch
- * hour of the soul. The floors are polished; your steps say so.
+ * THE CUBICLE MILE — where a promise is enough.
+ *
+ * Session 14, to `design/specs/the-cubicle-mile.md`.
+ *
+ * THE DRAFT THIS REPLACES was Session 1's and it was the last one left
+ * in the world: twenty-six glass towers on a twenty-six-unit `for` loop
+ * with a second row sixty units behind it, thirty hedges at nine-unit
+ * spacing in two dead-straight rows, six benches and twelve planters on
+ * a Poisson scatter, and eight doodle-folk anywhere. Even spacing,
+ * repeated silhouettes, uniform density — the three-part definition of
+ * *reads as an array* (`QUALITY-BAR` §4).
+ *
+ * ── WHAT REPLACES IT, AND IT IS A SITE PLAN AND NOT A STREET ────────
+ *
+ * GREYLINE CITY is a STREET WALL with holes in it. A business park is
+ * the opposite thing: detached blocks, each standing in its own car
+ * park behind its own strip of grass, set back from the road at the
+ * distance the plan said, and **every roofline in the land at exactly
+ * the same height.** That is the straightedge said in silhouette — the
+ * land has a second horizon three units above the real one, dead level,
+ * running the whole width of the frame — and exactly one thing breaks
+ * it, and it is THE ATRIUM, which was phase two.
+ *
+ * Where GREYLINE crops its near towers on the top of the frame,
+ * **nothing in the Cubicle Mile touches the top of the frame at all.**
+ * The two lands are opposite in the one measurement the camera cares
+ * about, which is what stops the third present-day land from reading as
+ * more of the second.
+ *
+ * ── AND THIS LAND AUTHORS NO GROUND, ON PURPOSE ─────────────────────
+ *
+ * Every land session since Session 10 has authored a landform first,
+ * because it gives the camera something to recede along. This one
+ * authors the ABSENCE of one: `elevation.ts` gives the office park a
+ * cockle weight of 0.18 and no landform on the sheet comes near it, so
+ * the whole rect inside the world's curled margins varies by about a
+ * fifth of a unit. The flattest ground in the world is the correct
+ * ground under the only corner of it anybody ever laid out with a
+ * straightedge, and `tools/check-terrain.mjs` prints the number now so
+ * that no later session sprinkles a hill on it.
+ *
+ * What recedes instead is PAINT. A car park's ruled bays running away
+ * north are a perspective device a decal draws for nothing.
  * ================================================================== */
 
+/** THE STOP. `THE-WAITS` §12, and the note on it is the premise line. */
+const STOP = { x: 251.2, z: 199.2 };
+/** THE BOARD — a survey schedule in a case on two legs. */
+/**
+ * THE BOARD — a survey schedule in a case on two legs, and it is set
+ * TIGHT against the shelter for the narrow viewport's sake.
+ *
+ * Portrait's frame is 26.5° wide against desktop's 68.6°
+ * (`WORLD-SYSTEMS` §8), so a place is composed for the NARROW frame and
+ * allowed to be generous in the wide one. Round 4 stood the board eight
+ * units off the shelter and portrait's shot of THE 8:15 STOP had the
+ * timetable — which is the entire point of the place — outside the
+ * picture.
+ */
+const BOARD = { x: 255.4, z: 200.4 };
+/** DENNIS, who has it by heart and would be embarrassed for you. */
+/**
+ * DENNIS, and he stands OUT AT THE KERB rather than under the roof.
+ *
+ * Round 2 of the gate put him inside the shelter's footprint and he
+ * came back as a dark smear against its left post: at seven and a half
+ * units wide the shelter simply eats a two-unit figure. Standing him
+ * clear of it costs nothing and gains the whole read — and it is more
+ * true, because **the bench in there has never been sat on**, which is
+ * the only thing about it worth drawing.
+ */
+const DENNIS = { x: 253.4, z: 203.6 };
+/** THE ATRIUM — phase two, and the only thing that breaks the line. */
+const ATRIUM = { x: 283, z: 170 };
+/** Every roof in the mile stands at this height, and the drawing's own
+ *  roofline sits at 0.8375 of it — so nine blocks off three canvases
+ *  give one dead level line. */
+const BLOCK_H = 7.6;
+
+/**
+ * THE SURVEY SCHEDULE — twelve names and twelve times, in the order the
+ * surveyors were due at them, coming down the line from the gate.
+ *
+ * This is the timetable, and `THE-WAITS` §12 is what it means: **the
+ * times are the hours the surveyors were due at each point down the
+ * line, 8:15 is when they were due here, and the last entry on it is
+ * this stop, because this is where the survey stopped.**
+ *
+ * It is the only document in the world that names all twelve lands in
+ * order. Dennis has it by heart and **it has never once occurred to him
+ * that they are places** — to him they are stops: a list, in sequence,
+ * that somebody once wrote down as though they belonged together.
+ *
+ * The short forms are a timetable's own: nobody has ever printed CASTLE
+ * GREYWEATHER in a case on a post and left room for the time.
+ *
+ * **Nothing in this game ever says any of that**, and there is no note
+ * anywhere in this land that explains the board. The player is the only
+ * thing in the world that can read it and understand what they are
+ * reading, which is the whole of Act III (`THE-LINE` §3.4).
+ */
+export const SURVEY_SCHEDULE: [string, string][] = [
+  ['GREYWEATHER', '5:40'],
+  ['PENWOOD', '6:00'],
+  ['BRIM', '6:15'],
+  ['SPLITROCK', '6:30'],
+  ['HARROW', '6:50'],
+  ['LONGSHORE', '7:05'],
+  ['THE COMMON', '7:20'],
+  ['WIDE BLUE', '7:35'],
+  ['MAPLE COURT', '7:50'],
+  ['BLEACH FLATS', '8:00'],
+  ['GREYLINE', '8:05'],
+  ['CUBICLE MILE', '8:15'],
+];
+
+/**
+ * THE NAME ON THE PLINTH (`THE-STRANGERS` S8), and it is built at both
+ * ends because both ends exist.
+ *
+ * Dennis reads the twelve in order, daily, from memory, and one of them
+ * he has been saying wrong for thirty years — it is not a word anybody
+ * uses down here. Greyweather's toppled king says where he was beloved
+ * OF, spelled the old way, which is the way it is said. Bring it back
+ * and **exactly one line on the board has been wiped clean of a century
+ * of grime**, and nobody in the Cubicle Mile notices, because nobody
+ * has ever listened to the whole list.
+ *
+ * He still does not think the twelve are places. He has simply learned
+ * that one of them is old.
+ */
+const OLD_NAME = 'GRAWEDER';
+
 export const buildOffice: RegionBuilder = (ctx) => {
-  const { r, terrain } = ctx;
+  const { r } = ctx;
 
-  const spots: [number, number][] = [];
-  for (let x = 250; x <= 360; x += 26) {
-    spots.push([x, 176 - r() * 8], [x + 10, 236 + r() * 8]);
+  /* ---- the shared drawings, made ONCE (Session 10's costing) ------- */
+  const BLOCK = [0, 1, 2].map((v) => officeBlockTexture(7000 + v, v as 0 | 1 | 2));
+  const BLOCK_LIT = [0, 1, 2].map((v) => officeBlockLitTexture(7010 + v, v as 0 | 1 | 2));
+  const BAY = [0, 1, 2].map((v) => bayRunDecal(7020 + v, v as 0 | 1 | 2));
+
+  /* ================================================================ *
+   * THE MILE. Authored, one line per building: which drawing, where it
+   * stands, how wide it is stood, and whether anybody is still in it at
+   * seven in the evening.
+   *
+   * **The height is not authored and may not be.** Every block is
+   * BLOCK_H tall, which is what makes the level roofline; the width is
+   * authored per placement, so two blocks off one canvas are a long
+   * building and a short one rather than the same building twice.
+   * ================================================================ */
+  type Block = { x: number; z: number; t: 0 | 1 | 2; w: number; rot?: number; lit?: boolean };
+  const BLOCKS: Block[] = [
+    /* the west group — phase one, closest together, all at the same
+     * setback because the plan said so and nobody has ever argued */
+    { x: 243, z: 184, t: 0, w: 14, lit: true },
+    { x: 257, z: 179, t: 2, w: 13.5 },
+    { x: 270, z: 187, t: 1, w: 15, rot: 0.03, lit: true },
+    /* — the forecourt, and it is the one place in the land you can see
+     *   the whole roofline along — */
+    /* the east group, further apart: the site is running out this way */
+    { x: 301, z: 184, t: 2, w: 15 },
+    { x: 314, z: 178, t: 0, w: 13, rot: -0.035, lit: true },
+    { x: 327, z: 187, t: 1, w: 16 },
+    /* the north pair, deeper in and hazed, and they are what make the
+     * mile a mile rather than a row */
+    /* — and the overflow's own corridor is kept clear: a walker coming
+     *   north up x = 300 has to be able to SEE the bays run out, and
+     *   round 1 stood a block dead in front of them — */
+    { x: 259, z: 156, t: 1, w: 14 },
+    { x: 276, z: 152, t: 0, w: 15, lit: true },
+    { x: 336, z: 168, t: 2, w: 13 },
+  ];
+
+  const lits: THREE.Mesh[] = [];
+  for (let i = 0; i < BLOCKS.length; i++) {
+    const b = BLOCKS[i];
+    ctx.standee(BLOCK[b.t], b.w, BLOCK_H, b.x, b.z, { rotY: b.rot ?? 0 });
+    if (b.lit) {
+      const m = ctx.standee(BLOCK_LIT[b.t], b.w, BLOCK_H, b.x, b.z, { rotY: b.rot ?? 0, opacity: 0 });
+      (m.material as THREE.MeshBasicMaterial).transparent = true;
+      lits.push(m);
+    }
   }
-  spots.push([248, 155], [330, 152], [365, 250], [255, 262]);
-  let gi = 0;
-  for (const [x, z] of spots) {
-    if (terrain.waterAt(x, z) > 0.04 || terrain.roadAt(x, z)) continue;
-    const floors = 7 + Math.floor(r() * 7);
-    const hpx = 60 + floors * 28;
-    ctx.standee(glassTowerTexture(1300 + gi, floors), 10, 10 * (hpx / 192), x, z);
-    gi++;
+
+  /* ================================================================ *
+   * THE ATRIUM — the front of phase two, and the land's one place with
+   * anything like a front door.
+   *
+   * The doors are the whole of §5's player-responsive motion, and they
+   * are the only thing in this world that reacts to the walker's BODY
+   * rather than to what they know. They open, and nothing happens.
+   * ================================================================ */
+  ctx.standee(atriumTexture(7100), 14, 9.6, ATRIUM.x, ATRIUM.z);
+  const atriumLit = ctx.standee(atriumLitTexture(7101), 14, 9.6, ATRIUM.x, ATRIUM.z, { opacity: 0 });
+  (atriumLit.material as THREE.MeshBasicMaterial).transparent = true;
+  lits.push(atriumLit);
+  const doors = [false, true].map((open) => {
+    const m = ctx.standee(slidingDoorsTexture(7110 + (open ? 1 : 0), open), 3.4, 3.4,
+      ATRIUM.x, ATRIUM.z + 0.6);
+    (m.material as THREE.MeshBasicMaterial).transparent = true;
+    return m;
+  });
+  doors[1].visible = false;
+
+  /* the forecourt: three poles and one flag, a planted bed in a ruled
+   * row, and the smoking spot round the side that nobody drew a path to
+   * and everybody wore one */
+  ctx.standee(flagpolesTexture(7120), 4.2, 5.0, ATRIUM.x - 7.5, ATRIUM.z + 8);
+  const flag = ctx.standee(officeFlagTexture(7121), 3.1, 2.05, ATRIUM.x - 6.6, ATRIUM.z + 8.1);
+  ctx.hang(flag, 3.3);
+  ctx.decal(apronDecal(7130), 26, 22, ATRIUM.x, ATRIUM.z + 12, 0, 0.5);
+  ctx.decal(smokedPatchDecal(7131), 13, 13, ATRIUM.x + 10.5, ATRIUM.z + 5.5, 0, 0.9);
+  ctx.standee(officeBinTexture(7132, true), 1.4, 2.1, ATRIUM.x + 10.5, ATRIUM.z + 3.4);
+
+  /* ================================================================ *
+   * THE 8:15 STOP — a stop, a timetable, and no track.
+   *
+   * `THE-WAITS` §12 and `WORLD-SYSTEMS` §10's house voice both live
+   * here, and the note on it is Session 1's premise line, which no
+   * session has ever improved and this one does not touch.
+   *
+   * THE SHOT is from the apron at about (252, 210) looking due north:
+   * the kerb and a bollard cropped in the near corner, the shelter and
+   * the board and Dennis at eleven units, the mile's level roofline
+   * behind them in haze — and the lamp standards over the car park
+   * beyond, all of them on, with **the shelter the one dark thing in a
+   * lit car park.**
+   * ================================================================ */
+  /* The apron's kerb lands at the shelter's foot and its stopping box
+   * lands ON the road, which is what the decal's own layout says: at
+   * this placement v = 118 is z = 199.2 and the box is z 203..208. */
+  ctx.decal(apronDecal(7200), 30, 30, STOP.x, STOP.z + 5.5, 0, 0.72);
+  ctx.standee(shelterTexture(7201), 6.8, 4.8, STOP.x, STOP.z);
+  const shelterLit = ctx.standee(shelterLitTexture(7202), 6.8, 4.8, STOP.x, STOP.z, { opacity: 0 });
+  (shelterLit.material as THREE.MeshBasicMaterial).transparent = true;
+
+  /* THE BOARD, and it has two states and the second one is a stranger's
+   * whole errand (`THE-STRANGERS` S8). */
+  const schedule = SURVEY_SCHEDULE.map(([n, t]) => [n, t]);
+  const wipedSchedule = SURVEY_SCHEDULE.map(([n, t], i) => [i === 0 ? OLD_NAME : n, t]);
+  const board = [
+    ctx.standee(timetableTexture(7210, schedule, -1), 2.3, 2.96, BOARD.x, BOARD.z),
+    ctx.standee(timetableTexture(7211, wipedSchedule, 0), 2.3, 2.96, BOARD.x, BOARD.z),
+  ];
+  for (const m of board) (m.material as THREE.MeshBasicMaterial).transparent = true;
+
+  /* DENNIS. Two postures, no face, and one visible want expressed by
+   * where he stands (`WORLD-SYSTEMS` §5): under the shelter facing
+   * north up a road nothing is coming down, and once in the morning at
+   * the board, reading a list he knows by heart. */
+  const dennis = [0, 1].map((p) =>
+    ctx.standee(dennisTexture(7220 + p, p as 0 | 1), 1.3, 2.15,
+      p === 0 ? DENNIS.x : BOARD.x - 1.9, p === 0 ? DENNIS.z : BOARD.z + 1.1));
+  for (const m of dennis) (m.material as THREE.MeshBasicMaterial).transparent = true;
+
+  /* the near layer, and it is the only thing in this land at knee
+   * height: two bollards at the kerb, one of which has been hit */
+  ctx.standee(bollardTexture(7230, false), 0.62, 1.25, STOP.x - 6.6, STOP.z + 9.2);
+  ctx.standee(bollardTexture(7231, true), 0.62, 1.25, STOP.x + 6.9, STOP.z + 9.6, { rotY: 0.2 });
+  ctx.standee(officeBinTexture(7232, false), 1.3, 2.0, STOP.x - 4.4, STOP.z + 1.9);
+
+  /* ================================================================ *
+   * THE BARRIER — the seam with GREYLINE CITY, and where the
+   * straightedge world starts.
+   *
+   * It is up, and it has been up so long the counterweight has rusted
+   * at the top of its arc and the tarmac under the boom has never once
+   * been marked. There is a kettle in the gatehouse window and a mug
+   * beside it and that is the whole of what anybody knows about
+   * whoever used to sit there.
+   * ================================================================ */
+  ctx.standee(barrierTexture(7300), 2.9, 5.8, 245.5, 201.6);
+  ctx.standee(gatehouseTexture(7301), 3.6, 3.6, 239.5, 198.2, { rotY: 0.08 });
+  /* THE ESTATE BOARD: a heading somebody paid a signwriter for and six
+   * slots for the six tenants the site was drawn for, and two of them
+   * have anything in them at all. Nobody has ever read it. */
+  ctx.standee(estateBoardTexture(7302), 5.0, 4.3, 235.5, 196.5, { rotY: -0.05 });
+
+  /* ================================================================ *
+   * THE CAR PARKS — and in this land the ground is PAINT.
+   *
+   * Three states, and the three of them are the land's whole story told
+   * in paint: kept up at the frontage, faded at the far end, and never
+   * painted at all in the overflow.
+   * ================================================================ */
+  ctx.decal(BAY[0], 18, 24, 246, 195, 0, 0.72);
+  ctx.decal(BAY[0], 18, 22, 268.5, 196, 0, 0.7);
+  ctx.decal(BAY[1], 18, 24, 302, 195, 0, 0.66);
+  /* THE CAR PARK, the named one, and it is the end of the line. The
+   * bay by the door is marked and empty and the one car in it is at the
+   * far end, and nothing anywhere says why. */
+  ctx.decal(BAY[0], 20, 26, 322, 194, 0, 0.72);
+  /* THE OVERFLOW — ruled out for the people who were coming, and half
+   * of it was never painted. Past the last bay the Bleach Flats start
+   * and there is no marker of any kind. */
+  ctx.decal(BAY[1], 19, 26, 292, 154, 0, 0.68);
+  ctx.decal(BAY[2], 19, 28, 311, 150, 0, 0.74);
+
+  /* four lighting columns, and they are the only verticals in a level
+   * land — and at dusk they are all on over an empty car park */
+  const lampLits: THREE.Mesh[] = [];
+  /* AND ONE COLUMN THAT IS NOT ON THIS LIST. It stands in the overflow,
+   * it was put up with the kerbs and the drainage, and it was never
+   * connected — so at dusk every light in this land is on except two:
+   * that one, and the shelter. Nothing anywhere says so. */
+  ctx.standee(lampStandardTexture(7402), 1.5, 6.0, 296, 160);
+  /* TWO OF THEM FLANK THE STOP, and that placement is the whole of the
+   * wait's picture: at dusk every light in the car park is on and **the
+   * shelter between them is the one dark thing in it**. Round 3 had
+   * them thirty units back and the composition said nothing. */
+  for (const [lx, lz, lh] of [
+    [244.6, 195.0, 6.8], [258.8, 194.4, 6.8],
+    /* and NOT one in the atrium's forecourt: round 5 stood a six-metre
+     * column two and a half units in front of the lens in the framing
+     * that is supposed to be the front door of the tallest building in
+     * the land, and the whole shot came back with a black bar down it */
+    [294, 191, 6.4], [312, 193.5, 6.4], [326.5, 192, 6.4],
+  ] as [number, number, number][]) {
+    ctx.standee(lampStandardTexture(7400), lh * 0.25, lh, lx, lz);
+    const g = ctx.standee(lampStandardLitTexture(7401), lh * 0.25, lh, lx, lz, { opacity: 0 });
+    (g.material as THREE.MeshBasicMaterial).transparent = true;
+    lampLits.push(g);
   }
 
-  // hedges: clipped bushes in disciplined rows
-  const hedges = ctx.field(bushTexture(1320), 30, { w: 2.6, h: 1.7 });
-  let hi = 0;
-  for (let x = 240; x <= 372 && hi < 15; x += 9, hi++) hedges.set(hi, x, 194, 1, 0, false);
-  for (let x = 244; x <= 372 && hi < 30; x += 9, hi++) hedges.set(hi, x, 216, 1, 0, true);
+  /* the cars, and they are the only curves in a ruled land */
+  const cars = ctx.field(officeCarTexture(7410, 0), 4, { w: 4.6, h: 2.76 });
+  const cars2 = ctx.field(officeCarTexture(7411, 1), 3, { w: 4.4, h: 2.64 });
+  const cars3 = ctx.field(officeCarTexture(7412, 2), 3, { w: 4.8, h: 2.88 });
+  ([[243, 191], [249.5, 197], [271, 192], [305, 198]] as [number, number][])
+    .forEach(([x, z], i) => cars.set(i, x, z, 1, 0, r() > 0.5));
+  ([[266, 199], [299, 191], [313, 197]] as [number, number][])
+    .forEach(([x, z], i) => cars2.set(i, x, z, 1, 0, r() > 0.5));
+  /* and the one in THE CAR PARK, at the far end of it, twenty units
+   * from a marked and empty bay by the door */
+  ([[329, 187], [246, 158], [289, 148]] as [number, number][])
+    .forEach(([x, z], i) => cars3.set(i, x, z, 1, 0, r() > 0.5));
 
-  ctx.standee(busStopTexture(1330), 5.4, 5, 252, 212, { rotY: Math.PI });
-  const benches = ctx.field(benchTexture(1331), 6, { w: 3.4, h: 1.7 });
-  ctx.scatter(6, { minDist: 16 }).forEach(([x, z], i) =>
-    benches.set(i, x, z, 1, (r() - 0.5) * 0.5, r() > 0.5));
-  const planters = ctx.field(planterTexture(1332), 12, { w: 2, h: 2 });
-  ctx.scatter(12, { minDist: 10 }).forEach(([x, z], i) =>
-    planters.set(i, x, z, 0.9 + r() * 0.3, 0, false));
+  /* ================================================================ *
+   * THE SLAB — phase three, poured, with the holding-down bolts in it
+   * and a ruled outline round it and nothing on it, ever.
+   *
+   * It rhymes with MAPLE COURT's plots that were never built on and it
+   * does not repeat them: there it was kerbs and dropped kerbs and
+   * driveways, and here it is a rectangle of concrete with the bolts
+   * still waiting and the grass up one side of it only.
+   * ================================================================ */
+  ctx.decal(slabDecal(7500), 24, 16, 332, 138, 0.02, 0.72);
 
-  const folk = ctx.field(doodleFolkTexture(1340), 8, { w: 1.15, h: 1.9 });
-  ctx.scatter(8, { minDist: 14, allowRoad: true }).forEach(([x, z], i) =>
-    folk.set(i, x, z, 0.85 + r() * 0.25, 0, r() > 0.5));
+  /* ================================================================ *
+   * THE BACK OF THE SITE — south of the road, and it is the honest
+   * picture of an office park: a bin store with the gate open and never
+   * shut, a substation with a sign on it, three extract fans, and the
+   * one place everybody has ever stood together at once.
+   * ================================================================ */
+  /* THE SERVICE YARD'S OWN GROUND, so the backs are standing on
+   * something rather than floating on grass.
+   *
+   * It is the overflow's unpainted drawing rather than the apron's,
+   * because the apron carries a KERB across a third of its height and
+   * this yard's kerb landed three units in front of the lens in the
+   * framing where the 8:15 pulls up at the stop — one solid black bar
+   * across the bottom of the ending's own picture. The unpainted bay
+   * run's kerbs go the other way, which is down the sides of a yard,
+   * which is where a yard's kerbs are. */
+  ctx.decal(BAY[2], 30, 24, 261, 241, 0.02, 0.46);
+  /* AND THEY STAND TWENTY UNITS BACK FROM THE ROAD, not eight.
+   *
+   * The camera walks twelve units behind the walker, so a walker
+   * standing on the spur has a lens at z ≈ 228 — and round 6 put an
+   * eight-unit office back two and a half units in front of it, which
+   * put one solid black bar across the bottom of THE FRAME WHERE THE
+   * 8:15 PULLS IN. The most important composition in the land had a
+   * building's plinth line drawn through it and the building was
+   * behind the camera.
+   *
+   * **Nothing in this land stands between z = 214 and z = 234**, which
+   * is the corridor the lens occupies from anywhere on the road. */
+  ctx.standee(backOfHouseTexture(7600, 0), 13, 8.1, 250, 237);
+  ctx.standee(backOfHouseTexture(7601, 1), 13, 8.1, 270, 242, { rotY: -0.04 });
+  /* three wheelie bins out, which is what is always out */
+  for (const [bx, bz, rot] of [
+    [258, 239.6, 0.1], [259.7, 240.1, -0.06], [261.9, 240.5, 0.14],
+  ] as [number, number, number][]) {
+    ctx.standee(officeBinTexture(7603 + Math.round(bx), false), 1.3, 2.0, bx, bz, { rotY: rot });
+  }
+  ctx.decal(musterDecal(7610), 21, 21, 290, 246, 0, 0.66);
+  ctx.standee(musterSignTexture(7611), 1.62, 2.7, 283.5, 240.6, { rotY: 0.1 });
+  /* the near layer this framing needs: the corner of the rectangle, a
+   * bollard that has been reversed into, and the bin nobody empties
+   * because nobody comes down here */
+  ctx.standee(bollardTexture(7612, true), 0.6, 1.2, 281.5, 254.5, { rotY: -0.28 });
+  ctx.standee(bollardTexture(7613, false), 0.6, 1.2, 299.5, 255.8);
+  ctx.standee(officeBinTexture(7614, false), 1.3, 2.0, 295, 252);
+
+  /* ================================================================ *
+   * THE PLANTING — a ruled row of clipped boxes that have been clipped
+   * so long they have corners, and three drawings so no silhouette is
+   * repeated across a frame.
+   *
+   * They go BESIDE things, never in the open: the plan put them where a
+   * plan puts them, which is along a kerb and against a wall.
+   * ================================================================ */
+  const SHRUB = [0, 1, 2].map((v) => plannedShrubTexture(7700 + v, v as 0 | 1 | 2));
+  const beds = [0, 1, 2].map((v) => ctx.field(SHRUB[v], 10, { w: 2.5, h: 2.5 }));
+  {
+    /* THE RUNS ARE NOT EVEN AND THEY ARE NOT COMPLETE. Round 1 laid
+     * five identical boxes at four-unit spacing across the middle of
+     * the frame, which is a hedge drawn as an array in the one land
+     * that already has a grid in it. A planted bed on a real site has
+     * gaps in it where something died and was never replaced, and it
+     * has two together and then a long space, and it stops before the
+     * end of the kerb it was set out along — which is the land's own
+     * rule about every mark it draws. */
+    const count = [0, 0, 0];
+    const RUNS: [number, number, number, number, number[]][] = [
+      // x0, z0, dx, dz, the gaps between one shrub and the next
+      [237, 194, 0, 1, [0, 3.4, 8.2]],                 // the gatehouse's kerb
+      [275, 182.5, 1, 0.1, [0, 3.2, 4.6, 11.4, 14.8]], // the atrium's own bed
+      [293, 190, 1, -0.14, [0, 4.8, 6.4]],             // between the car parks
+      [317, 189.5, 1, 0.16, [0, 3.6, 10.2, 13.4]],     // in front of THE CAR PARK
+      [257, 214, 1, 0.18, [0, 5.2, 7.0, 16.4]],        // the road's south verge
+    ];
+    for (const [x0, z0, dx, dz, gaps] of RUNS) {
+      for (let i = 0; i < gaps.length; i++) {
+        const v = (i + Math.floor(x0)) % 3;
+        if (count[v] >= 10) continue;
+        beds[v].set(count[v]++, x0 + dx * gaps[i] + (r() - 0.5) * 0.8,
+          z0 + dz * gaps[i] + (r() - 0.5) * 0.8, 0.8 + r() * 0.4, 0, r() > 0.5);
+      }
+    }
+  }
+
+  /* the grass that has got in where nobody mows: along the overflow's
+   * unpainted half and up the slab. Nothing else grows in this land. */
+  /* Round 1 scattered forty-four of these at a four-unit minimum over
+   * the whole north end and they came back as an even field of
+   * identical marks — an array, in a land whose whole subject is a
+   * grid. Weeds do not scatter. They come up in the JOINTS, so they are
+   * authored in short broken runs down the lines of the paving and
+   * along the kerb the tarmac stops short of. */
+  const weeds = ctx.field(grassTexture(), 26, { w: 1.4, h: 0.95, wind: { amp: 0.07, freq: 0.65 } });
+  {
+    let wi = 0;
+    for (const [x0, z0, dx, dz, n] of [
+      [303, 140, 0.3, 3.1, 7],     // down a joint in the unpainted half
+      [316, 143, -0.2, 2.6, 5],    // and the next one over, shorter
+      [289, 137, 2.4, 0.4, 4],     // along the kerb at the top
+      [324, 147, 1.1, 1.9, 4],
+      [297, 165, 1.6, -1.2, 3],
+      [334, 133, 1.2, 2.2, 3],     // and up one side of the slab
+    ] as [number, number, number, number, number][]) {
+      for (let i = 0; i < n && wi < 26; i++) {
+        if (r() < 0.18) continue;             // a joint that stayed clean
+        weeds.set(wi++, x0 + dx * i + (r() - 0.5) * 1.4,
+          z0 + dz * i + (r() - 0.5) * 1.4, 0.5 + r() * 0.55, 0, r() > 0.5);
+      }
+    }
+  }
+
+  /* ---- and the folk, and there are three of them ------------------- *
+   * All carrying something, all mid-stride, and every one of them is
+   * going toward a door. GREYLINE CITY's people are going somewhere and
+   * never arrive; these have arrived and are going in.                */
+  const folk = [0, 1, 2].map((v) =>
+    ctx.field(officeFolkTexture(7800 + v, v as 0 | 1 | 2), 1, { w: 1.15, h: 1.92 }));
+  ([[288, 180], [259, 191], [312, 190]] as [number, number][])
+    .forEach(([x, z], i) => folk[i].set(0, x, z, 0.95 + r() * 0.1, 0, i === 1));
+
+  /* THE PAPER CUP that turns in the eddy at the corner of the east
+   * block, forever, and never gets anywhere. */
+  const cup = ctx.standee(paperCupTexture(7810), 0.5, 0.5, 334, 191);
+
+  /* ================================================================ */
+  let plant = 9;
+  let carDoor = 26;
+  let cupSay = 14;
+  let doorOpen = false;
+  return (dt: number, t: number, px: number, pz: number) => {
+    const h = clock.hour;
+
+    /* THE LIGHTS. Every window in the mile that is still occupied at
+     * seven, and every lighting column over every car park — and the
+     * shelter is NOT among them until you have walked the line. */
+    const dusk = Math.max(
+      Math.min(1, (h - 17.4) / 2.2),
+      Math.min(1, (6.6 - h) / 1.8)
+    );
+    const k = Math.max(0, Math.min(1, dusk));
+    lightUp(lits, k);
+    lightUp(lampLits, k);
+
+    /* ── THE VISIBLE, PERMANENT CHANGE (`THE-WAITS` §12) ──────────────
+     *
+     * You have walked the line — the gate, the town, the common, main
+     * street, the spur, the car park — and you are the only thing that
+     * ever has. Come to the stop holding the route and **the shelter's
+     * light comes on at dusk**, and comes on at every dusk afterwards,
+     * in every save.
+     *
+     * The mechanism is Session 6's, unchanged: Brim's lamps come on at
+     * dusk on a condition, and this is the same code with a different
+     * condition. Nothing announces it. There is no note. The light is
+     * simply on the next time it is dark, and the player is the one who
+     * notices that the one dark thing in a lit car park is not dark any
+     * more.
+     *
+     * *A stop with a light on is a stop that expects somebody at an
+     * hour when it is dark.* */
+    const walked = knowledge.has('route:the-line');
+    lightUp([shelterLit], walked ? k : 0);
+
+    /* THE BOARD. One line wiped clean of a century of grime, and nobody
+     * in the Cubicle Mile notices (`THE-STRANGERS` S8). */
+    const heard = knowledge.has('fact:the-old-name');
+    board[0].visible = !heard;
+    board[1].visible = heard;
+
+    /* DENNIS'S DAY. Under the shelter, facing north, from before it is
+     * light until well after it is dark; and once, at about eight, at
+     * the board, reading a list he knows by heart. He is not in shot in
+     * the small hours and there is nothing to say about that. */
+    const pose = h > 7.85 && h < 8.45 ? 1 : h > 5.6 && h < 21.6 ? 0 : -1;
+    for (let p = 0; p < 2; p++) {
+      dennis[p].visible = p === pose && platform.land !== 'office';
+    }
+
+    /* THE DOORS THAT OPEN FOR YOU — the one thing in this world that
+     * reacts to the walker's body rather than to what they know. They
+     * open, and nothing happens. */
+    const atDoor = Math.hypot(px - ATRIUM.x, pz - (ATRIUM.z + 2)) < 6.5;
+    if (atDoor !== doorOpen) {
+      doorOpen = atDoor;
+      doors[0].visible = !atDoor;
+      doors[1].visible = atDoor;
+      if (atDoor) say('door-hiss');
+    }
+
+    /* THE FLAG, and it is the only thing at the atrium that moves on
+     * its own — two bare poles either side of it. */
+    flag.rotation.z = Math.sin(t * 1.15) * 0.07 + Math.sin(t * 0.43) * 0.03;
+
+    /* THE CUP, on its closed path, forever. It is the one mark in this
+     * land that comes back to where it started, and it is litter. */
+    const a = t * 0.55;
+    cup.position.x = 334 + Math.cos(a) * 1.5 + Math.cos(a * 2.7) * 0.35;
+    cup.position.z = 191 + Math.sin(a) * 1.1 + Math.sin(a * 3.1) * 0.25;
+    cup.rotation.z = Math.sin(a * 2) * 0.5;
+
+    /* THE VOICES. Four, and all four are the same joke told four ways:
+     * a building that promises nothing will change. */
+    const inside = px > 232 && pz > 132 && pz < 268;
+    if (!inside) return;
+    plant -= dt;
+    if (plant < 0) {
+      plant = 20 + Math.random() * 20;
+      say('plant-shift');
+    }
+    carDoor -= dt;
+    if (carDoor < 0) {
+      carDoor = 30 + Math.random() * 40;
+      if (h > 7 && h < 19.5) say('car-door');
+    }
+    cupSay -= dt;
+    if (cupSay < 0) {
+      cupSay = 11 + Math.random() * 14;
+      if (Math.hypot(px - 334, pz - 191) < 40) say('cup-turn');
+    }
+  };
 };
 
 export const OFFICE_POIS: WorldPOI[] = [
   {
-    x: 252, z: 212, radius: 7, label: 'THE 8:15 STOP',
+    /* THE PREMISE, and it is Session 1's and it is untouched. The house
+     * voice's home (`WORLD-SYSTEMS` §10 rule 2): an upbeat institutional
+     * register describing something bleak, and never breaking.
+     *
+     * Reading it is what hands the walker the twelfth piece — *there is
+     * a list, and the twelve are on it, in order* (`THE-WAITS` §13) —
+     * and the note does not say so, because a note that said so would
+     * be the game explaining its own ending. */
+    /* The label is anchored on the SHELTER rather than on the apron:
+     * the skyline writes a name above the tallest thing under it, and
+     * round 1 put this one over a building forty units behind it
+     * because there was nothing under it at all. */
+    x: 252, z: 200.2, radius: 8, label: 'THE 8:15 STOP',
     prompt: 'CHECK THE TIMETABLE',
     note: {
       title: 'the 8:15 stop',
       body: 'the timetable says the 8:15 is coming. there is no track here, and there is no track anywhere. everyone waiting knows both of these things and has made their peace.',
+      learns: ['fact:the-timetable'],
     },
   },
   {
-    x: 300, z: 200, radius: 10, label: 'THE CUBICLE MILE',
+    /* The land's own card, and it sits over the atrium: the skyline
+     * writes a name above the tallest thing under it, and the tallest
+     * thing in this land is the one building that broke the line. */
+    x: 283, z: 180, radius: 10, label: 'THE CUBICLE MILE',
+    prompt: 'STAND IN THE FORECOURT',
     note: {
       title: 'the cubicle mile',
-      body: 'towers of ruled glass, and the only corner of the world anybody ever laid out with a straightedge. your footsteps go glossy here, like the floor is proud of itself.',
+      body: 'every roof at the same height, every bay the same width, and one building two floors taller than the rest because it was phase two. the only corner of the world anybody ever laid out with a straightedge. your footsteps go glossy here, like the floor is proud of itself.',
+    },
+  },
+  {
+    x: 243, z: 205, radius: 7, label: 'THE BARRIER',
+    prompt: 'LOOK AT THE BARRIER',
+    note: {
+      title: 'the barrier',
+      body: 'up. the counterweight has rusted at the top of its arc and the tarmac under the boom has never once been marked. there is a kettle in the window of the hut and a mug beside it.',
+    },
+  },
+  {
+    x: 301, z: 152, radius: 10, label: 'THE OVERFLOW',
+    prompt: 'LOOK AT THE BAYS',
+    note: {
+      title: 'the overflow',
+      body: 'a second car park, set out for the people who were coming. the kerbs are in, the drainage is in, and half of it was never painted. the weeds in the joints are the only thing that has happened here in thirty years.',
+    },
+  },
+  {
+    x: 322, z: 200, radius: 10, label: 'THE CAR PARK',
+    note: {
+      title: 'the car park',
+      body: 'the bay by the door is marked and empty and the one car is at the far end. past the last kerb the page begins to lift, and there is nowhere further east than this.',
+    },
+  },
+  {
+    x: 290, z: 248, radius: 8, label: 'THE MUSTER POINT',
+    prompt: 'READ THE SIGN',
+    note: {
+      title: 'the muster point',
+      body: 'a rectangle painted on the tarmac with a sign on a post beside it. it is the only place in the cubicle mile where everybody has ever stood together at once, and none of them wanted to be there.',
     },
   },
 ];

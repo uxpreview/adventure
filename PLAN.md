@@ -37,8 +37,8 @@ retired; the chosen story is **THE 8:15** (`design/STORY.md`).
 | 11 | **The dry lands** ✓ 2026-08-31 | SPLITROCK CANYON + THE BLEACH FLATS, and the session that MOVED A LANDFORM. Session 4's tear was cut at x = 338, six units from the foot of the world's curled east margin, and the trail that is the only way into that land never came within thirty units of it; it is at x = 300 now, in the middle of its own rect, with the river's source moved with it, the trail re-laid, and the depth tuned so `check-terrain` still prints **floor −10.8** — because `THE-STRANGERS` S5 is an errand about that number. **THE ONLY ROAD IN SPLITROCK IS A RIVERBED**: the trail rounds the head of the river (there is no bridge on this water), drops down the mouth, and runs a hundred and twelve units north along the floor of the tear itself, every point of it `tearX(z)` sampled. **HOLT's** four chalk marks are the only horizontal marks in a land drawn entirely in verticals and their heights are the boat, the trestles, the shed's ridge and the lip; the fifth is above the lip and behind it is his house. **AMOS** carries water forty units UPHILL both ways every night, on a track that is not a road; the gutter runs downhill from the cistern and nothing mentions it. Plus **`fact:the-fold`**, authored end to end for the first time — the design's own dependency, missing from the source since Session 7. Gate to WOWED (`critique-art-7.md`). See `design/specs/splitrock-canyon.md` and `design/specs/the-bleach-flats.md`. |
 | 12 | **The hands and the eye** ✓ 2026-08-31 | **Foundations, re-opened, and not by choice.** THE FEEL GATE — owed since Session 9 — was run by the owner and **returned NOT YET while all six of `check-camera`'s claims stayed green**, because every one of them is about WHERE the camera ends up and none about the journey between two of those places. Measured at the tick, the frame swung **51.2° at 34.7°/s** for one change of mind about which way to walk. **The two components separate perfectly:** the yaw is 100% of the rotation and 12% of the gain it was built for (3.2 units of page on top of 27 the pinned rig already had); the astern is 100% of the walk south and rotates nothing. So **the automatic yaw comes off both rigs and the envelope survives whole as THE PEEK'S** — rotation in this game is a thing the player asks for — and `asternEase` slows so the rig can never give ground faster than the walker covers it. **The crossing component leans the WALKER now**, at the one place in the picture that is never cropped. Plus: the phone's stick gated on `pointerType` and click-drag-to-walk removed from the desktop with the argument written down; the run taught ONCE, at the moment it becomes worth having, because **the trail could not teach it — the prints are laid behind the walker and the frame's bottom edge is three and a half units behind them**. `check-camera` asserts a RATE now and not only a place; `shoot-mobile` shoots five rigs including the desktop and its joystick step is an assertion; and `tools/pw.mjs` unhard-codes the browser path so the gates run on the owner's machine at all. See `design/specs/camera.md` §0 and `design/specs/controls.md`. |
 | 13 | **The now** ✓ 2026-08-31 | MAPLE COURT + GREYLINE CITY, and the first land session judged through a camera that does not lean. **THE LINE'S SIGHTLINE IS ASSERTED NOW AND NOT TRUSTED** (`tools/check-sightline.mjs`): the shipped draft broke `THE-LINE` §3.2 twice — a signpost five units off the axis and thirty street trees on a scatter whose only bound was the road's own paint — and neither would have failed a check or shown in a contact sheet. **THE END OF THE SURVEY** built and left unlettered: the street thins south until there are two plots with kerbs, dropped kerbs and driveways and no houses, and then gravel, and then three pegs. **MAPLE COURT is drawn in closed shapes and GREYLINE CITY in marks that leave the frame**, which is the SPLITROCK/BLEACH FLATS pairing done for the two lands whose subject is the present day. **VAL's porch light never goes fully out**; the hedge is cut back open on `name:castle` and stays cut. **THE MAN AT THE JUNCTION costs four seconds of standing still** — the one permanent change in the game with no knowledge gate — and the pavement worn round him is a drawing, not a note. **S3, THE ELEVEN UNITS, is built at both ends**: June's latch plate is worn bright, and once you have stopped for him she is at the fence and stays there. Plus the keep vista's missing far bound, found from a land it had never been seen from. Gate to WOWED (`critique-art-8.md`). See `design/specs/maple-court.md` and `design/specs/greyline-city.md`. |
-| 14 | **The 8:15** | THE CUBICLE MILE, its wait, and the mount — **you draw the 8:15 into existence and it arrives.** |
-| 15 | **The mount, and the wilds' reward** | **THE PAPER PLANE** (`WORLD-SYSTEMS` §4), deferred in writing by Session 11 with its reason and its brief. May be folded into 13 or 14 if either has room. |
+| 14 | **The 8:15** ✓ 2026-09-01 | THE CUBICLE MILE — **the last scatter draft in the world** — its wait, and the mount, and the mount is the ending of the game. **THE THIRD RULE**: Maple Court's marks close and Greyline's leave the frame, so the third present-day land takes the third thing a line can do — **every mark ruled, and every mark stopping short of the one it was going to meet**, which is what a promise looks like drawn. **Every roofline in the land at the same height** (a second horizon three units above the real one, with one building breaking it because it was phase two) and **nothing touching the top of the frame at all**, which is the opposite of Greyline in the one measurement the camera cares about. **The only land in the world that authors NO ground**: the office park is flat to 0.45 units across 110 × 116 against 15.8 anywhere else, and `check-terrain` asserts both numbers so no later session sprinkles a hill on it — what recedes instead is PAINT. **THE 8:15 IS BUILT** (`THE-LINE` §4): `layout.THE_LINE` assembled from the three roads that already carry the flag so it cannot drift from the road the player walked; twelve stops in the surveyors' order, and the twelve are a SURVEY's twelve entries — the places the surveyors were due, each noted against the land it was to serve — so nobody crosses a border and there is exactly one shelter in the world; it starts on `route:the-line` plus five of the twelve waits and nothing anywhere shows the number; **Joan Harrow's platform is always empty**; **it arrives already carrying the lands above you**, which is `critique-story-2`'s second mandatory finding closed exactly as asked; and it is drawn front-on down the king's road and broadside at every stop, because *a train you are watching is going somewhere and a train you are in is a room*. Plus DENNIS and the survey schedule and the shelter's light; `THE-STRANGERS` S8 built at both ends for one clause and one id; **the count law amended with the owner's words in it** (`QUALITY-BAR` §3, `QUESTS` §7.1); and **the ear gate rebuilt** — the booth renders `Audio.event` now, so thirty-four land voices that had never been heard by anybody are in the owner's listening pack. Gate to WOWED (`critique-art-9.md`). See `design/specs/the-cubicle-mile.md`. |
+| 15 | **The mount, and the wilds' reward** | **THE PAPER PLANE** (`WORLD-SYSTEMS` §4), **deferred in writing for the THIRD time** — Session 11 wrote the brief, Session 13 was over-scoped, and Session 14 was one land, one wait, a MOUNT THAT IS ALSO THE ENDING OF THE GAME, a law amendment and a rebuilt ear gate. The brief has not changed and is below. It goes to 16, or to a session of its own. |
 | 16 | **Motion & life** | Systems pass: wind everywhere, sails and windmills turning, NPC routines, road encounters. (The score moved out of this session to 8 — see the ordering rule.) |
 | 17 | **The juror** | Awwwards pass on the whole build: title, first minute, map, UI feel, mobile portrait, performance audit, then the full-gauntlet critique. |
 
@@ -238,6 +238,23 @@ file that does not persist.
   it down as one (`critique-camera-1.md`, round 3).
 - **Brim Square is full.** Session 7 fitted Marget in. The next authored
   thing in that plaza displaces something Session 3 earned.
+- **THE ENDING DOES NOT YET HAVE A CONSEQUENCE THAT LASTS** (Session
+  14). The 8:15 stops twelve times and somebody gets on at every land
+  whose wait you answered — and while its doors are open at a land's
+  stop that land does not draw its own person, because nobody may be in
+  two places at once (`Eight15.ts` exports `platform` for exactly that).
+  **When the doors shut they are back where they stand.** Making the
+  departure permanent is one clause per land — every routine is already
+  gated on the hour and on knowledge — but it re-opens the authored
+  routine of SEVEN lands that hold verdicts, changes what Val's porch
+  light means, and `THE-LINE.md` §5 does not require it. It is the
+  owner's call and it is the single largest thing left in the story.
+- **THE 8:15 STOP's label prints across the building behind it**
+  (Session 14, `critique-art-9`, noted-not-blocking). The skyline writes
+  a name above the tallest thing under it; the shelter is 4.8 units, and
+  a block twenty-five units further north is higher on screen. Same
+  compromise class as READ THE PROCLAMATION, and it belongs to whoever
+  next opens the skyline rather than to a land.
 - **THE HOLLOW** (Session 13, `critique-art-8`): passed, not praised.
   The city's crease is the only landform in GREYLINE CITY, and its
   gradient is under the terrain's own hatching threshold — so the land
@@ -270,11 +287,27 @@ file that does not persist.
   | the world's own rule is *no UI where the world can say it*, and the map already says it — an inked line is the ninth land drawn differently, which is a progress bar you can read at a glance | **nothing in this game ever tells you you are doing well**, and eleven sessions of design have quietly assumed that is a virtue without ever testing it on a player. The one person who has played it says it is not |
   | Act III's whole beat is the map drawing the line as ONE line once you have walked it — a reward that is a change in a drawing rather than a number going up | that beat is exactly progression, and it works, which is an argument that MORE of it would work rather than less |
 
-  **What a session should NOT do is split the difference quietly.**
-  Either the law holds and the map's line loses its numbers, or the law
-  is amended in `QUALITY-BAR.md` and `QUESTS.md` §7 with the owner's
-  reasoning written into it. Both are one commit; the wrong answer is a
-  law that every prompt repeats and the shipped build breaks.
+  **CLOSED, SESSION 14, AND THE LAW WAS AMENDED RATHER THAN ENFORCED.**
+  The owner challenged the rule, and the owner is who this ladder
+  answers to, so the rule changed — in `QUALITY-BAR.md` §3 and
+  `QUESTS.md` §7.1, with their words written into both:
+
+  > **A NUMBER MAY RECORD WHERE THE PLAYER HAS BEEN. A NUMBER MAY NEVER
+  > GRADE WHAT THEY DID.**
+
+  The argument for the amendment, and it is the left column above
+  turning out to be about the wrong thing: the law came from a SIZING
+  argument (*a collection caps at about two hours*), which is an
+  argument against **collections** and not against **numbers**, and it
+  was written as the second. This game already keeps a record of where
+  you have been and makes Act III's whole beat out of it, so arguing
+  that the inked line is fine and the sentence under it is a violation
+  was the law protecting its wording rather than its reason. The map's
+  count stays. A completion percentage, a checklist, a count of the
+  twelve waits, a score, a grade, or any number that pops up to say you
+  did a thing: refused exactly as before. **And the ending is out of
+  scope and stays absolute** — `THE-LINE.md` §4.2 is settled, nothing
+  counts the platforms, and no amendment to a UI law reaches it.
 
 Rules of the ladder:
 

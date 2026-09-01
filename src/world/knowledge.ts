@@ -170,6 +170,60 @@ export const ROUTES: Route[] = [
   },
 ];
 
+/* ================================================================== *
+ * THE TWELVE WAITS, AND WHAT ANSWERING ONE LOOKS LIKE FROM HERE.
+ *
+ * Session 14, and it is the only place in the source where the twelve
+ * are written down as twelve. `THE-WAITS.md` §13 is the list; this is
+ * the id each one resolves into, in that land's own words, about that
+ * land only. Nobody generalises and nothing points at the rhyme.
+ *
+ * **Four of them are missing, and the gap is honest**: GREYWEATHER's
+ * WICK, LONGSHORE's PYE, THE WIDE BLUE's WREN and THE COMMON's NELL are
+ * written and not built (`THE-WAITS` §14 has them on ground that is
+ * already WOWED, buildable in any session from here). A land with no
+ * entry has a platform that is always empty, which is exactly what an
+ * unanswered wait looks like and costs nothing to be honest about.
+ *
+ * Nothing anywhere in the game counts these, shows these, or tells the
+ * player there are twelve of them.
+ * ================================================================== */
+export const WAIT_ANSWERS: Partial<Record<string, Known>> = {
+  /** MARGET: the market never opened because of an argument about an hour. */
+  kingdom: 'reason:brim',
+  /** BRACK: the tarn, and the road that is his circle. */
+  forest: 'fact:the-tarn',
+  /** HOLT: the river that left is running forty units away. */
+  canyon: 'route:the-river',
+  /** AMOS: the water was always coming from somewhere on this sheet. */
+  desert: 'fact:the-fold',
+  /** JOAN HARROW: a place kept for nobody was always a place kept for
+   *  anybody. **She is not on the platform** — see `Eight15.ts`. */
+  downs: 'fact:the-place-kept',
+  /** VAL: one land can be seen from another, if somebody cuts a hedge. */
+  neighborhood: 'name:castle',
+  /** THE MAN AT THE JUNCTION: somebody has been waiting to be asked. */
+  city: 'fact:the-man-at-the-junction',
+  /** DENNIS: there is a list, and the twelve are on it, in order. */
+  office: 'fact:the-timetable',
+};
+
+/**
+ * HOW MANY WAITS THE 8:15 NEEDS, AND WHY IT IS NOT SEVEN.
+ *
+ * `THE-LINE.md` §4.1 proposed seven, against twelve waits, and said in
+ * the same breath that **seven is an implementation constant and not a
+ * fact about the fiction.** Eight of the twelve exist in the source
+ * today, so a threshold of seven would put somebody on almost every
+ * platform in the game — and IV.3 is only an ending because the
+ * platforms DIFFER. Five leaves room for the ending to be the player's
+ * rather than the author's.
+ *
+ * It goes back to seven when the other four waits are built. It is
+ * never shown anywhere, to anybody, in any form (QUESTS §7).
+ */
+export const WAITS_FOR_THE_LINE = 5;
+
 /* ------------------------------------------------------------------ */
 
 class Knowledge {
@@ -249,6 +303,29 @@ class Knowledge {
       this.set.add(route.id);
       this.dirty = true;
     }
+  }
+
+  /**
+   * HOW MANY OF THE TWELVE WAITS THIS WALKER HAS ANSWERED.
+   *
+   * **This is the only count in the content system and it is read by
+   * exactly one caller** (`Eight15.ts`, to decide whether the 8:15
+   * comes at all). It is not exposed to the UI, it is not saved, it is
+   * not rendered, and nothing in the game will ever draw it — which is
+   * the same bargain §0 of this file already struck for route posts:
+   * the player gets no count; the bookkeeping is ours.
+   */
+  answeredWaits(): number {
+    let n = 0;
+    for (const id of Object.values(WAIT_ANSWERS)) if (id && this.set.has(id)) n++;
+    return n;
+  }
+
+  /** Whether this land's wait is answered — the question the 8:15 asks
+   *  once per stop, and nothing else asks at all. */
+  answered(regionId: string): boolean {
+    const id = WAIT_ANSWERS[regionId];
+    return !!id && this.set.has(id);
   }
 
   /** After a load: a save from before routes existed still has posts. */

@@ -687,3 +687,139 @@ export function rowableAt(x: number, z: number): boolean {
  * they stay exactly what they are, drawn up on their own sand.
  */
 export const BOAT_HOME = { x: -206, z: 205.5 };
+
+/* ================================================================== *
+ * THE LINE, AS ONE POLYLINE — and the twelve stops on it.
+ *
+ * Session 14. `STORY.md` §4: *the king's road leaves Greyweather's
+ * gate, comes down through Brim, crosses the Common, runs up Maple
+ * Court as main street and ends, as the commuter spur, in a car park.
+ * Twelve names, one road, castle to car park.* Three of the roads above
+ * carry `line: true` and have since Session 7, because `knowledge.ts`
+ * lays route posts down them and the map draws them as one continuous
+ * inked line once the walker has been the whole way.
+ *
+ * **The 8:15 runs exactly that**, assembled here from the roads
+ * themselves rather than authored a second time, so the thing that
+ * comes cannot drift from the road the player walked. Where the king's
+ * road runs on past the junction to the world's south rim it is NOT the
+ * line — that is where the survey was going before it turned, and it is
+ * sixteen units short of the edge of the world, and nothing in this
+ * game will ever say so.
+ * ================================================================== */
+
+/** The drawn line, gate to car park, as one continuous polyline. */
+export const THE_LINE: [number, number][] = (() => {
+  const legs = ROADS.filter((r) => r.line);
+  const out: [number, number][] = [];
+  // the king's road only as far as the junction with main street; past
+  // that it is the road to the rim and it is a different thing
+  const head = legs[0].pts.filter(([, z]) => z <= 201) as [number, number][];
+  out.push(...head);
+  for (let i = 1; i < legs.length; i++) {
+    out.push(...(legs[i].pts.slice(1) as [number, number][]));
+  }
+  return out;
+})();
+
+/** How far along `THE_LINE` each of its points is, and how long it is
+ *  altogether. The 8:15 is driven by arc length, so it moves at one
+ *  speed whatever the spacing of the authored points. */
+export const LINE_ARC: number[] = (() => {
+  const out = [0];
+  for (let i = 1; i < THE_LINE.length; i++) {
+    out.push(out[i - 1] + Math.hypot(
+      THE_LINE[i][0] - THE_LINE[i - 1][0],
+      THE_LINE[i][1] - THE_LINE[i - 1][1]
+    ));
+  }
+  return out;
+})();
+
+export const LINE_LENGTH = LINE_ARC[LINE_ARC.length - 1];
+
+/** A point on the line, and which way it runs there. */
+export function lineAt(s: number): { x: number; z: number; tx: number; tz: number } {
+  const d = Math.max(0, Math.min(LINE_LENGTH, s));
+  let i = 1;
+  while (i < LINE_ARC.length - 1 && LINE_ARC[i] < d) i++;
+  const a = THE_LINE[i - 1];
+  const b = THE_LINE[i];
+  const seg = LINE_ARC[i] - LINE_ARC[i - 1] || 1;
+  const u = (d - LINE_ARC[i - 1]) / seg;
+  const dx = b[0] - a[0];
+  const dz = b[1] - a[1];
+  const l = Math.hypot(dx, dz) || 1;
+  return { x: a[0] + dx * u, z: a[1] + dz * u, tx: dx / l, tz: dz / l };
+}
+
+/** How far along the line (x, z) is, and how far off it — the test the
+ *  mount uses to refuse everywhere the line is not drawn. */
+export function nearestOnLine(x: number, z: number): { s: number; d: number } {
+  let best = 1e9;
+  let bestS = 0;
+  for (let i = 1; i < THE_LINE.length; i++) {
+    const [ax, az] = THE_LINE[i - 1];
+    const [bx, bz] = THE_LINE[i];
+    const dx = bx - ax;
+    const dz = bz - az;
+    const len2 = dx * dx + dz * dz || 1;
+    const u = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / len2));
+    const d = Math.hypot(x - (ax + dx * u), z - (az + dz * u));
+    if (d < best) {
+      best = d;
+      bestS = LINE_ARC[i - 1] + u * Math.hypot(dx, dz);
+    }
+  }
+  return { s: bestS, d: best };
+}
+
+/**
+ * THE TWELVE STOPS, in the surveyors' order, coming down the line from
+ * the gate — and they are the twelve entries on the timetable in the
+ * case at THE 8:15 STOP (`textures-office.ts`, `SURVEY_SCHEDULE`).
+ *
+ * ── WHY TWELVE STOPS ON A ROAD THAT PASSES SIX LANDS ────────────────
+ *
+ * `THE-LINE.md` §5 is settled: *the 8:15 comes down the line, once, and
+ * stops twelve times.* The line runs through six of the twelve rects,
+ * and rule 1 of `STORY.md` §8 — nobody crosses a border but the walker
+ * — forbids the obvious repair of walking the other six lands' people
+ * to a platform.
+ *
+ * So the twelve are what a survey's twelve entries actually are: **the
+ * twelve places on the line where the surveyors were due, each noted
+ * against the land it was to serve.** A survey names the place it is
+ * going to reach, not the place it goes through. Six of these stand in
+ * the lands they are named for; the other six stand on the line at the
+ * chainage the survey gave that land, which is where its own road
+ * leaves, or where it is nearest, or simply where the hour fell.
+ *
+ * **And there is exactly one shelter in the world, and it is the last
+ * one on this list.** The other eleven stops are places on a road where
+ * there is nothing at all, and at eleven of them, once, somebody is
+ * standing.
+ *
+ * `land` is the region whose wait decides whether anybody is there.
+ */
+export const LINE_STOPS: { land: RegionId; name: string; z?: number; x?: number }[] = [
+  { land: 'castle', name: 'GREYWEATHER', z: -206 },
+  { land: 'forest', name: 'PENWOOD', z: -166 },
+  { land: 'kingdom', name: 'BRIM', z: -120 },
+  { land: 'canyon', name: 'SPLITROCK', z: -74 },
+  { land: 'downs', name: 'HARROW', z: -24 },
+  { land: 'beach', name: 'LONGSHORE', z: 24 },
+  { land: 'meadow', name: 'THE COMMON', z: 58 },
+  { land: 'ocean', name: 'WIDE BLUE', z: 104 },
+  { land: 'neighborhood', name: 'MAPLE COURT', z: 150 },
+  { land: 'desert', name: 'BLEACH FLATS', x: 40 },
+  { land: 'city', name: 'GREYLINE', x: 148 },
+  { land: 'office', name: 'CUBICLE MILE', x: 252 },
+];
+
+/** Where each stop is, as a distance along the line. Resolved once. */
+export const LINE_STOP_S: number[] = LINE_STOPS.map((st) =>
+  st.z !== undefined
+    ? nearestOnLine(-45, st.z).s
+    : nearestOnLine(st.x!, st.x! < 148 ? 200 : 205).s
+);

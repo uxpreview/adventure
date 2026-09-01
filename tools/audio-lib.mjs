@@ -152,6 +152,32 @@ window.__booth = (() => {
         });
         t += spec.spacing ?? 1.9;
       }
+    } else if (spec.kind === 'event') {
+      /* ONE OF THE LAND VOICES — the lark, the belfry, the oar, the
+       * crossing box, the plant on the roof (Session 14).
+       *
+       * Audio.event is thirty-four one-shots and NOT ONE OF THEM HAS
+       * EVER BEEN HEARD by anybody: they are bound to the live audio
+       * context, so the offline render Session 8 built for the score
+       * could not reach them, and the note in the owner's own listening
+       * pack says so in as many words. This is the smallest possible
+       * bridge to them: an Audio instance whose context and master are
+       * the offline ones, and then the same call the game makes.
+       *
+       * Nothing about the sound is re-implemented here. If it were,
+       * this would be a rendering of a different game.
+       *
+       * They all schedule from ctx.currentTime + at, and an offline
+       * context's currentTime is zero for the whole render — so each
+       * file is ONE firing, from the top, which is how you hear a
+       * one-shot anyway.
+       */
+      const a = new A.Audio();
+      a.ctx = ctx;
+      a.master = g.master;
+      a.muted = false;
+      a.tacet = false;
+      a.event(spec.name);
     } else if (spec.kind === 'xfade-ref') {
       /* THE EQUAL-POWER PROOF. The same bed on both sides of the fade,
        * so anything the meter does in the middle is the CURVE and not
