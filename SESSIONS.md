@@ -1,5 +1,295 @@
 # SESSIONS — the handoff log
 
+## Session 14 — 2026-09-01 — the 8:15
+
+*One land, one wait, one man, one mount — and the mount is the ending of
+the game. THE CUBICLE MILE was the last scatter draft in the world and
+there are none left. `THE-LINE.md` §4 is built.*
+
+### THE ONE THING TO KNOW: THE THIRD RULE
+
+Session 13 drew the two present-day lands at right angles to each other
+— **in MAPLE COURT every mark closes**, **in GREYLINE CITY every mark
+leaves the frame** — and the Cubicle Mile is the third land whose
+subject is the present day and may be neither. So it takes the third
+thing a line can do:
+
+> **EVERY MARK IS RULED, AND EVERY MARK STOPS SHORT OF THE ONE IT WAS
+> GOING TO MEET.**
+
+A line can come back to itself, it can run off the page, or it can stop
+just before it arrives. **The third is what a promise looks like drawn**
+— and `THE-WAITS` §12 says this land believes *a timetable is a promise,
+and a promise is enough.* Bay paint stops short of the kerb, the hatch
+stops short of the wall, the mullions stop short of the head, and the
+road stops short of the edge of the world, which it has done since
+Session 1. Nobody will ever name it and everybody will feel it.
+
+**And it is the opposite of Greyline in the one measurement the camera
+cares about.** Greyline crops its near towers on the top of the frame;
+**nothing in the Cubicle Mile touches the top of the frame at all** —
+every roofline in the land is at the same height, so the land has a
+second horizon three units above the real one, dead level, running the
+whole width of the frame, with exactly one thing breaking it (the
+atrium, which was phase two). That is the straightedge said in
+silhouette.
+
+### AND IT IS THE ONLY LAND IN THE WORLD THAT AUTHORS NO GROUND
+
+Every land session since 10 has authored a landform first, because it
+gives the camera something to recede along. This one authored the
+ABSENCE of one, on purpose: `elevation.ts` has given the office park a
+cockle weight of 0.18 since Session 4 and no landform on the sheet comes
+near it, so the whole site varies by **0.45 units across 110 × 116** —
+against 15.8 in Splitrock, which is the most anywhere else. The flattest
+ground in the world is the correct ground under the only corner of it
+anybody ever laid out with a straightedge.
+
+`check-terrain` prints both numbers now, and asserts that **no other
+land is as flat**, so a later session that wants to sprinkle a hill on
+it has to come and change the assertion on purpose (Session 11's rule
+about a number somebody else's content stands on, generalised).
+
+What recedes instead is **paint**: the car park's ruled bays, which a
+decal draws in perfect perspective for nothing. THE OVERFLOW — bays
+running north into haze, weeds in four joints, one car, and then the
+tarmac stops and the Bleach Flats begin with no marker of any kind — is
+the best composition in the land and has no subject in it at all.
+
+### THE 8:15, AND THE DECISION THAT MADE IT BUILDABLE
+
+`THE-LINE.md` §5 is settled and says **it stops twelve times.** The line
+runs through six of the twelve rects, and rule 1 of `STORY.md` §8 —
+nobody crosses a border but the walker — forbids the obvious repair of
+walking the other six lands' people to a platform. That is the hole this
+session had to solve before it could build anything.
+
+**The twelve are what a survey's twelve entries actually are: the twelve
+places on the line where the surveyors were due, each noted against the
+land it was to serve.** A survey names the place it is going to reach,
+not the place it goes through. Six stand in the lands they are named
+for; the other six stand on the line at the chainage the survey gave
+that land. The board in the case at THE 8:15 STOP is that list, in that
+order, and **the last entry on it is this stop.**
+
+**And there is exactly one shelter in the world.** The other eleven
+stops are places on a road where there is nothing at all, and at eleven
+of them, once, somebody is standing. Nothing was added to any other
+land: the platform figures belong to the 8:15's own group and exist only
+while its doors are open.
+
+The rest of it, as built:
+
+- **`layout.THE_LINE`** is assembled from the three roads that already
+  carry `line: true`, never authored a second time, so the thing that
+  comes cannot drift from the road the player walked. 794 units, gate to
+  car park.
+- **It starts on knowledge and nothing else**: `route:the-line`, plus
+  the answers to enough of the twelve waits. §4.1 proposed seven against
+  twelve; **eight of the twelve exist in the source**, so the constant is
+  **five** and the reasoning is in `knowledge.ts` — IV.3 is only an
+  ending because the platforms DIFFER, and seven against eight would put
+  somebody on almost every one. It goes back to seven when the other four
+  waits are built. **Nothing anywhere shows it.**
+- **The dwell is thirteen seconds**, not "about half a minute": twelve
+  stops at half a minute is six minutes of standing with the ride on top
+  of it. Written down rather than quietly rounded.
+- **Joan Harrow's platform is always empty.** Her harvest came in.
+- **It arrives already carrying the lands above you** — one figure in a
+  window per stop north of here that had somebody on it. That is
+  `critique-story-2`'s second mandatory finding and the exact fix it
+  asked for: no new content, no change to the ending, and the default
+  witness now sees a train that has been somewhere.
+- **Two aspects, both facing the camera**: front-on down the king's road
+  (a thing coming at you along a road you are looking along) and
+  broadside at every stop and whenever you are in it. *A train you are
+  watching is going somewhere; a train you are in is a room.*
+- **It is not in the world until it has run.** Round 1 parked it in the
+  car park from the first minute of a fresh page.
+- **It ends its run in the car park and stands there**, with everybody
+  still aboard, and nobody ever sees it go back up.
+
+### THE BUG THE PICTURE FOUND, AND NO TOOL HERE COULD HAVE
+
+**Every platform figure in the game was three hundred units off the
+sheet.** The 8:15 draws whoever is waiting as a child of its own group —
+already translated to the train's position — and the update wrote that
+child's position in WORLD coordinates, so at the Cubicle Mile's stop the
+person waiting stood at (504, 412).
+
+`check-fields` reads instanced fields and this is a one-off.
+`check-sightline` reads the skyline and a thing off the sheet is not in
+a corridor. **And a contact sheet of an empty platform is pixel-for-pixel
+a contact sheet of a platform whose figure is elsewhere.** IV.3 *is* the
+ending and it had been shipping as *nobody ever gets on anywhere*. The
+only thing that caught it was looking at the picture and asking where
+the person was.
+
+### DENNIS, AND S8 AT BOTH ENDS
+
+- **The timetable is a survey schedule** (`THE-WAITS` §12): twelve names
+  and twelve times, in the order the surveyors were due, and 8:15 is when
+  they were due here. It is the only document in the world that names all
+  twelve lands in order, **and there is no note anywhere in this land
+  that explains it.** Dennis does not know what the road is, because
+  knowing would require crossing (`THE-LINE` §3.4).
+- **The desk plate says D. HALL**, screwed to the back panel of a bus
+  shelter, legible from the road, and nothing in this game mentions it.
+- **The change**: come to the stop holding `route:the-line` and the
+  shelter's light comes on at dusk, and at every dusk afterwards, in
+  every save. Session 6's lamp code with a different condition, copied
+  exactly as `THE-WAITS` §12 says to copy it. **Two lighting columns
+  flank the stop** so the frame before says *the one dark thing in a lit
+  car park* — and there is a third dark column out in the overflow that
+  was put up with the kerbs and never connected.
+- **`THE-STRANGERS` S8 is built at both ends**, and it cost one clause
+  and one knowledge id and no geometry: Greyweather's plinth says the
+  king was beloved **of graweder**, which is that place with the old
+  spelling still on it, and once you have read it exactly one line on the
+  board in the Cubicle Mile has been wiped clean of a century of grime.
+  Nobody there notices, because nobody has ever listened to the whole
+  list.
+
+### AND THE LAW WAS AMENDED, WHICH IS WHAT THE OWNER ASKED FOR
+
+Session 13 put the count on the map to the owner and they challenged the
+rule instead of picking an option: *"I don't understand why that law
+exists. Progression, collection, and advancements are part of what makes
+games fun."* `PLAN.md` said the one thing not to do was split the
+difference quietly. **The law is amended, in `QUALITY-BAR.md` §3 and
+`QUESTS.md` §7.1, with the owner's words written into both:**
+
+> **A NUMBER MAY RECORD WHERE THE PLAYER HAS BEEN. A NUMBER MAY NEVER
+> GRADE WHAT THEY DID.**
+
+The law came out of a SIZING argument — *a collection caps at about two
+hours* — which is an argument against collections, not against numbers,
+and this game already keeps a record of where you have been and makes
+Act III's whole beat out of it. So the map's line keeps its numbers. A
+completion percentage, a checklist, a count of the twelve waits, a
+score, a grade, or any number that pops up to say you did a thing: still
+refused. **And the ending is out of scope and stays absolute** — nothing
+counts the platforms, and no amendment to a UI law reaches
+`THE-LINE.md` §4.2.
+
+### THE EAR GATE — HANDED OVER, AND IT IS THIRTY-FOUR FILES BIGGER
+
+`render-wavs.mjs` has written nineteen files since Session 8 and its own
+note said, in as many words, that **the one-shot voices of each land are
+not in them** — they are bound to the live audio context, so the offline
+render could not reach them. That was thirty voices nobody had ever
+heard, and this session was about to add a fifth un-heard one.
+
+The booth renders `Audio.event` now: an Audio instance whose context and
+master are the offline ones, then the same call the game makes, with
+nothing re-implemented. **53 WAVs**, and thirty-four of them are the
+lark, the belfry, the surf, the oar, the mill, the drip, the stone, the
+two water cans, the sprinkler, the crossing box and the plant on the
+roof — every one of them for the first time. `WHAT-TO-LISTEN-FOR.txt`
+says what to ask of them.
+
+**THE GATE ITSELF IS STILL THE OWNER'S AND IT HAS STILL NOT BEEN RUN.**
+A session that claims a sound is good is lying. This one hands over
+evidence and says plainly that it could not perform the gate.
+
+**AND SO IS THE FEEL GATE**, owed again since Session 12 closed the
+camera. Nothing in this session could run it either.
+
+### AND THE REGRESSION GATE FOUND THE SESSION'S OTHER DEFECT
+
+`diff-sheets` against `origin/main`: **92 of 92 bit-identical on THE
+PAGE**, first run, in a session that added a mount crossing six lands.
+Nothing in the world moved by a pixel.
+
+**Four frames moved in THE WRITING** — the same 102 × 22 band in
+Greyweather's bailey, at both hours, in both viewports, in a land this
+session never opened. It is the interact prompt:
+
+> **THE 8:15's BOARDING PROMPT WAS SHOWING AT THE CASTLE.** The POI that
+> says TAKE A SEAT reads the train's live coordinates the way the
+> rowboat's has since Session 6 — and before the 8:15 has ever run,
+> those coordinates are the head of the line, **which is Greyweather's
+> gate.** On a fresh page, standing in the bailey of a castle in the
+> oldest land in the world, the game offered you a seat on a train that
+> does not exist yet.
+
+No contact sheet of the Cubicle Mile could have contained it and no
+check in this repository asks where a prompt is. The POI reads
+`boardingPos` now, which is off the sheet unless a door is open in front
+of you. **A live-coordinate POI is a POI that is somewhere before it is
+anywhere**, and that is the general lesson.
+
+### State
+
+- Build green. `check-terrain` (with two new proofs), `check-audio`,
+  `check-fields`, `check-camera`, `check-sightline` and `shoot-mobile`
+  (five rigs, joystick assertion holding on all of them) all pass.
+- New spec: `design/specs/the-cubicle-mile.md`. Gate logged in
+  `design/critiques/critique-art-9.md` — **WOWED at round six**, with
+  three noted-not-blocking.
+- **`diff-sheets`: 92 of 92 bit-identical on THE PAGE, and 92 of 92 on
+  THE PAGE AND ITS WRITING**, against `origin/main` (77720cc). A land
+  rebuilt from nothing, a mount that crosses six of them, a knowledge
+  table and an amended law, and not one protected framing moved by a
+  pixel — after the prompt at the castle was closed.
+- **The ear gate handed over: 53 WAVs in `out/sound/`**, thirty-four of
+  them land voices nobody had ever heard.
+- **ELEVEN LANDS HOLD A VERDICT AND THERE ARE NO SCATTER DRAFTS LEFT IN
+  THIS WORLD.**
+
+### What this session did NOT do, in writing
+
+- **THE PAPER PLANE is deferred a third time**, and this is the third
+  written deferral (`PLAN.md` row 15, Session 11's brief unchanged).
+  This session was one land, one wait, one named inhabitant, a MOUNT
+  that is also the ending of the game, a law amendment and a rebuilt ear
+  gate. A mount is a traversal system with a launch, a flight model, a
+  refusal rule and a camera — the rowboat was half of Session 6 — and
+  the bar is explicit that a session that cannot meet it ships less
+  scope, never a lower bar. It goes to Session 16 (Motion & life) or to
+  a session of its own.
+- **The departure is not permanent.** While the 8:15's doors are open at
+  a land's stop, that land does not draw its own person — they are on the
+  platform, which is where the game has just put them — and when the
+  doors shut they are back where they stand. Making it permanent is one
+  clause per land (`Eight15.ts` already exports `platform` and every
+  routine is already gated on the hour and on knowledge), but it re-opens
+  the authored routine of **seven lands that hold verdicts**, and
+  `THE-LINE` §5 does not require it. **It is the one thing the ending
+  does not yet do** and it is the owner's call.
+- **The four unbuilt waits** — WICK, PYE, WREN and NELL — stand entirely
+  on ground that is already WOWED (`THE-WAITS` §14) and their platforms
+  are always empty, which is exactly what an unanswered wait looks like.
+  Building them is what moves `WAITS_FOR_THE_LINE` back to seven.
+
+### Gotchas (new; everything from Sessions 1–13 still applies)
+
+- **A MESH PARENTED TO A MOVING GROUP TAKES A LOCAL OFFSET.** Cost this
+  session the whole of IV.3 for three rounds. See above.
+- **THE CAMERA LOOKS NORTH, WHICH IS −Z, SO YOU STAND SOUTH OF WHAT YOU
+  WANT TO SEE.** Round 1's shoot list had four framings of an empty road
+  with the train behind the walker's head.
+- **A DRAWING HAS TO BE THE SHAPE OF THE THING.** The barrier was drawn
+  on a 256×144 canvas, so the boom — the only part of a raised barrier
+  anybody recognises — was a six-inch sliver in a seven-unit standee. On
+  a 128×256 canvas it is a barrier.
+- **A LIGHT IS A SOURCE WITH A HALO, NOT A PAINTED PANEL.** The lamps'
+  first lit texture was a hard orange rectangle at nine tenths alpha and
+  it hung in the air over the mile.
+- **WEEDS DO NOT SCATTER — they come up in the JOINTS.** Forty-four
+  instances on a Poisson scatter is an even field of identical marks, in
+  the one land whose subject is a grid.
+- **A PLACE IS COMPOSED FOR THE NARROW FRAME.** Portrait is 26.5° wide;
+  the board stood eight units off the shelter because desktop had room,
+  and portrait's shot of THE 8:15 STOP had the timetable outside the
+  picture.
+- **A BACK-OF-HOUSE WALL IS THE DIRTIEST THING IN A CLEAN LAND** and has
+  to be drawn like it. At fifteen per cent hatching the bin store could
+  not hold its own against nine ruled glass buildings.
+- **A TEMPLATE LITERAL HAS NO BACKTICKS IN IT.** `tools/audio-lib.mjs`
+  is a page script inside one, and a comment that quoted `Audio.event`
+  in code style broke the whole file at parse time.
+
 ## Session 13 — 2026-08-31 — the now
 
 *Two lands, two waits, two people, and the first land session judged

@@ -34,7 +34,7 @@ here, what a footstep sounds like, whether the page takes your ink.
 | THE HARROW DOWNS | farm country | the mill, the headland, the ford, the drove |
 | THE BLEACH FLATS | the desert | the Hands, the Pale, the track, the oasis |
 | GREYLINE CITY | downtown | the junction, the worn pavement, the hollow, the north end |
-| THE CUBICLE MILE | the office park | ruled glass, hedges, the 8:15 stop |
+| THE CUBICLE MILE | the office park | the barrier, the 8:15 stop, the atrium, the overflow, the car park at the end of the line, the muster point |
 
 A river rises at the mouth of the canyon, crosses the whole sheet and
 meets the sea past the boardwalk; three plank bridges carry the roads
@@ -76,6 +76,14 @@ and deals a region card — nothing else, because the sheet is continuous.
   the commuter spur carry hardest, because they are one road under
   twelve names. Crossing a road costs nothing and walking off one is
   free — it bends you, it never pulls you.
+- **The 8:15.** There is a stop in the office park with a timetable on
+  it and no track, and the timetable has twelve names on it in order.
+  Walk the whole road it names — the castle gate to the car park, and
+  you will be the only thing in this world that ever has — and the next
+  quarter past eight in the morning, something comes down it. It stops
+  twelve times. At the far end it stands in a car park, which is where
+  the line ends, and nobody who parks there has ever thought of it that
+  way. You can get on. Getting on is not an ending.
 - **The rowboat**, drawn up at the river mouth, and the first mount:
   fast on water, refuses dry land, found in the world and left where you
   leave it. The river crosses the whole sheet and has been a wall its

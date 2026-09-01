@@ -32,6 +32,7 @@ import {
   shedAxleTexture, downsScarecrowTexture, sackCartTexture,
 } from '../textures-farm';
 import { clock } from '../daylight';
+import { platform } from '../../engine/Eight15';
 import { knowledge } from '../knowledge';
 import type { RegionBuilder, WorldPOI } from './index';
 
@@ -619,8 +620,12 @@ export const buildForest: RegionBuilder = (ctx) => {
        * standee turned ninety degrees off the lens is a line. */
       m.rotation.y = turned ? 0.42 : Math.atan2(TARN.x - bx, TARN.z - bz);
     }
-    brackWatch.visible = !turned;
-    brackTurn.visible = turned;
+    /* Nobody is in two places at once: while the 8:15's doors are open
+     * at the Penwood's stop, the man who has walked round this water
+     * for forty years is standing on it (Session 14, `Eight15.ts`). */
+    const gone = platform.land === 'forest';
+    brackWatch.visible = !turned && !gone;
+    brackTurn.visible = turned && !gone;
 
     /* THE FACT IS EARNED BY ARRIVING. Inside twenty units of the water
      * is inside Brack's forty, which is the one line in this world
@@ -1044,7 +1049,7 @@ export const buildCanyon: RegionBuilder = (ctx) => {
     const reading = h > 12.2 && h < 13.6;
     const pose = !day ? -1 : near ? 2 : reading ? 1 : 0;
     for (let p = 0; p < 3; p++) {
-      holt[p].visible = p === pose;
+      holt[p].visible = p === pose && platform.land !== 'canyon';
       const at = p === 1
         ? [HEAD.x - 3.2, HEAD.z + 4.4]
         : [BOAT.x - 5.4 + Math.sin(t * 0.11) * 1.6, BOAT.z + 1.4 + Math.cos(t * 0.09) * 1.1];
@@ -1442,7 +1447,7 @@ export const buildDesert: RegionBuilder = (ctx) => {
       if (pose === 2) { ax = CATCH.x - 12.4; az = CATCH.z - 1.4; }
     }
     for (let p = 0; p < 3; p++) {
-      amos[p].visible = p === pose;
+      amos[p].visible = p === pose && platform.land !== 'desert';
       amos[p].position.set(ax, ctx.groundY(ax, az), az);
     }
 

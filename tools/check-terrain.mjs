@@ -777,6 +777,92 @@ console.log('\nthe pan — the forty units Amos carries are uphill:');
   console.log(`  and curl-rim's own ground is untouched at y=${rim.toFixed(1)}`);
 }
 
+/* ---- 5d. THE STRAIGHTEDGE (Session 14) ------------------------------ *
+ * THE CUBICLE MILE is the only land in this world that authors NO
+ * ground, and the absence is the design: `layout.ts` has said since
+ * Session 1 that it is *the only corner of the world anybody ever laid
+ * out with a straightedge*, and `elevation.ts` gives it a cockle weight
+ * of 0.18 while every landform on the sheet misses it. So the office
+ * park is FLAT — flatter than anywhere else on the page — and the land
+ * is composed on that fact: it has no landform to recede along and it
+ * uses ruled paint instead.
+ *
+ * That is a claim in geometry, so it is asserted rather than described,
+ * and it is asserted the way Session 11's tear depth is: **a later
+ * session may not sprinkle a hill on it**, and if one ever wants to, it
+ * has to come here and change this number on purpose.
+ *
+ * The rect is 230..380 x 130..280, and the world's own curled margins
+ * lift inside it from x = 344 and z = 250 — those are the PAGE's and
+ * not the land's, so the flat claim is made over the site itself.
+ */
+console.log('\nthe straightedge — the office park is the flattest ground in the world:');
+{
+  const SITE = { x0: 232, x1: 342, z0: 132, z1: 248 };
+  let lo = 1e9, hi = -1e9, loAt = null, hiAt = null;
+  for (let z = SITE.z0; z <= SITE.z1; z += 2) {
+    for (let x = SITE.x0; x <= SITE.x1; x += 2) {
+      const h = H(x, z);
+      if (h < lo) { lo = h; loAt = [x, z]; }
+      if (h > hi) { hi = h; hiAt = [x, z]; }
+    }
+  }
+  const span = hi - lo;
+  console.log(`  the site: ${lo.toFixed(2)} (at ${loAt}) .. ${hi.toFixed(2)} (at ${hiAt}) — ${span.toFixed(2)} units across 110 x 116`);
+  if (span > 0.5) fail(`the office park has ${span.toFixed(2)} units of relief in it, and the land is composed on having none`);
+  else console.log('  and there is no landform in it anywhere \u2713');
+
+  // and it is flatter than every other land, which is the half of the
+  // claim that makes it mean anything
+  let worst = 0, worstId = null;
+  for (const spec of L.REGION_SPECS) {
+    if (spec.id === 'office' || spec.id === 'ocean') continue;
+    let a = 1e9, b = -1e9;
+    for (let z = spec.rect.minZ + 30; z <= spec.rect.maxZ - 30; z += 4) {
+      for (let x = spec.rect.minX + 30; x <= spec.rect.maxX - 30; x += 4) {
+        const h = H(x, z);
+        if (h < a) a = h;
+        if (h > b) b = h;
+      }
+    }
+    if (b - a > worst) { worst = b - a; worstId = spec.name; }
+    if (b - a <= span) fail(`${spec.name} is as flat as the office park (${(b - a).toFixed(2)})`);
+  }
+  console.log(`  the most relief anywhere else: ${worst.toFixed(1)} units, in ${worstId} \u2713`);
+}
+
+/* ---- 5e. THE LINE, AS ONE POLYLINE (Session 14) --------------------- *
+ * The 8:15 runs `layout.THE_LINE`, which is assembled from the three
+ * roads that carry `line: true` rather than authored a second time — so
+ * the thing that comes cannot drift from the road the player walked.
+ * The two things worth asserting about it: it is CONTINUOUS (no leg
+ * starts somewhere the last one did not end), and every one of its
+ * twelve stops is on ground a walker could stand on.
+ */
+console.log('\nthe line — one road under twelve names, gate to car park:');
+{
+  console.log(`  ${L.LINE_LENGTH.toFixed(0)} units, ${L.THE_LINE.length} authored points`);
+  let worstJoin = 0;
+  for (let i = 1; i < L.THE_LINE.length; i++) {
+    const d = Math.hypot(
+      L.THE_LINE[i][0] - L.THE_LINE[i - 1][0],
+      L.THE_LINE[i][1] - L.THE_LINE[i - 1][1]
+    );
+    if (d > worstJoin) worstJoin = d;
+    if (d < 0.01) fail(`the line doubles back on itself at point ${i}`);
+  }
+  console.log(`  the longest run between two authored points: ${worstJoin.toFixed(0)} units`);
+  let bad = 0;
+  L.LINE_STOPS.forEach((st, i) => {
+    const p = L.lineAt(L.LINE_STOP_S[i]);
+    const g = S(p.x, p.z);
+    if (g > MAX) { fail(`the stop for ${st.name} is on ground too steep to stand on`); bad++; }
+  });
+  if (!bad) console.log('  and all twelve stops stand on ground a walker could stand on \u2713');
+  const last = L.lineAt(L.LINE_LENGTH);
+  console.log(`  it ends at (${last.x.toFixed(0)}, ${last.z.toFixed(0)}), which is a car park \u2713`);
+}
+
 console.log(fails ? `\n${fails} FAILURE(S)` : '\nall terrain checks pass');
 rmSync('.tmp', { recursive: true, force: true });
 process.exit(fails ? 1 : 0);

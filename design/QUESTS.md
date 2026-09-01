@@ -229,6 +229,70 @@ mechanic the bar is aiming at (QUALITY-BAR §1).
 
 ---
 
+### 7.1 THE COUNT — AMENDED BY THE OWNER, 2026-08-31, executed Session 14
+
+The short form of the law, repeated in every session prompt since
+Session 7, read: ***no count, no list, no percentage, anywhere, for
+anything.*** Session 12 found the shipped build breaking it
+(`src/ui/map.ts` prints *"N of 12 lands walked — N strides of ink"*) and
+did not fix it. Session 13 put it to the owner with four options. **The
+owner picked none of them and challenged the law instead:**
+
+> *"I don't understand why that law exists. Progression, collection, and
+> advancements are part of what makes games fun."*
+
+**The law is amended, and this is the amendment.** It is not a quiet
+split of the difference — the count on the map stays, and the rule that
+was written to protect the design is rewritten to say what it was
+actually protecting.
+
+**What the law was for, and it was never a taste argument.** It came out
+of §0's sizing: *a collection caps at about two hours*, because the
+player learns nothing doing the ninth one that they did not know at the
+third, and the target is HOURS of play (`WORLD-SYSTEMS` §0). That is an
+argument against **collections**. It was written as an argument against
+**numbers**, and those are not the same thing, and eleven sessions never
+noticed because the shipped build had been breaking it since Session 1
+and nobody minded.
+
+**The owner is right about the half the law overreached on.** A number
+that says *you have walked eleven of these* is a RECORD OF WHERE YOU
+HAVE BEEN, not a checklist of things to fetch. This game already keeps
+that record and is proud of it: the map draws in three registers and
+inks the line once you have walked the whole of it, which is Act III's
+entire beat and is *progression the player can see* by any honest
+reading. Arguing that the inked line is fine and the sentence under it
+is a violation was the law protecting its own wording rather than its
+own reason.
+
+**So the rule from here is:**
+
+> **A NUMBER MAY RECORD WHERE THE PLAYER HAS BEEN. A NUMBER MAY NEVER
+> GRADE WHAT THEY DID.**
+>
+> Allowed: what you have walked, what you have seen, how far you have
+> gone — the map's own record, in the map's own place.
+>
+> Refused, exactly as before: a completion percentage; a checklist of
+> anything the player is meant to go and get; a count of the twelve
+> WAITS or of the answers to them, anywhere, in any form; a score, a
+> grade, a rank, or any number that appears at the moment the player
+> does something, to tell them they did it.
+
+**And ONE thing is out of scope of the amendment and stays absolute,
+because it is not a UI rule — it is the ending** (`THE-LINE.md` §4.2,
+settled, and §5 is binding): *nobody grades it, nothing counts it, and
+no screen anywhere tells you how many platforms had somebody on them.*
+The 8:15 reads back fifteen hours of decisions by stopping twelve times.
+A number at the end of that would retract the whole game in its last
+minute, and no amendment to a UI law reaches it.
+
+The count in `knowledge.ts` that the 8:15 asks (`answeredWaits`) is
+bookkeeping and has exactly one caller, and no path from it to a pixel.
+That is the same bargain §0 of that file already struck for route posts.
+
+---
+
 ## 8. UNDER CONSIDERATION — a seventh tier *(proposal, 2026-08-30)*
 
 *Raised by the owner adding RuneScape to `INSPIRATION.md`. **Not

@@ -1298,6 +1298,53 @@ export class Audio {
         break;
       }
 
+      /* ================================================================ *
+       * THE CUBICLE MILE (Session 14). Four voices, and all four are the
+       * same joke told four ways: **a building that promises nothing
+       * will change.** The land's bed is air handling and is the only
+       * dead-steady room in the game; these are what happens on top of
+       * it, which is nearly nothing.
+       * ================================================================ */
+
+      case 'plant-shift': {
+        /* THE ONE THING THAT EVER CHANGES HERE, AND IT CHANGES BACK.
+         * The plant on the roof steps up a fifth, holds, and comes down
+         * again — a swept band over the bed's own centre, up over a
+         * second and a bit, and back. Anybody who works here has stopped
+         * hearing it and would notice at once if it stopped. */
+        this.surge(1.2, 2.2, 300, 448, 0.0040, 0, 'bandpass');
+        this.surge(1.9, 2.6, 448, 300, 0.0032, 2.1, 'bandpass');
+        break;
+      }
+
+      case 'door-hiss': {
+        /* THE DOORS OPENING FOR YOU. A short breath and then the soft
+         * knock of a leaf reaching the end of its track — a machine
+         * being polite, and nothing happens. */
+        this.surge(0.05, 0.42, 2600, 1100, 0.0034, 0, 'bandpass');
+        this.knock(240, 0.0038, 0.46);
+        break;
+      }
+
+      case 'cup-turn': {
+        /* THE PAPER CUP IN THE EDDY at the corner of the east block. A
+         * dry scrape, a pause, a dry scrape. It never gets anywhere,
+         * which is the only thing about it worth drawing. */
+        this.surge(0.03, 0.14, 3800, 2400, 0.0022, 0, 'highpass');
+        this.surge(0.03, 0.19, 3400, 2100, 0.0018, 0.62, 'highpass');
+        break;
+      }
+
+      case 'car-door': {
+        /* ONE CLUNK, A LONG WAY OFF, AND NO ENGINE AFTER IT. Somebody
+         * arrived, or somebody did not leave; the game does not say
+         * which and there is nothing in either car park that would. */
+        const cj = 0.94 + Math.random() * 0.12;
+        this.knock(148 * cj, 0.0085);
+        this.knock(112 * cj, 0.0040, 0.055);
+        break;
+      }
+
       case 'can-knock': {
         /* Two full cans, out on the track, at night. It is the sound of
          * a man forty units from anywhere carrying water uphill, and

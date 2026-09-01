@@ -13,8 +13,10 @@ import { UI } from '../ui/UI';
 import { renderMap } from '../ui/map';
 import { PAPER_HEX, INK_HEX } from '../engine/palette';
 import { Boat } from '../engine/Boat';
+import { Eight15 } from '../engine/Eight15';
 import {
   SPAWN, regionAt, coastX, barDist, roadCarryAt, rowableAt, BOAT_HOME,
+  LINE_STOPS, LINE_STOP_S, LINE_LENGTH,
   type RegionSpec,
 } from '../world/layout';
 import { clock as dayClock, LAMP_POOL, LAMP_EDGE } from '../world/daylight';
@@ -56,6 +58,11 @@ export class App {
   private prints: Footprints;
   private char: Character;
   private boat = new Boat();
+  /* THE 8:15 (Session 14, `THE-LINE` §4). It exists from the first
+   * frame, standing in a car park at the end of the world with its
+   * doors shut, and it does not move until the walker has walked the
+   * line and answered enough of the twelve. Nothing announces it. */
+  private train = new Eight15();
   private input: Input;
   private poi: POIManager;
 
@@ -133,6 +140,7 @@ export class App {
     const b = this.save.data.boat ?? BOAT_HOME;
     this.boat.setAt(b.x, b.z);
     this.scene.add(this.boat.group);
+    this.scene.add(this.train.group);
 
     this.fx = new PaperFX(this.renderer, this.scene, this.camera);
     this.fx.setPaperSeed(3);
@@ -183,6 +191,24 @@ export class App {
        * to a boat and the world says TAKE THE OARS. */
       prompt: 'TAKE THE OARS',
       onInteract: () => this.toggleBoat(),
+    } as unknown as WorldPOI);
+
+    /* THE SEAT. The whole of the last mount's interface, and it is one
+     * prompt at an open door — the same sentence the rowboat has been
+     * saying since Session 6, in the same place, for the same reason:
+     * *a mount is a place-feeling, never a menu* (WORLD-SYSTEMS §4).
+     * It is only ever offered while the doors are open, because that is
+     * what a train is. */
+    this.poi.add({
+      /* `boardingPos`, never `pos`: a train you cannot board is not a
+       * place you can stand, and the head of the line is the castle
+       * gate. See the note on it in Eight15.ts — `diff-sheets` found
+       * this one in a land this session never opened. */
+      get x() { return self.train.boardingPos.x; },
+      get z() { return self.train.boardingPos.z; },
+      radius: 7,
+      prompt: 'TAKE A SEAT',
+      onInteract: () => this.toggleTrain(),
     } as unknown as WorldPOI);
 
     this.input.onInteract(() => {
@@ -280,6 +306,49 @@ export class App {
           this.audio.setHour(h);
         },
         boat: this.boat,
+        /* THE 8:15, FOR THE HARNESS. The ending is knowledge plus an
+         * hour, and neither is reachable in a shoot script's lifetime by
+         * playing the game properly: the gate has to see the train
+         * arrive, the doors open, a platform with somebody on it and a
+         * platform without. `run` starts it from the gate; `warp` puts
+         * it at a stop with a load in its windows. Nothing here is
+         * reachable from the game. */
+        train: this.train,
+        runTheLine: () => {
+          this.train.s = -40;
+          this.train.stop = 0;
+          this.train.carrying = 0;
+          this.train.phase = 'running';
+        },
+        warpTrain: (stop: number, carrying = 0) => {
+          this.train.stop = Math.max(0, Math.min(LINE_STOPS.length - 1, stop));
+          this.train.s = LINE_STOP_S[this.train.stop];
+          this.train.carrying = carrying;
+          this.train.phase = 'dwelling';
+          (this.train as unknown as { dwellLeft: number }).dwellLeft = 9999;
+        },
+        rideTheLine: () => this.toggleTrain(),
+        /** Put it back where it was before it ever came, and put the
+         *  walker back on their feet. A shoot list has to be able to
+         *  un-spend the reveal between framings. */
+        hideTrain: () => {
+          if (this.train.aboard) {
+            this.train.aboard = false;
+            this.char.rowing = false;
+            this.char.maxSpeed = App.WALK.max;
+            this.char.runMult = App.WALK.run;
+          }
+          this.train.phase = 'away';
+          this.train.s = 0;
+          this.train.stop = 0;
+          this.train.carrying = 0;
+        },
+        /** And park it at the end of the line with its doors shut. */
+        parkTrain: () => {
+          this.train.phase = 'ended';
+          this.train.stop = LINE_STOPS.length;
+          this.train.s = LINE_LENGTH;
+        },
         /* WHAT THE WALKER KNOWS, for the harness. The gate has to shoot
          * a wait at BOTH its states and the map at all three of its
          * registers, and neither is reachable in a shoot script's
@@ -618,6 +687,68 @@ export class App {
     this.save.persist();
   }
 
+  /* ================================================================ *
+   * GETTING ON, AND GETTING OFF.
+   *
+   * `THE-LINE` §4.4: **getting on is allowed, and getting on is not an
+   * ending.** It is a mount — fast on its own ground and refusing every
+   * other — and at the far end you step off into the car park and the
+   * world is still there and you can still walk.
+   *
+   * The refusal is structural rather than checked: the 8:15 runs a
+   * polyline and cannot leave it, so *everywhere the line is not drawn*
+   * is everywhere it does not go. And getting off is only possible at a
+   * stop, with the doors open, because that is what a train is.
+   * ================================================================ */
+  private toggleTrain() {
+    this.audio.init();
+    if (this.train.aboard) {
+      if (!this.train.canAlight()) {
+        this.ui.showHint('the doors are shut', 2200);
+        return;
+      }
+      const p = this.train.pos;
+      const shore = this.stepOffNear(p.x, p.z);
+      if (!shore) return;
+      this.train.aboard = false;
+      this.char.rowing = false;
+      this.char.maxSpeed = App.WALK.max;
+      this.char.runMult = App.WALK.run;
+      this.char.teleport(shore[0], shore[1], this.char.heading);
+      this.char.setGround(
+        this.terrain.heightAt(shore[0], shore[1]),
+        this.terrain.normalAt(shore[0], shore[1])
+      );
+      this.snapCamera();
+      return;
+    }
+    if (!this.train.canBoard(this.char.pos.x, this.char.pos.z)) return;
+    this.train.aboard = true;
+    /* The walker sits, which is the same posture the boat gave them and
+     * the same reason: the carriage draws over their legs. */
+    this.char.rowing = true;
+    const p = this.train.pos;
+    this.char.teleport(p.x, p.z, this.char.heading);
+    this.snapCamera();
+  }
+
+  /** The nearest place a foot can go, stepping down onto a verge. */
+  private stepOffNear(x: number, z: number): [number, number] | null {
+    for (let rad = 3.4; rad <= 14; rad += 1.1) {
+      for (let k = 0; k < 24; k++) {
+        // south first: the camera looks north, so the ground the player
+        // can see themselves stepping onto is behind them
+        const a = Math.PI / 2 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (Math.PI / 12);
+        const px = x + Math.cos(a) * rad;
+        const pz = z + Math.sin(a) * rad;
+        if (this.terrain.waterAt(px, pz) > 0.3) continue;
+        if (this.terrain.blockedAt(px, pz)) continue;
+        return [px, pz];
+      }
+    }
+    return null;
+  }
+
   /** The nearest place a foot can go, stepping out of the boat. Rings
    *  outward so you always land on the bank you rowed up to. */
   private landingNear(x: number, z: number): [number, number] | null {
@@ -674,7 +805,8 @@ export class App {
     else zone = this.region.step;
     this.audio.setStepZone(zone);
     // wet paper takes no ink
-    this.char.stamping = water < 0.12 && !this.boat.aboard;
+    // and a passenger leaves no prints either
+    this.char.stamping = water < 0.12 && !this.boat.aboard && !this.train.aboard;
     /* DAMP PAPER, which is not the same thing as wet paper. Wet refuses
      * the print outright (above, and it is older than this session);
      * damp takes it and lets it bloom. Running the tide line therefore
@@ -1083,6 +1215,12 @@ export class App {
     } else {
       this.char.grade = 0;
     }
+    /* ABOARD THE 8:15 THE WALKER DOES NOT STEER, and that is not a
+     * cutscene — it is a train (`THE-LINE` §3.4 forbids a cutscene and
+     * §4.4 licenses the ride). Nothing is taken: the camera is the
+     * camera, the map opens, the notes open, and the doors open again
+     * in half a minute at the next stop. */
+    if (this.train.aboard) this.input.move.set(0, 0);
     this.char.update(dt, this.input.move);
     this.teachTheRun(dt);
 
@@ -1156,6 +1294,30 @@ export class App {
       this.boat.aboard ? Math.hypot(this.char.vel.x, this.char.vel.z) : 0,
       this.boat.aboard || rowableAt(this.boat.pos.x, this.boat.pos.y)
     );
+
+    /* ---- THE 8:15 --------------------------------------------------- *
+     * It runs on the hour and on nothing else. Aboard, it IS the
+     * walker's position, exactly the way the boat is — it is not
+     * following them, they are in it. */
+    this.train.update(
+      dt,
+      (x, z) => this.terrain.heightAt(x, z),
+      this.char.pos.x, this.char.pos.z
+    );
+    if (this.train.aboard) {
+      const tp = this.train.pos;
+      this.char.teleport(tp.x, tp.z, this.char.heading);
+      this.char.setGround(this.terrain.heightAt(tp.x, tp.z) - 0.15, [0, 1, 0]);
+    }
+    /* THE DOORS, and it is the only sound this thing makes anywhere in
+     * the world. There is no announcement: a world organised around a
+     * timetable does not need one (`THE-LINE` §4.2). */
+    if (this.train.justOpened && this.started) {
+      const tp = this.train.pos;
+      if (Math.hypot(this.char.pos.x - tp.x, this.char.pos.z - tp.z) < 60) {
+        this.audio.event('door-hiss');
+      }
+    }
 
     this.prints.update(dt);
     this.terrain.update(dt);
