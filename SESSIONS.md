@@ -261,6 +261,19 @@ anywhere**, and that is the general lesson.
   on ground that is already WOWED (`THE-WAITS` §14) and their platforms
   are always empty, which is exactly what an unanswered wait looks like.
   Building them is what moves `WAITS_FOR_THE_LINE` back to seven.
+  **And this session is what made NELL buildable**: her wait resolves on
+  the fourth name off the signpost, which is the timetable, which did
+  not exist until now.
+- **`critique-story-2`'s RECOMMENDED 2 is left open, knowingly, on the
+  thing this session built.** The gate said *the list should mean
+  nothing until some of the names on it do* — a player who walks east in
+  their first ten minutes should get a list of words, and a player who
+  has stood in nine lands should get the order of the world. The Cubicle
+  Mile's `fact:the-timetable` resolves on READING the board, full stop.
+  The fix is in-fiction and cheap (require several `name:` knowledges,
+  which the map already tracks in three registers) and it belongs beside
+  MANDATORY 1 in the session that closes the story gate, because that is
+  the critic who should judge it. It is in `PROMPT.md` as a named job.
 
 ### Gotchas (new; everything from Sessions 1–13 still applies)
 
