@@ -63,7 +63,9 @@ export type RegionBuilder = (ctx: BuildCtx) =>
 export type WorldPOI = import('../../engine/POI').POIDef & {
   note?: {
     title: string;
-    body: string;
+    /** A string, or a function of what the walker knows: the plinth
+     *  reads differently once a door has been taken at it. */
+    body: string | (() => string);
     /**
      * WHAT READING IT TELLS YOU (Session 7).
      *
@@ -79,6 +81,34 @@ export type WorldPOI = import('../../engine/POI').POIDef & {
      */
     learns?: string[];
   };
+  /* ================================================================ *
+   * THE VERBS (Session 15, `THE-FUN-PASS` §5). One context key — the
+   * key that looks — and what it does depends on what is in reach. A
+   * place declares which, and the prompt says it in the house voice.
+   * App dispatches in this order: a CHOICE not yet taken, then a NOTE,
+   * then a TOUCH, then a SIT. A place with none of them is a label.
+   * ================================================================ */
+  /** TOUCH: ring, knock, push, shout down. A one-shot on a thing in
+   *  reach, with the walker's position, so a shove knows which way. */
+  touch?: (px: number, pz: number) => void;
+  /** SIT: the seat point the walker is put on, facing the camera's
+   *  north. The camera does not move; time passes; routines go by.
+   *  `learns` is what sitting here teaches — JOAN's wait resolves on
+   *  exactly this and nothing else. */
+  sit?: { x: number; z: number; learns?: string[] };
+  /** A CHOICE CARD (`THE-FUN-PASS` §2.2, §6): two or three doors, both
+   *  visible before either is taken, each writing one `door:` id into
+   *  knowledge. Offered until one is taken, and never again. */
+  choice?: {
+    body: string;
+    options: { label: string; door: string }[];
+    /** Learned on choosing either door — reading the card is reading. */
+    learns?: string[];
+  };
+  /** A WEAK prompt only wins when nothing else is in reach: the thing in
+   *  the walker's own hand, which is at distance zero and would otherwise
+   *  beat every place in the world. */
+  weak?: boolean;
 };
 
 const BUILDERS: Record<RegionId, RegionBuilder> = {

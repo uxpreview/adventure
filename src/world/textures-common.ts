@@ -416,6 +416,24 @@ export function hayCartTexture(seed: number): THREE.CanvasTexture {
 }
 
 /** Hedgerow run — gap=true breaks in the middle where the hedge gave up. */
+/**
+ * A STONE THE SIZE OF A FIST (Session 15) — the first thing the walker
+ * can pick up. Somebody used it to prop the field gate. Drawn small and
+ * heavy: one closed contour, a shade side, and nothing else, so it reads
+ * in the hand at a third of the figure's height.
+ */
+export function fistStoneTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(64, 64, seed, (ctx, r) => {
+    const pts: [number, number][] = [
+      [14, 44], [12, 30], [22, 18], [40, 16], [52, 26], [54, 42], [42, 52], [22, 52],
+    ];
+    fillPoly(ctx, pts, WASH.castle, 0.55);
+    poly(ctx, pts, r, { width: 2.2, alpha: 0.9, jitter: 1.2 });
+    hatch(ctx, 30, 30, 22, 20, 0.9, 4.5, r, { alpha: 0.22 });
+    line(ctx, 22, 28, 34, 24, r, { width: 1, alpha: 0.35, passes: 1 });
+  });
+}
+
 export function hedgerowTexture(seed: number, gap = false): THREE.CanvasTexture {
   return makeTexture(256, 112, seed, (ctx, r) => {
     const masses = gap

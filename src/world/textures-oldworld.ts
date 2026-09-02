@@ -1344,6 +1344,98 @@ export function toppledStatueTexture(seed: number): THREE.CanvasTexture {
   });
 }
 
+/**
+ * THE KING, BACK ON HIS PLINTH (Session 15, `THE-FUN-PASS` §6 — the
+ * second door at Greyweather). The same plinth as `toppledStatueTexture`
+ * — same canvas, same footing, same worn inscription — with the figure
+ * standing on it instead of lying beside it, so the two drawings swap
+ * in place. Posture and crown, no face; the sceptre is in his hand,
+ * because somebody picked that up too. The seam where he broke off is
+ * still there at his feet: a thing put back is not a thing unbroken.
+ */
+export function standingKingTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(224, 256, seed, (ctx, r) => {
+    // the plinth, exactly where the toppled drawing has it (y offset
+    // by the taller canvas)
+    const oy = 128;
+    fillPoly(ctx, [[26, 120 + oy], [30, 64 + oy], [74, 62 + oy], [78, 120 + oy]], WASH.castle, 0.55);
+    poly(ctx, [[26, 120 + oy], [30, 64 + oy], [74, 62 + oy], [78, 120 + oy]], r, { width: 2.2, alpha: 0.9 });
+    for (let i = 0; i < 3; i++) {
+      line(ctx, 36, 84 + oy + i * 9, 66 + (r() - 0.5) * 6, 85 + oy + i * 9, r, { width: 1, alpha: 0.3, passes: 1 }, 3);
+    }
+    hatch(ctx, 30, 100 + oy, 22, 18, 1, 5, r, { alpha: 0.16 });
+    // the break, mended: a crooked line across the plinth's top
+    stroke(ctx, [[32, 64 + oy], [42, 60 + oy], [56, 63 + oy], [66, 58 + oy], [74, 62 + oy]], r,
+      { width: 1.6, alpha: 0.7, jitter: 1.6 });
+    // the king, standing: one long committed line for the body, the
+    // robe as a wash, arms crossed on the chest as cast
+    const cx = 52;
+    fillPoly(ctx, [[cx - 14, 62 + oy], [cx - 10, 96], [cx + 10, 94], [cx + 15, 62 + oy]], WASH.castle, 0.5);
+    stroke(ctx, [[cx - 14, 62 + oy], [cx - 11, 130], [cx - 10, 96]], r, { width: 2.6, alpha: 0.9 });
+    stroke(ctx, [[cx + 15, 62 + oy], [cx + 12, 132], [cx + 10, 94]], r, { width: 2.4, alpha: 0.85 });
+    stroke(ctx, [[cx - 12, 118], [cx + 12, 112]], r, { width: 2, alpha: 0.7, passes: 1 });
+    stroke(ctx, [[cx - 11, 128], [cx + 11, 124]], r, { width: 1.6, alpha: 0.5, passes: 1 });
+    // the head, crowned: a circle and its zigzag
+    scribbleCircle(ctx, cx, 78, 10, r, { width: 1.8, alpha: 0.85 }, 1.15);
+    stroke(ctx, [[cx - 10, 70], [cx - 6, 60], [cx - 2, 68], [cx + 2, 59], [cx + 6, 68], [cx + 10, 60], [cx + 11, 70]], r,
+      { width: 1.6, alpha: 0.85 });
+    // the sceptre, in his hand again
+    line(ctx, cx + 16, 108, cx + 24, 66, r, { width: 1.8, alpha: 0.75 });
+    scribbleCircle(ctx, cx + 25, 63, 3.4, r, { width: 1.2, alpha: 0.7 });
+    // the grass that had reclaimed the seam is still there, at the
+    // foot of the plinth, on the side he used to lie
+    for (let i = 0; i < 4; i++) {
+      stroke(ctx, [[96 + i * 6, 120 + oy], [96 + i * 6 + (r() - 0.5) * 6, 108 + oy - r() * 6]], r,
+        { width: 1.1, alpha: 0.5, passes: 1 });
+    }
+  });
+}
+
+/**
+ * A BARE POLE (Session 15). The avenue with the banners down: the pole,
+ * its cross-bar, the halyard hanging slack, and nothing on it. Same
+ * canvas as `tallBannerTexture` so it swaps in place, and drawn a shade
+ * lighter, because a pole with nothing on it is a thing you stop seeing.
+ */
+export function barePoleTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(96, 256, seed, (ctx, r) => {
+    line(ctx, 30, 248, 31, 18, r, { width: 2.6, alpha: 0.82 });
+    line(ctx, 22, 24, 44, 23, r, { width: 2, alpha: 0.78 });
+    // the halyard, slack, knocking the pole
+    stroke(ctx, [[42, 24], [40 + r() * 4, 90], [34, 150], [33, 200]], r,
+      { width: 1, alpha: 0.5, passes: 1, jitter: 1.5 });
+    stroke(ctx, [[24, 246], [30, 238], [37, 246]], r, { width: 1.6, alpha: 0.7, passes: 1 });
+  });
+}
+
+/**
+ * THIS WEEK'S RED (Session 15; `THE-WAITS` §1, `THE-STRANGERS` U5). The
+ * moat pool is a dye vat — it is the only standing water inside the
+ * walls and it is why it was dug — and the water in it carries the last
+ * banner Wick re-dyed. A stain lying on the pool, the banner's own red
+ * gone thin in water, ragged where the reeds are. It clears when he is
+ * relieved of duty, and nothing anywhere says why the water was red.
+ */
+export function dyeStainDecal(seed: number): THREE.CanvasTexture {
+  return makeTexture(256, 192, seed, (ctx, r) => {
+    const blob = (cx: number, cy: number, rad: number, a: number) => {
+      const pts: [number, number][] = [];
+      for (let i = 0; i < 16; i++) {
+        const t = (i / 16) * Math.PI * 2;
+        const rr = rad * (0.7 + r() * 0.5);
+        pts.push([cx + Math.cos(t) * rr, cy + Math.sin(t) * rr * 0.7]);
+      }
+      fillPoly(ctx, pts, RED, a);
+    };
+    blob(128, 96, 92, 0.16);
+    blob(112, 90, 62, 0.14);
+    blob(150, 104, 48, 0.12);
+    // the swirl where the cloth went in
+    stroke(ctx, [[96, 100], [120, 84], [150, 92], [162, 112], [140, 122]], r,
+      { width: 1.4, alpha: 0.22, passes: 1, color: RED, jitter: 2 });
+  });
+}
+
 /** The moat pool's hawthorn: grown in one wind, keeping the record of it. */
 export function gnarledHawthornTexture(seed: number): THREE.CanvasTexture {
   return makeTexture(224, 224, seed, (ctx, r) => {

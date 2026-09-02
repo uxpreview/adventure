@@ -1,176 +1,181 @@
-# PROMPT — Session 15: THE VERBS AND THE LAW
+# PROMPT — Session 16: THE FIRST HOUR
 
 You are continuing INKLANDS in `uxpreview/adventure`. Read, in order:
-**`design/THE-FUN-PASS.md` in full** (it is the owner's brief and it is
-binding), `design/QUALITY-BAR.md` §3 (the five amendments and the
-permission to regress), `design/QUESTS.md` §3, §6 Tier 1 and §8,
-`design/specs/controls.md`, then `PLAN.md`, `README.md`, `SESSIONS.md`.
-
-**The owner's direction of 2026-09-01 first.** The owner played all
-twelve lands and said the game is beautiful and not fun. That is what
-makes this session what it is.
+**`design/THE-FUN-PASS.md` in full** (the owner's brief; binding), §11
+twice (the opening the owner chose), `design/specs/controls.md` (the
+verbs, as built), `design/QUESTS.md` §3 and §8, `design/THE-WAITS.md`
+§9 (NELL), `design/critiques/critique-story-2.md` MANDATORY 1 (the
+co-walker), `design/specs/the-common.md` with its Session 15 addendum,
+then `PLAN.md`, `README.md`, `SESSIONS.md`. **Play sheet first:**
+`design/play-sheets/session-15.md` is what the owner was handed; if
+they have played it, their verdict is in `SESSIONS.md` above Session
+15's entry and it governs this session. If they have not, the sheet's
+questions are still open and you build on the assumption that the
+verbs are right until told otherwise.
 
 ---
 
-## 0. THE GAME WAS BUILT TO BE READ, AND THIS IS THE FIRST SESSION THAT BUILDS IT TO BE PLAYED
+## 0. THE VERBS EXIST. THE FIRST HOUR DOES NOT.
 
-Twelve lands hold a verdict. The ending exists. And the owner's verdict
-on the whole of it, in their words:
+Session 15 built the systems: touch, carry, sit, throw on one key; the
+choice card; the scheduled-event clock; the things registry. It proved
+them with a well, a cart, a stone, a swing, a king and a flock. **It
+did not touch the first minute**, on purpose, because the ordering rule
+says systems land before the lands are re-opened, and the Common is
+the land that is about to be re-opened hardest.
 
-> *"I read things but that's not fun. I wish I had choices like
-> Fallout, and those choices did things."*
+The owner's words, which this session exists to answer:
 
-> *"It almost feels like a chore going from one place to another."*
+> *"The starting point is bland and expected but also confuses users
+> because they don't know where to go or what to do."*
 
-This is a **foundations session**, by the ordering rule in `PLAN.md`:
-the verbs and the choice card change how every land is authored, so
-they land before any land is re-opened. Nothing in this session is a
-land. Everything in it is a system that every later session in the fun
-pass stands on.
+And the decision, made 2026-09-01 and not re-opened without them:
+**THE BULL + THE FOUR LURES + THE COMMON AS THE PLATEAU**, with the
+cart as the first toy and the goat as the second co-walker.
 
 ---
 
 ## 1. THE JOB
 
-### 1. THE VERBS — touch, carry, sit, throw, on one key
+### 1. THE BULL (`THE-FUN-PASS` §11, candidate 5)
 
-`THE-FUN-PASS.md` §5 is the spec. One context key: the one the game
-already uses to look (`E`, or tap). What it does depends on what is in
-reach, and the prompt says which, hand-lettered, in the house voice.
+You wake in long grass. A bull is already looking at you. You run —
+taught by necessity, in ten seconds, which retires Session 12's *hold
+shift to run* hint for a fresh page — it chases, **Nell holds the field
+gate and slams it, and the bull stops at the fence.** You are standing
+at the crossroads, breathing, with everything visible. Funny, and
+frightening for exactly ten seconds.
 
-| verb | ships as |
-|---|---|
-| **touch** | a `touch` field on a standee or decal, and the world's answer: a sound, a motion, a change. One-shot |
-| **carry** | one carried-object slot on the walker, drawn in hand; pick up, walk, put down; never more than one; no inventory anywhere |
-| **sit** | a `sit` field; a walker pose; the camera does not move; time passes and routines go by. Joan's wait already resolves on it, so it must not regress her |
-| **throw** | the one carried thing, underarm, a few units, with an arc, a landing and a sound |
+What it needs: a bull (the first creature of the Common, `THE-FUN-PASS`
+§3 item 1); a chase that is a local stake and not a fail state (§2.3 —
+it never touches you; it stops at the fence because the fence is a
+rule); Nell at the gate, moving for the first time; and a spawn point
+in the long grass rather than at the signpost. **The title poster's
+verdict is held on a frame that includes the spawn**: say which
+framing moves and by how much, re-shoot the title at both hours, and
+re-earn the verdict (`QUALITY-BAR` §3, permission to regress).
 
-**What it must never become:** an inventory, a hotbar, crafting, a
-weapon, or anything you can hold two of. And **the walk must not get
-worse**: the key that touches is the key that looks, and a player who
-never touches anything should not notice the game changed.
+### 2. THE FOUR LURES (candidate 2)
 
-### 2. THE CHOICE CARD
+The castle on the ridge, smoke from the mill, the glint of the sea,
+the city's towers — **all four in frame from the crossroads**, so the
+signpost points at things you can already see. The keep vista already
+does one of the four (`meadow.ts`, false perspective). Build the other
+three the same way: pencil-pale, fogged, and fading before the walker
+can catch them working. The camera is due north and the frame is
+68.6° across on desktop and 26.5° in portrait: **measure which lures
+portrait can hold, and say so.** A lure that only works in landscape
+is not done.
 
-`THE-FUN-PASS.md` §2.2 and §6. A hand-lettered card, in the note card's
-own system (`src/ui/`), with two or three options. It appears at a
-moment that matters and nowhere else. Both doors are visible before
-either is taken. It is drawn on a canvas, so **it is measured at every
-width `shoot-mobile` shoots** and it is added to the chrome that tool
-asserts.
+### 3. THE COMMON AS THE PLATEAU (candidate 10)
 
-**No faces, no talking heads, no wheel.** It is a card, it says what
-the two things are, and choosing one changes the world.
+One of everything, before the world opens. Session 15 put in a thing
+to shout down, a thing to push, a thing to throw, a thing to sit on
+and a stone. This session adds: **an animal** (the bull, and the goat
+that follows you — the second co-walker, `critique-story-2`
+MANDATORY 1, which stops at the border), **one choice card** (Nell's,
+below), **one stranger's opening beat** (S1 or S2's Common end), and
+**the Common's districts** as the first land to have them — the
+crossroads, the river bend, the fair ground (new) and the well
+(`THE-FUN-PASS` §7). Districts are a `DISTRICTS` layer under the
+twelve rects in `layout.ts`, a card that can say a district's name
+under its land's, and the map. Build the layer generally; populate it
+for the Common only.
 
-### 3. A SCHEDULED-EVENT CLOCK
+### 4. NELL'S WAIT, WITH TWO DOORS
 
-`THE-FUN-PASS.md` §9. `daylight.ts` has one clock and everything reads
-it. This session adds the thing that lets a land say *at this hour, in
-this place, this happens* without every land builder rolling its own:
-an event registered against an hour and a place, that fires whether or
-not the walker is there, with a `platform`-shaped export so a land can
-know an event is in progress. It is the plumbing for Session 17.
+`THE-WAITS` §9. She leans on the field gate watching the road, already
+drawn (the doodle-folk at 26.6, 63.8). Door one: bring the fourth name
+from the timetable and the cart is loaded and turned north. Door two
+(`THE-FUN-PASS` §6): **push the cart yourself, down any of the other
+three roads; it stops at the border; Nell does not follow it.** The
+cart is already pushable and already stops at the border
+(`src/world/things.ts`). What is new is that Nell notices: she
+straightens when the cart moves, and where it ends up is what she is
+looking at from then on. `WAIT_ANSWERS.meadow` goes in, and
+`WAITS_FOR_THE_LINE` goes to six.
 
-### 4. THE THREE PROOFS
+### 5. THE CO-WALKER AS A RULE OF THE WORLD
 
-A system session ships proof that the systems are worth having, and
-each proof is a thing the owner can play in the play sheet:
+`critique-story-2` MANDATORY 1: Act I's second and third facts have one
+optional teacher between them. The fix is a co-walker who stops at the
+border — the goat (from the Penwood, on the Common for the opening) —
+so the rule *nobody crosses a border but the walker* is SEEN in the
+first ten minutes rather than read in the third hour. It follows; it
+stops dead at the Brim gate; you go on. That is I.7's repetition and it
+arrives whichever road you take.
 
-1. **A toy on the Common.** THE WELL answers a shout (`THE-STRANGERS`
-   U7 says it already does, on too long a delay); make the shout a
-   touch. And **THE HAY CART can be pushed**: it rolls, it stops at the
-   border of the Common, and it stays where you left it. The first
-   local rule in the game and the first thing the walker has ever
-   moved.
-2. **A choice card at the toppled king.** GREYWEATHER's second door
-   (`THE-FUN-PASS` §6): put him back on the plinth, or leave him. Both
-   doors built. Put him back and Wick is relieved: the banners come
-   down, the avenue goes quiet, the moat pool clears, and it stays that
-   way in every later save. Leave him and nothing changes, which is
-   also a choice. **Nothing says which was right.**
-3. **One scheduled event.** THE DROVE moves at dawn: the thirteen
-   sheep that already part for the walker walk the lane from the fold
-   to the field at first light, whether anybody is there or not, and
-   stand in the field all day. Session 10 built the sheep; this session
-   gives them an hour.
+### 6. THE PLAY SHEET, AND THE STORY GATE ON ACT I
 
-### 5. THE LAW, EXECUTED
-
-The five amendments are written into `QUALITY-BAR.md` §3 already. This
-session executes them where they live in the source and the specs:
-`design/specs/controls.md` gains the verbs; `QUESTS.md` §3's four ways
-a quest starts get their loudness back; and **the local-rule tier is a
-tier** (`QUESTS.md` §8), with the well and the cart as its first two
-entries.
-
-### 6. THE PLAY SHEET
-
-`THE-FUN-PASS.md` §13. Ten minutes for the owner, written as *stand
-here, do this, then this*, with the build link. This session's is:
-wake, shout down the well, push the cart to the Brim border, walk to
-the toppled king, choose, watch the avenue tomorrow, and be in the
-Downs at dawn. **Say in the log that the gate was handed over and not
-run.**
+Ten minutes: wake, run, the gate slams, look at four things, pick a
+road, be followed, be left at the border. The story gate re-run on
+Act I (`design/critiques/critique-story-3.md`): can a reader who has
+only played the first hour say what the Common believes? Log it.
+**Say in the log that the play gate was handed over and not run.**
 
 ---
 
-## 2. WHAT SESSION 14 LEFT YOU
+## 2. WHAT SESSION 15 LEFT YOU
 
-- **`src/engine/Eight15.ts`** — the last mount and the ending's
-  instrument. **It exports `platform`**, module scope, which is how a
-  land knows not to draw its own person while they are on a platform.
-  The scheduled-event clock wants the same shape.
-- **`src/world/knowledge.ts`** — a NAME, a FACT, a ROUTE, a REASON, and
-  `WAIT_ANSWERS` with four entries missing on purpose. **A door is a
-  piece of knowledge with a name a human could read**, the same as a
-  fact, so the choice card writes to this and nothing else.
-- **`src/world/daylight.ts`** — one clock, module scope, forty minutes
-  a day. Brim's lamps, the shelter's light and Amos's night walk all
-  read it; none of them is registered anywhere, which is what §1.3
-  fixes.
-- **`src/engine/Character.ts`** — the walker, the walk cycle, the ink
-  weight, the lean. The carried thing and the sit pose go here.
-- **`src/ui/UI.ts`, `lettering.ts`** — the note card, the region card,
-  the hint, the prompt. The choice card is a fifth thing they letter.
-- **`tools/shoot-mobile.mjs`** — five rigs, every piece of chrome at
-  every width. The choice card joins the list.
-- **`design/THE-STRANGERS.md` Part Two** — twenty errands, one line
-  each, every one of which needs carry or touch. Do not build them;
-  they are Session 18's. Do make them buildable.
+- **`src/world/things.ts`** — pushable and carriable things, one slot,
+  the border clamp. The cart is `hay-cart`; the stone is `fist-stone`.
+  A thing has a `home` and the morning puts lost things back. A new
+  thing is one `register` call and a mesh the land moves.
+- **`src/world/events.ts`** — *at this hour, in this place, this
+  happens.* `events.register`, `events.progress(id)` (a pure function
+  of the hour), `happening.ids`. The drove and the Common's morning are
+  registered at module scope in their lands' files. **A bull that gets
+  up at dawn and lies down at dusk is one register call.**
+- **`WorldPOI`** (`regions/index.ts`) — `touch`, `sit`, `choice`,
+  `weak`, a `prompt` that may be a function, a `note.body` that may
+  be a function. App dispatches choice → note → touch → sit.
+  **Nell's card is a `choice` on her POI**, exactly like the king's.
+- **`src/ui/UI.ts` `openChoice`** — the card, measured at every width,
+  asserted in `shoot-mobile`. The longest door in the game is LEAVE HIM
+  WHERE HE LANDED; if Nell's is longer, `shoot-mobile` will tell you.
+- **`Character.hold` / `setSitting`** — the hand and the pose.
+- **`tools/check-verbs.mjs`** — the law around the verbs. It shoves the
+  cart at the border; it will shove it wherever you move it.
+- **`tools/shoot-session15.mjs`** — the pattern for a proofs sheet:
+  `do` scripts on the harness, both states, both viewports.
+- **The POI constructor no longer spreads its definition**, so a live
+  getter stays live. The rowboat's prompt follows the boat now, which
+  it had not done since Session 6. Nell's cart-watching can be a getter.
+- **`fact:the-place-kept` is taught by sitting** and by nothing else,
+  and was taught by nothing at all before Session 15. Check every wait's
+  id is actually learned somewhere; that one was not.
 
 ---
 
 ## 3. THREE THINGS THAT CONSTRAIN THE WHOLE SESSION
 
-1. **NOBODY CROSSES A BORDER BUT THE WALKER.** The cart stops at the
-   Common's edge. A thrown thing that lands in another land is a bug.
-   The sheep walk a lane inside the Downs. The border rule was not
-   amended and it is the engine of the ending.
-2. **THE MEDIUM IS THE STYLE, NEVER THE SUBJECT.** A well, a cart and a
-   king are subject. The prompt for the well says SHOUT, not anything
-   about ink.
-3. **THE FIRST MINUTE HOLDS A VERDICT AND THE COMMON IS THE MOST-SHOT
-   LAND IN THE GAME.** `QUALITY-BAR` §3 now gives permission to move a
-   protected framing when the land inside it is the scope. The cart is
-   in the spawn framing. **Say which framing moved and by how much, and
-   re-shoot the title.** Permission to regress is not permission to
-   not measure.
+1. **NOBODY CROSSES A BORDER BUT THE WALKER.** The bull stops at the
+   fence. The goat stops at the gate. The cart stops at the edge. It is
+   the engine of the ending and this session is the first time the
+   player SEES it.
+2. **THE FIRST MINUTE HOLDS A VERDICT AND YOU ARE ABOUT TO MOVE IT.**
+   Permission to regress is written (`QUALITY-BAR` §3). It is
+   permission to measure, not to skip: `diff-sheets` on every Common
+   framing, the title re-shot at both hours, the numbers in the log,
+   and the verdict re-earned in a critique.
+3. **FUNNY, AND FRIGHTENING FOR EXACTLY TEN SECONDS.** The Common is
+   WAITS & THE UNSEEN (§4: frightening), and the bull is the first
+   local stake in the game (§2.3). No villain, no fail state, no timer.
+   Fear is a sound, a distance, and a thing that moved. It never
+   touches you.
 
 ---
 
 ## 4. THE GATES THAT ARE THE OWNER'S
 
-`QUALITY-BAR` §2. Three now.
-
-1. **THE PLAY GATE** — new, and this session's whole point. The play
-   sheet is the handover.
-2. **THE EAR GATE** — fifty-three WAVs in `out/sound/`, unheard. Any
-   new sound this session (the well's answer, the cart's wheels, the
-   thrown thing landing) goes into the pack for free.
-3. **THE FEEL GATE** — owed since Session 12. The verbs add input; the
-   camera must not move for any of them. `check-camera` still has to
-   pass, and sitting is the one new state where a stopped walker is
-   still due north.
+1. **THE PLAY GATE** — Session 15's sheet may have come back. Read it
+   first. This session's sheet is the first hour.
+2. **THE EAR GATE** — fifty-eight WAVs in `out/sound/`, unheard. The
+   bull, the gate slamming and the goat all go in.
+3. **THE FEEL GATE** — owed since Session 12, plus sitting since 15,
+   plus the run taught by a bull. `check-camera` still has to pass; the
+   chase is the first time anything in the game asks the walker to run
+   somewhere specific, and the camera may not help by turning.
 
 ---
 
@@ -181,61 +186,45 @@ nothing outside `Audio.ts` invents an instrument, exactly as nothing
 outside `palette.ts` invents a colour; all marks via `src/engine/ink.ts`;
 `elevation.ts` is the only authority on where the ground is; **the
 resting bearing is due north, walking does not turn the frame, and a
-stopped walker is always in the shipped composition**; the medium is the
-style and never the subject; **nobody crosses a border but the walker**;
-60fps mobile with DPR capped at 2; the chrome is shot too, on the
-desktop as well as the phone, **and the choice card is chrome**; build
-green before every push; the walker has two dots and nobody else has a
-face; nothing reads as an array; nothing is generated, ever; no fifth
-reward; a number may record where the player has been and may never
-grade what they did, and the ending stays absolute; portrait is judged,
-not checked. **AND FROM 2026-09-01:** looking is the first verb and not
-the only one; a choice card is allowed and a dialogue wheel is not;
-local stakes are allowed and a villain is not; districts are allowed
-and more sheet is not; the world may point the way and may never say
-the turn; **a protected framing may move when the land inside it is
-the scope, measured**. End the session: pushed, `SESSIONS.md` handoff
-updated, verdicts logged, **play sheet written**.
+stopped walker (seated or standing) is always in the shipped
+composition**; the medium is the style and never the subject; **nobody
+crosses a border but the walker — and no thing does either**; 60fps
+mobile with DPR capped at 2; the chrome is shot too, on the desktop as
+well as the phone, and the choice card is chrome; build green before
+every push; the walker has two dots and nobody else has a face; nothing
+reads as an array; nothing is generated, ever; no fifth reward; a
+number may record where the player has been and may never grade what
+they did, and the ending stays absolute; portrait is judged, not
+checked; looking is the first verb and not the only one; a choice card
+is allowed and a dialogue wheel is not; local stakes are allowed and a
+villain is not; districts are allowed and more sheet is not; the world
+may point the way and may never say the turn; a protected framing may
+move when the land inside it is the scope, measured. End the session:
+pushed, `SESSIONS.md` handoff updated, verdicts logged, **play sheet
+written**.
 
 ## Standing debts, carried forward
 
-They live in `PLAN.md` too, because this file is overwritten every
-session.
-
-- **THE ENDING HAS NO CONSEQUENCE THAT LASTS** — the departure is not
-  permanent. It is the owner's call and it is executed either way in
-  Session 21.
-- **THE PAPER PLANE** — Session 18, and the fourth deferral is the
-  last. It is a throw from height, so the throw verb this session
-  builds is its first half.
-- **The rowboat's first-meeting composition at THE RIVER MOUTH.** Seven
-  gates have passed it and not praised it, and it is the front door of
-  HOLT's wait.
+- **THE ENDING HAS NO CONSEQUENCE THAT LASTS** — Session 21, owner's call.
+- **THE PAPER PLANE** — Session 18; the throw exists now and it is the
+  plane's first half.
+- **The rowboat's first-meeting composition at THE RIVER MOUTH** — eight
+  gates have passed it. (Its prompt follows the boat now, at least.)
 - **THE HARROW DOWNS' stooked field**, **THE PENWOOD's east arc**, **THE
-  BLEACH FLATS' `WHERE THE ROAD STOPS`** and **GREYLINE CITY's THE
-  HOLLOW**: all passed, none praised. The last one belongs to
-  `elevation.ts`.
+  BLEACH FLATS' `WHERE THE ROAD STOPS`**, **GREYLINE CITY's THE HOLLOW**.
 - **Holt's lit window** is one warm pixel at forty units.
-- **Brim Square is full**, and it is about to get a crowd (Session 17)
-  and a second door (Session 21). Whoever opens it next opens it once.
-- **READ THE PROCLAMATION** on the barbican and **THE 8:15 STOP's
-  label** are both compromises in the SKYLINE. Whoever next opens it
-  takes both.
-- **`critique-story-2` RECOMMENDED 2** — the timetable should mean
-  nothing until some of the names on it do. Session 22's, beside the
-  story gate.
+- **Brim Square is full**, and Session 17 puts a crowd in it.
+- **READ THE PROCLAMATION** and **THE 8:15 STOP's label** in the SKYLINE.
+- **`critique-story-2` RECOMMENDED 2** — Session 22's.
+- **The hand-rolled routines** (Brim's lamps, the shelter, Amos, Joan)
+  are not on `events.ts` yet — Session 17 moves them.
+- **The well's note is gone** (it was a description of the toy). If the
+  owner misses it, the answer is a sign on the well, not a note.
 
-## Not this session's job, and recorded so nobody re-derives them
+## Not this session's job
 
-- **The opening** (`THE-FUN-PASS` §11: the bull, the four lures, the
-  Common as the plateau) is Session 16's. This session makes the cart
-  pushable; Session 16 makes it get away.
-- **The co-walker as a rule of the world** is Session 16's, with NELL.
-- **Districts** are Session 18's. Do not add a layer to `layout.ts`
-  this session; the scheduled-event clock is enough new plumbing.
-- **The cast** (`THE-FUN-PASS` §10) is Sessions 19 and 20. Not one
-  Viking this session.
-- **Second doors for the other eleven waits** are Sessions 19 to 21.
-  This session builds one, at the king, as the proof.
-- **THE JUROR** (`PLAN.md` row 24) wants a game whose first hour works,
-  which is why it is last.
+- **Districts in the other eleven lands** — 18.
+- **Life** (unnamed inhabitants, weather, night) — 17.
+- **Second doors for the other ten waits** — 19 to 21.
+- **The cast** — 19 and 20. Not one Viking this session.
+- **THE JUROR** — last.

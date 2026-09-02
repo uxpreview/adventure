@@ -35,6 +35,51 @@ about it.
 | **interact** | `E` / `Space` / `Enter`, or the prompt | tap the prompt |
 | **map** | `M` | the map button |
 | **close** | `Escape` | tap the veil |
+| **choose** *(Session 15)* | `1` `2` `3`, or the door on the card; `Escape` walks away | tap the door |
+
+**AND FROM SESSION 15 THE INTERACT KEY DOES FIVE THINGS** (`THE-FUN-PASS`
+§5, owner-confirmed 2026-09-01). It is still one key and still the key
+that looks; what it does depends on what is in reach, and **the prompt
+says which**, hand-lettered, in the house voice:
+
+| verb | the prompt says | what happens |
+|---|---|---|
+| **look** | READ THE SIGNPOST, CRANE YOUR NECK … | the note, exactly as before |
+| **touch** | SHOUT DOWN THE WELL, PUSH THE CART, PICK UP THE STONE | a one-shot on a thing in reach, and the world's answer: a sound, a motion, a change |
+| **carry** | *(the thing is in the hand, drawn there; nothing is written)* | walk with it. One thing, never two; there is no inventory anywhere |
+| **throw** | THROW THE STONE at a walk, PUT DOWN THE STONE standing still | underarm, a few units along your heading, on an arc, with a landing and a sound. A set-down is a throw at a standing walker: a stride and a bit. At a run, six units. Continuous, like the run, and no second control |
+| **sit** | SIT IN THE SWING, SIT DOWN — and STAND UP once you have | the walker is put on the seat and holds still. **The camera does not move.** Time passes at six times its walking pace while you sit, so a routine goes by while you watch. Any step stands you up |
+| **choose** | SET YOUR SHOULDER TO HIM, and then a card with two doors on it | a choice card (`ui/UI.ts`): both doors visible before either is taken, one press takes one, and the world changes because of it. Rare, and never twice at one place |
+
+**Three rules keep it one key:**
+
+1. **A thing in reach beats the thing in the hand.** Standing at the
+   well with a stone in your hand, the key shouts; the stone is thrown
+   from outside the well's reach, which is the lip. Otherwise a stone in
+   hand would swallow every prompt in the world, because it is at
+   distance zero.
+2. **A place has one verb at a time**, in this order: a choice not yet
+   taken, then a note, then a touch, then a sit. The plinth offers the
+   card until a door is taken and is a note afterwards.
+3. **A player who never touches anything does not notice the game
+   changed.** `tools/check-verbs.mjs` asserts the signpost still says
+   READ THE SIGNPOST, and every note in the world opens exactly as it
+   did in Session 14.
+
+**What it must never become**, and `src/world/things.ts` refuses it by
+construction: an inventory (`held` is one id or null and there is no
+list), a hotbar, crafting, a weapon, or anything you can hold two of.
+**And nobody crosses a border but the walker:** a pushed cart stops at
+its land's edge and a thrown stone lands inside it, clamped before it
+flies. `check-verbs` shoves the cart at the Common's border fifteen
+times and throws the stone at it at a run, and asserts both.
+
+**The feel gate is owed again for one new state.** Sitting is the one
+thing the verbs add in which a stopped walker has a posture, and a
+stopped walker is due north by contract: `check-verbs` reads the
+bearing for five game seconds seated and asserts yaw and astern are
+exactly zero and the rig does not dolly. Whether sitting *feels* like
+sitting is the owner's.
 
 **The input frame is WORLD-LOCKED and stays that way.** `W` is north,
 not camera-forward. Two reasons and the second is the real one: a camera

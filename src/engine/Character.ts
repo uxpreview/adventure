@@ -95,6 +95,15 @@ export class Character {
   stamping = true;
 
   private sprite: THREE.Mesh;
+  /**
+   * THE ONE THING IN HAND (Session 15, `THE-FUN-PASS` §5). A small
+   * cutout parented to the figure at the hand, mirrored with the
+   * sprite, and empty nearly all the time. There is exactly one of
+   * these and it holds one texture or none: that is the whole of the
+   * inventory system and it is why there is not one.
+   */
+  private hand: THREE.Mesh;
+  private handMat: THREE.MeshBasicMaterial;
   private tex: THREE.CanvasTexture;
   private texInk: THREE.CanvasTexture;
   private texWhite: THREE.CanvasTexture | null = null;
@@ -150,7 +159,31 @@ export class Character {
     this.shadow.position.y = 0.015;
     this.shadow.renderOrder = -4;
 
+    /* The hand: a plane a third of the figure's height, drawn just in
+     * front of the body so it reads over the walk cycle's arm. Hidden
+     * until something is put in it. */
+    const hg = new THREE.PlaneGeometry(0.46, 0.46);
+    this.handMat = new THREE.MeshBasicMaterial({
+      transparent: true, alphaTest: 0.1, side: THREE.DoubleSide,
+    });
+    this.hand = new THREE.Mesh(hg, this.handMat);
+    this.hand.position.set(0.3, 0.52, 0.02);
+    this.hand.visible = false;
+    this.sprite.add(this.hand);
+
     this.group.add(this.shadow, this.sprite);
+  }
+
+  /** Put a thing in the hand, or take it out (`null`). */
+  hold(tex: THREE.Texture | null, w = 0.46, h = 0.46) {
+    this.hand.visible = tex !== null;
+    this.handMat.map = tex;
+    this.handMat.needsUpdate = true;
+    this.hand.scale.set(w / 0.46, h / 0.46, 1);
+  }
+
+  get isSitting() {
+    return this.sitting;
   }
 
   setWobble(k: number) {

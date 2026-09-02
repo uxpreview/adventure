@@ -34,6 +34,7 @@ import {
 import { clock } from '../daylight';
 import { platform } from '../../engine/Eight15';
 import { knowledge } from '../knowledge';
+import { events } from '../events';
 import type { RegionBuilder, WorldPOI } from './index';
 
 /** Fire a named audio event up to the App without a plumbing run. */
@@ -1625,6 +1626,50 @@ const FIELDS: Field[] = [
 const MILL = { x: 150, z: -8 };
 const PICNIC = { x: 140.5, z: 9 };
 
+/* ================================================================== *
+ * THE DROVE MOVES AT DAWN — the first scheduled event in the game
+ * (Session 15, `THE-FUN-PASS` §9, `events.ts`).
+ *
+ * Thirteen sheep. At night they are in the fold at the south end of
+ * the lane. At first light they walk the lane north, through the mouth
+ * gate, into the west slope, and stand there all day; at dusk they
+ * come back down it. It happens whether or not the walker is there:
+ * the flock's place is a FUNCTION OF THE HOUR, so a walker who arrives
+ * ten minutes into the drove finds it ten minutes up the lane, and a
+ * walker who has never been to the Downs finds a field with sheep in
+ * it at noon and a lane with sheep in it at midnight.
+ *
+ * **Two of them do not move for anybody**, including at dawn. The note
+ * on THE DROVE has said so since Session 10 and it is still true.
+ *
+ * Registered at module scope, not in the builder, because a thing that
+ * fires whether or not the walker is there cannot wait for the land to
+ * be built. The sound is the only part that needs the walker: the
+ * flock setting out is a thing you hear if you were in earshot.
+ * ================================================================== */
+const DROVE_OUT = { at: 5.7, hours: 1.0 };
+const DROVE_HOME = { at: 19.3, hours: 1.0 };
+const droveSound = (px: number, pz: number) => {
+  if (Math.hypot(px - 101, pz - 100) < 70) say('sheep');
+};
+events.register({ id: 'the-drove-out', land: 'downs', ...DROVE_OUT,
+  place: { x: 101, z: 100 }, onStart: droveSound });
+events.register({ id: 'the-drove-home', land: 'downs', ...DROVE_HOME,
+  place: { x: 101, z: 100 }, onStart: droveSound });
+
+/** Where the flock is at an hour: 0 in the fold, 1 in the field, and
+ *  in between it is walking. Symmetric, so the same path serves both. */
+function droveAt(hour: number): number {
+  const out = events.progress('the-drove-out', hour);
+  if (out >= 0) return out;
+  const home = events.progress('the-drove-home', hour);
+  if (home >= 0) return 1 - home;
+  // the day between the two: in the field; the night: in the fold
+  const dayStart = DROVE_OUT.at + DROVE_OUT.hours;
+  const dayEnd = DROVE_HOME.at;
+  return hour >= dayStart && hour < dayEnd ? 1 : 0;
+}
+
 export const buildDowns: RegionBuilder = (ctx) => {
   const { r, terrain } = ctx;
 
@@ -1923,13 +1968,52 @@ export const buildDowns: RegionBuilder = (ctx) => {
   const FLOCK = 13;
   const sheepFields = [0, 1, 2, 3].map((p) =>
     ctx.field(sheepTexture(5900 + p, p as 0 | 1 | 2 | 3), FLOCK, { w: 2.6, h: 1.95 }));
-  type Sheep = { x: number; z: number; hx: number; hz: number; side: number; stub: boolean };
+  /* A sheep has a place in the FOLD (the lane's south end), a place in
+   * the FIELD (the west slope, through the mouth gate), and walks the
+   * lane between them on the clock. `x, z` is where it is meant to be
+   * this frame; `hx, hz` is where it actually is, which is that plus
+   * the parting. The two stubs have one place and it is in the lane. */
+  type Sheep = {
+    x: number; z: number; hx: number; hz: number; side: number; stub: boolean;
+    fold: [number, number]; field: [number, number]; lead: number;
+  };
   const flock: Sheep[] = [];
   for (let i = 0; i < FLOCK; i++) {
+    const stub = i === 4 || i === 9;
     const z = 84 + (i / FLOCK) * 38 + (r() - 0.5) * 4;
     const x = 101 + (r() - 0.5) * 8;
-    flock.push({ x, z, hx: x, hz: z, side: r() > 0.5 ? 1 : -1, stub: i === 4 || i === 9 });
+    const fold: [number, number] = stub ? [x, z] : [100 + (r() - 0.5) * 7, 113 + (i / FLOCK) * 10 + (r() - 0.5) * 2];
+    const field: [number, number] = stub ? [x, z] : [99 + (r() - 0.5) * 6.5, 54 + (i / FLOCK) * 20 + (r() - 0.5) * 3];
+    flock.push({
+      x: fold[0], z: fold[1], hx: fold[0], hz: fold[1],
+      side: r() > 0.5 ? 1 : -1, stub, fold, field,
+      // they set out one after another, the front of the flock first
+      lead: (1 - i / FLOCK) * 0.35,
+    });
   }
+  /** The lane, fold to field: down the drove, through the mouth gate,
+   *  and out into the west slope. Each sheep's own two ends are spliced
+   *  onto it. */
+  const LANE: [number, number][] = [[101, 108], [101, 92], [101, 82], [101, 76]];
+  const lanePos = (s: Sheep, k: number): [number, number] => {
+    const pts: [number, number][] = [s.fold, ...LANE, s.field];
+    const segs: number[] = [];
+    let total = 0;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]);
+      segs.push(d);
+      total += d;
+    }
+    let want = k * total;
+    for (let i = 0; i < segs.length; i++) {
+      if (want <= segs[i] || i === segs.length - 1) {
+        const u = segs[i] > 0 ? Math.max(0, Math.min(1, want / segs[i])) : 1;
+        return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * u, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * u];
+      }
+      want -= segs[i];
+    }
+    return s.field;
+  };
   ctx.standee(stoneTroughTexture(5920), 4.0, 2.3, 103, 90, { rotY: 0.2 });
 
   /* ---- THE SCARECROW, kept, and given one mark nothing will mention */
@@ -2011,9 +2095,22 @@ export const buildDowns: RegionBuilder = (ctx) => {
     picnicLaid.visible = laid;
     picnicOne.visible = !laid;
 
-    /* THE FLOCK PARTS. */
+    /* THE FLOCK, ON THE CLOCK, AND THEN THE FLOCK PARTS. */
+    const drove = droveAt(h);
     for (let i = 0; i < FLOCK; i++) {
       const s = flock[i];
+      if (!s.stub) {
+        /* Where the flock is meant to be: a function of the hour, so a
+         * walker arriving mid-drove finds it mid-lane. Each sheep sets
+         * out `lead` after the one in front and takes the rest of the
+         * hour to arrive. */
+        const k = Math.max(0, Math.min(1, (drove - s.lead) / (1 - 0.35)));
+        const at = lanePos(s, drove >= 1 ? 1 : drove <= 0 ? 0 : k);
+        s.x = at[0];
+        s.z = at[1];
+      }
+      const walking = !s.stub && drove > 0 && drove < 1
+        && Math.hypot(s.x - s.hx, s.z - s.hz) > 0.05;
       const d = Math.hypot(s.hx - px, s.hz - pz);
       let tx = s.x;
       let tz = s.z;
@@ -2024,10 +2121,15 @@ export const buildDowns: RegionBuilder = (ctx) => {
         tx = s.x + s.side * push;
         tz = s.z + (s.hz > pz ? 1.5 : -1.5) * (1 - d / 13);
       }
-      const k = 1 - Math.exp(-dt * (d < 13 ? 3.2 : 0.9));
+      /* Parting is quick; closing up is slow; and the walk on the clock
+       * is taken directly, because a sheep easing toward a target that
+       * is itself moving arrives late and never quite gets there — the
+       * harness's setHour would have found the flock half a lane short
+       * of the field at noon. */
+      const k = 1 - Math.exp(-dt * (d < 13 ? 3.2 : walking ? 6.0 : 0.9));
       s.hx += (tx - s.hx) * k;
       s.hz += (tz - s.hz) * k;
-      const moving = Math.hypot(tx - s.hx, tz - s.hz) > 0.35;
+      const moving = walking || Math.hypot(tx - s.hx, tz - s.hz) > 0.35;
       const pose = s.stub ? (i % 2 as 0 | 1) : moving ? 3 : ((i % 3) as 0 | 1 | 2);
       for (let p = 0; p < 4; p++) {
         if (p === pose) sheepFields[p].set(i, s.hx, s.hz, 0.85 + (i % 4) * 0.06, 0, s.side < 0);
@@ -2047,8 +2149,20 @@ export const DOWNS_POIS: WorldPOI[] = [
     },
   },
   {
-    x: 140, z: 10, radius: 8, label: 'THE HEADLAND',
+    /* THE WAIT, AND IT IS A SIT NOW (Session 15). `SIT DOWN` has been
+     * the prompt since Session 10 and it opened a note; the note's
+     * reading was what resolved JOAN. It resolves on sitting now — the
+     * walker is put on the bench, the camera does not move, the day
+     * goes by — and the note is the headland's own, four units off,
+     * where the strip is. `fact:the-place-kept` is learned by sitting
+     * and by nothing else, which is what `THE-WAITS` §10 always said. */
+    x: 140, z: 10, radius: 6,
     prompt: 'SIT DOWN',
+    sit: { x: 140.2, z: 10.6, learns: ['fact:the-place-kept'] },
+  },
+  {
+    x: 134.5, z: 12.5, radius: 4, label: 'THE HEADLAND',
+    prompt: 'LOOK AT THE TABLE',
     note: {
       title: 'the headland',
       body: 'the strip at the edge of a field, where the plough turns and nothing is sown. there is a table on it, laid for two, and a basket under it with the day in it. the cloth is clean.',

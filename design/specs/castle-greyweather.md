@@ -197,3 +197,52 @@ ground under it. What changed, so nobody rebuilds the old version:
   wants one authored thing when the story arrives (Session 7).
 
 Verdict: WOWED, `design/critiques/critique-art-3.md`.
+
+
+---
+
+## Session 15 addendum — the second door (2026-09-02)
+
+`THE-FUN-PASS` §6 gives every wait a second door and names this land's:
+**put the fallen king back on his plinth.** Session 15 built it as the
+proof of the choice card, with both doors, on ground that holds a verdict.
+
+- **THE TOPPLED KING's prompt is SET YOUR SHOULDER TO HIM** until a
+  door is taken. The key opens a choice card — the plinth's own note,
+  with one added sentence (*he is heavier than he looks*) and two doors
+  under it: PUT HIM BACK ON HIS PLINTH / LEAVE HIM WHERE HE LANDED.
+  Reading the card reads the plinth (`fact:the-old-name`, S8), whichever
+  door is taken. After a door the prompt is READ THE PLINTH and the note
+  reads a little differently, and the card is never offered again.
+- **PUT HIM BACK** writes `door:the-king-restored`, and the land reads
+  it every frame: `standingKingTexture` stands on the same plinth in
+  place of `toppledStatueTexture` (the seam is drawn across the stone —
+  a thing put back is not a thing unbroken); every banner in the land
+  comes down, the avenue's ten and the keep's two, and a bare pole
+  stands under each (`barePoleTexture`, no wind); the avenue goes quiet
+  (App stops firing `banner-snap`; the rooks are the only voice left);
+  and the moat pool clears. **The moat pool was never red before this
+  session** — `dyeStainDecal`, this week's banner red gone thin in the
+  water, was added so there was something to clear (U5, and `THE-WAITS`
+  §1's dye vat). It is at the ridge's west foot and in no protected
+  framing. The perched rooks lose their perch and join the loop for
+  good.
+- **LEAVE HIM** writes `door:the-king-left` and nothing changes, which
+  is also a choice.
+- **Nothing says which was right.** Wick is not drawn (his wait is
+  Session 19's); when he is, *relieved of duty* is what he is if the
+  king is up, and the 8:15's platform at GREYWEATHER stays empty for a
+  different reason (§6). `WAIT_ANSWERS` has no castle entry and this
+  session did not add one.
+
+**What moved, measured.** Nothing on a fresh page: both doors are
+knowledge, a fresh page has neither, and every drawing this session
+added to the bailey and the avenue is invisible until one is taken. The
+dye stain is the only thing visible from the first minute, and it lies
+in the moat pool, which is in none of the four Greyweather framings
+`diff-sheets` protects. The one deliberate change in the WRITING pass
+is the plinth's prompt, which says SET YOUR SHOULDER TO HIM where it
+said READ THE PLINTH.
+
+**Shot:** `tools/shoot-session15.mjs` frames 10–19, both doors, both
+viewports, the restored avenue at dusk.

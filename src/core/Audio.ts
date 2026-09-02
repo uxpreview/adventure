@@ -1345,6 +1345,73 @@ export class Audio {
         break;
       }
 
+      /* ================================================================ *
+       * THE VERBS (Session 15). Five voices for four verbs, and every
+       * one of them is a THING ANSWERING: the well answering a shout,
+       * the cart answering a shove, the ground answering a stone. The
+       * walker's own shout is here too, and it is the only sound in the
+       * game the walker has ever made on purpose.
+       * ================================================================ */
+
+      case 'well-shout': {
+        /* A shout going DOWN. A short bright front and then the same
+         * shape falling away into the shaft: the voice, and the shaft
+         * closing over it. Nothing comes back — that is `well-answer`,
+         * on a delay that is too long, and the delay is App's. */
+        const j = 0.94 + Math.random() * 0.12;
+        this.glide(520 * j, 300 * j, 0, 0.32, 0.026, 'triangle');
+        this.surge(0.03, 0.55, 1400 * j, 260, 0.010, 0.02, 'bandpass');
+        break;
+      }
+
+      case 'well-answer': {
+        /* THE WELL ANSWERS, a long way down: the shout coming back
+         * thinner and lower, as if from a room, and then — later than
+         * it should — a drop reaching the water. It is `well-plink`
+         * with the voice in front of it. */
+        const j = 0.96 + Math.random() * 0.08;
+        this.glide(330 * j, 240 * j, 0, 0.42, 0.0075, 'triangle');
+        this.surge(0.05, 0.9, 700, 220, 0.0045, 0.02, 'lowpass');
+        this.knock(140, 0.016, 1.15);
+        this.tone(880, 1.19, 0.09, 0.016);
+        this.tone(659, 1.27, 0.4, 0.02);
+        break;
+      }
+
+      case 'cart-wheels': {
+        /* A CART TAKING A SHOVE: the axle complaining, then the wheel's
+         * rim going over the ground, three or four turns, each quieter.
+         * The only wheeled thing in the world that has ever turned. */
+        const j = 0.92 + Math.random() * 0.16;
+        this.knock(120 * j, 0.016);
+        this.glide(110 * j, 82 * j, 0.02, 0.36, 0.009, 'triangle');
+        for (let i = 0, at = 0.12; i < 4; i++) {
+          this.surge(0.03, 0.22, 900 * j, 380, 0.0075 * (1 - i * 0.2), at, 'bandpass');
+          at += 0.34 + i * 0.06;
+        }
+        break;
+      }
+
+      case 'stone-land': {
+        /* A STONE COMING DOWN ON THE PAGE: one dry knock, a smaller
+         * one as it settles, and the grit it moved. */
+        const j = 0.9 + Math.random() * 0.2;
+        this.knock(360 * j, 0.020);
+        this.knock(300 * j, 0.009, 0.09 + Math.random() * 0.04);
+        this.surge(0.01, 0.16, 2400, 900, 0.0045, 0.02);
+        break;
+      }
+
+      case 'stone-plop': {
+        /* A STONE GOING INTO WATER: the plop, which is a pitch falling
+         * fast, and the ring going out. */
+        const j = 0.92 + Math.random() * 0.16;
+        this.glide(720 * j, 180 * j, 0, 0.11, 0.022, 'sine');
+        this.tone(262 * j, 0.06, 0.9, 0.009);
+        this.surge(0.02, 0.5, 1800, 500, 0.0055, 0.03, 'bandpass');
+        break;
+      }
+
       case 'can-knock': {
         /* Two full cans, out on the track, at night. It is the sound of
          * a man forty units from anywhere carrying water uphill, and

@@ -58,6 +58,18 @@ export type SaveData = {
    * moment the player arrives somewhere.
    */
   taughtRun: boolean;
+  /**
+   * WHERE THE THINGS THE WALKER HAS MOVED ARE (Session 15).
+   *
+   * The first session in which the walker moves anything but
+   * themselves. A pushed cart stays where it was left and a thrown
+   * stone lies where it landed, in every later save, keyed by the
+   * thing's readable id (`src/world/things.ts`). `null` for a thing
+   * that is down the well or otherwise gone until the morning puts it
+   * back. Absent for a thing nobody has touched, which is what an
+   * older save looks like and costs nothing to read.
+   */
+  things: Record<string, { x: number; z: number } | null>;
 };
 
 const KEY = 'inklands-save-v1';
@@ -74,6 +86,7 @@ const DEFAULTS: SaveData = {
   known: [],
   passed: [],
   taughtRun: false,
+  things: {},
 };
 
 export class Save {
