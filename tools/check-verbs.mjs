@@ -84,6 +84,17 @@ const r = await page.evaluate(() => {
     far = Math.max(far, cart.x);
   }
   out.cart = { x: cart.x, z: cart.z, maxX: rect.maxX, far };
+  // and one more shove against the border: the cart does not move,
+  // and it ROCKS, and it comes back to exactly rest
+  const restZ = cart.mesh.rotation.z;
+  I.goto(cart.x - 3.2, cart.z);
+  settle(0.2);
+  const xBefore = cart.x;
+  I.press();
+  I.step(1 / 60, 6);
+  const rocked = Math.abs(cart.mesh.rotation.z - restZ);
+  settle(1.5);
+  out.refused = { moved: Math.abs(cart.x - xBefore), rocked, back: Math.abs(cart.mesh.rotation.z - restZ) };
   // and then home again for the sheet's sake: shove it back west
   for (let i = 0; i < 15; i++) {
     I.goto(cart.x + 3.2, cart.z);
@@ -222,6 +233,9 @@ if (r.cart.x < r.cart.maxX && r.cart.far < r.cart.maxX) {
 } else fail(`THE CART CROSSED: x ${r.cart.x.toFixed(1)} against a border at ${r.cart.maxX}`);
 if (r.cart.far > r.cart.maxX - 4) pass(`and it actually reached it: ${r.cart.far.toFixed(1)} after fifteen shoves`);
 else fail(`the cart barely moved: ${r.cart.far.toFixed(1)} after fifteen shoves east`);
+if (r.refused.moved < 0.01 && r.refused.rocked > 0.01 && r.refused.back < 1e-6) {
+  pass(`a refused shove is SEEN: the cart rocks ${r.refused.rocked.toFixed(3)} rad, moves 0, and returns to exactly rest`);
+} else fail(`a refused shove: moved ${r.refused.moved.toFixed(2)}, rocked ${r.refused.rocked.toFixed(3)}, back ${r.refused.back}`);
 if (r.stone.z < r.stone.maxZ && r.stone.state === 'ground') {
   pass(`the stone thrown south at the border lands inside it — z ${r.stone.z.toFixed(1)} against ${r.stone.maxZ}`);
 } else fail(`THE STONE LEFT THE COMMON: z ${r.stone.z.toFixed(1)} against ${r.stone.maxZ} (${r.stone.state})`);

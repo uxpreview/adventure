@@ -1396,6 +1396,16 @@ export class Audio {
         break;
       }
 
+      case 'cart-stuck': {
+        /* A SHOVE THE CART DOES NOT TAKE: the axle knocking against
+         * what stops it, and nothing rolling. Lower than the wheels and
+         * over in a tenth of a second. */
+        const j = 0.94 + Math.random() * 0.12;
+        this.knock(90 * j, 0.020);
+        this.knock(72 * j, 0.010, 0.09);
+        break;
+      }
+
       case 'stone-land': {
         /* A STONE COMING DOWN ON THE PAGE: one dry knock, a smaller
          * one as it settles, and the grit it moved. */

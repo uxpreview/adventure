@@ -176,7 +176,7 @@ class Things {
    * where the walker stands, so the direction is the line through both
    * — shove the cart from its south and it rolls north.
    */
-  push(id: string, fromX: number, fromZ: number): boolean {
+  push(id: string, fromX: number, fromZ: number): 'moved' | 'refused' | false {
     const t = this.map.get(id);
     if (!t || t.def.kind !== 'pushable') return false;
     let dx = t.x - fromX;
@@ -184,6 +184,17 @@ class Things {
     const d = Math.hypot(dx, dz) || 1;
     dx /= d;
     dz /= d;
+    /* A SHOVE THAT CANNOT MOVE IT IS REFUSED, and says so: the border,
+     * the river or the steep a stride ahead means the cart does not
+     * take the velocity at all, so the land can rock it instead of
+     * rolling it and the wheels do not sound for a cart that did not
+     * turn. The owner's rule (2026-09-02): a visual cue, not just
+     * audio — and a refusal is an answer too. */
+    const ax = t.x + dx * 0.6;
+    const az = t.z + dz * 0.6;
+    const blocked = this.clampX(t, ax) !== ax || this.clampZ(t, az) !== az
+      || (t.def.refuse ? t.def.refuse(ax, az) : false);
+    if (blocked) return 'refused';
     const shove = t.def.shove ?? 6;
     /* A shove is a velocity, not a teleport: the cart takes a second and
      * a bit to roll to a stop, so a player who keeps pressing keeps it
@@ -191,7 +202,7 @@ class Things {
      * integrates to about `shove` units. */
     t.vx += dx * shove * Things.DECAY;
     t.vz += dz * shove * Things.DECAY;
-    return true;
+    return 'moved';
   }
   /** Per second: the cart loses this much of its speed. */
   static DECAY = 2.6;

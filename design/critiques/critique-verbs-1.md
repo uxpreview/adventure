@@ -130,3 +130,16 @@ sheet; the second is the frame that says it. The `well` framing moves
 0.69% in portrait and 0.28% on desktop, which is the rope and the
 bucket redrawn as standees; the trough beside the well is unchanged
 because the strokes the bucket replaced are still drawn at zero alpha.
+
+## Round 4 — the rule, applied everywhere
+
+The owner named it as a rule: *a visual cue, not just audio.* Every
+interaction was audited against it. Four fell short and are fixed —
+the refused shove (the cart rocks, the wheels are silent, asserted in
+`check-verbs`), the stone down the well (the bucket jiggles at the
+plink), the stone into the river (a ring on the water), and the swing
+(the figure rides the plank instead of sitting rigid beside its arc).
+`09-swing-sitting` re-shot: the walker is on the plank, leaning with
+it. One is left open and logged: sitting's six-times clock is
+invisible through the neutral middle of the day, and the honest answer
+is the owner's, not a clock face.

@@ -645,6 +645,7 @@ export class App {
    * did in Session 14 — nothing here changes a look.
    * ================================================================ */
   private seat: WorldPOI | null = null;
+  private seatDy = 0;
   private handShown = false;
   /** The stone's drawing, for the hand. */
   private handTex = fistStoneTexture(452);
@@ -1362,6 +1363,16 @@ export class App {
     if (this.seat && Math.hypot(this.input.move.x, this.input.move.y) > 0.3) {
       this.standUp();
     }
+    /* A SEAT THAT MOVES: the swing's plank is on a pendulum, and a
+     * figure sitting rigid beside its arc was the wrong picture. The
+     * seat says where it is this frame and the figure is put there. */
+    if (this.seat?.sit?.follow) {
+      const f = this.seat.sit.follow(this.elapsed);
+      this.char.pos.x = this.seat.sit.x + f.dx;
+      this.char.pos.z = this.seat.sit.z;
+      this.char.sway = f.rot;
+      this.seatDy = f.dy;
+    } else this.seatDy = 0;
     this.char.runIntent = this.input.run;
     /* THE ROAD UNDER THE WALKER. Off the road it is zero and costs one
      * polyline query; on the water there is no road at all, because a
@@ -1430,7 +1441,7 @@ export class App {
     // down in the boat, which is where a person in a boat is
     this.char.setGround(
       this.terrain.heightAt(this.char.pos.x, this.char.pos.z) - (this.boat.aboard ? 0.34 : 0)
-        + (this.seat?.sit?.lift ?? 0),
+        + (this.seat?.sit?.lift ?? 0) + this.seatDy,
       this.boat.aboard ? [0, 1, 0] : this.terrain.normalAt(this.char.pos.x, this.char.pos.z)
     );
 

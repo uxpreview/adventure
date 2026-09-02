@@ -249,6 +249,15 @@ and the prompt says which, in the house voice.
 | **sit** | any bench, chair, wall, swing, kerb, or the toppled king. The camera does not move. Time passes. Routines go by | a `sit` field, a walker pose, and the fact that Joan's wait already resolves on it |
 | **throw** | the one carried thing, underarm, a few units. Stones skim. The paper plane is this verb from height | a short arc, a landing, a sound |
 
+**And every answer is SEEN** (owner, 2026-09-02, after the first tap
+on a phone: *"there should be a visual cue, not just audio"*). A
+touch's answer is a change you can see, with a sound under it, never a
+sound alone — a phone is on silent more often than not. A refusal is an
+answer too: a cart that will not roll rocks, and the wheels do not
+sound for a cart that did not turn. Executed Session 15 (the walker's
+recoil, the well's bucket, the cart's rock, the river's ring, the
+bucket's bob) and asserted in `tools/check-verbs.mjs`.
+
 **What the verbs are for, in order:**
 
 - **Toys** (§3 item 3): skim a stone off the sandbar, shout down the

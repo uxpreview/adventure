@@ -198,6 +198,10 @@ export class Character {
    */
   private touchT = 0;
   private static TOUCH_S = 0.36;
+  /** SEATED ON SOMETHING THAT MOVES: the swing's own rotation, handed
+   *  in by App each frame so the figure rides the plank instead of
+   *  sitting rigid beside its arc. Zero on every other seat. */
+  sway = 0;
   recoil() {
     this.touchT = Character.TOUCH_S;
   }
@@ -221,6 +225,10 @@ export class Character {
   setSitting(v: boolean) {
     this.sitting = v;
     if (v) this.setFrame(7);
+    else {
+      this.sway = 0;
+      this.sprite.rotation.z = 0;
+    }
   }
 
   /** One sprite sheet for the current skin: Pip's tuft in black ink, B.'s
@@ -311,8 +319,10 @@ export class Character {
   update(dt: number, move: THREE.Vector2, bounds?: { minX: number; maxX: number; minZ: number; maxZ: number }) {
     if (this.frozen || this.sitting) {
       this.vel.multiplyScalar(Math.max(0, 1 - dt * 10));
-      if (this.sitting) this.setFrame(7);
-      else this.animateIdle(dt);
+      if (this.sitting) {
+        this.setFrame(7);
+        this.sprite.rotation.z = this.sway;
+      } else this.animateIdle(dt);
       this.group.position.copy(this.pos);
       return;
     }

@@ -97,7 +97,13 @@ export type WorldPOI = import('../../engine/POI').POIDef & {
    *  exactly this and nothing else. */
   sit?: { x: number; z: number; learns?: string[];
     /** How far above the ground the seat is: a swing's plank, a wall. */
-    lift?: number };
+    lift?: number;
+    /** A seat that MOVES (the swing): where it is this frame, relative
+     *  to the seat point, and how far it has rotated, so the figure
+     *  rides it. `t` is the world's elapsed seconds, the same clock the
+     *  land swings the seat on. */
+    follow?: (t: number) => { dx: number; dy: number; rot: number };
+  };
   /** A CHOICE CARD (`THE-FUN-PASS` §2.2, §6): two or three doors, both
    *  visible before either is taken, each writing one `door:` id into
    *  knowledge. Offered until one is taken, and never again. */

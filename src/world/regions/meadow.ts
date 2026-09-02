@@ -51,8 +51,12 @@ const well = {
   /** THE BUCKET, which is the answer you can see: at rest on its rope;
    *  dropping into the shaft at the shout; down in the dark while the
    *  well takes its time; rising and swinging when it answers. */
-  bucket: 'rest' as 'rest' | 'drop' | 'down' | 'rise',
+  bucket: 'rest' as 'rest' | 'drop' | 'down' | 'rise' | 'bob',
   bt: 0,
+  /** A refused shove rocks the cart; a stone in the river rings. Both
+   *  are the owner's rule of 2026-09-02: a visual cue, not just audio. */
+  cartRock: 0,
+  ripple: { t: -1, x: 0, z: 0 },
 };
 
 things.register({
@@ -269,6 +273,12 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   const stoneThing = things.get('fist-stone')!;
   const stone = ctx.standee(fistStoneTexture(452), 0.5, 0.5, stoneThing.x, stoneThing.z);
   stoneThing.mesh = stone;
+  /* THE RIPPLE: a stone into the river rings once, the crossroads'
+   * own ring drawing spreading and fading on the water. Hidden until a
+   * landing in water asks for it. */
+  const ripple = ctx.decal(ringTexture(), 1, 1, 44, 100, 0, 0.5);
+  ripple.visible = false;
+  const rippleMat = ripple.material as THREE.MeshBasicMaterial;
   // bales stand clear of the cart: beside its wheel they read as spares
   ctx.standee(hayBaleTexture(452), 3.2, 2.4, 33, 81);
   ctx.standee(hayBaleTexture(453), 2.7, 2.0, 37.5, 77);
@@ -309,6 +319,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
    *  off will see. */
   let flinch = 0;
   let stoneWasFlying = false;
+  const cartRest = cart.rotation.z;
 
   return (dt: number, t: number, _px: number, pz: number) => {
     // the swing: a slow pendulum nobody is sitting in
@@ -318,6 +329,13 @@ export const buildMeadow: RegionBuilder = (ctx) => {
     cart.position.set(cartThing.x, ctx.groundY(cartThing.x, cartThing.z), cartThing.z);
     // a cart going west is the same cart drawn the other way round
     if (Math.abs(cartThing.vx) > 0.3) cart.scale.x = cartThing.vx < 0 ? -1 : 1;
+    // and a refused shove rocks it, arriving back at exactly rest
+    if (well.cartRock > 0) {
+      well.cartRock = Math.max(0, well.cartRock - dt);
+      const k = well.cartRock / 0.5;
+      cart.rotation.z = cartRest + Math.sin(k * Math.PI * 3) * 0.06 * k;
+      if (well.cartRock === 0) cart.rotation.z = cartRest;
+    }
 
     /* ---- THE STONE: on the ground, in the air, or nowhere ----------- */
     const fp = things.flyPos(stoneThing);
@@ -336,7 +354,26 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       well.answerAt = t + WELL_ANSWER_DELAY * 1.4;
       well.kind = 'stone';
     }
+    // and a stone that has just landed in the river rings the water
+    if (stoneWasFlying && stoneThing.state === 'ground'
+      && terrain.waterAt(stoneThing.x, stoneThing.z) > 0.12) {
+      well.ripple = { t: 0, x: stoneThing.x, z: stoneThing.z };
+    }
     stoneWasFlying = flying;
+    if (well.ripple.t >= 0) {
+      well.ripple.t += dt;
+      const k = well.ripple.t / 1.5;
+      if (k >= 1) {
+        well.ripple.t = -1;
+        ripple.visible = false;
+      } else {
+        ripple.visible = true;
+        const sc = 0.6 + k * 3.2;
+        ripple.scale.set(sc, 1, sc);
+        ripple.position.set(well.ripple.x, ctx.groundY(well.ripple.x, well.ripple.z) + 0.06, well.ripple.z);
+        rippleMat.opacity = 0.5 * (1 - k);
+      }
+    }
 
     /* ---- THE WELL ANSWERS, on a delay that is too long -------------- */
     /* The swallows lift at the shout itself — a visible answer at the
@@ -356,9 +393,13 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       well.answerAt = -1;
       say(well.kind === 'stone' ? 'well-plink' : 'well-answer');
       flinch = Math.max(flinch, 2.2);
-      // and the answer brings it back up
+      // and the answer brings it back up — or, for a stone, jiggles
+      // the bucket on its rope, so the plink is seen as well as heard
       if (well.bucket === 'down' || well.bucket === 'drop') {
         well.bucket = 'rise';
+        well.bt = 0;
+      } else if (well.bucket === 'rest') {
+        well.bucket = 'bob';
         well.bt = 0;
       }
     }
@@ -387,6 +428,12 @@ export const buildMeadow: RegionBuilder = (ctx) => {
         len = DROP + (ROPE_REST - DROP) * e;
         fade = Math.min(1, k / 0.45);
         swing = Math.sin(well.bt * 7.5) * 0.16 * (1 - k);
+        if (k >= 1) well.bucket = 'rest';
+      } else if (well.bucket === 'bob') {
+        well.bt += dt;
+        const k = Math.min(1, well.bt / 1.3);
+        swing = Math.sin(well.bt * 9) * 0.12 * (1 - k);
+        len = ROPE_REST + Math.sin(well.bt * 11) * 0.06 * (1 - k);
         if (k >= 1) well.bucket = 'rest';
       }
       rope.scale.y = len;
@@ -490,10 +537,21 @@ export const MEADOW_POIS: WorldPOI[] = [
      * note now does what it always said. */
     x: -90.6, z: 30.5, radius: 3.6,
     prompt: 'SIT IN THE SWING',
+    /* THE SEAT MOVES. The same pendulum the builder swings the plank on
+     * (`swing.rotation.z` below, off the world's elapsed seconds), and
+     * the plank is 2.44 units below the pivot, so the figure rides the
+     * arc instead of sitting rigid beside it. */
     // the plank hangs three units up the leaning oak (the drawing's
     // own y, 100 of 128, on a quad hung from 5.6 to 2.6); the hip is
     // half a unit above the feet, so the lift is the difference
-    sit: { x: -90.6, z: 30.4, lift: 2.6 },
+    sit: {
+      x: -90.6, z: 30.4, lift: 2.6,
+      follow: (t: number) => {
+        const rot = Math.sin(t * 0.9) * 0.07 + Math.sin(t * 0.37) * 0.03;
+        const L = 2.44;
+        return { dx: Math.sin(rot) * L, dy: (1 - Math.cos(rot)) * L, rot };
+      },
+    },
   },
   {
     /* THE CART. A pushable, so the place follows the thing: it is
@@ -504,7 +562,15 @@ export const MEADOW_POIS: WorldPOI[] = [
     radius: 4.6,
     prompt: 'PUSH THE CART',
     touch: (px: number, pz: number) => {
-      if (things.push('hay-cart', px, pz)) say('cart-wheels');
+      const r = things.push('hay-cart', px, pz);
+      if (r === 'moved') say('cart-wheels');
+      else if (r === 'refused') {
+        /* The border, the river or the steep: the cart does not roll
+         * and the wheels do not sound. It rocks on its axle instead,
+         * and the axle knocks — a refusal you can see. */
+        say('cart-stuck');
+        well.cartRock = 0.5;
+      }
     },
   } as unknown as WorldPOI,
   {

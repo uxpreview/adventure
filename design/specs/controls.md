@@ -61,7 +61,13 @@ says which**, hand-lettered, in the house voice:
 2. **A place has one verb at a time**, in this order: a choice not yet
    taken, then a note, then a touch, then a sit. The plinth offers the
    card until a door is taken and is a note afterwards.
-3. **A player who never touches anything does not notice the game
+3. **Every answer is seen** (the owner, 2026-09-02: *a visual cue, not
+   just audio*). The figure rocks back on every touch; the well's
+   bucket drops and rises; a refused shove rocks the cart and the
+   wheels stay silent; a stone in the river rings the water; a stone
+   down the well jiggles the bucket when the plink comes. Sound goes
+   under the picture and never stands in for it.
+4. **A player who never touches anything does not notice the game
    changed.** `tools/check-verbs.mjs` asserts the signpost still says
    READ THE SIGNPOST, and every note in the world opens exactly as it
    did in Session 14.

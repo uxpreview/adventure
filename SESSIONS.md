@@ -197,6 +197,24 @@ regress from 2026-09-01 and was not re-opened.
   re-shot (`02b`, `02c` on the proofs sheet). The rule it writes into
   `THE-FUN-PASS` §5's table: **a touch's answer is seen as well as
   heard**, because a phone is on silent more often than not.
+- **AND THE OWNER MADE IT A RULE: "a visual cue, not just audio."**
+  Written into `THE-FUN-PASS` §5 and `controls.md` rule 3, and every
+  interaction audited against it. Four failed and are fixed: a shove
+  the cart cannot take (the border, the river) rocks the cart on its
+  axle and the wheels stay silent — `things.push` reports `refused`
+  and `check-verbs` asserts the rock and the return to exactly rest; a
+  stone thrown down the well jiggles the bucket when the plink comes;
+  a stone into the river rings the water with the crossroads' own
+  ring drawing, spreading and fading; and the seated walker rides the
+  swing's plank (`sit.follow`, the same pendulum the plank is on)
+  instead of sitting rigid beside its arc. One is left open on
+  purpose: sitting runs the day six times faster and the page is
+  neutral from eight to four, so a player who sits at ten sees no
+  light change for two minutes — a clock face or a shadow would answer
+  it and both are refused; the play gate decides whether sitting reads
+  as waiting or as nothing. The bucket's rope also shows at the left
+  of the `crossroads` framing on desktop (0.03%), the same change as
+  the well's, reported with it.
 - **The framing that moved, and by how much:** `avenue-foot` on
   desktop, at both hours — 0.027% at noon and 0.017% at dusk, a 57 × 8
   pixel band at the frame's left edge. It is the moat pool's dye stain:
