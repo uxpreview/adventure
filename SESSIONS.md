@@ -1,5 +1,212 @@
 # SESSIONS — the handoff log
 
+## Session 15 — 2026-09-02 — the verbs and the law
+
+*Foundations, and the first session of THE FUN PASS. No land was
+opened. Everything built here is a system every later session in the
+pass stands on, proved by three things the owner can play.*
+
+### THE ONE THING TO KNOW
+
+**The game was built to be read; this is the first session that
+builds it to be played, and it builds the systems and not the fun.**
+Touch, carry, sit and throw exist on the one key that already looked;
+a choice card exists; a clock that keeps the world's hours exists; a
+registry of the things the walker has moved exists. Each is proved by
+one thing in the world — the well answers a shout, the cart rolls to
+the border and stays there, a stone goes down the well, the swing
+takes you, the king goes back on his plinth or does not, the flock
+walks the lane at dawn — and **whether any of it is fun is the play
+gate, which is the owner's and was handed over, not run**
+(`design/play-sheets/session-15.md`).
+
+### THE VERBS, AND THE RULE THAT KEEPS THEM ONE KEY
+
+`design/specs/controls.md` §1 has the table. What a place can declare
+(`WorldPOI` in `regions/index.ts`): a `touch` (a one-shot with the
+walker's position, so a shove knows which way), a `sit` (a seat point
+and what sitting there teaches), a `choice` (two or three doors, each
+one `door:` id), and a `prompt` that may be a function. App dispatches
+choice → note → touch → sit, and the prompt says the verb.
+
+Three rules keep it one key and all three are asserted
+(`tools/check-verbs.mjs`):
+
+1. **A thing in reach beats the thing in the hand.** The stone in hand
+   is a POI at distance zero and would win every contest; it is `weak`
+   and wins only when nothing else is in reach. So the well's reach
+   shrank to its lip (3.4 units from 5) so a stone can be thrown into
+   it from the path — the one place the rule costs something.
+2. **Throw and put-down are one verb**, continuous like the run: a
+   stride and a bit standing still, six units at a run, and the prompt
+   says which. No second control, no hold, and it works on a phone
+   because a second finger on the prompt is a tap on a button and not a
+   peek (the button is a sibling of the canvas, not a child).
+3. **Sitting is a stopped walker**, and a stopped walker is due north
+   by contract. `check-verbs` reads the bearing seated for five game
+   seconds: yaw 0, astern 0, dolly 0.000. The day runs at six times its
+   pace while you sit, which is what *time passes and routines go by*
+   means at a hundred seconds an hour.
+
+**What it must never become is refused in the file** (`things.ts`):
+`held` is one id or null, there is no list, and no path in the file
+can give a thing a position outside its own land's rect — the clamp is
+in `push` and in `throw_`, before anything flies.
+
+### THE CHOICE CARD
+
+The note card's own system with doors on it (`UI.openChoice`, `.choice-
+card`): title, body, two or three hand-lettered buttons, `1` `2` `3`
+or a tap, Escape walks away, and the veil does NOT close it because
+both doors are meant to be looked at. It is chrome, so it is shot at
+every width `shoot-mobile` shoots and **asserted there**: every door's
+box inside the viewport with eight points of air, with the longest
+door in the game on it (LEAVE HIM WHERE HE LANDED). At 320 points it
+breaks to two lines and holds.
+
+### THE SCHEDULED-EVENT CLOCK
+
+`src/world/events.ts`. A land registers `{ id, land, at, hours, place,
+onStart, onEnd }` and reads `events.progress(id)` back as −1 or 0..1,
+**a pure function of the hour** — which is the property that makes it
+fire whether or not the walker is there: a land that was not built when
+the event started still draws it right when the walker arrives, and
+the harness's `setHour` puts everything exactly where that hour has it.
+`happening.ids` is the `platform`-shaped export. A crossing, not a
+window: a jump of more than an hour fires nothing, because nobody was
+there to hear it. Three events registered: the drove out (05:42) and
+home (19:18) in `wilds.ts`, and the Common's morning (05:54) in
+`meadow.ts`, which puts back anything the walker lost.
+
+### THE THREE PROOFS
+
+1. **THE COMMON.** SHOUT DOWN THE WELL is a touch: the shout goes down
+   (`well-shout`), and three and a half seconds later — too long, on
+   purpose — the answer comes back (`well-answer`), and the swallows
+   loop faster and higher for two seconds, which is the one answer a
+   player with the sound off gets. Repeatable: L1 in the register
+   (`QUESTS` §8). **PUSH THE CART**: about five and a half units a
+   shove, decaying, refusing the river and the steep, stopping two
+   units inside the Common's edge, saved (`save.things`). L2. **And a
+   stone** by the field gate — PICK UP, THROW / PUT DOWN, a knock on
+   the page, a plop in the river, gone down the well (the well answers
+   that too, later still) and back by the gate at first light. The
+   swing is a sit. The well's note is retired: it was a description of
+   the toy.
+2. **GREYWEATHER.** SET YOUR SHOULDER TO HIM opens the card — the
+   plinth's note plus *he is heavier than he looks* — with PUT HIM BACK
+   ON HIS PLINTH / LEAVE HIM WHERE HE LANDED. Either reads the plinth
+   (`fact:the-old-name`). **Put him back** and the castle reads
+   `door:the-king-restored` every frame: `standingKingTexture` on the
+   same plinth, seam drawn; every banner down and a bare pole under
+   each (twelve poles, no wind); `banner-snap` never fires again; the
+   moat pool clears — **it was never red before this session**, so
+   `dyeStainDecal` (this week's banner red, U5) was added to have
+   something to clear; the perched rooks lose their perch for good.
+   **Leave him** and nothing changes. The card is never offered again.
+   Nothing says which was right. Wick is not drawn (Session 19) and
+   `WAIT_ANSWERS` has no castle entry.
+3. **THE DOWNS.** Eleven of the thirteen sheep are in the fold at the
+   lane's south end at night, walk the lane north at first light — one
+   after another, front first, drawn in the moving pose — through the
+   mouth gate into the west slope, stand there all day, and come home
+   at dusk. Two of them do not move for anybody, including at dawn, and
+   THE DROVE's note is still true. If the walker is within seventy
+   units when a drove starts they hear it set out. `check-verbs` reads
+   the flock off the instanced fields: thirteen at every hour, mean z
+   118 at four, strung out along the lane at a quarter past six, mean z
+   64 at noon.
+
+### TWO THINGS FOUND ON THE WAY, AND BOTH ARE OLDER THAN THIS SESSION
+
+- **EVERY LIVE-COORDINATE PROMPT IN THE GAME WAS NAILED TO ITS PAGE-
+  LOAD POSITION.** `POI`'s constructor spread its definition —
+  `{ enabled: true, labelHeight: 3.4, ...def }` — and a spread evaluates
+  every getter once and copies the value. The rowboat's `get x()` has
+  said *the POI's coordinates are read live, so it follows the boat
+  around the page* since Session 6, and it never did: row somewhere,
+  step out, walk back, and TAKE THE OARS was still at the river mouth
+  until the tab was closed. The 8:15's boarding prompt had the same
+  defect under Session 14's fix. Found because the cart's prompt did
+  not follow the cart on the first run of `check-verbs`. The
+  constructor fills defaults on the definition itself now.
+- **JOAN'S WAIT COULD NEVER RESOLVE.** `THE-WAITS` §10 says *you sit
+  down* and Session 10's log says the wait shipped end to end; the
+  headland's note had no `learns`, and `grep` finds no line in the
+  source that ever learned `fact:the-place-kept`. The second setting
+  was put away every evening, for every player, forever. SIT DOWN
+  sits the walker at the trestle now and teaches the fact by sitting
+  and by nothing else. **The prompt said the wait must not regress;
+  it had never worked.**
+
+### THE LAW, EXECUTED
+
+`controls.md` §1 (the verbs, the three rules, what they may never
+become); `QUESTS` §2 (row 6, THE LOCAL RULES, and the total to ~105),
+§3 (the first three ways a quest starts allowed to be loud, in the
+owner's words, and a fifth: the prompt says the verb), §8 (the tier as
+a tier, with a rule for an entry and a twelve-line register, L1 and L2
+shipped); `WORLD-SYSTEMS` §6 (a door as knowledge; the things registry)
+and §7 (the scheduled clock); the three land specs' addenda; `README`.
+`QUALITY-BAR` §3 already carried the amendments and permission to
+regress from 2026-09-01 and was not re-opened.
+
+### THE GATES, AND WHAT MOVED
+
+- Build green. `check-terrain`, `check-camera` (all eleven claims on
+  both rigs, twice), `check-fields` (eleven lands, the Downs' case
+  moved to where the flock is at noon), `check-sightline`,
+  `check-audio`, `check-verbs` (new: twenty-six assertions) all pass.
+- `shoot-mobile`: four phone rigs, the stick assertion and the new
+  choice-card assertion passing on all four. DESKTOP_RIG_LINE
+- `diff-sheets` against `origin/main` (3cde91d): DIFF_LINE
+- **The framing that moved, and by how much:** FRAMING_LINE
+- **The ear gate handed over: 58 WAVs in `out/sound/`**, five of them
+  new — the shout, the answer, the wheels, the stone on the page and in
+  the water. Unheard.
+- **The feel gate handed over**, with one new state: sitting.
+- **THE PLAY GATE HANDED OVER AND NOT RUN.**
+  `design/play-sheets/session-15.md`: wake, shout down the well, throw
+  the stone, push the cart to the border, sit in the swing, choose at
+  the king, be in the Downs at dawn. Ten minutes, with the questions
+  the session could not answer.
+
+### What this session did NOT do, in writing
+
+- **The opening** (the bull, the four lures, the plateau) — Session
+  16's, and `PROMPT.md` is its brief. This session made the cart
+  pushable; 16 makes it get away.
+- **Nell.** Her wait, her card, her straightening: 16.
+- **Districts.** No layer was added to `layout.ts`; the clock was
+  enough new plumbing.
+- **Errands.** All twenty are buildable now (carry and touch exist);
+  none is built.
+- **Wick.** Not drawn. Relieved of duty is what he is when he arrives.
+- **The hand-rolled routines** (Brim's lamps, the shelter, Amos, Joan)
+  are not moved onto `events.ts`. Session 17's.
+- **A sound for sitting, picking up, and the flock arriving.** Only
+  the setting-out is voiced.
+
+### Gotchas (new; everything from Sessions 1–14 still applies)
+
+- **A SPREAD FREEZES A GETTER.** `{ ...def }` copies the value a getter
+  returns at that instant. Anything meant to be read live goes through
+  as itself.
+- **THE HARNESS FINDS A PROMPT ON A FRAME.** `goto` then `press` with
+  no `step` between presses whatever was active where the walker WAS;
+  the first cart test moved the cart three times in fifteen.
+- **A THING THAT EASES TOWARD A MOVING TARGET ARRIVES LATE.** The first
+  drove eased each sheep toward a target that was itself walking, and
+  `setHour(12)` found the flock half a lane short of the field. The
+  walk on the clock is taken directly; only the parting eases.
+- **A SHADOWED `const` IN A LONG UPDATE LOOP.** `along` already existed
+  in the Downs' update (Joan's morning); the lane function of the same
+  name shadowed it and `tsc` said *Number has no call signatures*.
+- **FOUR BROWSERS ON THIS SANDBOX IS THREE TOO MANY.** `check-camera`,
+  `check-verbs`, `diff-sheets` and a contact sheet at once put a
+  screenshot past Playwright's thirty-second timeout. One at a time.
+
+
 ## 2026-09-01 — owner direction, after Session 14 merged (no code)
 
 **THE OWNER PLAYED THE WHOLE WORLD AND THE VERDICT WAS: BEAUTIFUL, AND

@@ -732,11 +732,18 @@ export const buildCastle: RegionBuilder = (ctx) => {
     const pts = avenue.filter((_, k) => k % 2 === v);
     const f = ctx.field(tallBannerTexture(984 + v), pts.length,
       { w: 2.3, h: 6.1, wind: { amp: 0.14, freq: 1.5 } });
-    pts.forEach(([x, z], i) => f.set(i, x, z, 0.9 + r() * 0.2, 0, false));
+    const scales = pts.map(() => 0.9 + r() * 0.2);
+    pts.forEach(([x, z], i) => f.set(i, x, z, scales[i], 0, false));
     avenueBanners.push(f);
-    // and the same avenue with the cloth off: no wind, nothing to take it
+    /* And the same avenue with the cloth off: no wind, nothing to take
+     * it. THE POLES TAKE THE BANNERS' OWN SCALES AND DRAW NOTHING FROM
+     * `r`: this land's random stream is shared by everything built
+     * after it, and the first version of this line drew ten more
+     * numbers from it — which moved every boulder in the bailey and
+     * re-sized the right-hand banners in four protected framings.
+     * `diff-sheets` found it at 2.2%; nothing else would have. */
     const bare = ctx.field(barePoleTexture(1012 + v), pts.length, { w: 2.3, h: 6.1 });
-    pts.forEach(([x, z], i) => bare.set(i, x, z, 0.9 + r() * 0.2, 0, false));
+    pts.forEach(([x, z], i) => bare.set(i, x, z, scales[i], 0, false));
     avenuePoles.push(bare);
   }
   // fallen merlon stones at the verge, and the approach's wear
@@ -780,7 +787,12 @@ export const buildCastle: RegionBuilder = (ctx) => {
   /* THIS WEEK'S RED. The moat pool is Wick's dye vat (`THE-WAITS` §1,
    * U5), and the water carries the last banner he re-dyed. It clears
    * when he is relieved — the same door — and stays clear. */
-  const dye = ctx.decal(dyeStainDecal(1013), 16, 12, -101, -215, 0.4, 0.7);
+  /* At the pool's WEST end: at (−101, −215) its east edge showed as a
+   * hundred-pixel sliver at the left edge of `avenue-foot` on desktop,
+   * which `diff-sheets` caught at 0.07%; four units west it was still
+   * a sixty-pixel sliver. Seven units west and six north, and smaller,
+   * it is in the pool's own middle and in no protected frame. */
+  const dye = ctx.decal(dyeStainDecal(1013), 12, 9, -108, -221, 0.4, 0.7);
 
   /* -- the far layer: pale pines along the plateau's northern rim ---- */
   ctx.standee(farPinesTexture(995), 52, 13, -78, -272);
