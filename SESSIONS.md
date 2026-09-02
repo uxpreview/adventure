@@ -157,10 +157,39 @@ regress from 2026-09-01 and was not re-opened.
   both rigs, twice), `check-fields` (eleven lands, the Downs' case
   moved to where the flock is at noon), `check-sightline`,
   `check-audio`, `check-verbs` (new: twenty-six assertions) all pass.
-- `shoot-mobile`: four phone rigs, the stick assertion and the new
-  choice-card assertion passing on all four. DESKTOP_RIG_LINE
-- `diff-sheets` against `origin/main` (3cde91d): DIFF_LINE
-- **The framing that moved, and by how much:** FRAMING_LINE
+- **The proofs sheet** (`tools/shoot-session15.mjs`, 25 framings, both
+  viewports) reviewed in `design/critiques/critique-verbs-1.md`: NOT
+  YET at round one (the stone lived inside the fence's reach; the
+  harness pressed the verb and not the key), PASSED at round two, with
+  three passed-not-praised: the standing king is a dark column, the
+  flock at a quarter past six is hidden by the dawn grade, and the sit
+  frame is a squat at a table. A seat may `lift` the walker now (the
+  swing's plank is three units up), which was the one game change the
+  review made.
+- `shoot-mobile`: five rigs, the stick assertion (a thumb raises it,
+  a mouse raises nothing) and the new choice-card assertion (two doors,
+  all on the page) passing on all five, 320 to 1280.
+- `diff-sheets` against `origin/main` (3cde91d): **90 of 92
+  bit-identical on THE PAGE.** The first full run said 2.2% on the
+  barbican and 80% on the Common's noon frames; the 80% was four
+  browsers on one sandbox (the same two frames are bit-identical run
+  alone), and the 2.2% was real — see the gotchas. On THE PAGE AND ITS
+  WRITING, six over threshold and all six deliberate: the well's
+  prompt re-lettered (SHOUT DOWN THE WELL for LOOK DOWN THE WELL) and
+  THE ARGUING OAKS' label re-placed six units west.
+- **The title re-shot at noon and at 19.6**, both viewports
+  (`shots-s2-noon`, `shots-s2-dusk`): the poster is the poster. Nothing
+  this session added stands in the spawn framing.
+- **The framing that moved, and by how much:** `avenue-foot` on
+  desktop, at both hours — 0.027% at noon and 0.017% at dusk, a 57 × 8
+  pixel band at the frame's left edge. It is the moat pool's dye stain:
+  the pool is at the edge of that frame and the stain is in the pool.
+  Moved twice westward (from −101 to −108) and it is still there,
+  because the pool is; reported rather than chased further, under
+  `QUALITY-BAR` §3's permission, with Greyweather the land in scope. No
+  Common framing moved. The prompt expected the cart to be in the spawn
+  framing; it is not, at rest — sixty-five units east of THE SHOT and
+  behind it — and only enters a frame if the player pushes it there.
 - **The ear gate handed over: 58 WAVs in `out/sound/`**, five of them
   new — the shout, the answer, the wheels, the stone on the page and in
   the water. Unheard.
@@ -199,6 +228,19 @@ regress from 2026-09-01 and was not re-opened.
   drove eased each sheep toward a target that was itself walking, and
   `setHour(12)` found the flock half a lane short of the field. The
   walk on the clock is taken directly; only the parting eases.
+- **A LAND'S RANDOM STREAM IS SHARED BY EVERYTHING BUILT AFTER YOU.**
+  The bare-pole fields drew ten numbers from Greyweather's seeded `r`
+  and every boulder in the bailey moved and the right-hand banners
+  re-sized: 2.2% on four protected framings. Anything added to a land
+  that holds a verdict takes its scales from what is already there or
+  from its own seed, never from `r`. `diff-sheets` keeps its evidence
+  now (`SAVE=1`), because a two-per-cent regression with no picture is
+  a diff you have to run twice.
+- **A CARRIABLE MUST NOT LIVE INSIDE ANYBODY'S REACH.** The stone's
+  first home was five units from THE LONG FENCE's POI (reach six), so
+  the first press with a stone in hand opened the fence's note. The
+  rule that a thing in reach beats the hand is right; the placement
+  broke it.
 - **A SHADOWED `const` IN A LONG UPDATE LOOP.** `along` already existed
   in the Downs' update (Joan's morning); the lane function of the same
   name shadowed it and `tsc` said *Number has no call signatures*.

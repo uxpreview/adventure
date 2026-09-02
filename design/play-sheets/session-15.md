@@ -30,9 +30,10 @@ wait? Press it again — it is meant to be repeatable. Is it?
 
 ## 2. The stone. (1:00)
 
-Walk east along the long fence to the field gate, past the person
-leaning on it. There is a **stone** by the gate, propping it. The
-prompt says PICK UP THE STONE.
+Walk east along the long fence toward the field gate and the person
+leaning on it. There is a **stone** on the grass between the stile and
+the hay cart, a few strides short of the gate. The prompt says PICK UP
+THE STONE.
 
 **Press it.** It is in your hand. Walk with it. Standing still the
 prompt says PUT DOWN THE STONE; walk and it says THROW THE STONE.

@@ -27,9 +27,13 @@ const SHOTS = [
   ['03-cart-at-rest',             20, 84,   { chrome: true }],
   ['04-cart-pushed-east',         44, 84,   { do: 'pushCartEast' }],
   ['05-cart-at-the-border',       52, 84,   { do: 'pushCartToBorder' }],
-  ['06-stone-by-the-gate',        13.6, 71, { chrome: true }],
-  ['07-stone-in-hand',            13.6, 71, { do: 'pickUpStone', chrome: true }],
-  ['08-stone-thrown',             13.6, 71, { do: 'throwStone', wait: 3 }],
+  /* Stood CLEAR of the cart's reach (4.6 from (20, 76.5)) and the
+   * fence's (6 from (12, 63)): a thing in reach beats the thing in the
+   * hand, and the first version of these stances photographed the cart
+   * being pushed by a walker holding a stone. */
+  ['06-stone-by-the-gate',        14, 73, { chrome: true }],
+  ['07-stone-in-hand',            14, 73, { do: 'pickUpStone', chrome: true }],
+  ['08-stone-thrown',             14, 73, { do: 'throwStone', wait: 3 }],
   ['09-swing-sitting',            -90.6, 34, { do: 'sitSwing', chrome: true }],
   /* ---- GREYWEATHER: the king, both doors ------------------------- */
   ['10-king-the-card',            -56, -216, { do: 'openKingCard', chrome: true }],
@@ -58,7 +62,8 @@ const VIEWPORTS = [
   { name: 'desktop', width: 1280, height: 720 },
   { name: 'portrait', width: 390, height: 844 },
 ].filter((v) => !process.env.VIEWPORT || v.name === process.env.VIEWPORT);
-const ONLY = process.env.ONLY;
+/** `ONLY=stone,swing` — a comma list of name fragments, for re-shooting. */
+const ONLY = (process.env.ONLY ?? '').split(',').filter(Boolean);
 
 const browser = await chromium.launch({ executablePath: CHROMIUM });
 
@@ -67,8 +72,12 @@ const DO = {
   shout: `I.goto(-56, 50); I.step(1/60, 30); I.press(); I.step(1/60, 240);`,
   pushCartEast: `for (let i = 0; i < 5; i++) { const c = I.things.get('hay-cart'); I.goto(c.x - 3.2, c.z); I.step(1/60, 10); I.press(); I.step(1/60, 150); } const c = I.things.get('hay-cart'); I.goto(c.x, c.z + 8);`,
   pushCartToBorder: `for (let i = 0; i < 16; i++) { const c = I.things.get('hay-cart'); I.goto(c.x - 3.2, c.z); I.step(1/60, 10); I.press(); I.step(1/60, 150); } const c = I.things.get('hay-cart'); I.goto(c.x - 6, c.z + 8);`,
-  pickUpStone: `const s = I.things.get('fist-stone'); I.goto(s.x, s.z + 1.6); I.step(1/60, 20); I.press(); I.step(1/60, 20); I.goto(13.6, 71);`,
-  throwStone: `const s = I.things.get('fist-stone'); I.goto(s.x, s.z + 1.6); I.step(1/60, 20); I.press(); I.step(1/60, 20); I.goto(13.6, 74); I.drive(0, -1, 1); I.step(1/60, 70); I.press(); I.release(); I.step(1/60, 40);`,
+  pickUpStone: `const s = I.things.get('fist-stone'); I.goto(s.x, s.z + 1.6); I.step(1/60, 20); I.press(); I.step(1/60, 20); I.goto(14, 73);`,
+  /* Thrown WEST along the fence, from a walk, so the arc and the landing
+   * are both in a frame that looks north. */
+  /* If the last framing left the stone in the hand, keep it there: a
+   * second pick-up press with a stone in hand is a PUT DOWN. */
+  throwStone: `if (!I.holding()) { const s = I.things.get('fist-stone'); I.goto(s.x, s.z + 1.6); I.step(1/60, 20); I.press(); I.step(1/60, 20); } I.goto(14, 74); I.drive(-1, 0, 1); I.step(1/60, 50); I.press(); I.release(); I.step(1/60, 24);`,
   sitSwing: `I.goto(-90.6, 34); I.drive(0, -1, 0); I.step(1/60, 40); I.release(); I.step(1/60, 30); I.press(); I.step(1/60, 30);`,
   sitHeadland: `I.goto(140, 16); I.drive(0, -1, 0); I.step(1/60, 30); I.release(); I.step(1/60, 30); I.press(); I.step(1/60, 30);`,
   openKingCard: `I.goto(-56, -216); I.step(1/60, 40); I.press(); I.step(1/60, 5);`,
@@ -99,7 +108,7 @@ for (const vp of VIEWPORTS) {
 
   let n = 0;
   for (const [name, x, z, opts = {}] of SHOTS) {
-    if (ONLY && !name.includes(ONLY)) continue;
+    if (ONLY.length && !ONLY.some((o) => name.includes(o))) continue;
     if (opts.fresh) await fresh();
     await page.evaluate(
       ({ x, z, opts, script }) => {

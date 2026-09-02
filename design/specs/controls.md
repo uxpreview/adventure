@@ -48,7 +48,7 @@ says which**, hand-lettered, in the house voice:
 | **touch** | SHOUT DOWN THE WELL, PUSH THE CART, PICK UP THE STONE | a one-shot on a thing in reach, and the world's answer: a sound, a motion, a change |
 | **carry** | *(the thing is in the hand, drawn there; nothing is written)* | walk with it. One thing, never two; there is no inventory anywhere |
 | **throw** | THROW THE STONE at a walk, PUT DOWN THE STONE standing still | underarm, a few units along your heading, on an arc, with a landing and a sound. A set-down is a throw at a standing walker: a stride and a bit. At a run, six units. Continuous, like the run, and no second control |
-| **sit** | SIT IN THE SWING, SIT DOWN — and STAND UP once you have | the walker is put on the seat and holds still. **The camera does not move.** Time passes at six times its walking pace while you sit, so a routine goes by while you watch. Any step stands you up |
+| **sit** | SIT IN THE SWING, SIT DOWN — and STAND UP once you have | the walker is put on the seat (lifted to it, if it hangs) and holds still. **The camera does not move.** Time passes at six times its walking pace while you sit, so a routine goes by while you watch. Any step stands you up |
 | **choose** | SET YOUR SHOULDER TO HIM, and then a card with two doors on it | a choice card (`ui/UI.ts`): both doors visible before either is taken, one press takes one, and the world changes because of it. Rare, and never twice at one place |
 
 **Three rules keep it one key:**

@@ -95,7 +95,9 @@ export type WorldPOI = import('../../engine/POI').POIDef & {
    *  north. The camera does not move; time passes; routines go by.
    *  `learns` is what sitting here teaches — JOAN's wait resolves on
    *  exactly this and nothing else. */
-  sit?: { x: number; z: number; learns?: string[] };
+  sit?: { x: number; z: number; learns?: string[];
+    /** How far above the ground the seat is: a swing's plank, a wall. */
+    lift?: number };
   /** A CHOICE CARD (`THE-FUN-PASS` §2.2, §6): two or three doors, both
    *  visible before either is taken, each writing one `door:` id into
    *  knowledge. Offered until one is taken, and never again. */

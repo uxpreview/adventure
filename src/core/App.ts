@@ -528,8 +528,12 @@ export class App {
         /* ---- THE VERBS, for the harness (Session 15) ------------------ */
         things,
         events,
-        /** The nearest prompt's verb, as the player would press it. */
-        press: () => this.activePoi?.def.onInteract?.(),
+        /** The key, exactly as the player presses it: a note closes, a
+         *  seat stands, and otherwise the nearest prompt's verb. The
+         *  first version called the verb directly and the session's
+         *  contact sheet photographed a note that a press had left
+         *  open three framings earlier. */
+        press: () => this.input.fireInteract(),
         promptText: () => {
           const p = this.activePoi?.def.prompt;
           return typeof p === 'function' ? p() : p ?? null;
@@ -1423,7 +1427,8 @@ export class App {
     // and then stands on whatever the page does there — or sits a foot
     // down in the boat, which is where a person in a boat is
     this.char.setGround(
-      this.terrain.heightAt(this.char.pos.x, this.char.pos.z) - (this.boat.aboard ? 0.34 : 0),
+      this.terrain.heightAt(this.char.pos.x, this.char.pos.z) - (this.boat.aboard ? 0.34 : 0)
+        + (this.seat?.sit?.lift ?? 0),
       this.boat.aboard ? [0, 1, 0] : this.terrain.normalAt(this.char.pos.x, this.char.pos.z)
     );
 

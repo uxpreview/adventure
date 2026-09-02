@@ -52,9 +52,16 @@ things.register({
   id: 'hay-cart', kind: 'pushable', land: 'meadow', name: 'THE CART',
   home: { x: 20, z: 76.5 }, shove: 5.5,
 });
+/* THE STONE'S HOME IS OUTSIDE EVERY OTHER PLACE'S REACH. The first
+ * position (13.6, 68.2) was five units from THE LONG FENCE's POI, inside
+ * its reach of six, so the moment the stone was in the hand the key
+ * offered LEAN ON THE STILE instead of the throw — a thing in reach
+ * beats the thing in the hand, which is the rule, and the rule is why a
+ * carriable must not live inside anybody's reach. Ten from the fence,
+ * six from the cart at rest. */
 things.register({
   id: 'fist-stone', kind: 'carriable', land: 'meadow', name: 'THE STONE',
-  home: { x: 13.6, z: 68.2 },
+  home: { x: 18.5, z: 70.5 },
 });
 things.addCatcher('the-well', -57.6, 44.6, 1.9);
 
@@ -64,7 +71,7 @@ things.addCatcher('the-well', -57.6, 44.6, 1.9);
  * whether or not anybody is there, which is the whole point. */
 events.register({
   id: 'the-common-morning', land: 'meadow', at: 5.9, hours: 0.2,
-  place: { x: 13.6, z: 68.2 },
+  place: { x: 18.5, z: 70.5 },
   onStart: () => things.morning(),
 });
 
@@ -403,7 +410,10 @@ export const MEADOW_POIS: WorldPOI[] = [
      * note now does what it always said. */
     x: -90.6, z: 30.5, radius: 3.6,
     prompt: 'SIT IN THE SWING',
-    sit: { x: -90.6, z: 30.2 },
+    // the plank hangs three units up the leaning oak (the drawing's
+    // own y, 100 of 128, on a quad hung from 5.6 to 2.6); the hip is
+    // half a unit above the feet, so the lift is the difference
+    sit: { x: -90.6, z: 30.4, lift: 2.6 },
   },
   {
     /* THE CART. A pushable, so the place follows the thing: it is

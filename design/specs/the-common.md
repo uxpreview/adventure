@@ -211,7 +211,10 @@ of everything in it, as the proofs of the verbs it built.
   `save.things`). It is drawn where the registry says, by this land's
   own update. **Nell's wait** (`THE-WAITS` §9) and Session 16's opening
   both stand on it.
-- **A STONE by the field gate**, the size of a fist, propping it. PICK
+- **A STONE between the stile and the cart** at (18.5, 70.5), the size
+  of a fist — outside every other place's reach, because a thing in
+  reach beats the thing in the hand and a carriable that lives inside a
+  note's reach cannot be thrown from where you pick it up. PICK
   UP THE STONE and it is in the walker's hand, drawn there; THROW it
   (or PUT IT DOWN, standing still) and it goes underarm, a stride to
   six units, and lands with a knock on the page or a plop in the
@@ -226,7 +229,7 @@ of everything in it, as the proofs of the verbs it built.
 
 **What moved, measured.** None of the four is inside a protected
 framing at rest: the cart at (20, 76.5) is sixty-five units east of THE
-SHOT and behind it; the stone is nine units from the cart; the well's
+SHOT and behind it; the stone is six units from the cart; the well's
 drawing did not move and its label did not either. `diff-sheets`
 reports the Common's seven framings in its own log entry (SESSIONS.md,
 Session 15). The one deliberate change in the WRITING pass is THE
