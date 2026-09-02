@@ -1,5 +1,76 @@
 # SESSIONS — the handoff log
 
+## 2026-09-01 — owner direction, after Session 14 merged (no code)
+
+**THE OWNER PLAYED THE WHOLE WORLD AND THE VERDICT WAS: BEAUTIFUL, AND
+NOT FUN.** Everything below is written up in full in
+`design/THE-FUN-PASS.md`, which is binding; this entry is the handoff.
+
+The owner's words, close to verbatim: *"a few areas are good (the
+forest place) but others fall flat"*; *"the parts between sections feel
+empty"*; *"it almost feels like a chore going from one place to
+another"*; *"I read things but that's not fun. I wish I had choices
+like Fallout, and those choices did things"*; *"the starting point is
+bland and expected but also confuses users because they don't know
+where to go or what to do"*; *"there needs to be more regions and
+activity to fill the gap"*; *"think of aliens, Vikings, UX designers,
+surfers, baristas, monsters, other types of animals"*; *"more
+interaction and motion"*; *"the story is ambiguous and light but I
+don't think we focus on the right now"*; and the lens for all of it:
+*"the inspiration games are a mix of types all in the same game —
+serious, emotional, funny, frightening. Think of Saints Row or Goat
+Simulator too."*
+
+### THE ONE THING TO KNOW
+
+**The game was built to be read. It has to be built to be played.** The
+Penwood works because it has tension: a frightened man, ground that
+obeys his fear, a goat that runs, a silence, a black pool. Most other
+lands are exquisite arrangements that do nothing until you bring the
+right fact back. Three laws were producing that — *nothing is urgent*,
+*the verb is looking*, *one responsive motion per land* — and all three
+overreached the way the count law did.
+
+### WHAT WAS DECIDED
+
+- **Five laws amended, owner confirmed** (`QUALITY-BAR` §3,
+  `THE-FUN-PASS` §2): the verbs (touch, carry, sit, throw); the choice
+  card; threat without a villain; districts inside the twelve rects;
+  and the world being allowed to tell you where to go. **Not amended:**
+  the medium rule, the border rule, the ending, zero assets, no faces.
+- **A second bar for a land** (`THE-FUN-PASS` §3): a creature, an
+  absurdity, a toy, a choice with two doors, five idle and three
+  responsive motions, two to four districts, nothing empty for fifteen
+  seconds.
+- **The four categories each own a tone** (§4): Memory is emotional,
+  Weather is awe, the Unseen is frightening, Work is funny.
+- **Every wait gets a second door with a cost** (§6), and the 8:15
+  reads the doors back.
+- **The seventh tier is ratified** (`QUESTS` §8).
+- **The cast is wider and all of it is kept** (§10): Vikings, aliens,
+  surfers, a barista, a design studio, monsters, animals.
+- **The opening is redesigned from how leading games start** (§11) and
+  **the owner chose it**: THE BULL, THE FOUR LURES, THE COMMON AS THE
+  PLATEAU, with the cart as the first toy and the goat as the second
+  co-walker. It is Session 16's and is not re-opened without them.
+- **The story rewrite waits until the world is fun** (Session 22).
+- **A third owner's gate, THE PLAY GATE**, and every session ships a
+  play sheet.
+- **Permission to regress a protected framing when the land inside it
+  is the scope**, written into `QUALITY-BAR` §3.
+- **The ladder is re-cut from 15 to 24** (`PLAN.md`). Session 15 is
+  THE VERBS AND THE LAW and `PROMPT.md` is its brief.
+
+### State
+
+- No code changed. Build unchanged. Every gate that passed at Session
+  14 still passes.
+- Files touched: `design/THE-FUN-PASS.md` (new), `QUALITY-BAR.md`,
+  `QUESTS.md`, `STORY.md`, `INSPIRATION.md`, `WORLD-SYSTEMS.md`,
+  `PLAN.md`, `PROMPT.md`, `DIRECTION.md`, `README.md`, this file.
+- **The ear gate and the feel gate are still owed** and still handed
+  over. The play gate joins them.
+
 ## Session 14 — 2026-09-01 — the 8:15
 
 *One land, one wait, one man, one mount — and the mount is the ending of

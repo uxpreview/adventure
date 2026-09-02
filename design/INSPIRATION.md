@@ -101,8 +101,57 @@ table has a tone column.
 
 ### Breath of the Wild
 **Take:** traversal that changes the map — you move differently, so the
-world is new. The argument for mounts (WORLD-SYSTEMS §4).
+world is new. The argument for mounts (WORLD-SYSTEMS §4). And, from
+2026-09-01, **the Great Plateau**: a small complete place where every
+verb happens once before the world opens (`THE-FUN-PASS.md` §11,
+pattern B — the Common as the plateau).
 **Refuse:** combat, weapon breakage, and its shrine cadence.
+
+### Saints Row **[owner, 2026-09-01]**
+**Take:** that a world can be absurd and sincere at the same time, that
+the side content is allowed to be louder than the spine, and that
+physical chaos with consequences that stay is a reward in itself
+(`THE-FUN-PASS.md` §5: a bin that goes over and stays over).
+**Refuse:** the violence, the vehicles as weapons, the respect meter,
+and the minimap it all lives on.
+
+### Untitled Goose Game
+**Take:** the first input is play, not a walk (`THE-FUN-PASS.md` §11,
+pattern H), and that a small cast of people who react to being messed
+with is a whole game.
+**Refuse:** the to-do list, which is a checklist and a count.
+
+---
+
+## THE OPENINGS — how leading games start
+
+*Studied 2026-09-01 at the owner's request, because the spawn was
+"bland and expected but also confuses users because they don't know
+where to go or what to do." `THE-FUN-PASS.md` §11 has the eight
+patterns, the ten candidates and the recommendation. The one-line
+credits:*
+
+- **The door opens on the world** — Breath of the Wild, Elden Ring,
+  Fallout 3, Skyrim. Enclosure, then the vista as the first real frame.
+- **The teaching microcosm** — Breath of the Wild's plateau, The
+  Witcher 3's White Orchard, Fallout: New Vegas's Goodsprings, Outer
+  Wilds' Timber Hearth.
+- **One visible goal** — Journey, A Short Hike, Elden Ring's Erdtree,
+  Shadow of the Colossus.
+- **Something is already happening** — GTA V, Saints Row, Subnautica,
+  Fallout 4.
+- **Arrival by transit** — Half-Life 2, Skyrim's cart, Stardew's bus,
+  Animal Crossing.
+- **A person hands you a tiny first job** — A Short Hike, Stardew,
+  Outer Wilds, New Vegas, Untitled Goose Game.
+- **The clock imposes the first goal** — Minecraft, Don't Starve.
+- **Immediately physical** — Goat Simulator, Untitled Goose Game, Mario.
+
+**We take** the bull (something is already happening, and it is
+physical), the four lures (one visible goal, four times) and the Common
+as the plateau. **We refuse** arrival by the 8:15, because the train is
+the ending, and a dark first minute, because the title holds a verdict
+at noon.
 
 ---
 

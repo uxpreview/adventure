@@ -24,6 +24,11 @@ What it means here: **a thing you can be doing, which you found by
 looking, which you hold in your own head, and which ends with the world
 visibly different.**
 
+*(Amended 2026-09-01: "no dialogue trees" now reads "no faces, no
+talking heads, no dialogue wheel." A choice card is allowed. And "the
+verb is looking" now reads "looking is the first verb"; touch, carry,
+sit and throw are the others. `THE-FUN-PASS.md` §2.)*
+
 That is not a limitation to be worked around. Fallout's best content is
 its *unmarked* quests, the ones that are only quests if you notice
 them — and we get to make the whole game out of those.
@@ -157,6 +162,15 @@ short fable in that land's own century's register, with:
 
 They are completable in **any order**, like Skyrim's guild lines, and
 each contributes one piece of the story's turn without ever naming it.
+
+**AND FROM 2026-09-01 EVERY WAIT HAS A SECOND DOOR** (`THE-FUN-PASS.md`
+§6). One door reads as completion, not choice — the owner's words were
+*"I wish I had choices like Fallout, and those choices did things."*
+Each wait's second door has a real cost, both doors are visible before
+either is taken, the choice is offered on a **choice card** (§3 rule 2
+amended: a hand-lettered prompt with two or three options, no faces, no
+wheel), nothing ever says which door was right, and **the 8:15 reads the
+doors back**. Fallout's rule: every choice has a loser.
 
 ### Tier 2 — THE STRANGERS *(~8, cross-land)*
 
@@ -293,11 +307,15 @@ That is the same bargain §0 of that file already struck for route posts.
 
 ---
 
-## 8. UNDER CONSIDERATION — a seventh tier *(proposal, 2026-08-30)*
+## 8. THE SEVENTH TIER — RATIFIED, 2026-09-01
 
-*Raised by the owner adding RuneScape to `INSPIRATION.md`. **Not
-ratified. Written down as a question**, because six tiers were settled
-deliberately and a seventh is the owner's call, not a session's.*
+*Raised by the owner adding RuneScape to `INSPIRATION.md` on
+2026-08-30 and written down as a question. **Ratified by the owner on
+2026-09-01** as part of the fun pass (`design/THE-FUN-PASS.md` §3 and
+§5): every land gets at least one, it is the third of the seven things
+a land has to have to play, and it is what the new verbs (touch, carry,
+sit, throw) are mostly for. The text below is the proposal as it stood,
+kept because its refusals still hold.*
 
 ### THE LOCAL RULE *(~10, place-bound, repeatable)*
 

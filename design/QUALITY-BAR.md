@@ -53,6 +53,20 @@ errand, encounter and unmarked inventories. All three are binding the
 way `STORY.md` is, and a session authoring content reads them before it
 invents any.
 
+**AND FROM 2026-09-01 THE FUN PASS IS THE BRIEF** (owner direction after
+Session 14; `design/THE-FUN-PASS.md`). The owner played the merged world
+and said, in short, that it is beautiful and not fun: the walks between
+places are empty and feel like a chore, reading is not playing, there
+are no choices that do things, the start is bland and confusing, and
+the world wants more regions, more life, more interaction, more motion,
+and a wider tonal range (*serious, emotional, funny, frightening*, in
+the same game, the way the inspiration list does it). **Five laws are
+amended** with the owner's confirmation (§3 below), **a second bar is
+set for what a land has to PLAY like** (`THE-FUN-PASS.md` §3, beside §4
+here), the four story categories each own a tone, a cast is added, and
+the ladder is re-cut so the fun pass lands before the story is rewritten
+on top of it. That file is binding the way this one is.
+
 ## 2. The verdict gates
 
 Nothing is "done" because it is placed. It is done when it survives its
@@ -301,6 +315,16 @@ not a fable. It has been run once and logged
 (`design/critiques/critique-story-1.md` §3); it is not binding until the
 owner says so.
 
+**AND A THIRD GATE IS THE OWNER'S: THE PLAY GATE** (2026-09-01,
+`THE-FUN-PASS.md` §13). The ear gate asks whether it sounds good and the
+feel gate asks whether it moves well. The play gate asks **whether it is
+fun**, and no tool in this repository can run it. From Session 15 every
+session ships a **play sheet** — a ten-minute script for the owner
+(*stand here, do this, then this*) with the build link — and the log
+says plainly that the gate was handed over and not run. A session that
+claims a thing is fun is lying; a session that hands over the script is
+not.
+
 **And from Session 6 on, a protected framing is protected at TWO HOURS.**
 The day cycle is not done until dusk is as good as noon, so every
 contact sheet shoots its protected framings at a neutral hour and at
@@ -432,6 +456,36 @@ regression check it always was.
   you did a thing — refused, exactly as before. **And the ending is out
   of scope and stays absolute** (`THE-LINE.md` §4.2, settled): nothing
   counts the platforms.
+- **FIVE LAWS AMENDED BY THE OWNER, 2026-09-01** (`THE-FUN-PASS.md` §2
+  has each one in full, with what it was for and what it did). The
+  owner's words: *"I read things but that's not fun. I wish I had
+  choices like Fallout, and those choices did things."* Confirmed the
+  same day.
+  1. **The verbs.** Looking stays primary; the walker also gets
+     **touch, carry, sit and throw** on one context key. No inventory:
+     one thing in hand, visibly, at most.
+  2. **The choice card.** Still no faces and no dialogue wheel. A
+     hand-lettered prompt with two or three options, at a moment that
+     matters, whose options do different things to the world, is
+     allowed and is rare.
+  3. **Threat without a villain.** Still no villain, no combat, no
+     fail state, no timer. Local stakes are allowed: weather, the dark,
+     water, a bull, a thing on a beach, a sound that stops.
+  4. **Districts.** The sheet stays 760 × 560 and twelve rects stay the
+     shared truth. Every land is subdivided into two to four named
+     districts with their own card and reason.
+  5. **Telling the player things.** *The world never explains itself*
+     and *nobody says the turn* are kept absolutely for the turn and
+     the ending, and relaxed for everything else. People may point.
+     Signs may say what they are for.
+- **AND A PROTECTED FRAMING MAY MOVE WHEN THE LAND INSIDE IT IS THE
+  SCOPE** (2026-09-01, `THE-FUN-PASS.md` §13). A fun pass moves
+  framings on purpose: the spawn gets a bull and a cart, Brim's square
+  gets a crowd, the Holdfast gets a longship. The session says which
+  framing and by how much (`diff-sheets` still reports) and re-earns
+  the verdict on the new frame. The rule that a framing may not move
+  for a session's CONVENIENCE stands. The rule that it may not move at
+  all does not.
 - **Inherited rules must be re-ratified or dropped.** This engine was
   ported whole from margins, and some of its laws are margins' story
   rather than our design — the flat ground was one, and it cost us a
@@ -440,6 +494,12 @@ regression check it always was.
   keeps the running audit.
 
 ## 4. What "good" means for a land
+
+**This section is what a land has to LOOK like. `THE-FUN-PASS.md` §3 is
+what it has to PLAY like** (2026-09-01): a creature, an absurdity, a
+toy, a choice with two doors, five idle motions and three responsive
+ones, two to four districts, and nothing empty for fifteen seconds on
+any road. From Session 15 a land is not done without both.
 
 The margins environment bar, promoted to law for an open world:
 
