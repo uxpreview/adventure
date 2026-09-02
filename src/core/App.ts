@@ -22,6 +22,9 @@ import {
 import { clock as dayClock, LAMP_POOL, LAMP_EDGE } from '../world/daylight';
 import { tearX } from '../world/elevation';
 import { knowledge } from '../world/knowledge';
+import { things } from '../world/things';
+import { events } from '../world/events';
+import { fistStoneTexture } from '../world/textures-common';
 import { MEADOW_POIS } from '../world/regions/meadow';
 import { FOREST_POIS, CANYON_POIS, DESERT_POIS, DOWNS_POIS } from '../world/regions/wilds';
 import { OCEAN_POIS, BEACH_POIS } from '../world/regions/coast';
@@ -158,23 +161,39 @@ export class App {
 
     // every point of interest exists from the start; distance hides them
     for (const def of ALL_POIS) {
-      const note = def.note;
-      this.poi.add({
-        ...def,
-        onInteract: note
-          ? () => {
-              this.audio.init();
-              this.audio.note();
-              this.save.readNote(def.label ?? note.title);
-              /* A NOTE THAT NAMES A PLACE TELLS YOU ITS NAME. No
-               * announcement, no chime: the next time the player opens
-               * the map, it is written there in pencil. */
-              for (const id of note.learns ?? []) knowledge.learn(id);
-              this.ui.openNote(note.title, note.body);
-            }
-          : def.onInteract,
-      });
+      const verb = def.choice || def.note || def.touch || def.sit;
+      /* A POI whose x/z are getters (the cart, the stone) must keep
+       * them: a spread copies the VALUE at construction and the thing
+       * would be nailed to where it started. So the def is handed over
+       * as itself and only the interact is wrapped. */
+      if (verb) {
+        def.onInteract = () => this.act(def);
+        if (def.sit) {
+          const p = def.prompt;
+          def.prompt = () => (this.seat === def ? 'STAND UP' : (typeof p === 'function' ? p() : p) ?? 'sit');
+        }
+      }
+      this.poi.add(def);
     }
+
+    /* THE THING IN HAND, as a place: wherever the walker is, weakly, so
+     * every real place in reach beats it. Its prompt is the throw or
+     * the set-down, and the key does whichever the prompt says. */
+    this.poi.add({
+      get x() { return self.char.pos.x; },
+      get z() { return self.char.pos.z; },
+      radius: 1,
+      weak: true,
+      get enabled() { return things.held !== null && !self.seat; },
+      set enabled(_v: boolean) { /* the hand decides */ },
+      prompt: () => {
+        const t = things.holding;
+        const name = t?.def.name ?? 'IT';
+        const sp = Math.hypot(this.char.vel.x, this.char.vel.z);
+        return sp < 0.6 ? `PUT DOWN ${name}` : `THROW ${name}`;
+      },
+      onInteract: () => this.throwHeld(),
+    } as unknown as WorldPOI);
 
     /* THE OARS. No menu, ever (WORLD-SYSTEMS §4) — the boat is a place
      * you walk up to and a thing you take hold of, and it says so
@@ -220,6 +239,12 @@ export class App {
         this.ui.closeMap();
         return;
       }
+      // a choice card is closed by choosing, or by walking away
+      if (this.ui.choiceOpen) return;
+      if (this.seat) {
+        this.standUp();
+        return;
+      }
       this.activePoi?.def.onInteract?.();
     });
     this.ui.onPromptClick = () => this.activePoi?.def.onInteract?.();
@@ -255,6 +280,10 @@ export class App {
      * name you know — older saves get that for free. */
     knowledge.load(this.save.data.known, this.save.data.passed);
     for (const id of this.save.data.discovered) knowledge.learn(`name:${id}`);
+    /* AND WHERE THE THINGS ARE (Session 15). A pushed cart is where it
+     * was left; a thrown stone is where it landed; a stone down the
+     * well is gone until the morning. */
+    things.load(this.save.data.things ?? {});
 
     // stand the walker somewhere sensible under the title
     const startPos = this.save.data.pos ?? SPAWN;
@@ -381,6 +410,7 @@ export class App {
           this.input.hold = null;
         },
         goto: (x: number, z: number) => {
+          this.standUp();
           this.char.teleport(x, z);
           this.char.setGround(
             this.terrain.heightAt(x, z), this.terrain.normalAt(x, z)
@@ -495,6 +525,31 @@ export class App {
         },
         /** Sweep the transient chrome — see UI.quiet. */
         quiet: () => this.ui.quiet(),
+        /* ---- THE VERBS, for the harness (Session 15) ------------------ */
+        things,
+        events,
+        /** The key, exactly as the player presses it: a note closes, a
+         *  seat stands, and otherwise the nearest prompt's verb. The
+         *  first version called the verb directly and the session's
+         *  contact sheet photographed a note that a press had left
+         *  open three framings earlier. */
+        press: () => this.input.fireInteract(),
+        promptText: () => {
+          const p = this.activePoi?.def.prompt;
+          return typeof p === 'function' ? p() : p ?? null;
+        },
+        seated: () => this.seat !== null,
+        standUp: () => this.standUp(),
+        /** Pick option `i` on an open choice card, as a thumb would. */
+        choose: (i: number) => {
+          const btns = document.querySelectorAll<HTMLButtonElement>('.choice-btn');
+          btns[i]?.click();
+        },
+        choiceOpen: () => this.ui.choiceOpen,
+        /** Open the longest card in the game, for the chrome sheet. */
+        openChoice: (title: string, body: string, options: string[]) =>
+          this.ui.openChoice(title, body, options, () => {}),
+        holding: () => things.held,
         /** Hold a peek, for the bearing sheet: −1 hard left, +1 right. */
         peek: (v: number | null) => {
           this.input.holdPeek = v;
@@ -576,6 +631,111 @@ export class App {
         6000
       );
     }
+  }
+
+  /* ================================================================ *
+   * THE VERBS ON ONE KEY (Session 15, `THE-FUN-PASS` §5).
+   *
+   * The key that looks is the key that touches, carries, sits and
+   * throws. What it does depends on what is in reach, and the prompt
+   * says which; this is the dispatch, in the order a place's fields
+   * are read: a CHOICE not yet taken, then a NOTE, then a TOUCH, then a
+   * SIT. A player who never touches anything walks up to the same
+   * places, reads the same prompts, and opens the same notes as they
+   * did in Session 14 — nothing here changes a look.
+   * ================================================================ */
+  private seat: WorldPOI | null = null;
+  private seatDy = 0;
+  private handShown = false;
+  /** The stone's drawing, for the hand. */
+  private handTex = fistStoneTexture(452);
+
+  private act(def: WorldPOI) {
+    this.audio.init();
+    if (def.choice) {
+      const taken = def.choice.options.some((o) => knowledge.has(o.door));
+      if (!taken) {
+        const c = def.choice;
+        this.audio.note();
+        this.ui.openChoice(
+          def.note?.title ?? (def.label ?? '').toLowerCase(), c.body,
+          c.options.map((o) => o.label),
+          (i) => {
+            /* THE DOOR IS A PIECE OF KNOWLEDGE and nothing else: one id,
+             * readable, permanent, read back by the land every frame.
+             * No announcement, no chime, no "you chose". */
+            knowledge.learn(c.options[i].door);
+            for (const id of c.learns ?? []) knowledge.learn(id);
+            this.save.readNote(def.label ?? '');
+          }
+        );
+        return;
+      }
+    }
+    const note = def.note;
+    if (note) {
+      this.audio.note();
+      this.save.readNote(def.label ?? note.title);
+      /* A NOTE THAT NAMES A PLACE TELLS YOU ITS NAME. No announcement,
+       * no chime: the next time the player opens the map, it is
+       * written there in pencil. */
+      for (const id of note.learns ?? []) knowledge.learn(id);
+      this.ui.openNote(note.title, typeof note.body === 'function' ? note.body() : note.body);
+      return;
+    }
+    if (def.touch) {
+      // seen as well as heard: the figure rocks back on every touch
+      this.char.recoil();
+      def.touch(this.char.pos.x, this.char.pos.z);
+      return;
+    }
+    if (def.sit) this.sitDown(def);
+  }
+
+  /* ================================================================ *
+   * SIT. The walker is put on the seat, facing the camera, and holds
+   * still; THE CAMERA DOES NOT MOVE — a seated walker is a stopped
+   * walker and a stopped walker is due north by contract (`check-
+   * camera`, and `check-verbs` asserts it for this state too). Time
+   * passes: the day runs at six times its walking pace while you sit,
+   * so Joan comes to the table in twenty seconds instead of two
+   * minutes and dusk arrives on the king while you watch. Any step, or
+   * the key again, stands you up.
+   * ================================================================ */
+  private static SIT_TIME = 6;
+  private sitDown(def: WorldPOI) {
+    if (!def.sit || this.boat.aboard || this.train.aboard) return;
+    const sx = def.sit.x;
+    const sz = def.sit.z;
+    this.char.teleport(sx, sz, this.char.heading);
+    this.char.setGround(this.terrain.heightAt(sx, sz), this.terrain.normalAt(sx, sz));
+    this.char.setSitting(true);
+    this.seat = def;
+    for (const id of def.sit.learns ?? []) knowledge.learn(id);
+  }
+
+  private standUp() {
+    if (!this.seat) return;
+    this.char.setSitting(false);
+    this.seat = null;
+  }
+
+  /* ================================================================ *
+   * THROW — or set down, which is a throw at a standing walker. The
+   * one thing in hand goes underarm along the heading: a stride and a
+   * bit standing still, six units at a run. Continuous, like the run,
+   * and no second control. The landing is the world's to answer:
+   * `things.ts` clamps it inside the thing's own land before it flies.
+   * ================================================================ */
+  private throwHeld() {
+    const t = things.holding;
+    if (!t) return;
+    const sp = Math.hypot(this.char.vel.x, this.char.vel.z);
+    const dist = 1.6 + 4.6 * Math.min(1, sp / (this.char.maxSpeed * this.char.runMult));
+    things.throw_(
+      this.char.pos.x, this.char.pos.z, this.char.pos.y + 0.8, this.char.heading, dist,
+      (x, z) => this.terrain.heightAt(x, z)
+    );
   }
 
   /* ================================================================ *
@@ -1179,8 +1339,11 @@ export class App {
      * cares what time it is — the mixer, the lamps in Brim, whatever
      * Session 7 hangs a routine on — reads `daylight.clock` directly and
      * never comes through here (see world/daylight.ts). */
-    if (this.started) dayClock.advance(dt);
+    if (this.started) dayClock.advance(dt * (this.seat ? App.SIT_TIME : 1));
     const day = dayClock.state;
+    /* THE WORLD'S BUSINESS (Session 15): what is happening this hour,
+     * whether or not the walker is there to see it. */
+    if (this.started) events.tick(this.char.pos.x, this.char.pos.z);
     this.fx.setDay(day.tint, day.value, day.lamp, LAMP_POOL, LAMP_EDGE);
     /* THE HAZE TAKES THE SUNSET (world/daylight.ts, `skyOf`). The fog
      * colour and the clear colour are the same colour and always have
@@ -1195,7 +1358,21 @@ export class App {
     }
 
     this.input.update(dt);
-    this.char.frozen = this.ui.noteOpen || this.ui.mapOpen || !this.started;
+    this.char.frozen = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen || !this.started;
+    // a step stands you up; the prompt says so, and so does a thumb
+    if (this.seat && Math.hypot(this.input.move.x, this.input.move.y) > 0.3) {
+      this.standUp();
+    }
+    /* A SEAT THAT MOVES: the swing's plank is on a pendulum, and a
+     * figure sitting rigid beside its arc was the wrong picture. The
+     * seat says where it is this frame and the figure is put there. */
+    if (this.seat?.sit?.follow) {
+      const f = this.seat.sit.follow(this.elapsed);
+      this.char.pos.x = this.seat.sit.x + f.dx;
+      this.char.pos.z = this.seat.sit.z;
+      this.char.sway = f.rot;
+      this.seatDy = f.dy;
+    } else this.seatDy = 0;
     this.char.runIntent = this.input.run;
     /* THE ROAD UNDER THE WALKER. Off the road it is zero and costs one
      * polyline query; on the water there is no road at all, because a
@@ -1263,7 +1440,8 @@ export class App {
     // and then stands on whatever the page does there — or sits a foot
     // down in the boat, which is where a person in a boat is
     this.char.setGround(
-      this.terrain.heightAt(this.char.pos.x, this.char.pos.z) - (this.boat.aboard ? 0.34 : 0),
+      this.terrain.heightAt(this.char.pos.x, this.char.pos.z) - (this.boat.aboard ? 0.34 : 0)
+        + (this.seat?.sit?.lift ?? 0) + this.seatDy,
       this.boat.aboard ? [0, 1, 0] : this.terrain.normalAt(this.char.pos.x, this.char.pos.z)
     );
 
@@ -1319,6 +1497,33 @@ export class App {
       }
     }
 
+    /* ---- THE THINGS THE WALKER HAS MOVED (Session 15) --------------- *
+     * The registry rolls the cart and flies the stone; the lands draw
+     * them; this is where the world answers a landing, and the only
+     * place that decides what the ground under a landing is. */
+    things.tick(dt);
+    for (const l of things.landed) {
+      const water = this.terrain.waterAt(l.x, l.z);
+      const t = things.get(l.id);
+      if (l.caught) {
+        // the well has it; the Common answers on its own delay
+      } else if (water > 0.12) {
+        this.audio.event('stone-plop');
+      } else {
+        this.audio.event('stone-land');
+      }
+      /* Somewhere a foot cannot go — deep water, the steep — is
+       * somewhere the morning will take it back from. */
+      if (t) t.stranded = water > 0.3 || this.terrain.blockedAt(l.x, l.z);
+    }
+    things.landed.length = 0;
+    // and what is in the hand is drawn in the hand
+    const held = things.holding;
+    if ((held !== null) !== this.handShown) {
+      this.handShown = held !== null;
+      this.char.hold(held ? this.handTex : null, 0.42, 0.42);
+    }
+
     this.prints.update(dt);
     this.terrain.update(dt);
     this.world.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.region.id);
@@ -1346,7 +1551,12 @@ export class App {
             this.ambientAcc = 26 + Math.random() * 22;
           }
         } else if (this.region.id === 'castle') {
-          if (Math.random() < 0.7) {
+          /* THE AVENUE GOES QUIET once the king is back on his plinth
+           * (Session 15, the second door): there is no cloth on the
+           * poles for the wind to crack, and the only voice left in the
+           * land is the rooks'. */
+          const quiet = knowledge.has('door:the-king-restored');
+          if (!quiet && Math.random() < 0.7) {
             this.audio.event('banner-snap');
             this.ambientAcc = 6 + Math.random() * 8;
           } else {
@@ -1538,7 +1748,7 @@ export class App {
 
     if (this.started) {
       // a card is up: the world's own writing stays behind it
-      this.poi.suppressed = this.ui.noteOpen || this.ui.mapOpen;
+      this.poi.suppressed = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen;
       this.activePoi = this.poi.update(this.char.pos);
       /* THE ROUTES, WALKED (WORLD-SYSTEMS §6). A route is the one kind
        * of knowledge nobody in this world could tell you, because they
@@ -1548,10 +1758,12 @@ export class App {
        * mount. Nothing is announced when a route completes. */
       knowledge.travel(this.char.pos.x, this.char.pos.z);
       this.persistAcc += dt;
-      if (this.persistAcc > 4 || knowledge.dirty) {
+      if (this.persistAcc > 4 || knowledge.dirty || things.dirty) {
         this.persistAcc = 0;
         const k = knowledge.saved;
         knowledge.dirty = false;
+        things.dirty = false;
+        this.save.data.things = things.saved(this.char.pos.x, this.char.pos.z);
         this.save.data.known = k.known;
         this.save.data.passed = k.passed;
         this.save.data.pos = { x: this.char.pos.x, z: this.char.pos.z };

@@ -94,7 +94,11 @@ for (const h of [12, 18, 21, 23]) {
  * dropped on top of it?
  * ================================================================== */
 const VOICES = [
-  ['the-common', ['lark', 'well-plink']],
+  /* SESSION 15 — THE VERBS. The walker's shout, the well answering it,
+   * the cart taking a shove, and a stone landing on the page and in
+   * the water: the first sounds in the game the walker makes ON
+   * PURPOSE, and they go into the pack unheard like everything else. */
+  ['the-common', ['lark', 'well-plink', 'well-shout', 'well-answer', 'cart-wheels', 'cart-stuck', 'stone-land', 'stone-plop']],
   ['brim', ['brim-bell', 'market-murmur', 'pigeon-flap']],
   ['castle-greyweather', ['banner-snap', 'rook-caw']],
   ['longshore', ['surf-break', 'gull-cry', 'halyard', 'oar', 'oar-ship']],
@@ -184,6 +188,14 @@ So the ear gate is yours. What it is worth asking:
    the instrument in that land's LAND-*.wav, or does it sound like
    a sound effect dropped on top of one? And is any of them too
    often, too loud, or too obviously a synthesiser?
+
+5. THE VERBS (Session 15) — voice-the-common-well-shout, -well-answer,
+   -cart-wheels, -stone-land and -stone-plop. In the game the shout
+   and the answer are three and a half seconds apart (the answer is
+   ON PURPOSE too late: THE-STRANGERS U7); here they are two files.
+   Does the answer sound like the same voice a long way down? Does
+   the cart sound like a thing with a wheel, and heavy? Is the stone
+   a stone?
 
 WHAT IS NOT IN THESE FILES
 --------------------------

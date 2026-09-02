@@ -63,8 +63,9 @@ and the knowledge games — is `design/INSPIRATION.md`.*
 | 3 | **THE ERRANDS** | ~18 | ~5 min | local, single-beat, warm. One or two per land | one thing, small, near |
 | 4 | **THE ENCOUNTERS** | ~24 | ~1 min | authored roadside moments: a cart with a broken wheel, someone lost, a funeral you should not interrupt | nothing. They are weather |
 | 5 | **THE UNMARKED** | ~30 | seconds | things that are only content if you notice them. Some are secrets, some are jokes, none are rewarded | nothing, and that is the reward |
+| 6 | **THE LOCAL RULES** *(ratified 2026-09-01; §8)* | ~12, one per land at least | as long as you like | a place where the world does something it does nowhere else, repeatable, with no score. What the verbs are for | nothing permanent — and sometimes something small and permanent, which is a choice and not a reward |
 
-**Total ≈ 93 authored pieces**, which is roughly what twelve to sixteen
+**Total ≈ 105 authored pieces**, which is roughly what twelve to sixteen
 hours costs at this bar, and which is why DIRECTION.md says the ladder
 needs about five sessions beyond Session 14.
 
@@ -78,7 +79,8 @@ Two properties of that table matter more than the numbers:
   specific breaks.
 - **The tiers are tonally distinct.** THE LINE is melancholy. THE WAITS
   are fables. THE STRANGERS are short stories with a turn. THE ERRANDS
-  are warm. THE ENCOUNTERS are texture. THE UNMARKED are funny. That
+  are warm. THE ENCOUNTERS are texture. THE UNMARKED are funny. THE
+  LOCAL RULES are play. That
   spread is what stops fifteen hours of a game about waiting from
   becoming ponderous — and it is why Goat Simulator is on the benchmark
   list and is not a joke entry.
@@ -103,6 +105,36 @@ Four ways, in descending order of how often they should be used:
 4. **A note tells you.** The POI note cards, which already exist. The
    weakest of the four because it is the most like a UI, so it should
    carry the *voice* and rarely the *instruction*.
+
+**AND FROM 2026-09-01 THE FIRST THREE ARE ALLOWED TO BE LOUD**
+(`THE-FUN-PASS.md` §2.5, owner-confirmed; executed Session 15). *The
+world never explains itself* and *nobody says the turn* are kept
+absolutely for the turn and for the ending, and relaxed for everything
+else. The owner's words: *"the starting point is bland and expected
+but also confuses users because they don't know where to go or what to
+do."* A world where nothing tells you anything is a world where you do
+not know where to go. So:
+
+- **You see it** may be a thing that is visibly HAPPENING, not only a
+  thing that is visibly there: a cart rolling, a flock on the move, a
+  banner coming down. Motion is the loudest sightline there is.
+- **Somebody's posture** may point. A person at a gate may look up the
+  road and raise an arm. Nobody speaks; everybody may indicate.
+- **A place is written on** may say what it is for. A sign may say
+  WELL. A notice may contain an instruction when the instruction is the
+  joke or the invitation.
+- **A note** stays what it was: the voice, and rarely the instruction.
+  The one thing that did not get louder is the one that is a UI.
+
+**The order is unchanged.** Loud is a licence, not a requirement, and a
+land that points at everything has told the player there is nothing to
+find.
+
+**And a fifth way, from Session 15: THE PROMPT SAYS THE VERB.** SHOUT
+DOWN THE WELL is an invitation and PUSH THE CART is one; the interact
+prompt has always been the loudest hand-lettered thing in the frame, and
+now that the key does five things (`design/specs/controls.md`), the
+verb on it is how a player learns a place is a toy.
 
 ## 4. How a quest ENDS, with no log
 
@@ -354,6 +386,44 @@ can trigger, it is not a tier.
 timer, a leaderboard, a reward shop, or a currency. RuneScape has all
 five and **every one of them is a meter** (§7, and the reward law in
 §5). Take the room; refuse the scoreboard.
+
+### THE TIER, AS A TIER — executed Session 15
+
+The owner ruled, and the question above is answered: **a local rule is
+something you DO, and the payload is that you can keep doing it.** It
+is row 6 of the table in §2, it is the third of the seven things a land
+has to have to play (`THE-FUN-PASS` §3), and the verbs (`specs/controls.md`)
+are mostly for it. The rule for an entry, so nobody argues one in that
+is not one:
+
+> **A local rule is a TOUCH (or a carry, a sit, a throw) at a place,
+> whose answer is a change in the world that you can see or hear, that
+> you can do again, and that nothing counts.** If it is an idle motion
+> you can trigger, it is not one. If it has a score, it is not one. If
+> you can only do it once, it is an unmarked or an errand, not this.
+
+**The register**, one line each, in the format the errands use:
+
+| # | land | the local rule | ships |
+|---|---|---|---|
+| L1 | THE COMMON | **the well answers a shout**, on a delay that is too long — and it answers a stone thrown down it, later still. U7 said *once*; a local rule is repeatable, and this supersedes it | **Session 15** |
+| L2 | THE COMMON | **the hay cart can be pushed.** It rolls, it slows, it stops at the border of the Common, and it stays where you left it in every later save. The first thing the walker ever moved | **Session 15** |
+| L3 | BRIM | the bell rung early, and the town reacting | 17 / 19 |
+| L4 | THE WIDE BLUE | skimming a stone off the sandbar | 19 |
+| L5 | THE COMMON | the swing on the leaning oak — a sit, and the oaks' argument going by | (the sit ships Session 15; the argument is 16's) |
+| L6 | SPLITROCK | the echo that comes back wrong | 19 |
+| L7 | GREYWEATHER | sitting on the toppled king — while he is toppled | 15 (the sit exists; the king is a seat in 19) |
+| L8 | THE CUBICLE MILE | riding the office chair down the mile | 20 |
+| L9 | GREYLINE CITY | pushing the wheelie bin into the junction | 20 |
+| L10 | MAPLE COURT | the bicycle's bell; kicking a ball on the green | 18 / 20 |
+| L11 | THE HARROW DOWNS | the sheep scatter and close up — and now they go somewhere at dawn | 15 (the drove moves on the clock) |
+| L12 | LONGSHORE | honking the 8:15 | 21 |
+
+**And the two that ship this session are measured**, because a rule
+about the border is a law and not a feeling: `tools/check-verbs.mjs`
+shoves the cart at the Common's east edge fifteen times and asserts it
+stops inside, and throws the stone at the south edge at a run and
+asserts it lands inside.
 
 ---
 

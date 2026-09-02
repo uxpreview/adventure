@@ -95,6 +95,15 @@ export class Character {
   stamping = true;
 
   private sprite: THREE.Mesh;
+  /**
+   * THE ONE THING IN HAND (Session 15, `THE-FUN-PASS` §5). A small
+   * cutout parented to the figure at the hand, mirrored with the
+   * sprite, and empty nearly all the time. There is exactly one of
+   * these and it holds one texture or none: that is the whole of the
+   * inventory system and it is why there is not one.
+   */
+  private hand: THREE.Mesh;
+  private handMat: THREE.MeshBasicMaterial;
   private tex: THREE.CanvasTexture;
   private texInk: THREE.CanvasTexture;
   private texWhite: THREE.CanvasTexture | null = null;
@@ -150,7 +159,51 @@ export class Character {
     this.shadow.position.y = 0.015;
     this.shadow.renderOrder = -4;
 
+    /* The hand: a plane a third of the figure's height, drawn just in
+     * front of the body so it reads over the walk cycle's arm. Hidden
+     * until something is put in it. */
+    const hg = new THREE.PlaneGeometry(0.46, 0.46);
+    this.handMat = new THREE.MeshBasicMaterial({
+      transparent: true, alphaTest: 0.1, side: THREE.DoubleSide,
+    });
+    this.hand = new THREE.Mesh(hg, this.handMat);
+    this.hand.position.set(0.3, 0.52, 0.02);
+    this.hand.visible = false;
+    this.sprite.add(this.hand);
+
     this.group.add(this.shadow, this.sprite);
+  }
+
+  /** Put a thing in the hand, or take it out (`null`). */
+  hold(tex: THREE.Texture | null, w = 0.46, h = 0.46) {
+    this.hand.visible = tex !== null;
+    this.handMat.map = tex;
+    this.handMat.needsUpdate = true;
+    this.hand.scale.set(w / 0.46, h / 0.46, 1);
+  }
+
+  get isSitting() {
+    return this.sitting;
+  }
+
+  /**
+   * A TOUCH IS SEEN AS WELL AS HEARD. The owner tapped SHOUT DOWN THE
+   * WELL on a phone and nothing happened — the shout was a sound and
+   * the phone was on silent, and the world's answer was three and a
+   * half seconds away. So every touch rocks the figure back for a
+   * third of a second, the way a body does when it shouts, shoves or
+   * stoops: a visible answer at the instant of the press, on the one
+   * thing in the frame that is never cropped. It ends at exactly zero,
+   * so a standing walker is still the shipped composition.
+   */
+  private touchT = 0;
+  private static TOUCH_S = 0.36;
+  /** SEATED ON SOMETHING THAT MOVES: the swing's own rotation, handed
+   *  in by App each frame so the figure rides the plank instead of
+   *  sitting rigid beside its arc. Zero on every other seat. */
+  sway = 0;
+  recoil() {
+    this.touchT = Character.TOUCH_S;
   }
 
   setWobble(k: number) {
@@ -172,6 +225,10 @@ export class Character {
   setSitting(v: boolean) {
     this.sitting = v;
     if (v) this.setFrame(7);
+    else {
+      this.sway = 0;
+      this.sprite.rotation.z = 0;
+    }
   }
 
   /** One sprite sheet for the current skin: Pip's tuft in black ink, B.'s
@@ -262,8 +319,10 @@ export class Character {
   update(dt: number, move: THREE.Vector2, bounds?: { minX: number; maxX: number; minZ: number; maxZ: number }) {
     if (this.frozen || this.sitting) {
       this.vel.multiplyScalar(Math.max(0, 1 - dt * 10));
-      if (this.sitting) this.setFrame(7);
-      else this.animateIdle(dt);
+      if (this.sitting) {
+        this.setFrame(7);
+        this.sprite.rotation.z = this.sway;
+      } else this.animateIdle(dt);
       this.group.position.copy(this.pos);
       return;
     }
@@ -511,5 +570,13 @@ export class Character {
     // a quiet breath
     const s = 1 + Math.sin(this.idleT * 1.8) * 0.008;
     this.sprite.scale.y = s;
+    // and the recoil of a touch, which ARRIVES at zero rather than
+    // approaching it (see `recoil`)
+    if (this.touchT > 0) {
+      this.touchT = Math.max(0, this.touchT - dt);
+      const k = this.touchT / Character.TOUCH_S;
+      this.sprite.rotation.z = -0.2 * Math.sin(Math.PI * k) * (this.sprite.scale.x < 0 ? -1 : 1);
+      if (this.touchT === 0) this.sprite.rotation.z = 0;
+    }
   }
 }

@@ -236,3 +236,47 @@ pretending there is a plank. Generic, named for the thing, and the dry
 lands will want it.
 
 Nothing else. The field/standee/decal primitives carry the rest.
+
+
+---
+
+## Session 15 addendum — the drove moves at dawn, and the sit (2026-09-02)
+
+Two things, and the second is a correction.
+
+**THE DROVE is the first scheduled event in the game** (`THE-FUN-PASS`
+§9, `src/world/events.ts`). Two events registered at module scope, so
+they fire whether or not anybody is there:
+
+| event | at | for | what |
+|---|---|---|---|
+| `the-drove-out` | 05:42 | one hour | the flock walks the lane north from the fold at its south end, through the mouth gate at (101, 79), into THE WEST SLOPE, and stands there all day |
+| `the-drove-home` | 19:18 | one hour | the same lane, back, and the fold for the night |
+
+The flock's place is a **function of the hour** (`droveAt`), not a
+simulation: a walker who arrives ten minutes in finds the flock ten
+minutes up the lane, and `setHour` on the harness puts it exactly where
+that hour has it. Each sheep sets out after the one in front and takes
+the rest of the hour to arrive; on the lane it is drawn in the moving
+pose. **Two of them do not move for anybody**, including at dawn, and
+THE DROVE's note is still true at every hour. The parting is unchanged
+and works wherever the flock is. If the walker is within seventy units
+when a drove starts, the flock is heard setting out.
+
+**What this changes in the frame:** at noon the lane holds two sheep
+and the west slope holds eleven; Session 10's `14-the-drove` framing at
+(101, 108) now photographs a sunken lane with two stubborn sheep in it
+at midday, and the flock at (99, 54..74) beyond the gate. It is not a
+protected framing (`diff-sheets` carries none of the Downs). `check-
+fields` walks at the flock from the mouth now, north into the field,
+because that is where the animals are at the hour it pins.
+
+**THE HEADLAND's SIT DOWN is a sit.** It has been the prompt since
+Session 10 and it opened a note, and **`fact:the-place-kept` was never
+taught anywhere in the source** — Joan's wait, which `THE-WAITS` §10
+says resolves on *you sit down*, could not resolve. The prompt sits the
+walker at the trestle now and teaches the fact by sitting and by nothing
+else; the second setting stays out from then on, as Session 10 wrote.
+The headland's note is its own POI four units west under LOOK AT THE
+TABLE. Sitting runs the day at six times its pace, so a walker who sits
+down at ten sees Joan come to the table.

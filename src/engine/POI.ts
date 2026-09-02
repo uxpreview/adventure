@@ -26,13 +26,20 @@ export type POIDef = {
    * six-tenths of a unit apart and printed on top of each other.
    */
   labelHeight?: number;
-  /** If set, an interact prompt appears in range; tapping/E triggers it. */
-  prompt?: string;
+  /** If set, an interact prompt appears in range; tapping/E triggers it.
+   *  Since Session 15 it may be a FUNCTION, because one key does
+   *  several things and the prompt says which: a stone in hand is
+   *  THROW THE STONE at a walk and PUT DOWN THE STONE standing still,
+   *  and the king's plinth offers a choice until a door is taken. */
+  prompt?: string | (() => string);
   onInteract?: () => void;
   onEnter?: () => void;
   onExit?: () => void;
   /** Setting false hides the POI entirely. */
   enabled?: boolean;
+  /** Only wins when no other prompt is in reach (Session 15: the thing
+   *  in the walker's hand). */
+  weak?: boolean;
   /** Internal: remembered state across a blanket suppression. */
   userWasEnabled?: boolean;
 };
@@ -42,7 +49,17 @@ export class POI {
   inRange = false;
   labelEl: HTMLDivElement | null = null;
   constructor(def: POIDef) {
-    this.def = { enabled: true, labelHeight: 3.4, ...def };
+    /* NOT A SPREAD. Session 15 found that `{ ...def }` evaluates every
+     * getter on the definition ONCE and copies its value — so a place
+     * whose coordinates are meant to be read live (the rowboat's prompt
+     * has said so since Session 6, the 8:15's since Session 14, the
+     * cart's and the stone's since now) was nailed to wherever the thing
+     * stood on page load. Row the boat somewhere and step out, and
+     * TAKE THE OARS stayed at the river mouth until the tab was closed.
+     * The definition is kept as itself and only its defaults filled. */
+    if (def.enabled === undefined) def.enabled = true;
+    if (def.labelHeight === undefined) def.labelHeight = 3.4;
+    this.def = def;
   }
   get enabled() {
     return this.def.enabled !== false;
@@ -141,7 +158,7 @@ export class POIManager {
       // the nearest POI is still returned, so closing the card and
       // pressing E does what the player expects
       for (const p of this.pois) {
-        if (!p.enabled || !p.def.onInteract) continue;
+        if (!p.enabled || !p.def.onInteract || p.def.weak) continue;
         const d = Math.hypot(charPos.x - p.def.x, charPos.z - p.def.z);
         if (d < p.def.radius && d < best) {
           best = d;
@@ -167,9 +184,17 @@ export class POIManager {
         p.labelEl.classList.toggle('show', show);
         if (show) shown.push({ p, d });
       }
-      if (inR && p.def.onInteract && d < best) {
+      if (inR && p.def.onInteract && !p.def.weak && d < best) {
         best = d;
         active = p;
+      }
+    }
+    /* THE THING IN HAND is at distance zero from the walker and would
+     * win every contest; it is offered only when nothing else is. */
+    if (!active) {
+      for (const p of this.pois) {
+        if (!p.enabled || !p.def.weak || !p.def.onInteract) continue;
+        if (Math.hypot(charPos.x - p.def.x, charPos.z - p.def.z) < p.def.radius) active = p;
       }
     }
 
@@ -211,7 +236,8 @@ export class POIManager {
     }
 
     if (active) {
-      letterEl(this.promptEl, active.def.prompt ?? 'look', S.voice(11.5));
+      const p = active.def.prompt;
+      letterEl(this.promptEl, (typeof p === 'function' ? p() : p) ?? 'look', S.voice(11.5));
       this.promptEl.classList.add('show');
       /* AND THE PROMPT IS WRITTEN BESIDE THE THING, ON THE OPEN PAGE.
        *

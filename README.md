@@ -126,8 +126,26 @@ and deals a region card — nothing else, because the sheet is continuous.
   once and it stays out, at every hour, in every save.
 - **A wood with one road in it, and the road is a circle.** Nothing
   anywhere says why. The map draws roads.
-- Position, discovered lands, strides walked, the boat, the hour and
-  what you know saved to `localStorage`.
+- **And the walker can touch things now** (Session 15, the first of the
+  fun pass). One key — the one that looks — and what it does depends on
+  what is in reach: **shout down the well** and it answers, on a delay
+  that is too long; **push the hay cart** and it rolls, and stops at the
+  Common's edge, and is there tomorrow; pick up a stone and **throw
+  it**, underarm, into the river or down the well; **sit** in the swing
+  or at Joan's table and the day goes by while you watch, and the
+  camera does not move. No inventory: one thing in the hand, drawn
+  there. And the first **choice card**: set your shoulder to the
+  toppled king at Greyweather and a hand-lettered card offers two
+  doors. Put him back, and the banners come down, the avenue goes
+  quiet and the moat pool clears, in every later save. Leave him, and
+  nothing changes. Nothing says which was right.
+- **And the world keeps its own hours.** The thirteen sheep in the
+  Downs walk the lane from the fold to the field at first light and
+  back at dusk, whether or not anybody is there to see it — the first
+  scheduled event, and the plumbing for one in every land.
+- Position, discovered lands, strides walked, the boat, the hour, what
+  you know, what you chose, and where you left the cart, saved to
+  `localStorage`.
 
 The story is **THE 8:15** — see `design/STORY.md` for the bible and
 `design/QUESTS.md` for how content is tiered in a game with no quest
@@ -151,8 +169,9 @@ npm run dev      # http://localhost:5173
 npm run build    # type-check + production build in dist/
 ```
 
-Desktop: WASD or arrows, **hold Shift to run**, `E` to look, **`,` and
-`.` to lean the camera**, `M` for the map. Mobile: drag in the lower part
+Desktop: WASD or arrows, **hold Shift to run**, `E` to look — and to
+touch, pick up, throw and sit, whichever the prompt says — **`,` and
+`.` to lean the camera**, `M` for the map, `1` `2` `3` on a choice card. Mobile: drag in the lower part
 of the screen to steer (the top is the vista and the joystick is kept
 off it), **drag further past the ring to run**, **two fingers to lean**,
 tap to interact.
@@ -199,6 +218,11 @@ node tools/check-sightline.mjs # THE LINE'S CORRIDOR: nothing tall within eight
 node tools/shoot-textures.mjs  # EVERY DRAWING IN A PROP BOX, AT ACTUAL SIZE
 node tools/montage.mjs <dir> <out.png> a.png b.png …   # a land on one sheet
 node tools/check-fields.mjs    # no instanced field is ever half inked in
+node tools/check-verbs.mjs     # THE VERBS: the cart stops at the border, the
+                               #   stone lands inside it, one thing in hand, a
+                               #   seated walker is due north, the drove keeps
+                               #   its hours, a door is knowledge
+node tools/shoot-session15.mjs # the proofs, both states, both viewports
 HOUR=19.6 node tools/shoot-first-minute.mjs   # any sheet, at any hour
 node tools/shoot.mjs           # all twelve lands, walkability smoke test
 node tools/shoot-mobile.mjs    # the CHROME, at 320/360/390/430 points AND at
@@ -218,8 +242,10 @@ correction (which component was making people sick, and how that was
 measured), then the two components, the envelope's arithmetic, the walk
 south in units of page, every second-order effect checked, and the
 harness clock. `design/specs/controls.md` is the hands: what each device
-gets, why the joystick is a thumb's control only, and why the run is
-taught once at the moment it becomes worth having.
+gets, why the joystick is a thumb's control only, why the run is
+taught once at the moment it becomes worth having, and (Session 15)
+what the one key does when there is a well, a cart, a stone, a swing or
+a fallen king in reach.
 
 Every tool takes `$PW_CHROMIUM` if Playwright's own Chromium is not
 where it expects (`tools/pw.mjs`).
@@ -283,6 +309,14 @@ cycle, the paper post-pass, the audio engine. New for the open world:
   of the light, ink pooled down the bottom of a crease, pen hatching
   down the fall line of anything that is genuinely a cliff. Plus CPU
   queries for collision, step timbre and height.
+- `src/world/events.ts` — **what is happening.** A land registers *at
+  this hour, in this place, this happens*, reads it back as a number
+  that is a pure function of the clock, and anything can ask whether it
+  is on. It fires whether or not the walker is there.
+- `src/world/things.ts` — **what the walker has moved.** A pushable cart
+  and a carriable stone, one slot for the hand, and the border rule
+  written into the file: no path in it can put a thing outside its own
+  land.
 - `src/world/daylight.ts` — **what time it is.** One clock, module
   scope, readable by anything (`import { clock }`) — the story runs on
   routine, so a region builder that wants to know whether the shutters

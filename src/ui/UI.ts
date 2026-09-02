@@ -22,6 +22,8 @@ export class UI {
 
   noteOpen = false;
   mapOpen = false;
+  /** A choice card has the screen. Frozen like a note; see below. */
+  choiceOpen = false;
 
   onBegin: (() => void) | null = null;
   onContinue: (() => void) | null = null;
@@ -40,6 +42,13 @@ export class UI {
   private note: HTMLElement;
   private noteTitle: HTMLElement;
   private noteBody: HTMLElement;
+  private choice: HTMLElement;
+  private choiceCard: HTMLElement;
+  private choiceTitle: HTMLElement;
+  private choiceBody: HTMLElement;
+  private choiceOpts: HTMLElement;
+  private choiceText: { title: string; body: string; options: string[] } | null = null;
+  private choicePick: ((i: number) => void) | null = null;
   private map: HTMLElement;
   private mapSlot: HTMLElement;
   private hud: HTMLElement;
@@ -99,6 +108,19 @@ export class UI {
     letterEl(noteClose, 'put it back', S.button(10.5));
     this.note.addEventListener('click', () => this.closeNote());
 
+    /* THE CHOICE CARD (Session 15, `THE-FUN-PASS` §2.2 and §6). The
+     * note card's own system — same veil, same paper, same pen — with
+     * two or three options lettered on it instead of "put it back". No
+     * faces, no talking head, no wheel: a card that says what the two
+     * things are. The veil does NOT close it, because both doors are
+     * meant to be looked at; the walker closes it by choosing, or with
+     * Escape, which is walking away. */
+    this.choice = el('note-veil choice-veil', this.root);
+    this.choiceCard = el('note-card choice-card', this.choice);
+    this.choiceTitle = el('note-title', this.choiceCard);
+    this.choiceBody = el('note-body', this.choiceCard);
+    this.choiceOpts = el('choice-options', this.choiceCard);
+
     // map overlay
     this.map = el('map-veil', this.root);
     this.mapSlot = el('map-slot', this.map);
@@ -133,10 +155,20 @@ export class UI {
      * with a note open would otherwise keep the portrait wrap. */
     window.addEventListener('resize', () => {
       if (this.noteOpen) this.letterNote();
+      if (this.choiceOpen) this.letterChoice();
       if (this.mapOpen) this.openMap();
     });
 
     window.addEventListener('keydown', (e) => {
+      if (this.choiceOpen) {
+        /* THE KEYS ARE THE OPTIONS, in order: 1, 2, 3 — and Escape walks
+         * away. Nothing else is read while a choice is up, so the map
+         * cannot open over a door. */
+        const n = ['Digit1', 'Digit2', 'Digit3'].indexOf(e.code);
+        if (n >= 0) this.pick(n);
+        if (e.code === 'Escape') this.closeChoice();
+        return;
+      }
       if (e.code === 'KeyM') (this.mapOpen ? this.closeMap() : this.openMap());
       if (e.code === 'Escape') {
         this.closeMap();
@@ -290,6 +322,67 @@ export class UI {
     this.note.classList.remove('show');
     this.noteOpen = false;
     this.noteText = null;
+  }
+
+  /* ================================================================ *
+   * THE CHOICE CARD.
+   *
+   * Lettered exactly as the note is — to a measured width, re-lettered
+   * on resize — because it is a canvas and a canvas does not reflow,
+   * and because the longest option in the game (LEAVE HIM WHERE HE
+   * LANDED) is a line that has to fit at 320 points. `shoot-mobile.mjs`
+   * opens one at every width it shoots and asserts every option is
+   * inside the viewport; that is the assertion, and this is the width.
+   * ================================================================ */
+  openChoice(title: string, body: string, options: string[], pick: (i: number) => void) {
+    this.closeNote();
+    this.choiceText = { title, body, options: options.slice(0, 3) };
+    this.choicePick = pick;
+    this.choice.classList.add('show');
+    this.letterChoice();
+    this.choiceOpen = true;
+  }
+
+  private letterChoice() {
+    if (!this.choiceText) return;
+    const card = this.choiceCard;
+    const cs = getComputedStyle(card);
+    const padX = parseFloat(cs.paddingLeft || '0') + parseFloat(cs.paddingRight || '0');
+    const cap = parseFloat(cs.maxWidth);
+    const avail = Number.isFinite(cap) && cap > 0 ? cap : Math.min(460, window.innerWidth * 0.92);
+    const w = Math.max(150, Math.floor(avail - (padX || 44)));
+    const px = Math.max(11, Math.min(12.5, w / 22));
+    const tpx = Math.max(14.5, Math.min(17, w / 16));
+    letterEl(this.choiceTitle, this.choiceText.title,
+      { ...S.display(tpx), px: tpx, align: 'left', maxWidth: w });
+    letterEl(this.choiceBody, this.choiceText.body,
+      { ...S.voice(px), maxWidth: w, leading: px < 12 ? 2.25 : 2.6 });
+    this.choiceOpts.textContent = '';
+    this.choiceText.options.forEach((label, i) => {
+      const b = el('choice-btn', this.choiceOpts, 'button');
+      /* An option is a BUTTON's line, at the note-close button's own
+       * size, wrapped to the card less the button's own padding so the
+       * longest door in the game breaks to two lines at 320 rather
+       * than running off the side. */
+      letterEl(b, label, { ...S.button(11.5), maxWidth: w - 30 });
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.pick(i);
+      });
+    });
+  }
+
+  private pick(i: number) {
+    const cb = this.choicePick;
+    this.closeChoice();
+    cb?.(i);
+  }
+
+  closeChoice() {
+    this.choice.classList.remove('show');
+    this.choiceOpen = false;
+    this.choiceText = null;
+    this.choicePick = null;
   }
 
   openMap() {

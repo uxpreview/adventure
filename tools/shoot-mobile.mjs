@@ -131,6 +131,49 @@ for (const vp of RIGS.filter((r) => !ONLY || r.name === ONLY)) {
     await page.waitForTimeout(600);
   }
 
+  /* ---- THE CHOICE CARD (Session 15) --------------------------------- *
+   * It is chrome, it is lettered onto a canvas, and a canvas does not
+   * reflow — so it is shot at every width like the note, with THE
+   * LONGEST DOOR IN THE GAME on it, and ASSERTED: every option button
+   * has to be inside the viewport with air to spare, or the card is a
+   * note card that runs off the side of the screen all over again.
+   * Session 15 opens it in the world the way a thumb would (the king's
+   * plinth) rather than through a back door, so the prompt, the veil
+   * and the buttons are all the shipped ones. */
+  await page.evaluate(() => window.__inklands.goto(-56, -216));
+  await page.waitForTimeout(1400);
+  await page.screenshot({ path: `${dir}/08-choice-prompt.png` });
+  await page.evaluate(() => {
+    const el = document.getElementById('prompt');
+    if (el) el.click();
+  });
+  await page.waitForTimeout(900);
+  await page.screenshot({ path: `${dir}/08-choice-card.png` });
+  const card = await page.evaluate(({ w, h }) => {
+    const open = !!document.querySelector('.choice-veil.show');
+    const btns = [...document.querySelectorAll('.choice-btn')].map((b) => {
+      const r = b.getBoundingClientRect();
+      return { l: r.left, r: r.right, t: r.top, b: r.bottom, label: b.getAttribute('aria-label') };
+    });
+    const c = document.querySelector('.choice-card');
+    const cr = c ? c.getBoundingClientRect() : null;
+    return { open, btns, card: cr && { l: cr.left, r: cr.right, t: cr.top, b: cr.bottom }, w, h };
+  }, { w: vp.width, h: vp.height });
+  const PAD = 8;
+  const inside = (r) => r.l >= PAD && r.r <= card.w - PAD && r.t >= PAD && r.b <= card.h - PAD;
+  if (!card.open || card.btns.length < 2) {
+    console.log(`  ✗ ${vp.name}: the choice card did not open at the plinth (${card.btns.length} doors)`);
+    fails++;
+  } else if (!card.btns.every(inside) || !inside(card.card)) {
+    const off = card.btns.filter((b) => !inside(b)).map((b) => b.label).join(', ');
+    console.log(`  ✗ ${vp.name}: a door is off the page — ${off || 'the card itself'}`);
+    fails++;
+  } else {
+    console.log(`  ✓ ${vp.name}: ${card.btns.length} doors on the card, all on the page`);
+  }
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(500);
+
   // the map, which IS shot elsewhere but never at 320
   await page.keyboard.press('KeyM');
   await page.waitForTimeout(1000);
@@ -273,7 +316,7 @@ for (const vp of RIGS.filter((r) => !ONLY || r.name === ONLY)) {
     }
   }
 
-  console.log(`     ${vp.name}: 8 frames → ${dir}`);
+  console.log(`     ${vp.name}: 10 frames → ${dir}`);
   await page.close();
 }
 

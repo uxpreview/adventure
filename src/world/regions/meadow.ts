@@ -5,10 +5,86 @@ import {
   leanGrassTexture, tallGrassTexture, driftFlowersTexture, commonOakTexture,
   wornGroundDecal, wheelRutsDecal, commonWellTexture, crossroadsSignTexture,
   milestoneTexture, hayCartTexture, hedgerowTexture, longFenceTexture,
+  fistStoneTexture, wellRopeTexture, wellBucketTexture,
   leafLitterDecal, reedsTexture, ropeSwingTexture, swallowTexture,
   keepVistaTexture,
 } from '../textures-common';
+import { things } from '../things';
+import { events } from '../events';
 import type { RegionBuilder, WorldPOI } from './index';
+
+function say(name: string) {
+  window.dispatchEvent(new CustomEvent('inklands:event', { detail: name }));
+}
+
+/* ================================================================== *
+ * THE COMMON AS THE PLATEAU — the first two local rules in the game
+ * (Session 15, `QUESTS.md` §8, `THE-FUN-PASS` §3 item 3 and §5).
+ *
+ * THE WELL ANSWERS A SHOUT. `THE-STRANGERS` U7 has said since Session
+ * 7 that it does, once, on a delay that is too long; it was a note you
+ * read. It is a touch now: shout, and the shaft takes it, and nothing
+ * comes back for long enough that you have stopped waiting — and then
+ * it does, thinner and lower, and a drop reaches the water after it.
+ * Repeatable, because a local rule is a thing you can keep doing
+ * (§8), which supersedes U7's *once*.
+ *
+ * THE HAY CART CAN BE PUSHED. It rolls, it slows, it stops at the edge
+ * of the Common, and it stays where you left it in every later save.
+ * It is the first thing the walker has ever moved. Session 16 makes
+ * it get away; NELL's second door (`THE-FUN-PASS` §6) is pushing it
+ * down a road to a border. Nobody crosses a border but the walker:
+ * `things.ts` clamps it to this rect and no path in that file can put
+ * it outside one.
+ *
+ * AND A STONE, so carry and throw have something to be about. It props
+ * the field gate. Pick it up, walk with it in hand, throw it: at the
+ * river it plops, on the page it knocks, down the well it is gone —
+ * and the well answers that too — until the morning, when it is back
+ * by the gate and nothing says who put it there.
+ * ================================================================== */
+const WELL_ANSWER_DELAY = 3.4;
+/** The shout, and when the answer is due. Module scope, because the
+ *  touch lives on the POI list and the answer lives in the builder. */
+const well = {
+  answerAt: -1, kind: 'shout' as 'shout' | 'stone', lift: false,
+  /** THE BUCKET, which is the answer you can see: at rest on its rope;
+   *  dropping into the shaft at the shout; down in the dark while the
+   *  well takes its time; rising and swinging when it answers. */
+  bucket: 'rest' as 'rest' | 'drop' | 'down' | 'rise' | 'bob',
+  bt: 0,
+  /** A refused shove rocks the cart; a stone in the river rings. Both
+   *  are the owner's rule of 2026-09-02: a visual cue, not just audio. */
+  cartRock: 0,
+  ripple: { t: -1, x: 0, z: 0 },
+};
+
+things.register({
+  id: 'hay-cart', kind: 'pushable', land: 'meadow', name: 'THE CART',
+  home: { x: 20, z: 76.5 }, shove: 5.5,
+});
+/* THE STONE'S HOME IS OUTSIDE EVERY OTHER PLACE'S REACH. The first
+ * position (13.6, 68.2) was five units from THE LONG FENCE's POI, inside
+ * its reach of six, so the moment the stone was in the hand the key
+ * offered LEAN ON THE STILE instead of the throw — a thing in reach
+ * beats the thing in the hand, which is the rule, and the rule is why a
+ * carriable must not live inside anybody's reach. Ten from the fence,
+ * six from the cart at rest. */
+things.register({
+  id: 'fist-stone', kind: 'carriable', land: 'meadow', name: 'THE STONE',
+  home: { x: 18.5, z: 70.5 },
+});
+things.addCatcher('the-well', -57.6, 44.6, 1.9);
+
+/* THE MORNING PUTS THINGS BACK — the Common's own scheduled event, and
+ * the smallest one in the game: at first light anything the walker
+ * lost (down the well, in the river) is at its home again. It fires
+ * whether or not anybody is there, which is the whole point. */
+events.register({
+  id: 'the-common-morning', land: 'meadow', at: 5.9, hours: 0.2,
+  place: { x: 18.5, z: 70.5 },
+  onStart: () => things.morning(),
+});
 
 /**
  * THE COMMON — rebuilt to design/specs/the-common.md (Session 2).
@@ -127,6 +203,26 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   /* ---- THE OLD WELL ----------------------------------------------- */
   ctx.decal(wornGroundDecal(410), 9, 8, WELL.x, WELL.z, 1.2, 0.6);
   ctx.standee(commonWellTexture(411), 4.4, 5.5, WELL.x - 1, WELL.z - 1);
+  /* THE ROPE AND THE BUCKET (Session 15), the visible half of the
+   * well's answer. Hung from the windlass — 95 of 240 down the well's
+   * canvas, which is 3.32 units up on a 5.5-unit standee — a hair
+   * behind the well's own plane so the shaft's dark reads over them as
+   * they go down. The rope's pivot is its top, so its length is a scale;
+   * the bucket hangs off the rope's end. */
+  const WINDLASS = 3.32;
+  const BUCKET_H = 0.46;
+  const ROPE_REST = 0.94;
+  const wellY = ctx.groundY(WELL.x - 1, WELL.z - 1);
+  const rope = ctx.standee(wellRopeTexture(412), 0.37, 1, WELL.x - 1, WELL.z - 1.06);
+  rope.geometry.translate(0, -1, 0);
+  rope.position.y = wellY + WINDLASS;
+  rope.scale.y = ROPE_REST;
+  const bucket = ctx.standee(wellBucketTexture(413), 0.46, BUCKET_H, WELL.x - 1, WELL.z - 1.06);
+  bucket.geometry.translate(0, -BUCKET_H, 0);
+  bucket.position.y = wellY + WINDLASS - ROPE_REST;
+  const bucketMat = bucket.material as THREE.MeshBasicMaterial;
+  const ropeMat = rope.material as THREE.MeshBasicMaterial;
+  for (const m of [bucketMat, ropeMat]) m.transparent = true;
 
   /* ---- THE ARGUING OAKS ------------------------------------------- */
   ctx.standee(commonOakTexture(420, 0), 11.5, 12.9, OAKS.x - 6, OAKS.z - 3);
@@ -163,7 +259,26 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   ctx.standee(milestoneTexture(449), 1.1, 1.5, 45, 66);
   ctx.decal(wornGroundDecal(450), 5, 4, 9.5, 62.5, 0.4, 0.5);
   // the implied field beyond: the hay cart, bales, a stand of wheat
-  ctx.standee(hayCartTexture(451), 5.6, 4.0, 20, 76.5, { rotY: -0.25 });
+  /* THE CART IS A THING NOW (things.ts): the registry moves it and this
+   * builder draws it where the registry says. Its refusals are the
+   * river and the roads' cousins, the steep; the border is the
+   * registry's own. */
+  const cartThing = things.get('hay-cart')!;
+  cartThing.def.refuse = (x, z) => terrain.waterAt(x, z) > 0.04 || terrain.slopeAt(x, z) > 0.5;
+  const cart = ctx.standee(hayCartTexture(451), 5.6, 4.0, cartThing.x, cartThing.z, { rotY: -0.25 });
+  cartThing.mesh = cart;
+  /* AND THE STONE, by the gate it props. The mesh is only drawn when the
+   * stone is on the ground or in the air; in the hand it is the walker's
+   * own drawing of it (`Character.hold`). */
+  const stoneThing = things.get('fist-stone')!;
+  const stone = ctx.standee(fistStoneTexture(452), 0.5, 0.5, stoneThing.x, stoneThing.z);
+  stoneThing.mesh = stone;
+  /* THE RIPPLE: a stone into the river rings once, the crossroads'
+   * own ring drawing spreading and fading on the water. Hidden until a
+   * landing in water asks for it. */
+  const ripple = ctx.decal(ringTexture(), 1, 1, 44, 100, 0, 0.5);
+  ripple.visible = false;
+  const rippleMat = ripple.material as THREE.MeshBasicMaterial;
   // bales stand clear of the cart: beside its wheel they read as spares
   ctx.standee(hayBaleTexture(452), 3.2, 2.4, 33, 81);
   ctx.standee(hayBaleTexture(453), 2.7, 2.0, 37.5, 77);
@@ -198,15 +313,146 @@ export const buildMeadow: RegionBuilder = (ctx) => {
     { m: ctx.standee(swallowTexture(491), 1.4, 0.7, -55, 60), cx: -58, cz: 62, rx: 13, rz: 11, w: 0.55, ph: 2.4 },
   ];
 
+  /* THE SWALLOWS FLINCH when the well is shouted down: for a few
+   *  seconds they loop faster and higher, which is the one visible
+   *  answer the shout gets and the only one a player with the sound
+   *  off will see. */
+  let flinch = 0;
+  let stoneWasFlying = false;
+  const cartRest = cart.rotation.z;
+
   return (dt: number, t: number, _px: number, pz: number) => {
     // the swing: a slow pendulum nobody is sitting in
     swing.rotation.z = Math.sin(t * 0.9) * 0.07 + Math.sin(t * 0.37) * 0.03;
+
+    /* ---- THE CART, where the registry has it ------------------------ */
+    cart.position.set(cartThing.x, ctx.groundY(cartThing.x, cartThing.z), cartThing.z);
+    // a cart going west is the same cart drawn the other way round
+    if (Math.abs(cartThing.vx) > 0.3) cart.scale.x = cartThing.vx < 0 ? -1 : 1;
+    // and a refused shove rocks it, arriving back at exactly rest
+    if (well.cartRock > 0) {
+      well.cartRock = Math.max(0, well.cartRock - dt);
+      const k = well.cartRock / 0.5;
+      cart.rotation.z = cartRest + Math.sin(k * Math.PI * 3) * 0.06 * k;
+      if (well.cartRock === 0) cart.rotation.z = cartRest;
+    }
+
+    /* ---- THE STONE: on the ground, in the air, or nowhere ----------- */
+    const fp = things.flyPos(stoneThing);
+    if (fp) {
+      stone.visible = true;
+      stone.position.set(fp.x, fp.y, fp.z);
+    } else if (stoneThing.state === 'ground') {
+      stone.visible = true;
+      stone.position.set(stoneThing.x, ctx.groundY(stoneThing.x, stoneThing.z), stoneThing.z);
+    } else {
+      stone.visible = false;
+    }
+    // a stone that has just gone down the well is the well's to answer
+    const flying = stoneThing.state === 'flying';
+    if (stoneWasFlying && stoneThing.state === 'gone') {
+      well.answerAt = t + WELL_ANSWER_DELAY * 1.4;
+      well.kind = 'stone';
+    }
+    // and a stone that has just landed in the river rings the water
+    if (stoneWasFlying && stoneThing.state === 'ground'
+      && terrain.waterAt(stoneThing.x, stoneThing.z) > 0.12) {
+      well.ripple = { t: 0, x: stoneThing.x, z: stoneThing.z };
+    }
+    stoneWasFlying = flying;
+    if (well.ripple.t >= 0) {
+      well.ripple.t += dt;
+      const k = well.ripple.t / 1.5;
+      if (k >= 1) {
+        well.ripple.t = -1;
+        ripple.visible = false;
+      } else {
+        ripple.visible = true;
+        const sc = 0.6 + k * 3.2;
+        ripple.scale.set(sc, 1, sc);
+        ripple.position.set(well.ripple.x, ctx.groundY(well.ripple.x, well.ripple.z) + 0.06, well.ripple.z);
+        rippleMat.opacity = 0.5 * (1 - k);
+      }
+    }
+
+    /* ---- THE WELL ANSWERS, on a delay that is too long -------------- */
+    /* The swallows lift at the shout itself — a visible answer at the
+     * instant of the press, for a phone on silent — and lift higher
+     * when the well answers. */
+    if (well.lift) {
+      well.lift = false;
+      flinch = Math.max(flinch, 1.2);
+      // the shout sends the bucket down
+      if (well.bucket === 'rest' || well.bucket === 'rise') {
+        well.bucket = 'drop';
+        well.bt = 0;
+      }
+    }
+    if (well.answerAt === -2) well.answerAt = t + WELL_ANSWER_DELAY;
+    if (well.answerAt >= 0 && t >= well.answerAt) {
+      well.answerAt = -1;
+      say(well.kind === 'stone' ? 'well-plink' : 'well-answer');
+      flinch = Math.max(flinch, 2.2);
+      // and the answer brings it back up — or, for a stone, jiggles
+      // the bucket on its rope, so the plink is seen as well as heard
+      if (well.bucket === 'down' || well.bucket === 'drop') {
+        well.bucket = 'rise';
+        well.bt = 0;
+      } else if (well.bucket === 'rest') {
+        well.bucket = 'bob';
+        well.bt = 0;
+      }
+    }
+    /* THE BUCKET'S FOUR STATES. Down is fast — a bucket let go — and it
+     * fades into the shaft's dark as it passes the ring; up is slow and
+     * swings, because somebody is winding. The rest pose is exactly the
+     * drawing the well had before the bucket was its own. */
+    {
+      const DROP = 2.4;
+      let len = ROPE_REST;
+      let fade = 1;
+      let swing = 0;
+      if (well.bucket === 'drop') {
+        well.bt += dt;
+        const k = Math.min(1, well.bt / 0.55);
+        len = ROPE_REST + (DROP - ROPE_REST) * k * k;
+        fade = 1 - Math.max(0, (k - 0.45) / 0.55);
+        if (k >= 1) well.bucket = 'down';
+      } else if (well.bucket === 'down') {
+        len = DROP;
+        fade = 0;
+      } else if (well.bucket === 'rise') {
+        well.bt += dt;
+        const k = Math.min(1, well.bt / 1.7);
+        const e = 1 - (1 - k) * (1 - k);
+        len = DROP + (ROPE_REST - DROP) * e;
+        fade = Math.min(1, k / 0.45);
+        swing = Math.sin(well.bt * 7.5) * 0.16 * (1 - k);
+        if (k >= 1) well.bucket = 'rest';
+      } else if (well.bucket === 'bob') {
+        well.bt += dt;
+        const k = Math.min(1, well.bt / 1.3);
+        swing = Math.sin(well.bt * 9) * 0.12 * (1 - k);
+        len = ROPE_REST + Math.sin(well.bt * 11) * 0.06 * (1 - k);
+        if (k >= 1) well.bucket = 'rest';
+      }
+      rope.scale.y = len;
+      rope.rotation.z = swing * 0.5;
+      bucket.position.y = wellY + WINDLASS - len;
+      bucket.position.x = WELL.x - 1 + Math.sin(swing) * len * 0.5;
+      bucket.rotation.z = swing;
+      bucketMat.opacity = fade;
+      ropeMat.opacity = Math.max(fade, 0.35 + 0.65 * Math.min(1, ROPE_REST / len));
+    }
+    flinch = Math.max(0, flinch - dt);
+    const quick = 1 + Math.min(1, flinch) * 1.6;
+
     // swallows loop crossing ellipses, always banking into the turn
     for (const s of swallows) {
-      const a = t * s.w + s.ph;
+      const a = t * s.w * quick + s.ph;
       s.m.position.x = s.cx + Math.cos(a) * s.rx;
       s.m.position.z = s.cz + Math.sin(a * 2) * s.rz * 0.5;
-      s.m.position.y = ctx.groundY(s.cx, s.cz) + 4.6 + Math.sin(a * 3.1) * 1.2;
+      s.m.position.y = ctx.groundY(s.cx, s.cz) + 4.6 + Math.sin(a * 3.1) * 1.2 + Math.min(1, flinch) * 2.4;
       s.m.scale.x = Math.sin(a) > 0 ? -Math.abs(s.m.scale.x) : Math.abs(s.m.scale.x);
     }
     /* THE KEEP VISTA HOLDS ONLY AT MEADOW DISTANCE — and until Session 13
@@ -254,21 +500,90 @@ export const MEADOW_POIS: WorldPOI[] = [
     },
   },
   {
-    x: -57, z: 45, radius: 5, label: 'THE OLD WELL',
-    prompt: 'LOOK DOWN THE WELL',
-    note: {
-      title: 'the old well',
-      body: 'you look down. the dark looks back, politely. a long way below, something lands in water, and it takes longer to do it than it should.',
+    /* THE FIRST TOUCH IN THE GAME. It used to be a note — *you look
+     * down. the dark looks back, politely. a long way below, something
+     * lands in water, and it takes longer to do it than it should* —
+     * and the note was a description of a toy. Now it is the toy. The
+     * prompt says SHOUT, not anything about ink: the medium is the
+     * style, never the subject. */
+    /* The reach is the lip, not the yard (five units until Session 15):
+     * a thing in reach beats the thing in the hand, so a stone can only
+     * go down the well from outside the well's own reach — three and a
+     * half units, which is a throw from the path at a walk. */
+    x: -57, z: 45, radius: 3.4, label: 'THE OLD WELL',
+    prompt: 'SHOUT DOWN THE WELL',
+    touch: () => {
+      say('well-shout');
+      well.answerAt = -2; // set by the builder off its own clock, below
+      well.kind = 'shout';
+      well.lift = true;   // the swallows lift at the shout, not only at the answer
+      /* The builder's clock is `t`; the POI has no clock. So the touch
+       * asks for an answer and the builder schedules it on the next
+       * frame: −2 means "due, not yet timed". */
     },
   },
   {
-    x: -95, z: 29, radius: 9, label: 'THE ARGUING OAKS',
-    prompt: 'SIT IN THE SWING',
+    x: -101, z: 25, radius: 6, label: 'THE ARGUING OAKS',
+    prompt: 'TAKE A SIDE',
     note: {
       title: 'the arguing oaks',
       body: 'three oaks, one argument, four hundred years. the subject is who stands furthest from the other two. the swing takes no side; it was hung on the leaning one because the leaning one was losing.',
     },
   },
+  {
+    /* THE FIRST SIT. The swing hangs from the leaning oak at
+     * (−90.6, 29.2); the seat is under it. The oaks' note moved six
+     * units west to make room, and the prompt that used to open the
+     * note now does what it always said. */
+    x: -90.6, z: 30.5, radius: 3.6,
+    prompt: 'SIT IN THE SWING',
+    /* THE SEAT MOVES. The same pendulum the builder swings the plank on
+     * (`swing.rotation.z` below, off the world's elapsed seconds), and
+     * the plank is 2.44 units below the pivot, so the figure rides the
+     * arc instead of sitting rigid beside it. */
+    // the plank hangs three units up the leaning oak (the drawing's
+    // own y, 100 of 128, on a quad hung from 5.6 to 2.6); the hip is
+    // half a unit above the feet, so the lift is the difference
+    sit: {
+      x: -90.6, z: 30.4, lift: 2.6,
+      follow: (t: number) => {
+        const rot = Math.sin(t * 0.9) * 0.07 + Math.sin(t * 0.37) * 0.03;
+        const L = 2.44;
+        return { dx: Math.sin(rot) * L, dy: (1 - Math.cos(rot)) * L, rot };
+      },
+    },
+  },
+  {
+    /* THE CART. A pushable, so the place follows the thing: it is
+     * wherever the registry left it, and the prompt is wherever the
+     * cart is. */
+    get x() { return things.get('hay-cart')!.x; },
+    get z() { return things.get('hay-cart')!.z; },
+    radius: 4.6,
+    prompt: 'PUSH THE CART',
+    touch: (px: number, pz: number) => {
+      const r = things.push('hay-cart', px, pz);
+      if (r === 'moved') say('cart-wheels');
+      else if (r === 'refused') {
+        /* The border, the river or the steep: the cart does not roll
+         * and the wheels do not sound. It rocks on its axle instead,
+         * and the axle knocks — a refusal you can see. */
+        say('cart-stuck');
+        well.cartRock = 0.5;
+      }
+    },
+  } as unknown as WorldPOI,
+  {
+    /* THE STONE, where it lies. Off while it is in the hand or in the
+     * air; App re-enables it on landing. */
+    get x() { return things.get('fist-stone')!.x; },
+    get z() { return things.get('fist-stone')!.z; },
+    get enabled() { return things.get('fist-stone')!.state === 'ground'; },
+    set enabled(_v: boolean) { /* the registry decides */ },
+    radius: 2.6,
+    prompt: 'PICK UP THE STONE',
+    touch: () => { things.pickUp('fist-stone'); },
+  } as unknown as WorldPOI,
   {
     x: 12, z: 63, radius: 6, label: 'THE LONG FENCE',
     prompt: 'LEAN ON THE STILE',

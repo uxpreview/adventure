@@ -51,7 +51,22 @@ import { ROADS, RIVER, SANDBAR } from './layout';
  *    market never opened, every frame, and sets a stall out accordingly.
  */
 
-export type Kind = 'name' | 'fact' | 'route' | 'reason';
+/**
+ * AND FROM SESSION 15, A DOOR (`THE-FUN-PASS.md` §6).
+ *
+ *   a **DOOR**    — you chose, at a moment that mattered, and the world
+ *                   did one of two things because of it
+ *
+ * A door is a piece of knowledge with a name a human could read, the
+ * same as a fact: `door:the-king-restored` is a thing the walker did
+ * and the castle reads it in the present tense every frame, exactly as
+ * Brim reads `reason:brim`. The choice card (`ui/UI.ts`) writes to this
+ * set and to nothing else — there is no second store of choices, no
+ * flag, no "quest state". A door taken is a door taken in every later
+ * save, and **nothing anywhere says which door was right** (§6, rule
+ * three; it is `STORY.md` §8 rule 5 extended to the doors).
+ */
+export type Kind = 'name' | 'fact' | 'route' | 'reason' | 'door';
 
 /** `${Kind}:${slug}` — always readable, always specific. */
 export type Known = string;

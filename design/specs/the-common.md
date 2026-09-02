@@ -184,3 +184,60 @@ gain bodies in the wry voice. Note ids = labels (Save keys off label).
    proximity motion. One-line World.tick change.
 3. **Ambient event ticker in App** keyed by region id — Session 8 will
    generalize it into the score; the Common just needs its lark.
+
+
+---
+
+## Session 15 addendum — the Common as the plateau begins (2026-09-02)
+
+`THE-FUN-PASS` §11 chose THE COMMON AS THE PLATEAU for Session 16: one
+of everything, before the world opens. Session 15 put the first three
+of everything in it, as the proofs of the verbs it built.
+
+- **THE OLD WELL is a touch.** The prompt says SHOUT DOWN THE WELL and
+  the note is gone — it was a description of a toy, and the toy is
+  here now. Shout, and three and a half seconds later (too long, on
+  purpose: `THE-STRANGERS` U7) the well answers, thinner and lower, and
+  a drop reaches the water after it. **And the answer is seen:** the
+  bucket, its own drawing on its own rope since the owner tapped the
+  prompt on a phone and got a sound they could not hear, drops into the
+  shaft at the shout and winds back up, swinging, when the well
+  answers. The walker rocks back at the press and the swallows lift
+  twice. At rest the well is the drawing it was. Repeatable: it is the
+  first entry in the local-rule register (`QUESTS` §8, L1). Its reach
+  shrank from five units to three and a half — the lip, not the yard —
+  so a stone can be thrown into it from the path.
+- **THE HAY CART can be pushed** (L2). PUSH THE CART at its side and it
+  rolls away from you, about five and a half units, slowing; it refuses
+  the river and the steep; **it stops two units inside the Common's
+  edge and stays there**, in every later save (`src/world/things.ts`,
+  `save.things`). It is drawn where the registry says, by this land's
+  own update. **Nell's wait** (`THE-WAITS` §9) and Session 16's opening
+  both stand on it.
+- **A STONE between the stile and the cart** at (18.5, 70.5), the size
+  of a fist — outside every other place's reach, because a thing in
+  reach beats the thing in the hand and a carriable that lives inside a
+  note's reach cannot be thrown from where you pick it up. PICK
+  UP THE STONE and it is in the walker's hand, drawn there; THROW it
+  (or PUT IT DOWN, standing still) and it goes underarm, a stride to
+  six units, and lands with a knock on the page or a plop in the
+  river. Down the well it is gone, the well answers later still, and
+  **at first light it is back by the gate**: `the-common-morning`, the
+  Common's own scheduled event (`events.ts`), puts back anything the
+  walker lost. Nothing says who.
+- **THE SWING is a sit.** SIT IN THE SWING has been the oaks' prompt
+  since Session 2 and it opened a note; it sits you in the swing now.
+  The oaks' note moved six units west, to (−101, 25), under TAKE A
+  SIDE.
+
+**What moved, measured.** None of the four is inside a protected
+framing at rest: the cart at (20, 76.5) is sixty-five units east of THE
+SHOT and behind it; the stone is six units from the cart; the well's
+drawing did not move and its label did not either. `diff-sheets`
+reports the Common's seven framings in its own log entry (SESSIONS.md,
+Session 15). The one deliberate change in the WRITING pass is THE
+ARGUING OAKS' label, re-placed six units west.
+
+**Not this session's:** the bull, the four lures, the goat, Nell's
+straightening, the cart getting away (Session 16). The Common's
+districts (16).

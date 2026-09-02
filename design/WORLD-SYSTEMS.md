@@ -492,6 +492,17 @@ up for it:
   demoted from spine to texture: a cart with a broken wheel, someone
   lost, something to carry two lands east. Authored, never generated,
   and never the reason to keep playing — the reason is what you find out.
+- **And a DOOR** (Session 15, `THE-FUN-PASS` §6): a fifth kind of
+  knowledge, `door:the-king-restored`, written by the choice card and
+  read back by the land every frame the way Brim reads `reason:brim`.
+  A choice is a thing the walker knows they did. There is no second
+  store of choices anywhere; the ending reads the doors from here.
+- **And the things the walker has moved** are not knowledge and not an
+  inventory: `src/world/things.ts` keeps where a pushed cart and a
+  thrown stone are, with one slot for what is in the hand and no list.
+  Session 15 wrote the refusals into the file rather than the docs: a
+  thing cannot be given a position outside its own land by any path in
+  it, because nobody crosses a border but the walker.
 
 ## 7. Time and weather — the world changes without you
 
@@ -524,6 +535,27 @@ Four things a later session must not undo:*
 **Rain** is nearly gift-wrapped: the ink library's smudge pass is
 already documented as weather ("her smear as weather"), so rain in this
 world runs the drawing.
+
+### The scheduled-event clock — BUILT, Session 15
+
+`daylight.ts` had one clock and everything read it, and every routine in
+the game was rolled by hand out of `clock.hour` and a pair of
+smoothsteps — Brim's lamps, the shelter's light, Amos's night walk,
+Joan's day — with none of them registered anywhere, so nothing could
+answer *what is happening right now* and the 8:15 was the only event
+in the world. `src/world/events.ts` is the plumbing `THE-FUN-PASS` §9
+asks for: a land registers *at this hour, in this place, this happens*
+in one line, reads it back as a number (`events.progress(id)`, −1 or
+0..1) that is a pure function of the hour, and anything can ask whether
+it is on (`happening.ids`, module scope, the same shape as `Eight15.ts`'s
+`platform`). Three properties are the design: **it fires whether or not
+the walker is there** (a land draws its event off the number, so an
+unbuilt land is still keeping its hours); **it is a crossing, not a
+window** (`onStart`/`onEnd` fire once, and a jump of more than an hour
+fires nothing); and **anything can ask**. The first three events are the
+drove out and home (`wilds.ts`) and the Common's morning (`meadow.ts`).
+Session 17 puts one in every land and moves the hand-rolled routines
+onto it.
 
 ## 8. Mobile and desktop are both first-class
 

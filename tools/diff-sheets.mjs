@@ -110,7 +110,15 @@ const SETTLE = 12;
  * session may not regress. THE SHOT of each land is in here, and so is
  * every framing a previous critique named by name.
  * ================================================================== */
-const FRAMINGS = [
+/** `FRAMING=barbican,curtain-wall node tools/diff-sheets.mjs` — a subset,
+ *  for chasing one regression. Never for a gate. And `SAVE=1` writes
+ *  both sides and a mask of what moved into `.diff/frames/`, because
+ *  Session 15 got a two-per-cent regression on the avenue and had no
+ *  picture of it: a diff that reports a number and keeps no evidence
+ *  is a diff you have to run twice. */
+const SUBSET = (process.env.FRAMING ?? '').split(',').filter(Boolean);
+const SAVE = !!process.env.SAVE;
+const FRAMINGS_ALL = [
   // THE COMMON and the first minute (critique-art-1)
   ['common-wide', -45, 84],
   ['common-THE-SHOT', -45, 66],
@@ -140,6 +148,7 @@ const FRAMINGS = [
   ['the-point', -238, -70],
   ['sandbar', -292, -20],
 ];
+const FRAMINGS = SUBSET.length ? FRAMINGS_ALL.filter((f) => SUBSET.includes(f[0])) : FRAMINGS_ALL;
 /** Every protected framing is judged at two hours since Session 6. */
 const HOURS = [12, 19.6];
 
@@ -301,7 +310,7 @@ async function shootSide(port, vp) {
 const differ = await browser.newPage();
 async function diff(a, b) {
   return differ.evaluate(
-    async ([da, db, tol]) => {
+    async ([da, db, tol, save]) => {
       const load = (d) =>
         new Promise((res) => {
           const i = new Image();
@@ -340,14 +349,39 @@ async function diff(a, b) {
           if (y > maxy) maxy = y;
         }
       }
+      let mask = null;
+      if (save && over > 0) {
+        const c = document.createElement('canvas');
+        c.width = ia.width;
+        c.height = ia.height;
+        const x = c.getContext('2d');
+        const out = x.createImageData(c.width, c.height);
+        for (let i = 0; i < n; i++) {
+          const d = Math.max(
+            Math.abs(A[i * 4] - B[i * 4]),
+            Math.abs(A[i * 4 + 1] - B[i * 4 + 1]),
+            Math.abs(A[i * 4 + 2] - B[i * 4 + 2])
+          );
+          const hot = d > tol;
+          // the head frame, greyed, with what moved in full red
+          const g = (B[i * 4] + B[i * 4 + 1] + B[i * 4 + 2]) / 3;
+          out.data[i * 4] = hot ? 220 : 128 + g * 0.5;
+          out.data[i * 4 + 1] = hot ? 30 : 128 + g * 0.5;
+          out.data[i * 4 + 2] = hot ? 30 : 128 + g * 0.5;
+          out.data[i * 4 + 3] = 255;
+        }
+        x.putImageData(out, 0, 0);
+        mask = c.toDataURL('image/png').split(',')[1];
+      }
       return {
         share: over / n,
         over,
         max,
         box: maxx < 0 ? null : [minx, miny, maxx - minx + 1, maxy - miny + 1],
+        mask,
       };
     },
-    [a, b, tol()]
+    [a, b, tol(), SAVE]
   );
 }
 const tol = () => TOL;
@@ -362,8 +396,20 @@ for (const vp of VIEWPORTS) {
   const head = await shootSide(4192, vp);
   if (!base.stepped || !head.stepped) loose = true;
   for (const key of Object.keys(head.shots)) {
-    page.push({ vp: vp.name, key, ...(await diff(base.bare[key], head.bare[key])) });
-    full.push({ vp: vp.name, key, ...(await diff(base.shots[key], head.shots[key])) });
+    const p = await diff(base.bare[key], head.bare[key]);
+    const f = await diff(base.shots[key], head.shots[key]);
+    if (SAVE && (p.over > 0 || f.over > 0)) {
+      const dir = `${WORK}/frames/${vp.name}`;
+      mkdirSync(dir, { recursive: true });
+      const { writeFileSync } = await import('fs');
+      writeFileSync(`${dir}/${key}-base.png`, Buffer.from(base.bare[key], 'base64'));
+      writeFileSync(`${dir}/${key}-head.png`, Buffer.from(head.bare[key], 'base64'));
+      if (p.mask) writeFileSync(`${dir}/${key}-moved.png`, Buffer.from(p.mask, 'base64'));
+    }
+    delete p.mask;
+    delete f.mask;
+    page.push({ vp: vp.name, key, ...p });
+    full.push({ vp: vp.name, key, ...f });
   }
 }
 
@@ -403,5 +449,5 @@ console.log(
 
 await browser.close();
 for (const s of servers) s.close();
-if (!process.env.KEEP && existsSync(WORK)) rmSync(WORK, { recursive: true, force: true });
+if (!process.env.KEEP && !SAVE && existsSync(WORK)) rmSync(WORK, { recursive: true, force: true });
 process.exit(fails ? 1 : 0);

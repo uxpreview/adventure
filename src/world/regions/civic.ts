@@ -41,6 +41,7 @@ import {
   greyweatherGateTexture, ridgeWallTexture, tallBannerTexture,
   toppledStatueTexture, gnarledHawthornTexture, farPinesTexture, rookTexture,
   screeDecal, margetStallTexture, margetTexture, marketBoardTexture,
+  standingKingTexture, barePoleTexture, dyeStainDecal,
 } from '../textures-oldworld';
 import { clock } from '../daylight';
 import { knowledge } from '../knowledge';
@@ -49,6 +50,7 @@ import { knowledge } from '../knowledge';
  * at a land's stop, that land's own person is the one standing on it. */
 import { platform } from '../../engine/Eight15';
 import type { RegionBuilder, WorldPOI } from './index';
+import type { StandeeField } from '../../engine/StandeeField';
 
 /* ------------------------------------------------------------------ *
  * THE LAMPS COME ON (Session 6, WORLD-SYSTEMS §7).
@@ -700,8 +702,19 @@ export const buildCastle: RegionBuilder = (ctx) => {
 
   /* -- THE KEEP: on the plateau, where the high seat belongs --------- */
   const keep = ctx.standee(greyweatherKeepTexture(980), 34, 17, -45, -250);
-  ctx.standee(tallBannerTexture(981), 2.8, 7.4, -56, -240);
-  ctx.standee(tallBannerTexture(982), 2.8, 7.4, -34, -239.5);
+  /* THE KEEP'S TWO BANNERS, and the poles they come down to. Session
+   * 15: every banner in the land has a bare pole under it, because the
+   * second door at this castle takes the banners down (`THE-FUN-PASS`
+   * §6) and a pole with nothing on it is what relieved of duty looks
+   * like drawn. Both drawings stand on the same spot; one is visible. */
+  const keepBanners = [
+    ctx.standee(tallBannerTexture(981), 2.8, 7.4, -56, -240),
+    ctx.standee(tallBannerTexture(982), 2.8, 7.4, -34, -239.5),
+  ];
+  const keepPoles = [
+    ctx.standee(barePoleTexture(1010), 2.8, 7.4, -56, -240),
+    ctx.standee(barePoleTexture(1011), 2.8, 7.4, -34, -239.5),
+  ];
   // the bailey's furniture: the castle well, and stone that never
   // got built into anything
   ctx.standee(wellTexture(983), 3.4, 4.3, -32, -228);
@@ -713,11 +726,25 @@ export const buildCastle: RegionBuilder = (ctx) => {
     const z = -172 - i * 6.2 + (r() - 0.5) * 1.6;
     avenue.push([-45 - hx, z], [-45 + hx, z + 0.8]);
   });
+  const avenueBanners: StandeeField[] = [];
+  const avenuePoles: StandeeField[] = [];
   for (let v = 0; v < 2; v++) {
     const pts = avenue.filter((_, k) => k % 2 === v);
     const f = ctx.field(tallBannerTexture(984 + v), pts.length,
       { w: 2.3, h: 6.1, wind: { amp: 0.14, freq: 1.5 } });
-    pts.forEach(([x, z], i) => f.set(i, x, z, 0.9 + r() * 0.2, 0, false));
+    const scales = pts.map(() => 0.9 + r() * 0.2);
+    pts.forEach(([x, z], i) => f.set(i, x, z, scales[i], 0, false));
+    avenueBanners.push(f);
+    /* And the same avenue with the cloth off: no wind, nothing to take
+     * it. THE POLES TAKE THE BANNERS' OWN SCALES AND DRAW NOTHING FROM
+     * `r`: this land's random stream is shared by everything built
+     * after it, and the first version of this line drew ten more
+     * numbers from it — which moved every boulder in the bailey and
+     * re-sized the right-hand banners in four protected framings.
+     * `diff-sheets` found it at 2.2%; nothing else would have. */
+    const bare = ctx.field(barePoleTexture(1012 + v), pts.length, { w: 2.3, h: 6.1 });
+    pts.forEach(([x, z], i) => bare.set(i, x, z, scales[i], 0, false));
+    avenuePoles.push(bare);
   }
   // fallen merlon stones at the verge, and the approach's wear
   const rocks = ctx.field(boulderTexture(920), 15, { w: 2.6, h: 1.8 });
@@ -741,7 +768,13 @@ export const buildCastle: RegionBuilder = (ctx) => {
   // anything, stacked where somebody meant to come back for it
   ctx.standee(crateBarrelTexture(1004), 3.6, 2.5, -66, -232, { rotY: 0.4 });
   ctx.standee(crateBarrelTexture(1005), 3.1, 2.2, -20, -222, { rotY: -0.5 });
-  ctx.standee(toppledStatueTexture(990), 7, 4, -56, -222, { rotY: 0.15 });
+  /* THE TOPPLED KING — and, since Session 15, THE KING BACK ON HIS
+   * PLINTH, which is the second door (`THE-FUN-PASS` §6). Two drawings
+   * on one spot, and which one you see is not a flag: it is whether the
+   * walker took that door, read from knowledge every frame the way Brim
+   * reads its market. Both are built so the swap costs nothing. */
+  const kingDown = ctx.standee(toppledStatueTexture(990), 7, 4, -56, -222, { rotY: 0.15 });
+  const kingUp = ctx.standee(standingKingTexture(991), 7, 8, -56, -222, { rotY: 0.15 });
 
   /* -- the moat pool: at the ridge's west foot, reflecting it -------- */
   const reedSpots: [number, number, number][] = [
@@ -751,6 +784,15 @@ export const buildCastle: RegionBuilder = (ctx) => {
   reedSpots.forEach(([x, z, s], i) =>
     ctx.standee(reedsTexture(992 + (i % 2)), 3.4 * s, 3.4 * s, x, z));
   ctx.standee(gnarledHawthornTexture(994), 9, 9, -90, -206);
+  /* THIS WEEK'S RED. The moat pool is Wick's dye vat (`THE-WAITS` §1,
+   * U5), and the water carries the last banner he re-dyed. It clears
+   * when he is relieved — the same door — and stays clear. */
+  /* At the pool's WEST end: at (−101, −215) its east edge showed as a
+   * hundred-pixel sliver at the left edge of `avenue-foot` on desktop,
+   * which `diff-sheets` caught at 0.07%; four units west it was still
+   * a sixty-pixel sliver. Seven units west and six north, and smaller,
+   * it is in the pool's own middle and in no protected frame. */
+  const dye = ctx.decal(dyeStainDecal(1013), 12, 9, -108, -221, 0.4, 0.7);
 
   /* -- the far layer: pale pines along the plateau's northern rim ---- */
   ctx.standee(farPinesTexture(995), 52, 13, -78, -272);
@@ -778,9 +820,31 @@ export const buildCastle: RegionBuilder = (ctx) => {
   const gateMat = gate.material as THREE.MeshBasicMaterial;
   const keepMat = keep.material as THREE.MeshBasicMaterial;
 
+  /** The door, last frame, so the swap is done once and not per tick. */
+  let shownRestored: boolean | null = null;
+
   return (dt: number, t: number, px: number, pz: number) => {
     // the fires at the gate, on the same clock as Brim's lamps
     lightUp(braziers, clock.lamp);
+
+    /* ---- THE SECOND DOOR, READ BACK ----------------------------------
+     * `door:the-king-restored`: he is on his plinth, the banners are
+     * down, the avenue is quiet (App stops firing the snap), and the
+     * pool has cleared. `door:the-king-left`: nothing changes, which is
+     * also a choice. Nothing here says which was right. */
+    const restored = knowledge.has('door:the-king-restored');
+    if (restored !== shownRestored) {
+      shownRestored = restored;
+      kingDown.visible = !restored;
+      kingUp.visible = restored;
+      for (const f of avenueBanners) f.mesh.visible = !restored;
+      for (const f of avenuePoles) f.mesh.visible = restored;
+      for (const m of keepBanners) m.visible = !restored;
+      for (const m of keepPoles) m.visible = restored;
+      dye.visible = !restored;
+      // the parliament has nowhere to sit: it joins the loop for good
+      if (restored) for (const p of perched) p.up = true;
+    }
 
     // the barbican's arch fade; the curtain wall lets go once the walker
     // is through it (the camera must never shoot the bailey through the
@@ -822,7 +886,7 @@ export const buildCastle: RegionBuilder = (ctx) => {
         p.m.position.z = -242 + Math.sin(a * 2) * 9 * 0.5;
         p.m.position.y = ridgeTop + 14 + Math.sin(a * 2.6) * 2;
         p.m.scale.x = Math.sin(a) > 0 ? -Math.abs(p.m.scale.x) : Math.abs(p.m.scale.x);
-        if (!near && Math.hypot(px + 56, pz + 222) > 26) {
+        if (!near && !restored && Math.hypot(px + 56, pz + 222) > 26) {
           p.up = false;
           const hx = p.ph > 2 ? -54 : -57.5;
           const hz = p.ph > 2 ? -222.4 : -221.6;
@@ -852,19 +916,41 @@ export const CASTLE_POIS: WorldPOI[] = [
   },
   {
     x: -56, z: -222, radius: 7, label: 'THE TOPPLED KING',
-    prompt: 'READ THE PLINTH',
+    prompt: () => (
+      knowledge.has('door:the-king-restored') || knowledge.has('door:the-king-left')
+        ? 'READ THE PLINTH'
+        : 'SET YOUR SHOULDER TO HIM'
+    ),
+    /* THE FIRST CHOICE CARD IN THE GAME (`THE-FUN-PASS` §6, Session
+     * 15). The plinth's note is on the card, and under it are the two
+     * doors: put him back, or leave him. Both are visible before either
+     * is taken; either writes one `door:` id into knowledge and the
+     * castle reads it back every frame; and nothing, here or anywhere,
+     * says which was right. After a door the card is never offered
+     * again and the plinth is a note like any other, reading a little
+     * differently depending on what you did. */
+    choice: {
+      body: 'a king fell over and was left where he landed, sceptre a body\'s length away. the plinth says he was beloved of graweder, which is this place with the old spelling still on it. he is heavier than he looks. the rooks say he is comfortable.',
+      options: [
+        { label: 'PUT HIM BACK ON HIS PLINTH', door: 'door:the-king-restored' },
+        { label: 'LEAVE HIM WHERE HE LANDED', door: 'door:the-king-left' },
+      ],
+      learns: ['fact:the-old-name'],
+    },
     note: {
       title: 'the toppled king',
       /* THE NAME ON THE PLINTH (`THE-STRANGERS` S8, beat two), and it
-       * cost this session one clause and one id and no geometry at all
-       * in a land that holds a verdict.
+       * cost one clause and one id and no geometry at all in a land
+       * that holds a verdict.
        *
        * The plinth says he was beloved, and above that it says where he
        * was beloved OF, and it is spelled the old way, which is the way
        * it is said. Four hundred and eighty units south a man has been
        * saying it wrong for thirty years and has never once been told.
        * Nothing here mentions him and nothing there mentions this. */
-      body: 'a king fell over and was left where he landed, sceptre a body\'s length away. the plinth says he was beloved of graweder, which is this place with the old spelling still on it. the rooks say he is comfortable.',
+      body: () => (knowledge.has('door:the-king-restored')
+        ? 'a king is on his plinth, sceptre in hand, with a crooked line across the stone where he was mended. the plinth says he was beloved of graweder, which is this place with the old spelling still on it. the rooks have moved to the wall and are not speaking to you.'
+        : 'a king fell over and was left where he landed, sceptre a body\'s length away. the plinth says he was beloved of graweder, which is this place with the old spelling still on it. the rooks say he is comfortable.'),
       learns: ['fact:the-old-name'],
     },
   },

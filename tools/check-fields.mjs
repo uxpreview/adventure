@@ -45,7 +45,12 @@ const CASES = [
   ['CASTLE GREYWEATHER', -45, -214, 0, -1, 6],
   ['LONGSHORE', -228, 30, 0, -1, 8],
   ['THE WIDE BLUE', -258, 84, -1, 0, 8],
-  ['THE HARROW DOWNS', 101, 116, 0, -1, 8],
+  /* SESSION 15: the flock is on the clock. At noon it is in the west
+   * slope, north of the drove's mouth, and the lane holds only the two
+   * that never move; so the walk starts at the mouth and goes north
+   * into the field, which is where the animals are at the hour this
+   * file pins. */
+  ['THE HARROW DOWNS', 101, 82, 0, -1, 8],
   ['THE PENWOOD', 132, -206, 0, -1, 8],
   /* SESSION 11. Both new lands carry a field that MOVES every frame —
    * the grit drifting up the channel, and the Bleach Flats' tumbleweeds,

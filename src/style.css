@@ -312,6 +312,37 @@ body {
   cursor: pointer;
 }
 
+/* ---------- the choice card ---------- */
+/* The note card, with doors on it. A little more upright than the note
+   (a decision is not a scrap you found), the same paper, the same pen. */
+.choice-card {
+  transform: rotate(0.3deg);
+}
+.choice-options {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: clamp(6px, 1.8vw, 10px);
+  margin-top: clamp(4px, 1.4vw, 8px);
+}
+.choice-btn {
+  background: rgba(245, 242, 234, 0.7);
+  border: 1.5px solid rgba(35, 38, 51, 0.5);
+  border-radius: 3px 12px 4px 10px / 9px 4px 10px 5px;
+  padding: 8px 14px 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.choice-btn:hover {
+  transform: rotate(-0.4deg) scale(1.015);
+  border-color: var(--ink);
+}
+.choice-btn canvas {
+  max-width: 100%;
+  height: auto;
+}
+
 /* ---------- map ---------- */
 .map-veil {
   position: absolute;
