@@ -683,6 +683,8 @@ export class App {
       return;
     }
     if (def.touch) {
+      // seen as well as heard: the figure rocks back on every touch
+      this.char.recoil();
       def.touch(this.char.pos.x, this.char.pos.z);
       return;
     }

@@ -186,6 +186,22 @@ export class Character {
     return this.sitting;
   }
 
+  /**
+   * A TOUCH IS SEEN AS WELL AS HEARD. The owner tapped SHOUT DOWN THE
+   * WELL on a phone and nothing happened — the shout was a sound and
+   * the phone was on silent, and the world's answer was three and a
+   * half seconds away. So every touch rocks the figure back for a
+   * third of a second, the way a body does when it shouts, shoves or
+   * stoops: a visible answer at the instant of the press, on the one
+   * thing in the frame that is never cropped. It ends at exactly zero,
+   * so a standing walker is still the shipped composition.
+   */
+  private touchT = 0;
+  private static TOUCH_S = 0.36;
+  recoil() {
+    this.touchT = Character.TOUCH_S;
+  }
+
   setWobble(k: number) {
     this.wobble = Math.max(0, k);
     if (k === 0) {
@@ -544,5 +560,13 @@ export class Character {
     // a quiet breath
     const s = 1 + Math.sin(this.idleT * 1.8) * 0.008;
     this.sprite.scale.y = s;
+    // and the recoil of a touch, which ARRIVES at zero rather than
+    // approaching it (see `recoil`)
+    if (this.touchT > 0) {
+      this.touchT = Math.max(0, this.touchT - dt);
+      const k = this.touchT / Character.TOUCH_S;
+      this.sprite.rotation.z = -0.2 * Math.sin(Math.PI * k) * (this.sprite.scale.x < 0 ? -1 : 1);
+      if (this.touchT === 0) this.sprite.rotation.z = 0;
+    }
   }
 }

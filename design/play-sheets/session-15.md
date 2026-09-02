@@ -22,8 +22,10 @@ You are at the crossroads. Walk north-west to the well — thirty
 seconds. The prompt used to say LOOK DOWN THE WELL; it says **SHOUT
 DOWN THE WELL**.
 
-**Press it.** Then wait. It is meant to take too long. Watch the
-swallows while you wait.
+**Press it.** The walker rocks back and the two swallows over the field
+lift. Then wait. It is meant to take too long. **The answer is a sound
+first** — on a phone, take it off silent — and the swallows lift again
+when it comes.
 
 *Ask:* did you wait, or did you walk off? Was the answer worth the
 wait? Press it again — it is meant to be repeatable. Is it?

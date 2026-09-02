@@ -46,7 +46,7 @@ function say(name: string) {
 const WELL_ANSWER_DELAY = 3.4;
 /** The shout, and when the answer is due. Module scope, because the
  *  touch lives on the POI list and the answer lives in the builder. */
-const well = { answerAt: -1, kind: 'shout' as 'shout' | 'stone' };
+const well = { answerAt: -1, kind: 'shout' as 'shout' | 'stone', lift: false };
 
 things.register({
   id: 'hay-cart', kind: 'pushable', land: 'meadow', name: 'THE CART',
@@ -312,6 +312,13 @@ export const buildMeadow: RegionBuilder = (ctx) => {
     stoneWasFlying = flying;
 
     /* ---- THE WELL ANSWERS, on a delay that is too long -------------- */
+    /* The swallows lift at the shout itself — a visible answer at the
+     * instant of the press, for a phone on silent — and lift higher
+     * when the well answers. */
+    if (well.lift) {
+      well.lift = false;
+      flinch = Math.max(flinch, 1.2);
+    }
     if (well.answerAt === -2) well.answerAt = t + WELL_ANSWER_DELAY;
     if (well.answerAt >= 0 && t >= well.answerAt) {
       well.answerAt = -1;
@@ -390,6 +397,7 @@ export const MEADOW_POIS: WorldPOI[] = [
       say('well-shout');
       well.answerAt = -2; // set by the builder off its own clock, below
       well.kind = 'shout';
+      well.lift = true;   // the swallows lift at the shout, not only at the answer
       /* The builder's clock is `t`; the POI has no clock. So the touch
        * asks for an answer and the builder schedules it on the next
        * frame: −2 means "due, not yet timed". */

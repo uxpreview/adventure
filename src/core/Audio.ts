@@ -1358,9 +1358,13 @@ export class Audio {
          * shape falling away into the shaft: the voice, and the shaft
          * closing over it. Nothing comes back — that is `well-answer`,
          * on a delay that is too long, and the delay is App's. */
+        /* LOUDER THAN A LARK, because it is the walker's own voice and
+         * the one sound in the game they asked for: the owner tapped it
+         * on a phone speaker and heard nothing. Twice the level of any
+         * ambient voice, still under the note's chime. */
         const j = 0.94 + Math.random() * 0.12;
-        this.glide(520 * j, 300 * j, 0, 0.32, 0.026, 'triangle');
-        this.surge(0.03, 0.55, 1400 * j, 260, 0.010, 0.02, 'bandpass');
+        this.glide(520 * j, 300 * j, 0, 0.32, 0.052, 'triangle');
+        this.surge(0.03, 0.55, 1400 * j, 260, 0.020, 0.02, 'bandpass');
         break;
       }
 
@@ -1370,11 +1374,11 @@ export class Audio {
          * it should — a drop reaching the water. It is `well-plink`
          * with the voice in front of it. */
         const j = 0.96 + Math.random() * 0.08;
-        this.glide(330 * j, 240 * j, 0, 0.42, 0.0075, 'triangle');
-        this.surge(0.05, 0.9, 700, 220, 0.0045, 0.02, 'lowpass');
-        this.knock(140, 0.016, 1.15);
-        this.tone(880, 1.19, 0.09, 0.016);
-        this.tone(659, 1.27, 0.4, 0.02);
+        this.glide(330 * j, 240 * j, 0, 0.42, 0.015, 'triangle');
+        this.surge(0.05, 0.9, 700, 220, 0.009, 0.02, 'lowpass');
+        this.knock(140, 0.024, 1.15);
+        this.tone(880, 1.19, 0.09, 0.024);
+        this.tone(659, 1.27, 0.4, 0.03);
         break;
       }
 
