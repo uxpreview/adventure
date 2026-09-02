@@ -57,7 +57,9 @@ owner's reasoning into the law rather than paraphrase it.
 - The five law amendments in §2: **confirmed.**
 - The new cast in §10: **keep all of it.**
 - The opening: the three options first proposed were not enough. *"Think
-  of other ideas. Look at how other leading games start."* §11 does.
+  of other ideas. Look at how other leading games start."* §11 does,
+  and the owner chose from the result: **THE BULL + THE FOUR LURES +
+  THE COMMON AS THE PLATEAU.**
 - Sequencing: **the fun pass comes first, the story rewrite comes after
   it**, on top of what turns out to be fun.
 
@@ -466,9 +468,12 @@ and it is the exact failure the owner named.
 | 9 | **THE GOAT** | H, then the rule | the Penwood's goat is on the Common. It follows you. It is the first co-walker, and it stops at the border. A joke first, the rule later |
 | 10 | **THE COMMON AS THE PLATEAU** | B | not a beat, a structure: the Common holds one of everything. A thing to push, a thing to ring, a thing to sit on, an animal, one choice card, one stranger, and a border somebody will not cross. Everything the game does happens once in the first land |
 
-### The recommendation
+### The decision — owner, 2026-09-01
 
-**5 + 2 + 10, with 1 as the first toy and 9 as the second co-walker.**
+**THE BULL + THE FOUR LURES + THE COMMON AS THE PLATEAU** (5 + 2 + 10),
+with the cart (1) as the first toy and the goat (9) as the second
+co-walker. Chosen by the owner from the ten; it is Session 16's opening
+and it is not re-opened without them.
 
 - **THE BULL** teaches the run and the fear in the first ten seconds
   and is the thing a player tells somebody about.

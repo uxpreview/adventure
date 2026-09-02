@@ -49,9 +49,10 @@ overreached the way the count law did.
 - **The seventh tier is ratified** (`QUESTS` §8).
 - **The cast is wider and all of it is kept** (§10): Vikings, aliens,
   surfers, a barista, a design studio, monsters, animals.
-- **The opening is redesigned from how leading games start** (§11):
-  THE BULL, THE FOUR LURES, THE COMMON AS THE PLATEAU, with the cart as
-  the first toy and the goat as the second co-walker.
+- **The opening is redesigned from how leading games start** (§11) and
+  **the owner chose it**: THE BULL, THE FOUR LURES, THE COMMON AS THE
+  PLATEAU, with the cart as the first toy and the goat as the second
+  co-walker. It is Session 16's and is not re-opened without them.
 - **The story rewrite waits until the world is fun** (Session 22).
 - **A third owner's gate, THE PLAY GATE**, and every session ships a
   play sheet.
