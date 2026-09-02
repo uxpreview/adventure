@@ -195,7 +195,8 @@ regress from 2026-09-01 and was not re-opened.
   the water. Unheard.
 - **The feel gate handed over**, with one new state: sitting.
 - **THE PLAY GATE HANDED OVER AND NOT RUN.**
-  `design/play-sheets/session-15.md`: wake, shout down the well, throw
+  `design/play-sheets/session-15.md`, with the build at
+  https://adventure-git-claude-session-15-frx4ov-ryankm.vercel.app (PR #12): wake, shout down the well, throw
   the stone, push the cart to the border, sit in the swing, choose at
   the king, be in the Downs at dawn. Ten minutes, with the questions
   the session could not answer.

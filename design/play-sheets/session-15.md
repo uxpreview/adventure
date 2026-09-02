@@ -4,8 +4,8 @@
 this repository can say whether any of this is fun, and this session
 did not run the gate. It hands you the script.*
 
-**The build:** the branch `claude/session-15-frx4ov` — the pull request's
-preview deployment, or `npm run dev` on the branch. Once merged it is
+**The build:** https://adventure-git-claude-session-15-frx4ov-ryankm.vercel.app
+(the branch's preview, PR #12). Once merged it is
 [adventure.ryankm.com](https://adventure.ryankm.com). **Play on a fresh
 page** (SET OUT, not KEEP WALKING): a save from Session 14 works, but
 the cart, the stone and the king's card are all first-time things.
