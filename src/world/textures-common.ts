@@ -314,10 +314,16 @@ export function commonWellTexture(seed: number): THREE.CanvasTexture {
       stroke(ctx, [[34 + i * 15, 82 - i * 3], [96, 38 + i * 10]], r, { width: 1.1, alpha: 0.35, passes: 1 });
       stroke(ctx, [[158 - i * 15, 82 - i * 3], [96, 38 + i * 10]], r, { width: 1.1, alpha: 0.35, passes: 1 });
     }
-    // rope + bucket, mid-drop
-    line(ctx, 96, 101, 96, 138, r, { width: 1.3, alpha: 0.8, passes: 1 });
-    poly(ctx, [[88, 138], [86, 156], [106, 156], [104, 138]], r, { width: 1.8, alpha: 0.85 });
-    line(ctx, 88, 138, 104, 138, r, { width: 1.4, alpha: 0.7 });
+    // the rope and the bucket are their own drawings since Session 15
+    // (`wellRopeTexture`, `wellBucketTexture`): the bucket goes down the
+    // shaft when the well is shouted at, and comes back up when it
+    // answers, and a thing that moves cannot be drawn into a thing that
+    // does not. The three strokes are still DRAWN, at zero alpha, so
+    // the seeded stream that draws the trough after them is unchanged
+    // and the well is otherwise the drawing that holds its verdict.
+    line(ctx, 96, 101, 96, 138, r, { width: 1.3, alpha: 0, passes: 1 });
+    poly(ctx, [[88, 138], [86, 156], [106, 156], [104, 138]], r, { width: 1.8, alpha: 0 });
+    line(ctx, 88, 138, 104, 138, r, { width: 1.4, alpha: 0 });
     // the dark down the shaft
     hatch(ctx, 62, 160, 68, 12, 0.1, 3.4, r, { alpha: 0.4 });
     // stone trough leaning at the side
@@ -328,6 +334,24 @@ export function commonWellTexture(seed: number): THREE.CanvasTexture {
 }
 
 /** The crossroads signpost: four arms, four hand-lettered truths. */
+/** THE WELL'S ROPE, on its own: a wobbly vertical, stretched by the
+ *  mesh to whatever length is paid out. */
+export function wellRopeTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(16, 64, seed, (ctx, r) => {
+    line(ctx, 8, 0, 8, 64, r, { width: 1.3, alpha: 0.8, passes: 1, jitter: 0.6 });
+  });
+}
+
+/** THE WELL'S BUCKET, the same drawing that used to sit on the well's
+ *  own canvas, so at rest the well looks as it did. */
+export function wellBucketTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(48, 48, seed, (ctx, r) => {
+    poly(ctx, [[16, 4], [14, 40], [34, 40], [32, 4]], r, { width: 1.8, alpha: 0.85 });
+    line(ctx, 16, 4, 32, 4, r, { width: 1.4, alpha: 0.7 });
+    fillPoly(ctx, [[16, 4], [14, 40], [34, 40], [32, 4]], WASH.castle, 0.3);
+  });
+}
+
 export function crossroadsSignTexture(seed: number): THREE.CanvasTexture {
   return makeTexture(192, 224, seed, (ctx, r) => {
     line(ctx, 96, 216, 96, 20, r, { width: 3.4, alpha: 0.9 });

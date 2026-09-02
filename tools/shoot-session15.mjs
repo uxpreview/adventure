@@ -24,6 +24,8 @@ const SHOTS = [
   /* ---- THE COMMON: the well, the cart, the stone ------------------ */
   ['01-well-the-prompt',          -56, 50,  { chrome: true }],
   ['02-well-shouted',             -56, 50,  { do: 'shout' }],
+  ['02b-well-bucket-dropping',    -56.5, 49, { do: 'shoutDrop', chrome: true }],
+  ['02c-well-bucket-rising',      -56.5, 49, { do: 'shoutRise', chrome: true }],
   ['03-cart-at-rest',             20, 84,   { chrome: true }],
   ['04-cart-pushed-east',         44, 84,   { do: 'pushCartEast' }],
   ['05-cart-at-the-border',       52, 84,   { do: 'pushCartToBorder' }],
@@ -70,6 +72,8 @@ const browser = await chromium.launch({ executablePath: CHROMIUM });
 /** The little scripts a framing can ask for, run in the page. */
 const DO = {
   shout: `I.goto(-56, 50); I.step(1/60, 30); I.press(); I.step(1/60, 240);`,
+  shoutDrop: `I.goto(-56.5, 47.5); I.step(1/60, 30); I.press(); I.step(1/60, 14);`,
+  shoutRise: `I.goto(-56.5, 47.5); I.step(1/60, 30); I.press(); I.step(1/60, 245);`,
   pushCartEast: `for (let i = 0; i < 5; i++) { const c = I.things.get('hay-cart'); I.goto(c.x - 3.2, c.z); I.step(1/60, 10); I.press(); I.step(1/60, 150); } const c = I.things.get('hay-cart'); I.goto(c.x, c.z + 8);`,
   pushCartToBorder: `for (let i = 0; i < 16; i++) { const c = I.things.get('hay-cart'); I.goto(c.x - 3.2, c.z); I.step(1/60, 10); I.press(); I.step(1/60, 150); } const c = I.things.get('hay-cart'); I.goto(c.x - 6, c.z + 8);`,
   pickUpStone: `const s = I.things.get('fist-stone'); I.goto(s.x, s.z + 1.6); I.step(1/60, 20); I.press(); I.step(1/60, 20); I.goto(14, 73);`,

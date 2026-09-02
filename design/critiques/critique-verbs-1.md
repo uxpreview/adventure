@@ -111,3 +111,22 @@ Before round 1 the same tool reported 2.2% on the barbican: the bare
 poles had drawn ten numbers from the land's seeded stream and moved
 every boulder in the bailey. Fixed, and the diff keeps its evidence now
 (`SAVE=1`).
+
+## Round 3 — after the owner's first tap
+
+**Verdict: NOT YET, then fixed.** The owner tapped SHOUT DOWN THE WELL
+on a phone and nothing happened. Traced on the 390 rig: the tap fires
+the shout on the frame and the answer 3.4 seconds later, audio context
+running — so the wiring was sound and the design was not. A touch whose
+only answer is a sound is no answer on a phone on silent, and the brief
+said *a sound, a motion, a change*.
+
+Three fixes. The walker rocks back on every touch. The shout is twice
+as loud as a lark. And **the bucket is real**: its own drawing on its
+own rope, dropping into the shaft at the shout and winding back up,
+swinging, when the well answers — the answer in the well's own subject.
+`02b-well-bucket-dropping` and `02c-well-bucket-rising` are on the
+sheet; the second is the frame that says it. The `well` framing moves
+0.69% in portrait and 0.28% on desktop, which is the rope and the
+bucket redrawn as standees; the trough beside the well is unchanged
+because the strokes the bucket replaced are still drawn at zero alpha.

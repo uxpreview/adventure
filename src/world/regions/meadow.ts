@@ -5,7 +5,7 @@ import {
   leanGrassTexture, tallGrassTexture, driftFlowersTexture, commonOakTexture,
   wornGroundDecal, wheelRutsDecal, commonWellTexture, crossroadsSignTexture,
   milestoneTexture, hayCartTexture, hedgerowTexture, longFenceTexture,
-  fistStoneTexture,
+  fistStoneTexture, wellRopeTexture, wellBucketTexture,
   leafLitterDecal, reedsTexture, ropeSwingTexture, swallowTexture,
   keepVistaTexture,
 } from '../textures-common';
@@ -46,7 +46,14 @@ function say(name: string) {
 const WELL_ANSWER_DELAY = 3.4;
 /** The shout, and when the answer is due. Module scope, because the
  *  touch lives on the POI list and the answer lives in the builder. */
-const well = { answerAt: -1, kind: 'shout' as 'shout' | 'stone', lift: false };
+const well = {
+  answerAt: -1, kind: 'shout' as 'shout' | 'stone', lift: false,
+  /** THE BUCKET, which is the answer you can see: at rest on its rope;
+   *  dropping into the shaft at the shout; down in the dark while the
+   *  well takes its time; rising and swinging when it answers. */
+  bucket: 'rest' as 'rest' | 'drop' | 'down' | 'rise',
+  bt: 0,
+};
 
 things.register({
   id: 'hay-cart', kind: 'pushable', land: 'meadow', name: 'THE CART',
@@ -192,6 +199,26 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   /* ---- THE OLD WELL ----------------------------------------------- */
   ctx.decal(wornGroundDecal(410), 9, 8, WELL.x, WELL.z, 1.2, 0.6);
   ctx.standee(commonWellTexture(411), 4.4, 5.5, WELL.x - 1, WELL.z - 1);
+  /* THE ROPE AND THE BUCKET (Session 15), the visible half of the
+   * well's answer. Hung from the windlass — 95 of 240 down the well's
+   * canvas, which is 3.32 units up on a 5.5-unit standee — a hair
+   * behind the well's own plane so the shaft's dark reads over them as
+   * they go down. The rope's pivot is its top, so its length is a scale;
+   * the bucket hangs off the rope's end. */
+  const WINDLASS = 3.32;
+  const BUCKET_H = 0.46;
+  const ROPE_REST = 0.94;
+  const wellY = ctx.groundY(WELL.x - 1, WELL.z - 1);
+  const rope = ctx.standee(wellRopeTexture(412), 0.37, 1, WELL.x - 1, WELL.z - 1.06);
+  rope.geometry.translate(0, -1, 0);
+  rope.position.y = wellY + WINDLASS;
+  rope.scale.y = ROPE_REST;
+  const bucket = ctx.standee(wellBucketTexture(413), 0.46, BUCKET_H, WELL.x - 1, WELL.z - 1.06);
+  bucket.geometry.translate(0, -BUCKET_H, 0);
+  bucket.position.y = wellY + WINDLASS - ROPE_REST;
+  const bucketMat = bucket.material as THREE.MeshBasicMaterial;
+  const ropeMat = rope.material as THREE.MeshBasicMaterial;
+  for (const m of [bucketMat, ropeMat]) m.transparent = true;
 
   /* ---- THE ARGUING OAKS ------------------------------------------- */
   ctx.standee(commonOakTexture(420, 0), 11.5, 12.9, OAKS.x - 6, OAKS.z - 3);
@@ -318,12 +345,57 @@ export const buildMeadow: RegionBuilder = (ctx) => {
     if (well.lift) {
       well.lift = false;
       flinch = Math.max(flinch, 1.2);
+      // the shout sends the bucket down
+      if (well.bucket === 'rest' || well.bucket === 'rise') {
+        well.bucket = 'drop';
+        well.bt = 0;
+      }
     }
     if (well.answerAt === -2) well.answerAt = t + WELL_ANSWER_DELAY;
     if (well.answerAt >= 0 && t >= well.answerAt) {
       well.answerAt = -1;
       say(well.kind === 'stone' ? 'well-plink' : 'well-answer');
       flinch = Math.max(flinch, 2.2);
+      // and the answer brings it back up
+      if (well.bucket === 'down' || well.bucket === 'drop') {
+        well.bucket = 'rise';
+        well.bt = 0;
+      }
+    }
+    /* THE BUCKET'S FOUR STATES. Down is fast — a bucket let go — and it
+     * fades into the shaft's dark as it passes the ring; up is slow and
+     * swings, because somebody is winding. The rest pose is exactly the
+     * drawing the well had before the bucket was its own. */
+    {
+      const DROP = 2.4;
+      let len = ROPE_REST;
+      let fade = 1;
+      let swing = 0;
+      if (well.bucket === 'drop') {
+        well.bt += dt;
+        const k = Math.min(1, well.bt / 0.55);
+        len = ROPE_REST + (DROP - ROPE_REST) * k * k;
+        fade = 1 - Math.max(0, (k - 0.45) / 0.55);
+        if (k >= 1) well.bucket = 'down';
+      } else if (well.bucket === 'down') {
+        len = DROP;
+        fade = 0;
+      } else if (well.bucket === 'rise') {
+        well.bt += dt;
+        const k = Math.min(1, well.bt / 1.7);
+        const e = 1 - (1 - k) * (1 - k);
+        len = DROP + (ROPE_REST - DROP) * e;
+        fade = Math.min(1, k / 0.45);
+        swing = Math.sin(well.bt * 7.5) * 0.16 * (1 - k);
+        if (k >= 1) well.bucket = 'rest';
+      }
+      rope.scale.y = len;
+      rope.rotation.z = swing * 0.5;
+      bucket.position.y = wellY + WINDLASS - len;
+      bucket.position.x = WELL.x - 1 + Math.sin(swing) * len * 0.5;
+      bucket.rotation.z = swing;
+      bucketMat.opacity = fade;
+      ropeMat.opacity = Math.max(fade, 0.35 + 0.65 * Math.min(1, ROPE_REST / len));
     }
     flinch = Math.max(0, flinch - dt);
     const quick = 1 + Math.min(1, flinch) * 1.6;

@@ -198,9 +198,12 @@ of everything in it, as the proofs of the verbs it built.
   the note is gone — it was a description of a toy, and the toy is
   here now. Shout, and three and a half seconds later (too long, on
   purpose: `THE-STRANGERS` U7) the well answers, thinner and lower, and
-  a drop reaches the water after it. The swallows over the field loop
-  faster and higher for a moment, which is the one visible answer and
-  the only one a player with the sound off gets. Repeatable: it is the
+  a drop reaches the water after it. **And the answer is seen:** the
+  bucket, its own drawing on its own rope since the owner tapped the
+  prompt on a phone and got a sound they could not hear, drops into the
+  shaft at the shout and winds back up, swinging, when the well
+  answers. The walker rocks back at the press and the swallows lift
+  twice. At rest the well is the drawing it was. Repeatable: it is the
   first entry in the local-rule register (`QUESTS` §8, L1). Its reach
   shrank from five units to three and a half — the lip, not the yard —
   so a stone can be thrown into it from the path.

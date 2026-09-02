@@ -180,6 +180,23 @@ regress from 2026-09-01 and was not re-opened.
 - **The title re-shot at noon and at 19.6**, both viewports
   (`shots-s2-noon`, `shots-s2-dusk`): the poster is the poster. Nothing
   this session added stands in the spawn framing.
+- **THE OWNER TAPPED SHOUT DOWN THE WELL ON A PHONE AND NOTHING
+  HAPPENED** (2026-09-02, before this merged). The tap fired; the
+  answer was a sound mixed like a lark on a phone that was on silent,
+  and the one visible cue was three and a half seconds away. Fixed
+  three ways, and the third is the real one: every touch rocks the
+  walker back at the press (`Character.recoil`, arriving at exactly
+  zero); the shout is twice as loud as any ambient voice; and **the
+  well's bucket is its own drawing on its own rope** — it drops into
+  the shaft at the shout and winds back up, swinging, when the well
+  answers. The three strokes it replaced are still drawn at zero alpha
+  so the well's seeded stream, and its trough, are unchanged.
+  **That moves the `well` framing**: 0.69% in portrait and 0.28% on
+  desktop at both hours, a rope and a bucket redrawn as two standees
+  where one drawing had them — the Common in scope, measured, and
+  re-shot (`02b`, `02c` on the proofs sheet). The rule it writes into
+  `THE-FUN-PASS` §5's table: **a touch's answer is seen as well as
+  heard**, because a phone is on silent more often than not.
 - **The framing that moved, and by how much:** `avenue-foot` on
   desktop, at both hours — 0.027% at noon and 0.017% at dusk, a 57 × 8
   pixel band at the frame's left edge. It is the moat pool's dye stain:
