@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { ringTexture, loopsTexture, rng } from '../../engine/ink';
-import { hayBaleTexture, doodleFolkTexture, logTexture, wheatDecal } from '../textures';
+import { hayBaleTexture, logTexture, wheatDecal } from '../textures';
 import {
   leanGrassTexture, tallGrassTexture, driftFlowersTexture, commonOakTexture,
   wornGroundDecal, wheelRutsDecal, commonWellTexture, crossroadsSignTexture,
@@ -441,7 +441,6 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   const goatPoses = [0, 1, 2, 3].map((p) =>
     ctx.standee(goatTexture(1650 + p, p as 0 | 1 | 2 | 3), 2.2, 1.65, goat.x, goat.z));
 
-  void doodleFolkTexture;
 
   /* ---- RIVERBEND --------------------------------------------------- */
   const reedSpots: [number, number, number][] = [
