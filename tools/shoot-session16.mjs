@@ -79,8 +79,8 @@ const DO = {
   /* Over the border, and then a few steps back toward it: the goat is
    * behind a north-locked camera once you have crossed north, and the
    * astern opening on a walk south is the only way to see it. */
-  goatNorth: `I.goto(-45, 40); I.step(1/60, 60); I.drive(0, -1, 0); I.step(1/60, 900); I.drive(0, 1, 0); I.step(1/60, 130); I.release(); I.step(1/60, 2);`,
-  goatEast: `I.goto(20, 50); I.step(1/60, 60); I.drive(1, 0, 0); I.step(1/60, 700); I.release(); I.step(1/60, 60);`,
+  goatNorth: `const g = I.common.goat; g.x = -45; g.z = 44; g.following = true; g.atBorder = false; I.goto(-45, 40); I.step(1/60, 60); I.drive(0, -1, 0); I.step(1/60, 700); I.drive(0, 1, 0); I.step(1/60, 100); I.release(); I.step(1/60, 2);`,
+  goatEast: `const g = I.common.goat; g.x = 20; g.z = 54; g.following = true; g.atBorder = false; I.goto(20, 50); I.step(1/60, 60); I.drive(1, 0, 0); I.step(1/60, 640); I.release(); I.step(1/60, 60);`,
   peekLeft: `I.peek(-1); I.step(1/60, 240);`,
   peekRight: `I.peek(1); I.step(1/60, 240);`,
   crossDistrict: `I.goto(-70, 70); I.step(1/60, 30); I.drive(1, 0, 0); I.step(1/60, 240); I.release();`,
