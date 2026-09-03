@@ -256,18 +256,6 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   for (let x = -30; x < 52; x += 4 + r() * 3.5) {
     tallPts.push([x, 52 - 4.2 - r() * 2.5]);
   }
-  /* THE LONG GRASS YOU WAKE IN (Session 16): a stand of seedheads round
-   * the spawn, south of the wheat, so the first frame is grass at eye
-   * level with a bull's horns over it. Its own seed, not the land's
-   * stream, so nothing built after it moves (Session 15's gotcha). */
-  {
-    const gr = rng(1601);
-    for (let i = 0; i < 26; i++) {
-      const a = gr() * Math.PI * 2;
-      const d = 1.6 + Math.pow(gr(), 0.7) * 6.5;
-      tallPts.push([24 + Math.cos(a) * d, 90 + Math.sin(a) * d * 0.7]);
-    }
-  }
   for (let i = 0; i < 3; i++) {
     const pts = tallPts.filter((_, k) => k % 3 === i).filter(([x, z]) => dropAt(x, z, false));
     if (!pts.length) continue;
@@ -503,6 +491,27 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   ctx.standee(fairBoardTexture(1672), 2.6, 2.6, -104, 104);
   ctx.standee(hayBaleTexture(1673), 2.6, 2.0, -86, 104.5);
   ctx.standee(hayBaleTexture(1674), 2.2, 1.7, -103, 92);
+
+  /* ---- THE LONG GRASS YOU WAKE IN (Session 16) -------------------- *
+   * A stand of seedheads round the spawn, south of the wheat, so the
+   * first frame is grass at eye level with a bull's horns over it. ITS
+   * OWN FIELD AND ITS OWN SEED, built after everything else: the first
+   * version pushed its points into the tall-grass run above and drew
+   * their scales from the land's `r`, and every flower drift built
+   * after it moved — 2.3% of the well's protected framing, found by
+   * `diff-sheets` and by nothing else (Session 15's gotcha, again). */
+  {
+    const gr = rng(1601);
+    const pts: [number, number][] = [];
+    for (let i = 0; i < 26; i++) {
+      const a = gr() * Math.PI * 2;
+      const d = 1.6 + Math.pow(gr(), 0.7) * 6.5;
+      pts.push([24 + Math.cos(a) * d, 90 + Math.sin(a) * d * 0.7]);
+    }
+    const f = ctx.field(tallGrassTexture(1602), pts.length,
+      { w: 1.9, h: 1.9, wind: { amp: 0.11, freq: 0.95 } });
+    pts.forEach(([x, z], k) => f.set(k, x, z, 0.75 + gr() * 0.5, 0, false));
+  }
 
   /* ---- the swallows ------------------------------------------------ */
   const swallows = [
@@ -867,7 +876,13 @@ export const buildMeadow: RegionBuilder = (ctx) => {
     /* The three new lures fade on the same law as the keep, and a
      * little sooner going north — they are further off than it and go
      * first. The mill's smoke leans on the wind. */
-    for (const l of lures) l.mat.opacity = l.base * Math.max(0, Math.min(1, (pz - 18) / 22)) * far;
+    /* AND THEY ARE THE COMMON'S: a lure is a thing you see from the
+     * crossroads, and from the Downs' crease the towers were standing
+     * at the left of a protected frame in a land that never asked for
+     * them. They let go over the twelve units beyond the Common's east
+     * and west edges. */
+    const inX = Math.min(1, Math.max(0, (48 - px) / 12 + 1), Math.max(0, (px + 138) / 12 + 1));
+    for (const l of lures) l.mat.opacity = l.base * Math.max(0, Math.min(1, (pz - 18) / 22)) * far * inX;
     millSmoke.rotation.z = Math.sin(t * 0.31) * 0.03 - 0.02;
     maypole.rotation.z = Math.sin(t * 0.7) * 0.012;
   };
