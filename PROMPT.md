@@ -144,7 +144,7 @@ bug and no contact sheet could have.
 
 1. **THE PLAY GATE** — Session 16's sheet may have come back. Read it
    first. This session's sheet is a day in the life of three lands.
-2. **THE EAR GATE** — sixty-two WAVs in `out/sound/`, unheard. Every
+2. **THE EAR GATE** — sixty-three WAVs in `out/sound/`, unheard. Every
    animal and every weather adds a voice.
 3. **THE FEEL GATE** — owed since Session 12, plus sitting, plus the run
    taught by a bull. `check-camera` still has to pass.

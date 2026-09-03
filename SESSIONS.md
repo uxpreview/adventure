@@ -102,7 +102,64 @@ its old gate is a drawing of a shut gate.
 
 ### THE GATES, AND WHAT MOVED
 
-GATES_PLACEHOLDER
+- Build green. `check-terrain` (the spawn moved and every place is
+  still reachable from it), `check-camera` (all claims, both rigs),
+  `check-fields` (twelve lands), `check-sightline`, `check-audio`,
+  `check-verbs` (forty-three assertions, seventeen of them the first
+  hour's), `check-lures` (new) all pass. `shoot-mobile`: five rigs, the
+  stick assertion, the king's card and Nell's card all on the page at
+  320 — KEEP IT, AND PUSH THE CART YOURSELF breaks to two lines and
+  holds.
+- **`diff-sheets` against `origin/main` (6e35329), the full set, first
+  run: 66 of 92 bit-identical, 26 moved, and two of the 26 were not
+  the lures.** `well@12` on desktop moved 2.32% with a mask that was
+  the poppies — the wake's seedheads had been pushed into the tall-
+  grass run and drew their scales from the land's `r`, so every flower
+  drift built after them re-placed (Session 15's gotcha, found the
+  same way). And `crease-east-road`, a Downs framing, moved 1.06% on
+  desktop and 1.10% in portrait: the city's towers stood at the left
+  of it, because the lures faded on the walker's z and not on their x.
+  Both fixed — the grass is its own field with its own seed, built
+  last; the lures let go over twelve units beyond the Common's edges —
+  and the Common's seven framings plus the crease re-run: **14 of 32
+  bit-identical, the crease bit-identical at both hours, and every
+  remaining diff a horizontal band at the top of a frame, which is the
+  lures.** At noon on desktop: `crossroads` 1.22%, `common-THE-SHOT`
+  1.07%, `well` 0.90%, `common-wide` 0.84%, `gate-fields` 0.13%,
+  `oaks` 0.05%. At dusk under 0.06% everywhere — pencil at the horizon
+  goes first in the grade. Portrait: `oaks` 0.10% (the sea's horizon
+  above the canopy), `well` 0.03%, everything else bit-identical,
+  because a phone's frame does not reach the lures at rest. **These
+  are the framings that moved, and they moved by the lures, under
+  `QUALITY-BAR` §3's permission with the Common in scope; the verdict
+  is re-earned in `critique-art-10.md`.**
+- **The title re-shot at noon and at 19.6, both viewports**
+  (`shots-s2-noon`, `shots-s2-dusk`): the composition is
+  critique-art-1's, the walker low on the ring, with the sea's horizon
+  and the towers in the pencil register at the desktop frame's edges
+  and nothing new in portrait. The spawn is NOT in the poster: the
+  poster stands at `POSTER` and the walker wakes at `SPAWN`, and the
+  cut between them is a blink.
+- **The proofs sheet** (`tools/shoot-session16.mjs`, 25 framings, both
+  viewports), reviewed in `critique-art-10.md`: NOT YET at round one
+  (the bull never in the picture; a hole in the page; the goat shut in
+  with the bull; the wake card saying THE RIVER BEND), PASSED at round
+  two with three passed-not-praised: THE FIELD GATE's label in the sky,
+  the sea's glint as pencil on a phone, the goat small at a border.
+- **The lures, measured** (`tools/check-lures.mjs`): desktop holds all
+  four at rest; portrait holds the keep at rest, the sea on a peek
+  left, the smoke on a peek right, and never the towers.
+- **The ear gate handed over: 63 WAVs in `out/sound/`**, four of them
+  new — the snort, the hooves, the gate, the goat. Unheard.
+- **The feel gate handed over**, with one new thing: the run taught
+  under a bull, with a camera that does not help by turning.
+- **THE PLAY GATE HANDED OVER AND NOT RUN.**
+  `design/play-sheets/session-16.md`, with the build at
+  https://adventure-git-claude-session-16-8idifp-ryankm.vercel.app
+  (PR #13): wake, run, the gate, four things, the goat, Nell, the card,
+  the districts. Ten minutes, with the questions the session could not
+  answer — and one the sheet asks first: whether ten seconds of bull is
+  ten seconds on a thumb.
 
 ### DECLINED, IN WRITING
 
