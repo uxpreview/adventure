@@ -448,6 +448,16 @@ one person does; geography is what everybody after them does anyway**,
 and the second one needs no animation, no clock and no note. Look for it
 before reaching for a routine.
 
+**AND FROM SESSION 16 THE CO-WALKER IS A RULE AND NOT A BEAT**
+(`critique-story-2` MANDATORY 1, `src/world/company.ts`). A companion
+has a land; it follows the walker inside that land and stops dead at
+its edge, on every road, in every direction, and nothing in the file can
+give it a position past one — the clamp is before the move, the way a
+cart's is. The goat on the Common is the first; a dog, a child, a gull
+are the same class with different numbers. And the bull is the same
+rule from the other side: a thing that would hurt you and cannot cross
+the line you just crossed.
+
 ## 6. The content system — knowledge, not collection
 
 *Rewritten 2026-08-29. This section used to be "the unfinished sheet":

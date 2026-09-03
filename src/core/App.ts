@@ -15,17 +15,18 @@ import { PAPER_HEX, INK_HEX } from '../engine/palette';
 import { Boat } from '../engine/Boat';
 import { Eight15 } from '../engine/Eight15';
 import {
-  SPAWN, regionAt, coastX, barDist, roadCarryAt, rowableAt, BOAT_HOME,
+  SPAWN, POSTER, regionAt, districtAt, coastX, barDist, roadCarryAt, rowableAt, BOAT_HOME,
   LINE_STOPS, LINE_STOP_S, LINE_LENGTH,
-  type RegionSpec,
+  type RegionSpec, type District,
 } from '../world/layout';
+import { barriers } from '../world/barriers';
 import { clock as dayClock, LAMP_POOL, LAMP_EDGE } from '../world/daylight';
 import { tearX } from '../world/elevation';
 import { knowledge } from '../world/knowledge';
 import { things } from '../world/things';
 import { events } from '../world/events';
 import { fistStoneTexture } from '../world/textures-common';
-import { MEADOW_POIS } from '../world/regions/meadow';
+import { MEADOW_POIS, common } from '../world/regions/meadow';
 import { FOREST_POIS, CANYON_POIS, DESERT_POIS, DOWNS_POIS } from '../world/regions/wilds';
 import { OCEAN_POIS, BEACH_POIS } from '../world/regions/coast';
 import {
@@ -70,6 +71,9 @@ export class App {
   private poi: POIManager;
 
   private region: RegionSpec;
+  /** THE DISTRICT the walker is in, if any (Session 16), so a crossing
+   *  between two districts of one land deals its own smaller card. */
+  private district: District | null = null;
   private started = false;
   private elapsed = 0;
   private persistAcc = 0;
@@ -285,10 +289,14 @@ export class App {
      * well is gone until the morning. */
     things.load(this.save.data.things ?? {});
 
-    // stand the walker somewhere sensible under the title
-    const startPos = this.save.data.pos ?? SPAWN;
+    /* Stand the walker under the title: where the last walk left them,
+     * or — on a fresh page — at THE POSTER, which is the composition the
+     * title has been since Session 2 and is not where they wake
+     * (`layout.POSTER` and `SPAWN`, and `start` below). */
+    const startPos = this.save.data.pos ?? POSTER;
     this.char.teleport(startPos.x, startPos.z);
     this.region = regionAt(startPos.x, startPos.z);
+    this.district = districtAt(startPos.x, startPos.z);
     this.world.ensure(this.region.id);
     this.world.inkImmediate(this.region.id);
     this.snapCamera();
@@ -298,6 +306,19 @@ export class App {
     // fire their own one-shots through this bridge
     window.addEventListener('inklands:event', (e) => {
       if (this.started) this.audio.event((e as CustomEvent<string>).detail);
+    });
+
+    /* THE RUN, TAUGHT BY NECESSITY (Session 16). The bull's charge is
+     * the first time the game asks the walker to run somewhere
+     * specific, so the one hint the game is allowed to print prints
+     * NOW, if this player has never been told — and Session 12's rule
+     * (six seconds of walking, once ever) stays for a save that wakes
+     * somewhere else. */
+    window.addEventListener('inklands:run-now', () => {
+      if (!this.started || this.save.data.taughtRun || this.input.hold !== null) return;
+      this.save.data.taughtRun = true;
+      this.save.persist();
+      this.ui.showHint('ontouchstart' in window ? 'drag further to run' : 'hold shift to run', 3400);
     });
 
     window.addEventListener('resize', () => this.resize());
@@ -444,7 +465,12 @@ export class App {
           const r = this.renderer.info.render;
           return { ms, calls: r.calls, tris: r.triangles };
         },
-        begin: () => this.start(this.save.data.pos === null),
+        begin: () => this.start(this.save.data.pos === null, false),
+        /* THE OPENING (Session 16): the bull, the gate, Nell and the
+         * goat, for `check-verbs` and the proofs sheet. */
+        common,
+        barriers,
+        districtAt,
 
         /* ================================================================ *
          * THE HARNESS OWNS THE CLOCK (Session 9).
@@ -596,14 +622,28 @@ export class App {
     });
   }
 
-  private start(fresh: boolean) {
+  private start(fresh: boolean, blink = true) {
     this.ui.hideTitle();
     if (fresh) {
-      this.char.teleport(SPAWN.x, SPAWN.z);
-      this.snapCamera();
+      /* YOU WAKE IN LONG GRASS. The poster is one place and the spawn is
+       * another (`layout.POSTER`, `SPAWN`), and the cut between them is
+       * a blink of paper so it reads as eyes shutting and opening rather
+       * than the world jumping. The harness skips the blink and cuts. */
+      const wake = () => {
+        this.char.teleport(SPAWN.x, SPAWN.z);
+        this.snapCamera();
+        this.region = regionAt(SPAWN.x, SPAWN.z);
+        this.district = districtAt(SPAWN.x, SPAWN.z);
+      };
+      if (blink) {
+        this.ui.blink(wake);
+        // the walker holds still until the eyes are open
+        this.char.frozen = true;
+      } else wake();
     }
     this.started = true;
     this.region = regionAt(this.char.pos.x, this.char.pos.z);
+    this.district = districtAt(this.char.pos.x, this.char.pos.z);
     /* THE MOOD BEFORE THE CONTEXT, and the order matters from Session 8.
      * `setMood` with no context yet just records which land this is;
      * `init` then builds THAT land's room. The other way round, a save
@@ -614,7 +654,8 @@ export class App {
     this.audio.init();
     const newLand = this.save.discover(this.region.id);
     knowledge.learn(`name:${this.region.id}`);
-    this.ui.showRegionCard(this.region.kicker, this.region.name);
+    this.ui.showRegionCard(this.region.kicker, this.region.name,
+      { sub: this.district?.name.toLowerCase() });
     if (fresh || newLand) {
       /* THE HINT IS THE CONTROL LIST AND IT WAS TOO LONG TO BE ONE.
        * Session 12 took the run out of it: five items fired once for
@@ -945,7 +986,9 @@ export class App {
     this.region = spec;
     this.audio.setMood(spec.id);
     if (this.started) {
-      this.ui.showRegionCard(spec.kicker, spec.name);
+      const d = districtAt(this.char.pos.x, this.char.pos.z);
+      this.district = d;
+      this.ui.showRegionCard(spec.kicker, spec.name, { sub: d?.name.toLowerCase() });
       this.save.discover(spec.id);
       // standing in a land is the strongest way to know its name, and
       // it is the one the map writes in ink
@@ -1358,7 +1401,8 @@ export class App {
     }
 
     this.input.update(dt);
-    this.char.frozen = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen || !this.started;
+    this.char.frozen = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen || !this.started
+      || this.ui.blinking;
     // a step stands you up; the prompt says so, and so does a thumb
     if (this.seat && Math.hypot(this.input.move.x, this.input.move.y) > 0.3) {
       this.standUp();
@@ -1418,9 +1462,13 @@ export class App {
      * boat that grounds cannot climb out of the water; the only way out
      * of it is `landingNear`, which asks the same `blockedAt` a walker
      * does. */
+    /* AND A FENCE (Session 16, `barriers.ts`): the long fence on the
+     * Common refuses a foot everywhere but the stile and the gate, and
+     * the gate shuts. Every barrier is a drawing standing in the same
+     * place; there are no invisible walls. */
     const refuses = this.boat.aboard
       ? (x: number, z: number) => !rowableAt(x, z)
-      : (x: number, z: number) => this.terrain.blockedAt(x, z);
+      : (x: number, z: number) => this.terrain.blockedAt(x, z) || barriers.blocks(x, z);
     if (refuses(this.char.pos.x, this.char.pos.z)) {
       const nx = this.char.pos.x;
       const nz = this.char.pos.z;
@@ -1530,6 +1578,19 @@ export class App {
 
     const here = regionAt(this.char.pos.x, this.char.pos.z);
     if (here.id !== this.region.id) this.crossInto(here);
+    /* THE DISTRICTS (Session 16): crossing from one to another inside a
+     * land is a smaller arrival than a border, and gets a smaller card
+     * — the land's name in the quiet hand, the district's under it.
+     * Walking out of a district onto the land's own ground says
+     * nothing. */
+    const dist = districtAt(this.char.pos.x, this.char.pos.z);
+    if (dist !== this.district) {
+      const was = this.district;
+      this.district = dist;
+      if (this.started && dist && dist.land === this.region.id && (was === null || was.land === dist.land) && here.id === this.region.id) {
+        this.ui.showRegionCard(this.region.name.toLowerCase(), dist.name, { small: true });
+      }
+    }
     this.surfaceTick();
 
     // land ambience: each land gets its one voice (Session 8 will

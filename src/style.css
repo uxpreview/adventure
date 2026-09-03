@@ -178,6 +178,31 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
+/* the district's line under the land's name (Session 16) */
+.region-card .district {
+  margin-top: 2px;
+  opacity: 0.8;
+}
+
+/* ---------- the blink ---------- */
+/* Paper over the page for a moment, on SET OUT: the poster is one
+   place and the long grass you wake in is another, and a cut between
+   them with nothing over it reads as the world jumping. Eyes shut,
+   eyes open. */
+.blink {
+  position: absolute;
+  inset: 0;
+  background: var(--paper);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 58;
+  transition: opacity 0.7s ease;
+}
+.blink.show {
+  opacity: 1;
+  transition: opacity 0.22s ease;
+}
+
 /* ---------- hint ---------- */
 .hint {
   position: absolute;

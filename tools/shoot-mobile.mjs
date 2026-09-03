@@ -174,6 +174,41 @@ for (const vp of RIGS.filter((r) => !ONLY || r.name === ONLY)) {
   await page.keyboard.press('Escape');
   await page.waitForTimeout(500);
 
+  /* AND NELL'S CARD (Session 16), which carries the longest door in the
+   * game now — KEEP IT, AND PUSH THE CART YOURSELF — and is asserted
+   * the same way at every width. Opened at the gate as a thumb would,
+   * with the fourth name handed over first. */
+  await page.evaluate(() => { window.__inklands.learn('fact:the-timetable'); window.__inklands.goto(-16, 78); });
+  await page.waitForTimeout(1400);
+  await page.evaluate(() => {
+    const el = document.getElementById('prompt');
+    if (el) el.click();
+  });
+  await page.waitForTimeout(900);
+  await page.screenshot({ path: `${dir}/08b-nell-card.png` });
+  const nell = await page.evaluate(({ w, h }) => {
+    const open = !!document.querySelector('.choice-veil.show');
+    const btns = [...document.querySelectorAll('.choice-btn')].map((b) => {
+      const r = b.getBoundingClientRect();
+      return { l: r.left, r: r.right, t: r.top, b: r.bottom, label: b.getAttribute('aria-label') };
+    });
+    const c = document.querySelector('.choice-card');
+    const cr = c ? c.getBoundingClientRect() : null;
+    return { open, btns, card: cr && { l: cr.left, r: cr.right, t: cr.top, b: cr.bottom }, w, h };
+  }, { w: vp.width, h: vp.height });
+  if (!nell.open || nell.btns.length < 2) {
+    console.log(`  ✗ ${vp.name}: Nell's card did not open at the gate (${nell.btns.length} doors)`);
+    fails++;
+  } else if (!nell.btns.every(inside) || !inside(nell.card)) {
+    const off = nell.btns.filter((b) => !inside(b)).map((b) => b.label).join(', ');
+    console.log(`  ✗ ${vp.name}: a door on Nell's card is off the page — ${off || 'the card itself'}`);
+    fails++;
+  } else {
+    console.log(`  ✓ ${vp.name}: ${nell.btns.length} doors on Nell's card, all on the page`);
+  }
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(500);
+
   // the map, which IS shot elsewhere but never at 320
   await page.keyboard.press('KeyM');
   await page.waitForTimeout(1000);

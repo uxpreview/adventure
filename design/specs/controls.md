@@ -324,3 +324,31 @@ back, and `QUALITY-BAR.md` §2 has the words for it now:
 
 > **A system whose gate has not been run is not done. It is SHIPPED AND
 > UNJUDGED, and those are two different words.**
+
+
+---
+
+## 5. Session 16 — the run taught by a bull, and a fence that refuses
+
+**THE RUN IS TAUGHT BY NECESSITY on a fresh page.** §3a's rule — once
+ever, at the moment it becomes worth having — stands, and the moment
+moved: the bull's charge is the first time the game asks the walker to
+run somewhere specific, so the one hint the game may print prints at
+the charge (`inklands:run-now`, `App`), and Session 12's six seconds of
+walking is what a save that wakes elsewhere still gets. It is still
+never printed to the harness and never printed twice.
+
+**A FENCE REFUSES A FOOT** (`src/world/barriers.ts`). The page was the
+only thing that ever refused the walker; the long fence and the field's
+hedge do now, everywhere but the stile and the gate, and a refused step
+slides along the fence the way it slides along a bank. There are no
+invisible walls: every barrier is a drawing in the same place.
+
+**THE CAMERA DOES NOT HELP BY TURNING, and the chase is laid out for
+it.** The chase runs east to west across the frame with the bull on
+the walker's right, because a pursuer behind a north-locked camera is
+never seen. `check-camera` still passes: nothing here touches the rig.
+
+**One more thing the key does:** at the field gate, with the fourth
+name, TELL HER THE FOURTH NAME opens a card; without it, LEAN ON THE
+GATE WITH HER opens a note. The prompt says which, as always.

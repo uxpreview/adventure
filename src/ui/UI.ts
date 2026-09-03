@@ -38,7 +38,16 @@ export class UI {
   private card: HTMLElement;
   private cardKicker: HTMLElement;
   private cardName: HTMLElement;
+  /** THE DISTRICT'S LINE (Session 16): a district's name is written
+   *  under its land's on the card, in the quiet hand, and a crossing
+   *  between two districts of one land writes the land's name small
+   *  and the district's big. */
+  private cardSub: HTMLElement;
   private cardTimer = 0;
+  /** THE BLINK: a sheet of paper over the page for a moment, so a cut
+   *  between two places reads as eyes shutting and opening rather
+   *  than as the world jumping. Used once, on SET OUT. */
+  private blinkEl: HTMLElement;
   private note: HTMLElement;
   private noteTitle: HTMLElement;
   private noteBody: HTMLElement;
@@ -94,7 +103,9 @@ export class UI {
     this.card = el('region-card', this.root);
     this.cardKicker = el('kicker', this.card);
     this.cardName = el('name', this.card);
+    this.cardSub = el('district', this.card);
     this.chrome = [this.hud, this.card];
+    this.blinkEl = el('blink', this.root);
 
     // hint line (controls, small truths)
     this.hintEl = el('hint', this.root);
@@ -214,13 +225,40 @@ export class UI {
    *  called CASTLE GREYWEATHER. On a narrow phone that is wider than
    *  the screen, so the card is given the page to wrap in — it will
    *  break to two lines rather than run off the side. */
-  showRegionCard(kicker: string, name: string) {
+  showRegionCard(kicker: string, name: string, opts: { sub?: string; small?: boolean } = {}) {
     const w = Math.max(180, window.innerWidth - 36);
     letterEl(this.cardKicker, kicker, { ...S.quiet(11), maxWidth: w, align: 'center' });
-    letterEl(this.cardName, name, { ...S.display(24), px: 24, maxWidth: w });
+    /* A DISTRICT'S CARD IS SMALLER THAN A LAND'S. Crossing a land is an
+     * arrival; crossing from the crossroads to the well is a smaller
+     * one, and the size of the hand says which. */
+    const px = opts.small ? 17 : 24;
+    letterEl(this.cardName, name, { ...S.display(px), px, maxWidth: w });
+    if (opts.sub) {
+      letterEl(this.cardSub, opts.sub, { ...S.quiet(11), maxWidth: w, align: 'center' });
+      this.cardSub.style.display = '';
+    } else {
+      this.cardSub.textContent = '';
+      this.cardSub.style.display = 'none';
+    }
     this.card.classList.add('show');
     window.clearTimeout(this.cardTimer);
-    this.cardTimer = window.setTimeout(() => this.card.classList.remove('show'), 3400);
+    this.cardTimer = window.setTimeout(() => this.card.classList.remove('show'), opts.small ? 2600 : 3400);
+  }
+
+  /** A sheet of paper over the page, `cut` in the middle of it, and
+   *  the page back. About a second, and the cut is where the walker
+   *  moves — eyes shut, eyes open somewhere else. */
+  blinking = false;
+  blink(cut: () => void) {
+    this.blinking = true;
+    this.blinkEl.classList.add('show');
+    window.setTimeout(() => {
+      cut();
+      window.setTimeout(() => {
+        this.blinkEl.classList.remove('show');
+        this.blinking = false;
+      }, 160);
+    }, 240);
   }
 
   /** THE HARNESS'S BROOM. A contact sheet driven by teleport raises a
@@ -232,6 +270,8 @@ export class UI {
     window.clearTimeout(this.hintTimer);
     this.card.classList.remove('show');
     this.hintEl.classList.remove('show');
+    this.blinkEl.classList.remove('show');
+    this.blinking = false;
   }
 
   showHint(text: string, holdMs = 4200) {

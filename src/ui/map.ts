@@ -1,7 +1,7 @@
 import { rng, stroke, line, scribbleCircle, hatch } from '../engine/ink';
 import { INK, PENCIL } from '../engine/palette';
 import { letterCanvas, S } from './lettering';
-import { WORLD, REGION_SPECS, ROADS, RIVER, BRIDGES, PONDS, SANDBAR } from '../world/layout';
+import { WORLD, REGION_SPECS, ROADS, RIVER, BRIDGES, PONDS, SANDBAR, DISTRICTS } from '../world/layout';
 import { coastX } from '../world/terrain';
 import { knowledge } from '../world/knowledge';
 
@@ -223,6 +223,35 @@ export function renderMap(state: {
       line(ctx, X(cx) - lw * 0.42, uy, X(cx) + lw * 0.42, uy, r,
         { width: 1.1, alpha: 0.32, color: PENCIL, passes: 1, jitter: 1.6 });
     }
+  }
+
+  /* THE DISTRICTS (Session 16), drawn only inside a land the walker has
+     stood in: a dashed pencil edge and a small name, the way a hand
+     marks a field on a map it has walked. A land you have only heard
+     of has no districts yet — you know the name, not the ground. */
+  for (const d of DISTRICTS) {
+    if (knowledge.register(d.land, state.discovered) !== 'seen') continue;
+    const b = d.rect;
+    const corners: [number, number][] = [
+      [X(b.minX), Z(b.minZ)], [X(b.maxX), Z(b.minZ)], [X(b.maxX), Z(b.maxZ)], [X(b.minX), Z(b.maxZ)],
+    ];
+    for (let i = 0; i < 4; i++) {
+      const [ax, ay] = corners[i];
+      const [bx, by] = corners[(i + 1) % 4];
+      const segs = Math.max(2, Math.round(Math.hypot(bx - ax, by - ay) / 9));
+      for (let k = 0; k < segs; k++) {
+        const t0 = k / segs;
+        const t1 = t0 + 0.5 / segs;
+        line(ctx, ax + (bx - ax) * t0, ay + (by - ay) * t0, ax + (bx - ax) * t1, ay + (by - ay) * t1,
+          r, { width: 0.9, alpha: 0.28, color: PENCIL, passes: 1, jitter: 1.2 });
+      }
+    }
+    const dl = letterCanvas(d.name, { ...S.quiet(7.5 * ink), align: 'center', color: PENCIL, alpha: 0.7, weightScale: 0.85 });
+    const dw = dl.width / 2;
+    const dh = dl.height / 2;
+    ctx.globalAlpha = 0.72;
+    ctx.drawImage(dl, X((b.minX + b.maxX) / 2) - dw / 2, Z(b.maxZ) - dh - 2, dw, dh);
+    ctx.globalAlpha = 1;
   }
 
   // you are here

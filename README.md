@@ -139,13 +139,30 @@ and deals a region card — nothing else, because the sheet is continuous.
   doors. Put him back, and the banners come down, the avenue goes
   quiet and the moat pool clears, in every later save. Leave him, and
   nothing changes. Nothing says which was right.
+- **And you wake in long grass with a bull looking at you** (Session
+  16, THE FIRST HOUR). It charges; you run — the one hint the game
+  prints prints now, because now is when you need it — and it pulls up
+  two strides short every time and never touches you; you get through
+  the gate in the hedge and **Nell shuts it behind you**, and the bull
+  stops at the hedge because the hedge is a rule. From the crossroads
+  four things are on the horizon: the castle, the mill's smoke, the
+  glint of the sea and the city's towers, and the signpost points at
+  three of them. **A goat falls in beside you and stops dead at the
+  Common's edge**, on whichever road you take, which is the rule of
+  this world shown before it is ever read. The Common has four named
+  **districts** now and a fair ground where the fair is not on; a fence
+  refuses a foot for the first time; and Nell's wait is built with two
+  doors: bring her the fourth name, or keep it and push the cart to a
+  border yourself.
 - **And the world keeps its own hours.** The thirteen sheep in the
   Downs walk the lane from the fold to the field at first light and
   back at dusk, whether or not anybody is there to see it — the first
   scheduled event, and the plumbing for one in every land.
 - Position, discovered lands, strides walked, the boat, the hour, what
   you know, what you chose, and where you left the cart, saved to
-  `localStorage`.
+  `localStorage`. (The gate, the bull and the goat are not: a fresh
+  page has the gate open, and a save that wakes elsewhere finds the
+  bull grazing.)
 
 The story is **THE 8:15** — see `design/STORY.md` for the bible and
 `design/QUESTS.md` for how content is tiered in a game with no quest
@@ -223,6 +240,9 @@ node tools/check-verbs.mjs     # THE VERBS: the cart stops at the border, the
                                #   seated walker is due north, the drove keeps
                                #   its hours, a door is knowledge
 node tools/shoot-session15.mjs # the proofs, both states, both viewports
+node tools/shoot-session16.mjs # THE FIRST HOUR: the bull, the gate, the goat,
+                               #   the lures, Nell's doors, both viewports
+node tools/check-lures.mjs     # which of the four lures each rig can hold
 HOUR=19.6 node tools/shoot-first-minute.mjs   # any sheet, at any hour
 node tools/shoot.mjs           # all twelve lands, walkability smoke test
 node tools/shoot-mobile.mjs    # the CHROME, at 320/360/390/430 points AND at
@@ -317,6 +337,13 @@ cycle, the paper post-pass, the audio engine. New for the open world:
   and a carriable stone, one slot for the hand, and the border rule
   written into the file: no path in it can put a thing outside its own
   land.
+- `src/world/company.ts` — **who walks with you.** A companion has a
+  land, follows the walker inside it and stops dead at its edge on every
+  road; the clamp is before the move, so nothing in the file can put one
+  past a border. The goat is the first.
+- `src/world/barriers.ts` — **what refuses a foot besides the page.** A
+  fence with a stile and a gate that shuts. Every barrier is a drawing
+  standing in the same place; there are no invisible walls.
 - `src/world/daylight.ts` — **what time it is.** One clock, module
   scope, readable by anything (`import { clock }`) — the story runs on
   routine, so a region builder that wants to know whether the shutters

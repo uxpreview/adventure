@@ -193,10 +193,11 @@ export const ROUTES: Route[] = [
  * the id each one resolves into, in that land's own words, about that
  * land only. Nobody generalises and nothing points at the rhyme.
  *
- * **Four of them are missing, and the gap is honest**: GREYWEATHER's
- * WICK, LONGSHORE's PYE, THE WIDE BLUE's WREN and THE COMMON's NELL are
- * written and not built (`THE-WAITS` §14 has them on ground that is
- * already WOWED, buildable in any session from here). A land with no
+ * **Three of them are missing, and the gap is honest**: GREYWEATHER's
+ * WICK, LONGSHORE's PYE and THE WIDE BLUE's WREN are written and not
+ * built (`THE-WAITS` §14 has them on ground that is already WOWED;
+ * Session 19's). THE COMMON's NELL is built, Session 16, with two
+ * doors from the start. A land with no
  * entry has a platform that is always empty, which is exactly what an
  * unanswered wait looks like and costs nothing to be honest about.
  *
@@ -221,6 +222,13 @@ export const WAIT_ANSWERS: Partial<Record<string, Known>> = {
   city: 'fact:the-man-at-the-junction',
   /** DENNIS: there is a list, and the twelve are on it, in order. */
   office: 'fact:the-timetable',
+  /** NELL (Session 16): one of the four roads is not a road. Answered
+   *  by the FIRST door only — the fourth name brought back to the gate,
+   *  the cart loaded and turned north. The second door (the cart
+   *  pushed to a border yourself) is a door and not an answer: Nell
+   *  had the option and now has a cart at a border, and her platform
+   *  stays empty. `THE-FUN-PASS` §6, and Session 21 reads it back. */
+  meadow: 'door:the-cart-turned-north',
 };
 
 /**
@@ -234,10 +242,12 @@ export const WAIT_ANSWERS: Partial<Record<string, Known>> = {
  * platforms DIFFER. Five leaves room for the ending to be the player's
  * rather than the author's.
  *
- * It goes back to seven when the other four waits are built. It is
- * never shown anywhere, to anybody, in any form (QUESTS §7).
+ * It goes back to seven when the other waits are built — six from
+ * Session 16, with NELL's in the source; WICK, PYE and WREN are
+ * Session 19's. It is never shown anywhere, to anybody, in any form
+ * (QUESTS §7).
  */
-export const WAITS_FOR_THE_LINE = 5;
+export const WAITS_FOR_THE_LINE = 6;
 
 /* ------------------------------------------------------------------ */
 

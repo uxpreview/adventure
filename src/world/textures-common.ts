@@ -408,7 +408,8 @@ export function milestoneTexture(seed: number): THREE.CanvasTexture {
 }
 
 /** A hay cart resting on its shafts by the long fence. */
-export function hayCartTexture(seed: number): THREE.CanvasTexture {
+export function hayCartTexture(seed: number, loaded = false): THREE.CanvasTexture {
+  if (loaded) return loadedCartTexture(seed);
   return makeTexture(224, 160, seed, (ctx, r) => {
     // bed, tipped slightly forward onto its shafts
     fillPoly(ctx, [[36, 116], [44, 84], [186, 78], [190, 112]], '#c9a06a', 0.45);
@@ -505,14 +506,26 @@ export function hedgerowTexture(seed: number, gap = false): THREE.CanvasTexture 
  * The long fence, in states of repair. kind 0 sound, 1 losing a rail,
  * 2 the stile, 3 the field gate.
  */
-export function longFenceTexture(seed: number, kind: 0 | 1 | 2 | 3): THREE.CanvasTexture {
+export function longFenceTexture(seed: number, kind: 0 | 1 | 2 | 3 | 4): THREE.CanvasTexture {
   return makeTexture(256, 96, seed, (ctx, r) => {
     const posts = [16, 90, 166, 240];
     for (const x of posts) {
       stroke(ctx, [[x + (r() - 0.5) * 3, 88], [x, 34 + (r() - 0.5) * 6]], r,
         { width: 2.6, alpha: 0.85 });
     }
-    if (kind === 3) {
+    if (kind === 4) {
+      /* THE GATE'S FRAME AND NO GATE IN IT (Session 16): the rails
+       * either side of the middle posts, and the middle posts a little
+       * heavier because they are hung on. The leaf is its own drawing
+       * (`fieldGateTexture`) so it can be open or shut. */
+      line(ctx, 16, 46, 90, 44, r, { width: 2, alpha: 0.8 });
+      line(ctx, 16, 68, 90, 66, r, { width: 2, alpha: 0.8 });
+      line(ctx, 166, 46, 240, 44, r, { width: 2, alpha: 0.8 });
+      line(ctx, 166, 68, 240, 66, r, { width: 2, alpha: 0.8 });
+      for (const x of [90, 166]) {
+        stroke(ctx, [[x + 2, 88], [x + 2, 30]], r, { width: 2.2, alpha: 0.7, passes: 1 });
+      }
+    } else if (kind === 3) {
       // the field gate between the middle posts
       line(ctx, 16, 46, 90, 44, r, { width: 2, alpha: 0.8 });
       line(ctx, 16, 68, 90, 66, r, { width: 2, alpha: 0.8 });
@@ -903,5 +916,345 @@ export function keepVistaTexture(seed: number): THREE.CanvasTexture {
     for (const [wx, wy] of [[168, 130], [206, 118], [232, 150]] as [number, number][]) {
       line(ctx, wx, wy, wx + 1, wy + 12, r, { width: 1.6, alpha: 0.32, passes: 1, color: PENCIL });
     }
+  });
+}
+
+
+/* ================== THE FIRST HOUR (Session 16) ================== *
+ *
+ * The opening the owner chose (`THE-FUN-PASS` §11): THE BULL, THE FOUR
+ * LURES, THE COMMON AS THE PLATEAU. Drawn in the meadow register, full
+ * pressure, except the lures, which are the vista register taken one
+ * step paler than the keep — they are further off than anything the
+ * keep stands in for, and they have to fade before the walker can
+ * catch them working.
+ * ================================================================== */
+
+/**
+ * THE CART, LOADED AND TURNED NORTH — NELL's first door. Drawn from
+ * BEHIND, because "turned north" on a cutout that faces the camera can
+ * only be said in the drawing (Brack's quarter turn is the same rule):
+ * two wheels flanking a tailboard, the load roped down above it, and
+ * no shafts, because the shafts are on the far side, pointing up the
+ * road.
+ */
+function loadedCartTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(224, 160, seed, (ctx, r) => {
+    // the tailboard, square on
+    fillPoly(ctx, [[62, 118], [64, 82], [160, 82], [162, 118]], '#c9a06a', 0.45);
+    poly(ctx, [[62, 118], [64, 82], [160, 82], [162, 118]], r, { width: 2.2, alpha: 0.9 });
+    for (let x = 80; x < 156; x += 18) {
+      line(ctx, x, 84, x - 1, 116, r, { width: 1, alpha: 0.3, passes: 1 });
+    }
+    // the load, higher than it was and the whole width of the bed
+    fillBlob(ctx, 112, 58, 60, r, '#d3b878', 0.6, 0.62);
+    scribbleCircle(ctx, 112, 58, 58, r, { width: 1.4, alpha: 0.5, jitter: 2.4, passes: 1 }, 1.15);
+    for (let i = 0; i < 18; i++) {
+      const x = 58 + r() * 108;
+      const y = 30 + r() * 44;
+      line(ctx, x, y, x + 8 + r() * 6, y - 3 + r() * 6, r,
+        { width: 0.9, alpha: 0.4, passes: 1, color: '#8a6f3a' }, 2);
+    }
+    // roped down: two ropes over the top, tied off at the bed
+    stroke(ctx, [[60, 108], [76, 40], [112, 22], [150, 40], [164, 108]], r,
+      { width: 1.7, alpha: 0.8, passes: 1 });
+    stroke(ctx, [[70, 110], [98, 36], [130, 34], [156, 112]], r,
+      { width: 1.4, alpha: 0.6, passes: 1 });
+    // the two wheels, seen from behind: both the same size, flanking
+    for (const wx of [50, 174]) {
+      scribbleCircle(ctx, wx, 122, 25, r, { width: 1.9, alpha: 0.8 }, 1.1);
+      scribbleCircle(ctx, wx, 122, 5, r, { width: 1.3, alpha: 0.65 });
+      for (let sp = 0; sp < 6; sp++) {
+        const a = (sp / 6) * Math.PI * 2 + 0.3;
+        line(ctx, wx + Math.cos(a) * 6, 122 + Math.sin(a) * 6,
+          wx + Math.cos(a) * 23, 122 + Math.sin(a) * 23, r, { width: 1.2, alpha: 0.5, passes: 1 }, 2);
+      }
+    }
+    // the axle between them
+    line(ctx, 74, 124, 150, 124, r, { width: 2.4, alpha: 0.7, passes: 1 });
+  });
+}
+
+/**
+ * THE FIELD GATE'S LEAF, open or shut. Open, it is swung toward the
+ * camera on its hinge post and seen nearly end-on: a narrow slant of
+ * bars. Shut, it is the barred gate across the gap, exactly the
+ * drawing the fence's `kind 3` used to carry. The frame it hangs in
+ * is `longFenceTexture(…, 4)`.
+ */
+export function fieldGateTexture(seed: number, shut: boolean): THREE.CanvasTexture {
+  return makeTexture(96, 96, seed, (ctx, r) => {
+    if (shut) {
+      line(ctx, 6, 40, 90, 38, r, { width: 2, alpha: 0.85 });
+      line(ctx, 6, 62, 90, 60, r, { width: 2, alpha: 0.85 });
+      for (let x = 12; x <= 84; x += 12) line(ctx, x, 34, x + 1, 84, r, { width: 1.9, alpha: 0.82, passes: 1 });
+      line(ctx, 8, 36, 88, 82, r, { width: 1.6, alpha: 0.6, passes: 1 });
+      line(ctx, 8, 82, 88, 36, r, { width: 1.4, alpha: 0.5, passes: 1 });
+      // the latch, dropped
+      line(ctx, 84, 46, 94, 46, r, { width: 2.2, alpha: 0.7, passes: 1 });
+    } else {
+      /* swung out: the hinge post at the left, the far stile of the
+       * gate nearer the camera and lower, the bars converging */
+      stroke(ctx, [[8, 36], [30, 30], [30, 90], [8, 84]], r, { width: 2, alpha: 0.85 });
+      line(ctx, 8, 84, 30, 90, r, { width: 2, alpha: 0.85 });
+      for (let i = 1; i < 5; i++) {
+        const t = i / 5;
+        line(ctx, 8 + 22 * t, 36 - 6 * t, 8 + 22 * t + 1, 84 + 6 * t, r, { width: 1.7, alpha: 0.75, passes: 1 });
+      }
+      line(ctx, 10, 40, 28, 88, r, { width: 1.3, alpha: 0.5, passes: 1 });
+      // its shadow on the ground, a smear
+      hatch(ctx, 10, 86, 24, 6, 0.3, 4, r, { alpha: 0.18 });
+    }
+  });
+}
+
+/**
+ * NELL, in three drawings — and she is the only person in the world
+ * who has three, because `critique-story-2` said her straightening
+ * needs two or three signals to survive the shipping camera. Seen from
+ * behind, mostly, because she watches the road north and the camera
+ * looks north too.
+ *
+ *   0  leaning on the gate: forearms on the top rail, weight on one
+ *      hip, head turned up the road
+ *   1  straight: off the rail, feet apart, arms down, square to the
+ *      road — the shoulders are the whole of the line
+ *   2  reaching: one arm out to the side and down, the gate's leaf in
+ *      her hand
+ */
+export function nellTexture(seed: number, pose: 0 | 1 | 2): THREE.CanvasTexture {
+  return makeTexture(96, 160, seed, (ctx, r) => {
+    const lean = pose === 0;
+    const reach = pose === 2;
+    // head, with hair tied back — no face, ever
+    const hx = lean ? 44 : 48;
+    const hy = lean ? 40 : 32;
+    scribbleCircle(ctx, hx, hy, 14, r, { width: 2, alpha: 0.85 }, 1.1);
+    stroke(ctx, [[hx - 10, hy + 6], [hx - 12, hy + 18]], r, { width: 2.2, alpha: 0.7, passes: 1 });
+    // the body: a long working coat, with the weight where the pose puts it
+    if (lean) {
+      poly(ctx, [[30, 56], [22, 124], [62, 126], [58, 56]], r, { width: 2, alpha: 0.85 });
+      // forearms on the rail, elbows out
+      stroke(ctx, [[30, 62], [8, 70], [4, 74]], r, { width: 2, alpha: 0.8 });
+      stroke(ctx, [[58, 62], [80, 68], [84, 72]], r, { width: 2, alpha: 0.8 });
+      line(ctx, 4, 74, 84, 72, r, { width: 1.6, alpha: 0.55, passes: 1 });
+      // one foot crossed behind the other
+      line(ctx, 34, 124, 40, 150, r, { width: 2.2, alpha: 0.85 });
+      line(ctx, 54, 126, 44, 150, r, { width: 2.2, alpha: 0.85 });
+    } else {
+      poly(ctx, [[34, 48], [28, 118], [68, 118], [62, 48]], r, { width: 2, alpha: 0.85 });
+      if (reach) {
+        stroke(ctx, [[34, 56], [12, 66], [2, 96]], r, { width: 2, alpha: 0.85 });
+        stroke(ctx, [[62, 56], [72, 84], [70, 100]], r, { width: 1.8, alpha: 0.8 });
+      } else {
+        // arms down and a little out from the sides: somebody who has
+        // just stood up straight and has not decided what to do with them
+        stroke(ctx, [[34, 56], [22, 86], [24, 104]], r, { width: 1.8, alpha: 0.8 });
+        stroke(ctx, [[62, 56], [74, 86], [72, 104]], r, { width: 1.8, alpha: 0.8 });
+      }
+      line(ctx, 36, 118, 32, 150, r, { width: 2.2, alpha: 0.85 });
+      line(ctx, 60, 118, 64, 150, r, { width: 2.2, alpha: 0.85 });
+    }
+    // a scarf, which is the one thing that tells her from the others
+    stroke(ctx, [[hx - 8, hy + 14], [hx + 2, hy + 20], [hx + 12, hy + 14]], r,
+      { width: 2.4, alpha: 0.7, passes: 1, color: '#8f4a52' });
+  });
+}
+
+/**
+ * THE BULL — the first creature of the Common and the first thing in
+ * the game that means it (`THE-FUN-PASS` §2.3, §3 item 1). Three
+ * drawings, side on, facing right; the land mirrors it.
+ *
+ *   0  grazing: head down in the grass, one back foot cocked
+ *   1  looking: head up and turned, horns wide, square on you
+ *   2  charging: stretched, head low and forward, hind legs behind it,
+ *      tail out, and the front feet off the ground
+ *
+ * A bull is a slab with a bigger slab on the front of it. The goat is
+ * a barrel on thin legs and the sheep are a cloud; this has to read as
+ * a different animal at forty units, so the mass is the drawing and the
+ * legs are short and thick, and the horns are the only fine line on it.
+ */
+export function bullTexture(seed: number, pose: 0 | 1 | 2): THREE.CanvasTexture {
+  return makeTexture(192, 128, seed, (ctx, r) => {
+    const charge = pose === 2;
+    const look = pose === 1;
+    const dark = '#3a3630';
+    // the body: deep at the shoulder, falling to the hip
+    const body: [number, number][] = charge
+      ? [[22, 62], [40, 46], [90, 40], [130, 44], [150, 56], [146, 84], [110, 90], [60, 90], [28, 82]]
+      : [[30, 64], [44, 40], [92, 34], [126, 38], [142, 52], [138, 88], [106, 94], [60, 94], [34, 86]];
+    /* The mass is a wash and a scribble, not a solid: everything on
+     * this sheet is line over stain, and a black slab with legs read as
+     * a hole in the page. Half-strength stain, and the pen fills it. */
+    fillPoly(ctx, body, dark, 0.42);
+    poly(ctx, body, r, { width: 2.4, alpha: 0.9, jitter: 1.6 });
+    // the hump over the shoulder, which is the whole silhouette
+    fillBlob(ctx, charge ? 118 : 112, charge ? 44 : 38, 22, r, dark, 0.5, 0.7);
+    // hide: the pen going round and round inside the mass
+    for (let i = 0; i < 26; i++) {
+      const x = 42 + r() * 96;
+      const y = 46 + r() * 38;
+      line(ctx, x, y, x + (r() - 0.5) * 14, y + 5 + r() * 8, r,
+        { width: 1.1, alpha: 0.18 + r() * 0.16, passes: 1 }, 2);
+    }
+    // the head: a slab, low or up
+    let hx: number;
+    let hy: number;
+    if (charge) { hx = 168; hy = 72; }
+    else if (look) { hx = 152; hy = 44; }
+    else { hx = 160; hy = 92; }
+    const head: [number, number][] = look
+      ? [[hx - 16, hy - 16], [hx + 16, hy - 16], [hx + 14, hy + 20], [hx - 14, hy + 20]]
+      : [[hx - 22, hy - 12], [hx + 14, hy - 10], [hx + 18, hy + 12], [hx - 18, hy + 14]];
+    fillPoly(ctx, head, dark, 0.55);
+    poly(ctx, head, r, { width: 2.2, alpha: 0.9 });
+    // the neck joins it
+    fillPoly(ctx, [[hx - 26, hy - 14], [charge ? 146 : 134, charge ? 50 : 44], [charge ? 146 : 138, charge ? 80 : 74], [hx - 20, hy + 12]], dark, 0.45);
+    // the muzzle, one paler mark
+    line(ctx, hx - 6, hy + 8, hx + 8, hy + 8, r, { width: 2, alpha: 0.35, passes: 1, color: '#f5f2ea' });
+    // the horns: the only fine line, and they curve forward
+    if (look) {
+      stroke(ctx, [[hx - 16, hy - 12], [hx - 30, hy - 26], [hx - 26, hy - 40]], r, { width: 2, alpha: 0.9, passes: 1 });
+      stroke(ctx, [[hx + 16, hy - 12], [hx + 30, hy - 26], [hx + 26, hy - 40]], r, { width: 2, alpha: 0.9, passes: 1 });
+    } else {
+      stroke(ctx, [[hx - 10, hy - 12], [hx + 2, hy - 30], [hx + 16, hy - 34]], r, { width: 2, alpha: 0.9, passes: 1 });
+      stroke(ctx, [[hx - 18, hy - 10], [hx - 12, hy - 26], [hx - 2, hy - 30]], r, { width: 1.6, alpha: 0.7, passes: 1 });
+    }
+    // legs: short and thick, and in the charge they are out
+    const legs: [number, number, number, number][] = charge
+      ? [[44, 86, 20, 112], [62, 88, 50, 116], [118, 88, 140, 110], [136, 84, 156, 104]]
+      : [[46, 92, 44, 122], [62, 94, 64, 122], [110, 92, 108, 122], [128, 88, pose === 0 ? 136 : 130, 122]];
+    for (const [x0, y0, x1, y1] of legs) {
+      line(ctx, x0, y0, x1, y1, r, { width: 4.2, alpha: 0.6, color: dark });
+      line(ctx, x1 - 3, y1, x1 + 5, y1 + 1, r, { width: 2.2, alpha: 0.8, passes: 1 });
+    }
+    // the tail: down at rest, out in the charge
+    if (charge) stroke(ctx, [[26, 64], [8, 56], [2, 44]], r, { width: 2, alpha: 0.8, passes: 1 });
+    else stroke(ctx, [[32, 66], [26, 92], [30, 112]], r, { width: 2, alpha: 0.8, passes: 1 });
+    // the ring, one small loop, which is the joke played straight
+    scribbleCircle(ctx, hx + (look ? 0 : 10), hy + (look ? 18 : 12), 4, r, { width: 1.2, alpha: 0.55 });
+  });
+}
+
+/* ---------------- THE FOUR LURES (the vista register, paler) ------- */
+
+/**
+ * THE GLINT OF THE SEA — a horizon band a long way north-west, above
+ * the oaks: broken pencil, a whisper of the shallow sea's blue, and a
+ * handful of ticks where the light is on the water. Nothing below the
+ * band: the sea has no foreground from here.
+ */
+export function seaGlintTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(512, 192, seed, (ctx, r) => {
+    const y0 = 34;
+    // the horizon, ruled by hand, in two broken passes
+    for (let x = 12; x < 500; x += 40 + r() * 30) {
+      const w = 24 + r() * 40;
+      line(ctx, x, y0 + (r() - 0.5) * 2, Math.min(500, x + w), y0 + (r() - 0.5) * 2, r,
+        { width: 1.3, alpha: 0.42, passes: 1, color: PENCIL });
+    }
+    // the water under it: a few long strokes of the shallow wash
+    for (let i = 0; i < 7; i++) {
+      const y = y0 + 6 + i * 7 + r() * 3;
+      const x = 20 + r() * 120;
+      line(ctx, x, y, x + 180 + r() * 220, y + (r() - 0.5) * 3, r,
+        { width: 1.6, alpha: 0.18 - i * 0.015, passes: 1, color: WASH.seaShallow });
+    }
+    // the glint: short ticks of pressure where the light catches
+    for (let i = 0; i < 9; i++) {
+      const x = 60 + r() * 400;
+      const y = y0 + 8 + r() * 30;
+      line(ctx, x, y, x + 6 + r() * 10, y, r, { width: 2.2, alpha: 0.5, passes: 1, color: PENCIL });
+    }
+  });
+}
+
+/**
+ * SMOKE FROM THE MILL — the mill itself is behind Brim's wall and is
+ * drawn only as its cap and one sail poking over; the plume is the
+ * lure. It rises, leans east with the same wind every blade of grass
+ * on the Common leans with, and thins to nothing.
+ */
+export function millSmokeTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(160, 384, seed, (ctx, r) => {
+    // the mill's cap and a sail, pale, at the foot
+    fillPoly(ctx, [[40, 384], [46, 330], [78, 330], [84, 384]], WASH.downs, 0.3);
+    poly(ctx, [[40, 384], [46, 330], [78, 330], [84, 384]], r, { width: 1.3, alpha: 0.5, color: PENCIL });
+    poly(ctx, [[44, 332], [62, 312], [80, 332]], r, { width: 1.2, alpha: 0.5, color: PENCIL });
+    line(ctx, 62, 322, 108, 296, r, { width: 1.2, alpha: 0.45, passes: 1, color: PENCIL });
+    line(ctx, 62, 322, 22, 300, r, { width: 1.2, alpha: 0.45, passes: 1, color: PENCIL });
+    // the plume: loops that widen and fade as they rise, leaning east
+    let x = 66;
+    let y = 318;
+    let rad = 8;
+    for (let i = 0; i < 9; i++) {
+      scribbleCircle(ctx, x, y, rad, r, { width: 1.1, alpha: Math.max(0.06, 0.34 - i * 0.032), passes: 1, color: PENCIL, jitter: 2.2 }, 1.3);
+      y -= rad * 1.5;
+      x += 6 + i * 2.2;
+      rad += 3.2;
+    }
+  });
+}
+
+/**
+ * THE CITY'S TOWERS — furthest of the four, faintest of the four, at
+ * the frame's right edge behind the mill's smoke. Ruled, because
+ * Greyline is ruled (`textures-now.ts`), and every one of them cropped
+ * flat at the top the way that land crops its own.
+ */
+export function cityTowersTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(384, 224, seed, (ctx, r) => {
+    const towers: [number, number, number][] = [[40, 60, 120], [110, 48, 170], [176, 70, 96], [262, 52, 150], [326, 40, 110]];
+    for (const [x, w, h] of towers) {
+      fillPoly(ctx, [[x, 224], [x, 224 - h], [x + w, 224 - h], [x + w, 224]], WASH.city, 0.22);
+      line(ctx, x, 224, x, 224 - h, r, { width: 1.2, alpha: 0.4, passes: 1, color: PENCIL, jitter: 0.4 });
+      line(ctx, x + w, 224, x + w, 224 - h, r, { width: 1.2, alpha: 0.4, passes: 1, color: PENCIL, jitter: 0.4 });
+      line(ctx, x, 224 - h, x + w, 224 - h, r, { width: 1.1, alpha: 0.4, passes: 1, color: PENCIL, jitter: 0.4 });
+      // a mast on the tallest
+      if (h > 160) line(ctx, x + w / 2, 224 - h, x + w / 2, 224 - h - 22, r, { width: 1, alpha: 0.35, passes: 1, color: PENCIL });
+    }
+  });
+}
+
+/* ---------------- THE FAIR GROUND ---------------------------------- */
+
+/**
+ * THE MAYPOLE — the fair ground's one vertical, and the fair is not on.
+ * A tall pole with a crown, and the ribbons, which are tied at the top
+ * and hang, because nobody is holding the other ends.
+ */
+export function maypoleTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(96, 320, seed, (ctx, r) => {
+    line(ctx, 48, 316, 47, 22, r, { width: 3.2, alpha: 0.88 });
+    scribbleCircle(ctx, 48, 20, 8, r, { width: 1.6, alpha: 0.75 }, 1.1);
+    // ribbons, tied at the crown, hanging and a little wound about the pole
+    const cols = ['#8f4a52', PENCIL, INK, '#8f4a52', PENCIL];
+    for (let i = 0; i < 5; i++) {
+      const sx = 30 + i * 9;
+      stroke(ctx, [[48, 26], [sx + (r() - 0.5) * 10, 90 + i * 10], [sx + (r() - 0.5) * 14, 180 + i * 12], [44 + (r() - 0.5) * 20, 260 + r() * 30]], r,
+        { width: 1.5, alpha: 0.5 + r() * 0.2, passes: 1, color: cols[i] });
+    }
+  });
+}
+
+/**
+ * THE FAIR'S BOARD — a notice on two legs, hand-lettered. It says what
+ * it is for (`THE-FUN-PASS` §2.5: signs may), and under the word there
+ * is a space where the date was, and something has been rubbed out of
+ * it more than once.
+ */
+export function fairBoardTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(192, 192, seed, (ctx, r) => {
+    fillPoly(ctx, [[22, 30], [170, 26], [172, 118], [20, 122]], '#d8c8a8', 0.5);
+    poly(ctx, [[22, 30], [170, 26], [172, 118], [20, 122]], r, { width: 2, alpha: 0.9 });
+    line(ctx, 40, 122, 36, 186, r, { width: 2.6, alpha: 0.85 });
+    line(ctx, 152, 120, 156, 186, r, { width: 2.6, alpha: 0.85 });
+    letteringFit(ctx, 'THE FAIR', 34, 62, 124, 22, r, { width: 2, alpha: 0.85, crooked: 0.5, passes: 1 });
+    // the date, rubbed out: a smear of pencil and a few letters that survived
+    hatch(ctx, 40, 76, 110, 24, 0.15, 5, r, { alpha: 0.14, color: PENCIL });
+    letteringFit(ctx, 'NEXT', 52, 96, 60, 11, r, { width: 1.2, alpha: 0.4, crooked: 0.8, passes: 1, color: PENCIL });
+    line(ctx, 112, 92, 146, 90, r, { width: 1.4, alpha: 0.25, passes: 1, color: PENCIL });
   });
 }

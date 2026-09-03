@@ -1426,6 +1426,66 @@ export class Audio {
         break;
       }
 
+      /* ================================================================ *
+       * THE FIRST HOUR (Session 16). Four voices, and three of them are
+       * the first frightening sounds in the game: a bull that means it,
+       * its feet, and a gate going shut between you and it. The fourth
+       * is a goat, which is the joke after the fright.
+       * ================================================================ */
+
+      case 'bull-snort': {
+        /* A BULL, CLOSE: a blast of breath out of a big chest — low
+         * noise with a hard front, falling, and a chesty knock under it
+         * so it has weight. Louder than a lark, the way the shout is:
+         * fear on a phone that is on silent is the picture's job, but
+         * the sound is allowed to be the first thing in the game that
+         * is actually loud. */
+        const j = 0.92 + Math.random() * 0.16;
+        this.surge(0.01, 0.38, 380 * j, 120, 0.05, 0, 'lowpass');
+        this.knock(70 * j, 0.03);
+        this.surge(0.02, 0.22, 900 * j, 300, 0.012, 0.05, 'bandpass');
+        break;
+      }
+
+      case 'bull-hooves': {
+        /* FOUR FEET AT A GALLOP, once round: two heavy and two lighter,
+         * the way a gallop actually lands, and the ground taking it.
+         * Fired on the bull's own stride while it charges, so it comes
+         * faster the harder it goes. */
+        const j = 0.94 + Math.random() * 0.12;
+        this.knock(64 * j, 0.03, 0);
+        this.knock(58 * j, 0.024, 0.08);
+        this.knock(72 * j, 0.018, 0.19);
+        this.knock(66 * j, 0.014, 0.25);
+        this.surge(0.01, 0.12, 700, 250, 0.006, 0.02, 'lowpass');
+        break;
+      }
+
+      case 'gate-slam': {
+        /* A FIELD GATE GOING SHUT, hard: wood on wood, one crack and a
+         * rattle of the bars after it. The only sound in the game a
+         * person other than the walker has ever made on purpose. */
+        const j = 0.95 + Math.random() * 0.1;
+        this.knock(220 * j, 0.045);
+        this.surge(0.005, 0.09, 2600 * j, 900, 0.02, 0.0, 'bandpass');
+        this.knock(160 * j, 0.02, 0.07);
+        this.knock(190 * j, 0.012, 0.13);
+        this.knock(140 * j, 0.008, 0.2);
+        break;
+      }
+
+      case 'goat-bleat': {
+        /* A GOAT, which is a small complaint with a wobble in it. A
+         * sawtooth two notes wide, wavering, and over in a third of a
+         * second. Lower and shorter than the Penwood's, which nobody
+         * has ever got near enough to hear. */
+        const j = 0.9 + Math.random() * 0.2;
+        this.glide(440 * j, 330 * j, 0, 0.28, 0.02, 'sawtooth');
+        this.glide(452 * j, 340 * j, 0.03, 0.22, 0.012, 'triangle');
+        this.surge(0.02, 0.2, 1600 * j, 700, 0.006, 0.01, 'bandpass');
+        break;
+      }
+
       case 'can-knock': {
         /* Two full cans, out on the track, at night. It is the sound of
          * a man forty units from anywhere carrying water uphill, and
