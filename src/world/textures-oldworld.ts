@@ -351,6 +351,35 @@ export function townRowLitTexture(seed: number): THREE.CanvasTexture {
 }
 
 /**
+ * THE SHUTTERS (Session 17): the same recorded casements with a pair of
+ * dark shutters pulled to over each, which is the town's face from nine
+ * at night until first light. Hung a hair in front of the row, exactly
+ * as the lit panes are, and for the same reason.
+ */
+export function townRowShutTexture(seed: number): THREE.CanvasTexture {
+  const wins = ROW_WINDOWS.get(seed) ?? [];
+  return makeTexture(512, 288, seed * 11 + 5, (ctx, r) => {
+    for (const win of wins) {
+      if (r() < 0.2) continue; // one left open: somebody is still up
+      const { x, y, w, h } = win;
+      for (const side of [0, 1]) {
+        const sx = x + side * (w / 2);
+        ctx.save();
+        ctx.globalAlpha = 0.72;
+        ctx.fillStyle = '#5a4a3a';
+        ctx.fillRect(sx + 1, y + 1, w / 2 - 2, h - 2);
+        ctx.restore();
+        line(ctx, sx + 1, y + 1, sx + 1, y + h - 1, r, { width: 1.2, alpha: 0.7, passes: 1 }, 2);
+        line(ctx, sx + w / 2 - 1, y + 1, sx + w / 2 - 1, y + h - 1, r, { width: 1.2, alpha: 0.7, passes: 1 }, 2);
+        for (let yy = y + 4; yy < y + h - 2; yy += 4) {
+          line(ctx, sx + 2, yy, sx + w / 2 - 2, yy + 0.5, r, { width: 0.8, alpha: 0.35, passes: 1 }, 2);
+        }
+      }
+    }
+  });
+}
+
+/**
  * The belfry at full pressure — the pale Session 2 stand-in made real:
  * stone tower, clock scratch, bell arch with its bell, steep cap, and
  * the chapel gable leaning against its foot.

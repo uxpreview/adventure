@@ -100,6 +100,11 @@ export class StandeeField {
         uBase: { value: baseOpacity },
         uOvershoot: { value: overshoot },
         uWind: { value: new THREE.Vector2(wind?.amp ?? 0, wind?.freq ?? 0) },
+        /* THE WEATHER'S WIND (Session 17): one multiplier over the
+         * field's own authored sway, exactly one at the shipped page's
+         * calm (`weather.windK`), so a field authored in Session 2
+         * leans harder when the wind gets up without being re-opened. */
+        uWindK: { value: 1 },
         uWave: { value: new THREE.Vector3(wave?.amp ?? 0, wave?.speed ?? 0, wave?.len ?? 0) },
         uQuadH: { value: h },
         uPlayer: { value: new THREE.Vector2(1e6, 1e6) },
@@ -109,6 +114,7 @@ export class StandeeField {
         uniform float uTime;
         uniform float uOvershoot;
         uniform vec2 uWind;
+        uniform float uWindK;
         uniform vec3 uWave;
         uniform float uQuadH;
         uniform vec2 uPlayer;
@@ -137,7 +143,7 @@ export class StandeeField {
               float w = sin(uTime * uWave.y - origin.x * uWave.z);
               g = max(0.0, w) * max(0.0, w) * uWave.x;
             }
-            wp.x += (sway * uWind.x + g) * hFac * hFac;
+            wp.x += (sway * uWind.x * uWindK + g * (0.6 + 0.4 * uWindK)) * hFac * hFac;
             vec2 away = origin - uPlayer;
             float d = length(away);
             if (d < 1.7 && d > 1e-4) {
@@ -342,8 +348,9 @@ export class StandeeField {
     this.mesh.visible = k > 0.02;
   }
 
-  update(time: number) {
+  update(time: number, windK = 1) {
     this.mat.uniforms.uTime.value = time;
+    this.mat.uniforms.uWindK.value = windK;
   }
 
   /** Where the walker is, for the grass-parting bend (wind fields only). */

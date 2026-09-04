@@ -1,5 +1,327 @@
 # SESSIONS — the handoff log
 
+## Session 17 — 2026-09-04 — life
+
+*Every land opened at once, and none of them re-drawn. The four
+multipliers of `THE-FUN-PASS` §9 — unnamed inhabitants with routines,
+the animals, the weather, the night — are systems that raise all twelve
+lands together, and that is how they were built: three files
+(`events.ts` grown, `life.ts`, `weather.ts`) and then a page or two in
+each land's builder saying who is where at what hour. **The play gate
+was handed over and not run** (`design/play-sheets/session-17.md`).
+Session 16's sheet had not come back when this session started; the
+opening is untouched.*
+
+### THE ONE THING TO KNOW
+
+**Everything that happens now is a pure function of the clock, and the
+clock has a day counter.** A routine is a list of stops in hour order
+(`events.registerRoutine`), and where its figure is at any hour is
+arithmetic on that list — so a land that was not built when the
+lamplighter set out draws him four lamps along when the walker arrives,
+and `tools/check-fields.mjs` can drive every hour a drawing changes at
+and assert it changed. The weather is the same law one level up: a pure
+function of `clock.day` and `clock.hour`, with the first two days
+written by hand and the rest hashed, so a shower that has been falling
+for ten minutes when you arrive has been falling for ten minutes, and
+**day zero is the shipped page** — calm at noon and at 19.6, wind at
+exactly the fields' own sway, one shower in the middle of the
+afternoon. That is what let this session open every land and still
+report the protected framings as a number.
+
+**And the second co-walker was standing in a river for most of the
+session.** `company.ts` is general and the dog was four lines; its
+first home was the drove's mouth, which is across the water from every
+road out of the Downs, and a follower cannot find a bridge. It noticed,
+changed posture, and never moved, and the contact sheet showed a
+walker at a border with no dog. The rule for the next companion is in
+`PROMPT.md`: a companion's home is somewhere every road out of its land
+is reachable without crossing water, and the bank is probed rather than
+assumed.
+
+### WHAT SHIPPED
+
+- **Routines on `events.ts`** — `registerRoutine(def)`, `routineAt(def,
+  hour)`, `routine(id)`, `events.between(a, b)`. A `Stop` is `at, x, z,
+  pose, face?, hold?`; the figure leaves each stop as late as it can
+  and arrives at the next on the hour; before the first and after the
+  last it is indoors and not drawn, which is why a routine's first stop
+  is a doorway. Every leg is a registered event (`the-lamplighter/2`),
+  so `happening.ids` knows who is on the move. Over midnight by giving
+  a stop an hour past twenty-four.
+- **`src/world/life.ts`** — `Figure` (one standee, the drawing swapped
+  by posture, faded in over two seconds out of its door), `Creature`
+  (an animal with postures), `stops(rows)`, and the registry `drawn`
+  that every one of them reports to for the harness. One-off standees
+  on purpose: a standee has no birth to get wrong.
+- **`src/world/textures-life.ts`** — three kinds of folk (a coat, a
+  dress, a jacket) in seven postures (stand, two strides, bend, sit,
+  carry, a pole), **cached and shared**: sixty-three figures off
+  twenty-one canvases. A child, a handcart, a rod, a lantern's glow.
+  And the animals: dog (four), cow (two), cat (two), fox (two), heron
+  (two), seal (two), magpie (two), bat, crab, rat, lizard, kite, snake,
+  a pigeon in the air, the shut shutters, and the back of the thing
+  under the Wide Blue. The bull gained a fourth drawing, lying.
+- **THE UNNAMED, sixty-three of them, none named, all on the clock.**
+  THE COMMON: the three arguing under the oaks at ten and at four
+  (`QUESTS` §8 L5 — whoever has the floor is a stride nearer the swing,
+  and it changes hands; sit and watch), the fisher at the bend before
+  seven, the well woman at nine, the carter down from Brim's gate with
+  a handcart at a quarter to eight, two children running the fair
+  ground's ring after three. BRIM: **the lamplighter** — out of the
+  belfry yard at five past seven with a pole, the four lamps in order,
+  each one lit as he reaches it and not before, and the same round to
+  put them out at twenty to six; **the shutters**, row by row at nine
+  and at first light, with a clack if you are in the street; a
+  delivery that finds the stall shut; the sweeper before six; the
+  warden counting the orchard twice; children round the fountain. And
+  the crowd goes in out of the rain. GREYWEATHER: a sentry along the
+  wall's own feet at dusk and before dawn (registered in the builder,
+  because the brow is where the page put it), a groom with a bucket at
+  seven, a washerwoman at the moat pool through the morning, pilgrims
+  up the avenue twice. MAPLE COURT: the jogger round the court at half
+  past six, the post box to box at ten, children on the green, an
+  evening walker, somebody watering at seven, and **the first car**,
+  which backs out at ten past eight, drives to the end of the survey —
+  there is nowhere else a car in this world can go — and comes back at
+  ten to six. THE PENWOOD: two cutters who work the failing edge and
+  never go inside the forty, a picker in the thicket, somebody walking
+  the round at noon and out the way they came, a child on the wood road
+  at four. THE DOWNS: the miller in and out of his door and once to the
+  granary with a sack, a carter over the ford, the shepherd at the back
+  of the flock at dawn and at dusk and at the field's edge between.
+  LONGSHORE: the beachcomber on the wrack at first light, the hut owner
+  who opens the third hut at nine and sits outside it, two bathers who
+  never go in, the jetty fisher in the evening, the promenade walked
+  twice. THE WIDE BLUE: two on the moored boats in the morning.
+  GREYLINE: **the rush** at eight and at half past five (three more
+  fields, dimmed on a bump), the sweeper, the delivery at the shutter,
+  the window cleaner, the busker at the junction. THE CUBICLE MILE: the
+  nine o'clock from three cars to one door and the five o'clock back,
+  the half-past-eight car in past the barrier and round to the yard at
+  half past five, the smoker three times, the courier who finds nobody
+  in the hut, the cleaner at seven, the guard with a lantern at half
+  past ten. **SPLITROCK has three and THE FLATS two, under the brief's
+  five, on purpose:** both lands' thesis is that nobody comes; hikers
+  to the arch, somebody at the overlook, a figure on the far rim you
+  cannot reach; and a walker who comes as far as THE HANDS, reads a
+  post that points at everywhere but here, and turns back, twice a day.
+- **The hand-rolled routines moved onto `events.ts`**, owed from 15:
+  Brim's lamps (off the lamplighter's stops), the shelter's light
+  (`the-mile-lights`/`the-mile-dark`, read with `events.between`),
+  Amos's night walk (`amos-night`, six round trips as twelve legs with
+  the wait at the water while the cans fill — he is drawn by his own
+  three postures off the routine's state), Joan's working day
+  (`joan-out`, `joan-at-table`, `joan-in`).
+- **THE ANIMALS, one that reacts in every land** (`THE-FUN-PASS` §3
+  item 1). **THE DOG** (`company.ts`, four drawings) at the field gate
+  on the Downs' east road: notices at fourteen, follows at two and a
+  half, trots at 9.2, **stops dead at the Downs' edge on both roads
+  out** and sits looking after you; barks when it falls in and when
+  the border takes you. The herd of six in the headland, heads up
+  first, then parting square off the lane, slowly, and lying down at
+  night. The heron at the tarn, up and gone at fourteen units, back in
+  a minute. Seals on the bar through the middle of the day that slip
+  in at nine. Seven pigeons in Greyline that lift AS ONE. Crabs on the
+  wrack that go sideways at four. Two cats — Brim's south wall by the
+  gate, Val's fence — that sit up for a RUNNER and for nobody else.
+  Three rooks on the scarecrow that lift off its arms. Lizards on a
+  warm stone in the slot and on the pale that are gone before you are
+  sure. A magpie on the muster sign. A kite over the pale at noon. The
+  rat in the hollow after dark. And **the rooks cross** (`rooks.ts`):
+  three that roost on the keep, fly to the Downs' scarecrow at twenty
+  to seven and home at twenty to seven, over Brim and the Common in
+  eighteen seconds, drawn by whichever land they are nearer — birds
+  cross borders and nobody looks up, §9's one free layer, recorded so
+  nobody removes it as a bug.
+- **THE WEATHER** (`src/world/weather.ts`). `weather.state` is `rain
+  wind fog storm flash flashId kind`, from `weatherAt(day, hour)`;
+  `planFor(day)` is authored for days zero and one and hashed after.
+  Rain is **the smudge pass running the drawing** (`PaperPass`: every
+  pixel takes the darker of itself and the ink a little way up the
+  page, and thin slanted streaks fall on a phase per column); wind is
+  `weather.windK`, exactly one at the half and a multiplier over every
+  field's own sway (`StandeeField.update(t, windK)`), and it turns the
+  mill (two minutes a revolution in a gale against ten), fills the
+  regatta's sails, and lays the mill's smoke over; fog closes the haze
+  to a third of its reach and lifts the terrain's fog cap, **and the
+  four lures and the keep go with it** (`meadow.ts`, the same number);
+  a storm is rain and wind at one with lightning cut into five-second
+  slots by a hash and one thunder per strike, a second or two after,
+  on a crossing (`App.weatherVoices`). Two beds in `Audio.ts`, the
+  patter and the wind, ramped from the same state; `thunder` and
+  `wind-gust` in `event`. Day zero: calm, a shower at 14.2 for 1.4
+  hours. Day one: fog at first light, a shower before noon, the first
+  storm at 22.6. `clock.day` increments on the wrap and is saved.
+- **NIGHT AS A DIFFERENT GAME.** `the-bull-lies-down` at 20.0 for 9.6
+  hours — the one register call — and a seventh bull state, `lying`,
+  which gets up for a walker inside twelve units and at dawn. The
+  deep pines after dark: inside thirty-four units of the stand the
+  ambient stops entirely, the way it stops near Brack, and once in a
+  long while `branch-crack` a long way off; the rest of the wood gets
+  an owl. Holt's window is a `lampGlowTexture` hung at the house from
+  dusk to dawn — the debt since Session 11 — and the only lit thing in
+  the east half of the world. Foxes on the Common's round and across
+  the Mile's car park after midnight, bats over the well, the moat
+  pool, the slot and the deep pines, the rat, and **`the-deep`** at
+  19.35 for six minutes' worth of one ten-second surfacing fifty units
+  north of the bar's end.
+- **Scheduled events in every land**: the routines' own, plus
+  `the-regatta` at noon for an hour and a half (three times the speed,
+  heeled with the wind, the bell and the halyards on the start if you
+  are within ninety), `the-seals-haul-out`, `the-deep`, `the-rooks-
+  cross-out`/`-home`, `the-shutters-open`/`-shut`, `the-rush-morning`/
+  `-evening`, `the-mile-lights`/`-dark`, `the-cows-lie-down`, `the-
+  bull-lies-down`, `the-fair-children`, `the-square-children`, `the-
+  green-children`, `the-common-fox`, `the-mile-fox`, the four bats,
+  `the-pale-kite`, `the-snake-crosses`, `the-hollow-rat`, `the-wood-
+  road-child`, `joan-*`.
+- **Fifteen voices** in `Audio.ts`: `thunder`, `wind-gust`, `dog-bark`,
+  `cow-low`, `heron-croak`, `seal-bark`, `fox-bark`, `owl-hoot`,
+  `branch-crack`, `cat-mew`, `shutter`, `deep-surface`, `car-start`,
+  `crab-scuttle`, `pigeons-lift`; in the ear pack under three new
+  groups.
+- **`?hour=`, `?day=`, `?weather=`** on the address bar, read before
+  the title, because the play sheet is ten minutes at three hours of
+  the day and a day is forty minutes.
+- **Tools**: `check-fields` drives every routine (63 figures) through
+  every hour it changes at and asserts drawn-when-out, hidden-when-in,
+  walking-posture-when-walking; `check-verbs` section 8 — the calm
+  page at both protected hours, the shower, day one's fog and storm,
+  the bull down and up, the lamplighter's hours, the dog falling in and
+  stopping at BOTH borders, the counts per land, Joan and the mile on
+  `between`, the regatta, Amos; `check-lures` — the fog closes all four
+  and they come back; `shoot-session17` (59 framings, both rigs, with
+  `hour`, `day`, `weather` per framing and a DO table that walks at the
+  animals). `render-wavs` carries the fifteen.
+
+### THE GATES, AND WHAT MOVED
+
+- **Build green.** `check-terrain`, `check-camera` (the rig never gives
+  ground faster than the walker walks, 3.38 u/s), `check-sightline`
+  (clear — the first car's parking place had been in THE LINE's corridor
+  at (−45, 262) and it parks on the empty plot at (−57, 256) now),
+  `check-audio` (−22 dB below full scale with the fifteen new voices
+  in), `check-lures` (in fog the four lures' opacities 0.04, 0.035,
+  0.035, 0.028 against 0.8, 0.7, 0.7, 0.55 clear, and back after),
+  `check-fields` (63 figures driven through their hours, all drawn
+  right), `check-verbs` (every section, Session 17's included: the dog
+  at 62.04 against the west border at 60 and 227.99 against the east at
+  230, sat looking after you both times), `shoot-mobile` (the chrome on
+  four widths, every card on the page). All pass on the pushed head.
+- **The dog on the harness.** The east-border test first tried to walk
+  the dog over the bridge behind a teleported walker and found the
+  east end of the deck runs along the water for a few units: a follower
+  slides per axis and was held mid-land, and when the walker left the
+  Downs it took the hold for a border. That is a path-finding gap in a
+  thing built not to path-find, so the test does what the goat's does:
+  the dog is `__inklands.company.dog`, put on the road past the bridge,
+  and the walker driven out. The rule is tested at the border.
+
+- **What moved, by `diff-sheets` against `origin/main` (19bb05d), 92
+  framings, bearing pinned, twelve game seconds of settle.** 45 of 92
+  bit-identical; 47 moved at all; 5 over the 0.15% threshold. Every
+  frame that moved is a protected frame with a routine, an animal or an
+  event standing in it at the protected hour, which is the one move
+  `QUALITY-BAR` §3 allows when the land is the scope — and all twelve
+  were:
+  - **`sandbar@12`, 1.5–2.9% on the desktop** — THE REGATTA. It starts
+    at noon (`THE-FUN-PASS` §9 names the hour), so at the protected
+    noon the fleet is racing at three and a half times its drift and
+    the two boats that sat beside the buoy are one boat, further on,
+    heeled. This is the largest move of the session and it is the
+    brief's own beat; the number varies run to run because a racing
+    fleet's position after twelve seconds is more sensitive to the
+    frame clock than a drifting one. **`sandbar@19.6`, 1.5–2.9%** —
+    the same fleet, further round the course than a page that never
+    raced would have it: a boat's place on the course was always a
+    function of elapsed time, and the race adds an hour and a half of
+    it. If the owner wants the noon sandbar back to the pixel, the race
+    starts at half past twelve and this line is the one that changes.
+  - **`tide-line@12`, 0.13% desktop, 0.22% portrait** — the crabs on
+    the wrack and the hut owner sat outside the third hut.
+    **`tide-line@19.6`, 0.09% / 0.21%** — the crabs and the jetty
+    fisher. **`boardwalk@12` 0.10%, `@19.6` 0.07%** — the same beach
+    from the promenade.
+  - **`well@19.6`, 0.10% desktop, 0.19% portrait** — the bats over
+    the well, out from twenty to eight. `well@12` moved 0.014%: nine
+    pixels by seven, a distant figure on the road.
+  - **`bailey@19.6`, 0.07%** — the sentry on the curtain wall at dusk.
+  - **`square-wide@19.6`, 0.05%** — the lamplighter walking home from
+    the fourth lamp; all four lamps are lit, as the framing had them.
+  - **Everything else — the title framing, the Common's seven at both
+    hours (the well aside), Brim's other three, Greyweather's other
+    three, the coast's other two — is bit-identical**, which is what
+    day zero's calm at noon and at 19.6 was for.
+  `SAVE=1 FRAMING=sandbar,tide-line,well node tools/diff-sheets.mjs`
+  writes both sides and the mask into `.diff/frames/` for any of it.
+
+- **The proofs sheet** (`tools/shoot-session17.mjs`, 59 framings, both
+  viewports), reviewed in `critique-art-11.md`: NOT YET at round one
+  (the dog standing in the river; the cat in the air, twice; the dog
+  the size of a calf; the lying bull with legs), PASSED at round two
+  with four passed-not-praised: the lamplighter a dim figure at dusk,
+  the figures small by the house's own law, shutters and lit panes on
+  one row, and the fog frame the strongest on the sheet and the one the
+  opening cannot have.
+- **The ear gate handed over: seventy-eight WAVs in `out/sound/`**,
+  fifteen of them new. Unheard.
+- **The feel gate handed over**, unchanged from 16.
+- **THE PLAY GATE HANDED OVER AND NOT RUN.**
+  `design/play-sheets/session-17.md`: noon on the Downs (the dog, the
+  herd), noon in the Penwood (the heron, the round), dusk in Brim (the
+  lamplighter, the shutters, the bull lying down), the thing under the
+  Wide Blue at twenty past seven, the storm on the second night and
+  the silence in the deep pines, the fog on the second dawn. Ten
+  minutes, with the address-bar hours, and the questions the session
+  could not answer — the first of which is whether rain on a phone is
+  rain or mud.
+
+### DECLINED, IN WRITING
+
+- **Five unnamed in Splitrock and the Flats.** Three and two. Both
+  specs say the land's subject is that nobody comes, and a crowd at the
+  overlook would unsay it. If Session 18's fifteen-second tool finds
+  them too empty, that is the tool's finding.
+- **Moving the lamplighter's round later**, where the lamps' own glow
+  would show his work: his last lamp is at 19.45 so that every
+  protected 19.6 framing keeps all four lit and bit-identical. The
+  owner's call.
+- **Weather on the footprints, the water and the washes.** The rain
+  touches the frame in the post-pass and nothing else; wet paper
+  refusing prints in the rain is a Session 18 or 22 idea and it is not
+  in the brief.
+- **A wash tint per district**, again — districts are 18's.
+
+### Gotchas (new; everything from Sessions 1–16 still applies)
+
+- **A FOLLOWER CANNOT FIND A BRIDGE.** Its home must be somewhere every
+  road out of its land is reachable without crossing water, and the
+  bank is probed (`terrain.waterAt`, `blockedAt`) and not assumed. The
+  dog's first home was in the river.
+- **A STANDEE'S TOP IS NOT THE DRAWING'S TOP.** Brim's wall draws its
+  parapet at seven tenths of the canvas; a thing seated at the
+  standee's height floats. Read the texture before sitting anything on
+  it.
+- **A FENCE DRAWN EDGE-ON IS NOT A WALL TO SIT ON.** The orchard's
+  paddock fence is turned ninety degrees; from a north-looking lens it
+  is a line, and a cat on it is a cat in the air.
+- **A `fresh` PAGE WAKES BESIDE THE BULL.** Any framing in the field
+  after `fresh: true` has a bull that has already charged; `I.common.
+  reset()` first, or do not use `fresh` for it.
+- **`ONLY=` RUNS A FRAMING WITHOUT ITS PREDECESSORS**, and the state a
+  framing inherits from the frames before it (a companion following, a
+  bull at home) is part of the frame. A frame that only reads right in
+  the full run is a frame whose DO script should set its own state.
+- **THE FIGURES HIDE IN THE RAIN**, so a harness that drives routines
+  through the day pins the weather calm first (`I.setWeather('clear')`),
+  or every routine between 14.2 and 15.6 on day zero "fails".
+- **EVERY ROUTINE'S STOPS MUST BE INSIDE ITS LAND'S RECT.** Nothing
+  clamps them (a routine is authored, not simulated); the first stop of
+  the Common's carter was at z −7, inside by three. Check the rect.
+- **THE PREVIEW SERVER SERVES WHATEVER IS IN `dist/`.** Rebuilding while
+  a gate chain is running against it hands a check half a build.
+
 ## Session 16 — 2026-09-03 — the first hour
 
 *The Common re-opened, hardest. The opening the owner chose on

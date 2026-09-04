@@ -1,4 +1,5 @@
-// EVERY INSTANCE IN THE LAND YOU ARE STANDING IN IS INKED IN.
+// EVERY INSTANCE IN THE LAND YOU ARE STANDING IN IS INKED IN — AND,
+// FROM SESSION 17, EVERY ROUTINE THAT CHANGES DRAWING CHANGES IT.
 //
 //   npx vite preview --port 4173 &
 //   node tools/check-fields.mjs
@@ -161,10 +162,84 @@ for (const [name, x, z, mx, mz, secs] of CASES) {
   if (r.faulty) fails++;
 }
 
+/* ================================================================== *
+ * AND EVERY ROUTINE THAT CHANGES DRAWING (Session 17).
+ *
+ * The owner found the last bug of this class by walking up to an
+ * animal, and no contact sheet could have: a contact sheet photographs
+ * a walker standing still at one hour. Session 17 put a routine in every
+ * land — a figure somewhere at a given hour, in a posture, and indoors
+ * otherwise — and every one of them is a drawing that changes with the
+ * clock. So this drives the clock through every hour a routine changes
+ * at and asserts, for each: when the routine says it is out, it is
+ * DRAWN, with a real drawing, where the routine says; when it says it is
+ * in, it is not drawn; and when it is walking, it is in a walking
+ * posture. Read from the running page, not from the source.
+ * ================================================================== */
+console.log('\nroutines — every figure is drawn when it is out and not when it is in:');
+const routineList = await page.evaluate(() =>
+  window.__inklands.life.routines.map((r) => ({
+    id: r.id, land: r.land, walkPose: r.walkPose,
+    stops: r.stops.map((s) => [s.at, s.x, s.z, s.hold ?? 0]),
+  }))
+);
+let routineFails = 0;
+let checked = 0;
+let skipped = 0;
+for (const rt of routineList) {
+  const st = rt.stops;
+  const end = st[st.length - 1][0] + st[st.length - 1][3];
+  const hours = [st[0][0] - 0.05, end + 0.05];
+  for (let i = 0; i < st.length; i++) {
+    hours.push(st[i][0] + 0.005);
+    if (i < st.length - 1) hours.push(st[i][0] + (st[i + 1][0] - st[i][0]) * 0.6);
+  }
+  const res = await page.evaluate(
+    ({ rt, hours }) => {
+      const I = window.__inklands;
+      I.setBearing(false);
+      I.setWeather('clear');          // rain sends the folk in, and that is not what is asserted here
+      I.goto(rt.stops[0][1], rt.stops[0][2]);
+      I.step(1 / 60, 40);             // the land is built and everything near it
+      const def = I.life.routines.find((r) => r.id === rt.id);
+      const out = [];
+      for (const h of hours) {
+        I.setHour(((h % 24) + 24) % 24, false);
+        I.events.resync();
+        I.step(1 / 60, 12);
+        const d = I.life.drawn().find((x) => x.id === rt.id && x.kind === 'figure');
+        const e = I.life.routineAt(def, ((h % 24) + 24) % 24);
+        out.push({
+          h: +h.toFixed(3), figure: !!d, present: e.present, moving: e.moving,
+          visible: d?.visible ?? null, map: d?.map ?? null, pose: d?.pose ?? null,
+          off: d ? Math.hypot(d.x - e.x, d.z - e.z) : null,
+        });
+      }
+      I.setWeather(null);
+      return out;
+    },
+    { rt, hours }
+  );
+  if (!res[0].figure) { skipped++; continue; }
+  const bad = [];
+  for (const r of res) {
+    if (r.present && !(r.visible && r.map && r.off < 0.6)) bad.push(`${r.h}: out but not drawn where it should be (visible ${r.visible}, map ${r.map}, off ${r.off?.toFixed(2)})`);
+    if (!r.present && r.visible) bad.push(`${r.h}: in, but drawn`);
+    if (r.present && r.moving && !(r.pose === 1 || r.pose === 5 || r.pose === rt.walkPose)) bad.push(`${r.h}: walking in posture ${r.pose}`);
+  }
+  checked++;
+  if (bad.length) {
+    routineFails++;
+    console.log(`  ✗ ${rt.id.padEnd(28)} ${bad.slice(0, 3).join('; ')}${bad.length > 3 ? ` (+${bad.length - 3})` : ''}`);
+  }
+}
+console.log(`  ${checked} figure(s) driven through ${routineList.length ? 'their hours' : 'nothing'}; ${skipped} routine(s) drawn by a land's own hand (skipped); ${routineFails ? `${routineFails} FAILED` : 'all drawn right'}`);
+fails += routineFails;
+
 await browser.close();
 console.log(
   fails
-    ? `\n✗ ${fails} land(s) have a field that is half inked in. See the header of this file.`
+    ? `\n✗ ${fails} check(s) failed: a field half inked in, or a routine not drawn. See the header of this file.`
     : '\nall field checks pass'
 );
 process.exit(fails ? 1 : 0);

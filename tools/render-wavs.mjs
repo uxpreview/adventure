@@ -114,6 +114,14 @@ const VOICES = [
   ['maple-court', ['sprinkler', 'far-dog', 'screen-door']],
   ['greyline-city', ['crossing-tick', 'heels']],
   ['the-cubicle-mile', ['plant-shift', 'door-hiss', 'cup-turn', 'car-door']],
+  /* SESSION 17 — LIFE. The weather's three voices and the animals':
+   * every creature that reacts to the walker has one, and so does every
+   * routine that makes a noise. Thunder is the loudest thing in the
+   * game after dark, on purpose. In the pack unheard like everything
+   * else. */
+  ['the-weather', ['thunder', 'wind-gust']],
+  ['the-animals', ['dog-bark', 'cow-low', 'heron-croak', 'seal-bark', 'fox-bark', 'owl-hoot', 'cat-mew', 'crab-scuttle', 'pigeons-lift', 'deep-surface']],
+  ['the-routines', ['shutter', 'car-start', 'branch-crack']],
 ];
 console.log('');
 for (const [land, names] of VOICES) {

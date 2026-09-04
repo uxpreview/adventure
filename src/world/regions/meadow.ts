@@ -12,6 +12,10 @@ import {
   cityTowersTexture, maypoleTexture, fairBoardTexture,
 } from '../textures-common';
 import { goatTexture } from '../textures-wood';
+import { foxTexture, batTexture, childTexture, handcartTexture, rodTexture } from '../textures-life';
+import { Figure, Creature, stops } from '../life';
+import { weather } from '../weather';
+import { clock } from '../daylight';
 import { things } from '../things';
 import { events } from '../events';
 import { barriers } from '../barriers';
@@ -157,7 +161,7 @@ const goat = new Follower({
 
 /** THE OPENING'S STATE, for the builder, the POIs and the harness. */
 export const common = {
-  bull: { x: BULL_HOME.x, z: BULL_HOME.z, state: 'graze' as 'graze' | 'watch' | 'charge' | 'balk' | 'fence' | 'home', t: 0, face: -1, stride: 0, balks: 0 },
+  bull: { x: BULL_HOME.x, z: BULL_HOME.z, state: 'graze' as 'graze' | 'lying' | 'watch' | 'charge' | 'balk' | 'fence' | 'home', t: 0, face: -1, stride: 0, balks: 0 },
   gate: { shut: false },
   nell: { pose: 0 as 0 | 1 | 2, t: 0, straightFor: 0 },
   goat,
@@ -181,6 +185,67 @@ events.register({
   place: { x: 18.5, z: 70.5 },
   onStart: () => things.morning(),
 });
+
+/* THE BULL LIES DOWN AT DUSK AND GETS UP AT DAWN (Session 17, `THE-FUN-
+ * PASS` §9 item 4) — the one register call Session 15 said it was. From
+ * eight in the evening to twenty to six it is a mass in the grass with
+ * its legs under it, and a walker who wakes into the field at night
+ * finds it lying there rather than looking. It gets up if you come
+ * within twelve units, and then the night is the day again. */
+const BULL_NIGHT = { at: 20.0, hours: 9.6 };
+events.register({ id: 'the-bull-lies-down', land: 'meadow', ...BULL_NIGHT, place: BULL_HOME });
+
+/* ================================================================== *
+ * THE UNNAMED (Session 17, `THE-FUN-PASS` §9 item 1). Nobody here has
+ * a name and everybody is somewhere at a given hour, on `events.ts`.
+ * ================================================================== */
+
+/** THE OAKS' ARGUMENT, going by while you sit (`QUESTS` §8, L5). Three
+ *  of them under the oaks in the morning and again in the afternoon,
+ *  and they take turns stepping forward: whoever has the floor is a
+ *  stride nearer the swing than the other two. Nothing is said; the
+ *  subject is who stands furthest from the other two. A sitter in the
+ *  swing, with time passing at a sit's pace, watches the whole thing
+ *  change hands a dozen times. */
+function argument(id: string, back: [number, number], fwd: [number, number], phase: number) {
+  const rows: [number, number, number, number, (-1 | 1)?, number?][] = [];
+  for (const [from, to] of [[10.0, 12.0], [16.0, 18.0]]) {
+    // in from the coast road's side
+    rows.push([from - 0.12, -112, 60, 0, 1]);
+    let h = from + phase;
+    rows.push([from, back[0], back[1], 0, 1]);
+    let forward = false;
+    while (h < to - 0.2) {
+      forward = !forward;
+      const at = forward ? fwd : back;
+      rows.push([h, at[0], at[1], 0, forward ? 1 : -1]);
+      h += 0.6 + phase * 0.5;
+    }
+    rows.push([to, -112, 60, 0, -1, 0.02]);
+  }
+  return { id, land: 'meadow' as const, pace: 260, stops: stops(rows) };
+}
+const ARGUERS = [
+  argument('the-oaks-argument-a', [-100, 35], [-97, 31], 0.0),
+  argument('the-oaks-argument-b', [-92, 37], [-93, 33], 0.2),
+  argument('the-oaks-argument-c', [-105, 30], [-101, 28], 0.4),
+];
+
+/** Somebody fishes the bend at first light and is gone by the time
+ *  the Common is awake. */
+const FISHER = { id: 'the-riverbend-fisher', land: 'meadow' as const, pace: 300, stops: stops([
+  [5.45, 30, 62, 0, 1], [5.6, 39.5, 96, 3, 1, 2.8], [8.55, 30, 62, 0, -1, 0.02],
+]) };
+/** Water is drawn at the well in the morning, and it is not the walker
+ *  doing it. */
+const WELL_WOMAN = { id: 'the-well-woman', land: 'meadow' as const, pace: 300, stops: stops([
+  [9.05, -46, 56, 0, -1], [9.2, -54.5, 47.5, 2, -1, 0.5], [9.85, -46, 56, 0, 1, 0.02],
+]) };
+/** A cart comes down from Brim's gate to the well and goes back up,
+ *  every morning, and nobody in Brim has ever said what it fetches. */
+const CARTER = { id: 'the-common-carter', land: 'meadow' as const, pace: 330, stops: stops([
+  [7.35, -45, -7, 4, 1], [7.7, -45, 40, 4, 1], [7.9, -52, 49, 0, -1, 0.25], [8.45, -45, -7, 4, -1, 0.02],
+]) };
 
 /**
  * THE COMMON — rebuilt to design/specs/the-common.md (Session 2).
@@ -417,9 +482,10 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   const nellPoses = [0, 1, 2].map((p) =>
     ctx.standee(nellTexture(1630 + p, p as 0 | 1 | 2), 1.15, 1.9, NELL.x, NELL.z));
 
-  /* THE BULL: three drawings, one showing, mirrored to face its way. */
-  const bullPoses = [0, 1, 2].map((p) =>
-    ctx.standee(bullTexture(1640 + p, p as 0 | 1 | 2), 3.6, 2.4, BULL_HOME.x, BULL_HOME.z));
+  /* THE BULL: four drawings, one showing, mirrored to face its way —
+   * the fourth is the night's, lying down (Session 17). */
+  const bullPoses = [0, 1, 2, 3].map((p) =>
+    ctx.standee(bullTexture(1640 + p, p as 0 | 1 | 2 | 3), 3.6, 2.4, BULL_HOME.x, BULL_HOME.z));
   // its own trodden ground, where it has stood the longest
   ctx.decal(wornGroundDecal(1643), 7, 6, BULL_HOME.x, BULL_HOME.z + 0.5, 0.6, 0.45);
 
@@ -428,6 +494,37 @@ export const buildMeadow: RegionBuilder = (ctx) => {
    * (`StandeeField.hide`'s note) and there is one of it. */
   const goatPoses = [0, 1, 2, 3].map((p) =>
     ctx.standee(goatTexture(1650 + p, p as 0 | 1 | 2 | 3), 2.2, 1.65, goat.x, goat.z));
+
+  /* ---- THE UNNAMED, drawn (Session 17) ---------------------------- */
+  const arguers = ARGUERS.map((d, i) => new Figure(ctx, d, (i % 3) as 0 | 1 | 2));
+  const fisher = new Figure(ctx, FISHER, 2);
+  fisher.prop = ctx.standee(rodTexture(1680), 1.6, 1.6, 40, 97);
+  fisher.propOffset = { x: 0.9, z: -0.1 };
+  const wellWoman = new Figure(ctx, WELL_WOMAN, 1);
+  const carter = new Figure(ctx, CARTER, 0);
+  carter.prop = ctx.standee(handcartTexture(1681), 2.6, 1.9, -45, -7);
+  carter.propOffset = { x: 1.5, z: 0.2 };
+  for (const m of [fisher.prop, carter.prop]) (m.material as THREE.MeshBasicMaterial).transparent = true;
+  /* THE CHILDREN ON THE FAIR GROUND: two of them, running the ring
+   *  where the roundabout goes, all afternoon, because a ring in the
+   *  grass is a thing you run round. Pure function of the hour. */
+  const children = [0, 1].map((i) =>
+    new Creature(ctx, `the-fair-children-${i}`, 'meadow',
+      [childTexture(1690 + i * 2, 0), childTexture(1691 + i * 2, 1)], 0.8, 1.2, -95, 99));
+  events.register({ id: 'the-fair-children', land: 'meadow', at: 15.0, hours: 2.6, place: { x: -95, z: 99 } });
+
+  /* ---- THE NIGHT'S ANIMALS (Session 17, §9 item 4) ---------------- *
+   * A FOX, from nine until first light, trotting the same round every
+   * night — the fair ground to the well and back — and it stops dead
+   * when it notices you, looks, and is gone. And two BATS over the
+   * well at dusk, which is the well's own joke told a second way. */
+  const fox = new Creature(ctx, 'the-common-fox', 'meadow',
+    [foxTexture(1695, 0), foxTexture(1696, 1)], 2.2, 1.4, -95, 99);
+  const FOX_ROUND: [number, number][] = [[-104, 104], [-90, 108], [-78, 96], [-64, 60], [-56, 50], [-70, 62], [-84, 84], [-100, 96]];
+  const foxState = { seen: 0, gone: 0 };
+  events.register({ id: 'the-common-fox', land: 'meadow', at: 21.0, hours: 7.6, place: { x: -95, z: 99 } });
+  const bats = [0, 1].map((i) => new Creature(ctx, `the-well-bats-${i}`, 'meadow', [batTexture(1697 + i)], 0.9, 0.55, WELL.x, WELL.z));
+  events.register({ id: 'the-well-bats', land: 'meadow', at: 19.4, hours: 3.2, place: WELL });
 
 
   /* ---- RIVERBEND --------------------------------------------------- */
@@ -563,8 +660,16 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       Math.max(FIELD.minX + BULL_MARGIN, Math.min(FIELD.maxX - BULL_MARGIN, x)),
       Math.max(FIELD.minZ + BULL_MARGIN, Math.min(FIELD.maxZ - BULL_MARGIN, z)),
     ];
+    const night = events.progress('the-bull-lies-down') >= 0;
     if (B.state === 'graze') {
       if (walkerIn && bd < 26) { B.state = 'watch'; B.t = 0; }
+      else if (night && B.t > 2) { B.state = 'lying'; B.t = 0; }
+    } else if (B.state === 'lying') {
+      /* THE NIGHT'S BULL. Down in the grass with its legs under it. It
+       * gets up for somebody inside twelve units, and it gets up at
+       * dawn, and both are the same drawing after that. */
+      if (walkerIn && bd < 12) { B.state = 'watch'; B.t = 0; say('bull-snort'); }
+      else if (!night) { B.state = 'graze'; B.t = 0; }
     } else if (B.state === 'watch') {
       B.face = px < B.x ? -1 : 1;
       if (!walkerIn || bd > 36) { B.state = 'graze'; B.t = 0; B.balks = 0; }
@@ -615,7 +720,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       else if (B.t > 6) { B.state = 'home'; B.t = 0; B.balks = 0; }
     } else if (B.state === 'home') {
       const hd = Math.hypot(BULL_HOME.x - B.x, BULL_HOME.z - B.z);
-      if (hd < 0.4) { B.state = 'graze'; B.t = 0; B.face = -1; }
+      if (hd < 0.4) { B.state = night ? 'lying' : 'graze'; B.t = 0; B.face = -1; }
       else {
         const k = Math.min(hd, 2.4 * dt);
         B.face = BULL_HOME.x < B.x ? -1 : 1;
@@ -624,8 +729,8 @@ export const buildMeadow: RegionBuilder = (ctx) => {
         if (walkerIn && bd < 20) { B.state = 'watch'; B.t = 0; }
       }
     }
-    const bullPose = B.state === 'graze' ? 0 : B.state === 'charge' ? 2 : 1;
-    for (let p = 0; p < 3; p++) {
+    const bullPose = B.state === 'graze' ? 0 : B.state === 'lying' ? 3 : B.state === 'charge' ? 2 : 1;
+    for (let p = 0; p < 4; p++) {
       const m = bullPoses[p];
       m.visible = p === bullPose;
       m.position.set(B.x, ctx.groundY(B.x, B.z), B.z);
@@ -882,9 +987,66 @@ export const buildMeadow: RegionBuilder = (ctx) => {
      * them. They let go over the twelve units beyond the Common's east
      * and west edges. */
     const inX = Math.min(1, Math.max(0, (48 - px) / 12 + 1), Math.max(0, (px + 138) / 12 + 1));
-    for (const l of lures) l.mat.opacity = l.base * Math.max(0, Math.min(1, (pz - 18) / 22)) * far * inX;
-    millSmoke.rotation.z = Math.sin(t * 0.31) * 0.03 - 0.02;
+    /* AND THE FOG CLOSES THE VISTAS — and the four lures with them, which
+     * the Common's opening depends on (Session 17, `weather.ts`). A lure
+     * is a thing you can see from the crossroads; in a fog you cannot,
+     * and the keep goes with them. Rain takes a little too. */
+    const Wx = weather.state;
+    const clear = (1 - Wx.fog) * (1 - 0.35 * Wx.rain);
+    vistaMat.opacity *= clear;
+    for (const l of lures) l.mat.opacity = l.base * Math.max(0, Math.min(1, (pz - 18) / 22)) * far * inX * clear;
+    // the mill's smoke leans on the wind, and lies down in a gale
+    millSmoke.rotation.z = Math.sin(t * 0.31) * 0.03 - 0.02 - (Wx.wind - 0.5) * 0.5;
     maypole.rotation.z = Math.sin(t * 0.7) * 0.012;
+
+    /* ---- THE UNNAMED, AND THE NIGHT'S ANIMALS (Session 17) ---------- */
+    const h = clock.hour;
+    const rain = Wx.rain > 0.5;
+    for (const f of arguers) f.tick(h, rain);   // nobody argues in the rain
+    fisher.tick(h);
+    wellWoman.tick(h, rain);
+    carter.tick(h);
+    const kids = events.progress('the-fair-children');
+    for (let i = 0; i < 2; i++) {
+      if (kids < 0 || rain) { children[i].hide(); continue; }
+      const a = h * 100 * 0.62 + i * Math.PI;
+      const cx = -95 + Math.cos(a) * 5.6;
+      const cz = 99 + Math.sin(a) * 5.0;
+      children[i].set(Math.floor(h * 100 / 0.28) % 2, cx, cz, Math.sin(a) > 0 ? 1 : -1);
+    }
+    // the fox: on its round, unless it has seen you
+    const foxOn = events.progress('the-common-fox');
+    if (foxOn < 0) fox.hide();
+    else {
+      foxState.gone = Math.max(0, foxState.gone - dt);
+      foxState.seen = Math.max(0, foxState.seen - dt);
+      const u = (h * 100 * 0.011) % 1;
+      const n = FOX_ROUND.length;
+      const i0 = Math.floor(u * n);
+      const f0 = FOX_ROUND[i0];
+      const f1 = FOX_ROUND[(i0 + 1) % n];
+      const k = u * n - i0;
+      const fx = f0[0] + (f1[0] - f0[0]) * k;
+      const fz = f0[1] + (f1[1] - f0[1]) * k;
+      const fd = Math.hypot(px - fx, pz - fz);
+      if (foxState.gone > 0) fox.hide();
+      else if (foxState.seen > 0) {
+        fox.set(1, fx, fz, px < fx ? -1 : 1);
+        if (foxState.seen < 0.05) { foxState.gone = 40; }
+      } else if (fd < 13) {
+        foxState.seen = 1.1;
+        say('fox-bark');
+        fox.set(1, fx, fz, px < fx ? -1 : 1);
+      } else fox.set(0, fx, fz, f1[0] < f0[0] ? -1 : 1);
+    }
+    const batsOn = events.progress('the-well-bats');
+    bats.forEach((b, i) => {
+      if (batsOn < 0) { b.hide(); return; }
+      const a = t * (1.9 + i * 0.4) + i * 2.1;
+      const bx = WELL.x + Math.cos(a) * (3 + i) + Math.sin(a * 2.7) * 1.2;
+      const bz = WELL.z + Math.sin(a * 1.3) * 2.5;
+      b.set(0, bx, bz, Math.cos(a) > 0 ? 1 : -1, 4.2 + Math.sin(a * 3.3) * 0.8);
+    });
   };
 };
 

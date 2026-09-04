@@ -322,6 +322,103 @@ const r = await page.evaluate(() => {
     };
     out.opening = o;
   }
+
+  /* ---- 8. LIFE (Session 17) ---------------------------------------- */
+  /* The four multipliers, asserted where a tool can: the weather is a
+   * pure function of the day and the hour and the shipped page is calm
+   * at both protected hours; the bull lies down at dusk and gets up for
+   * a walker inside twelve units; the lamps come on as the lamplighter
+   * reaches them and not before; the dog is a companion — it falls in
+   * on the east road and STOPS AT THE DOWNS' EDGE on both roads out;
+   * every land has its unnamed, and the counts are the brief's. */
+  {
+    const L = {};
+    // the last press left Nell's note open, and an open note freezes the walker
+    if (document.querySelector('.note-veil.show')) { I.press(); I.step(1 / 60, 5); }
+    I.setWeather(null);
+    I.setDay(0);
+    const wx = (h) => { I.setHour(h, false); I.weather.tick(); const w = I.weather.state; return { rain: w.rain, wind: w.wind, fog: w.fog, k: I.weather.windK }; };
+    L.calmNoon = wx(12);
+    L.calmDusk = wx(19.6);
+    L.shower = wx(14.9);
+    I.setDay(1);
+    L.dayTwoFog = wx(6.0);
+    L.dayTwoStorm = wx(23.4);
+    I.setDay(0);
+    // the bull, at night
+    const C = I.common;
+    C.reset();
+    I.setHour(22, false);
+    I.events.resync();
+    I.goto(-40, 100);
+    settle(3);
+    L.bullNight = { state: C.bull.state, on: I.events.progress('the-bull-lies-down') };
+    I.goto(26, 86);
+    settle(0.5);
+    L.bullWoken = C.bull.state;
+    I.goto(-40, 100);
+    C.reset();
+    I.setHour(12, false);
+    I.events.resync();
+    settle(3);
+    L.bullDay = C.bull.state;
+    // the lamps, off the lamplighter
+    const lamps = (h) => {
+      I.setHour(h, false);
+      I.events.resync();
+      I.goto(-45, -82);
+      settle(0.5);
+      const r = I.life.drawn().find((d) => d.id === 'the-lamplighter');
+      return { out: r?.present, lit: I.lampsLit ? I.lampsLit() : null, lamp: I.clock.state.lamp };
+    };
+    L.lampsAtQuarterPast = lamps(19.12);
+    L.lampsAtDusk = lamps(19.9);
+    L.lampsAtNoon = lamps(12);
+    // the dog
+    I.setHour(12, false);
+    I.events.resync();
+    // read fresh each time: a report is a snapshot
+    const dogNow = () => I.life.drawn().find((d) => d.id === 'the-downs-dog');
+    I.goto(104, 45);
+    settle(0.5);
+    I.drive(-1, 0, 0);
+    settle(2.5);
+    I.release();
+    settle(0.5);
+    L.dogFollows = (() => { const dog = dogNow(); return { d: +Math.hypot(dog.x - I.char.pos.x, dog.z - I.char.pos.z).toFixed(1), pose: dog.pose }; })();
+    I.goto(90, 46);
+    settle(0.5);
+    I.drive(-1, 0, 1);
+    settle(9);
+    I.release();
+    settle(1.5);
+    L.dogWest = (() => { const dog = dogNow(); return { walkerX: +I.char.pos.x.toFixed(1), dogX: +dog.x.toFixed(2), minX: 60, pose: dog.pose }; })();
+    // and the other way, to the Flats' border — the dog put on the east
+    // road past the bridge the way the goat is put on the Common's, and
+    // the walker driven out: the rule is tested at the border
+    const dog = I.company.dog;
+    dog.x = 196; dog.z = 15; dog.following = true; dog.atBorder = false;
+    I.goto(200, 14);
+    settle(0.5);
+    I.drive(1, -0.12, 1);
+    settle(9);
+    I.release();
+    settle(1.5);
+    L.dogEast = (() => { const dog = dogNow(); return { walkerX: +I.char.pos.x.toFixed(1), dogX: +dog.x.toFixed(2), maxX: 230, pose: dog.pose }; })();
+    // the unnamed, counted per land off the routines registered
+    const counts = {};
+    for (const rt of I.life.routines) counts[rt.land] = (counts[rt.land] ?? 0) + 1;
+    L.routines = counts;
+    // Joan's day and the mile's lights are on events now
+    L.joanNoon = I.events.between('joan-out', 'joan-in', 12);
+    L.joanNight = I.events.between('joan-out', 'joan-in', 2);
+    L.mileDusk = I.events.between('the-mile-lights', 'the-mile-dark', 19.6);
+    L.mileNoon = I.events.between('the-mile-lights', 'the-mile-dark', 12);
+    L.regattaNoon = I.events.progress('the-regatta', 12.5);
+    L.regattaTea = I.events.progress('the-regatta', 16);
+    L.amosNight = (() => { const r = I.life.routines.find((x) => x.id === 'amos-night'); return r ? I.life.routineAt(r, 23).present && !I.life.routineAt(r, 12).present : null; })();
+    out.life = L;
+  }
   return out;
 });
 
@@ -420,6 +517,37 @@ console.log('\nthe first hour:');
   if (o.doorOne.turned && o.doorOne.answered && o.doorOne.cartHome) pass('door one: the cart is loaded and turned north at home, and the wait is answered');
   else fail(`door one: ${JSON.stringify(o.doorOne)}`);
   if (o.doorOne.promptAfter === 'LEAN ON THE GATE WITH HER' && !o.doorOne.cardAgain) pass('and the card is never offered again'); else fail(`after the door: "${o.doorOne.promptAfter}", card again ${o.doorOne.cardAgain}`);
+}
+
+console.log('\nlife (Session 17):');
+{
+  const L = r.life;
+  const calm = (w) => w.rain === 0 && w.fog === 0 && Math.abs(w.k - 1) < 1e-9;
+  if (calm(L.calmNoon) && calm(L.calmDusk)) pass('day zero is the shipped page at noon and at 19.6: no rain, no fog, the wind exactly at the fields\' own sway');
+  else fail(`day zero is not calm at the protected hours: ${JSON.stringify(L.calmNoon)} / ${JSON.stringify(L.calmDusk)}`);
+  if (L.shower.rain > 0.5) pass(`and it rains at ten to three on the first afternoon (${L.shower.rain.toFixed(2)})`); else fail(`no shower on day zero: ${JSON.stringify(L.shower)}`);
+  if (L.dayTwoFog.fog > 0.5 && L.dayTwoStorm.rain > 0.9 && L.dayTwoStorm.wind > 0.9) pass('day one has a fog at first light and a storm after dark');
+  else fail(`day one: fog ${JSON.stringify(L.dayTwoFog)}, storm ${JSON.stringify(L.dayTwoStorm)}`);
+  if (L.bullNight.state === 'lying' && L.bullNight.on >= 0) pass('the bull lies down at night (the-bull-lies-down is happening)'); else fail(`the bull at night: ${JSON.stringify(L.bullNight)}`);
+  if (L.bullWoken !== 'lying') pass(`and gets up for a walker inside twelve units (${L.bullWoken})`); else fail('the bull stayed down with the walker on top of it');
+  if (L.bullDay === 'graze') pass('and grazes by day'); else fail(`the bull by day: ${L.bullDay}`);
+  if (L.lampsAtQuarterPast.out && L.lampsAtDusk.out === false && L.lampsAtNoon.out === false) pass('the lamplighter is out at ten past seven, in by ten to eight, and in at noon');
+  else fail(`the lamplighter: ${JSON.stringify([L.lampsAtQuarterPast.out, L.lampsAtDusk.out, L.lampsAtNoon.out])}`);
+  if (L.dogFollows.d < 8 && (L.dogFollows.pose === 1 || L.dogFollows.pose === 2 || L.dogFollows.pose === 0)) pass(`the dog falls in on the east road: ${L.dogFollows.d} units behind`); else fail(`the dog: ${JSON.stringify(L.dogFollows)}`);
+  if (L.dogWest.dogX >= L.dogWest.minX && L.dogWest.dogX < L.dogWest.minX + 3 && L.dogWest.walkerX < L.dogWest.minX) {
+    pass(`and stops dead at the Downs' west edge: dog x ${L.dogWest.dogX} against ${L.dogWest.minX}, walker at ${L.dogWest.walkerX}, sat looking after you (pose ${L.dogWest.pose})`);
+  } else fail(`THE DOG AT THE WEST BORDER: ${JSON.stringify(L.dogWest)}`);
+  if (L.dogEast.dogX <= L.dogEast.maxX && L.dogEast.dogX > L.dogEast.maxX - 3 && L.dogEast.walkerX > L.dogEast.maxX) {
+    pass(`and at the east edge, over the bridge, on the road to the Flats: dog x ${L.dogEast.dogX} against ${L.dogEast.maxX}, walker at ${L.dogEast.walkerX}`);
+  } else fail(`THE DOG AT THE EAST BORDER: ${JSON.stringify(L.dogEast)}`);
+  const want = { meadow: 5, kingdom: 5, castle: 5, neighborhood: 5, forest: 4, canyon: 3, desert: 2, downs: 3, beach: 5, ocean: 2, city: 4, office: 5 };
+  const short = Object.entries(want).filter(([land, n]) => (L.routines[land] ?? 0) < n);
+  if (!short.length) pass(`every land has its unnamed on events.ts: ${Object.entries(L.routines).map(([l, n]) => `${l} ${n}`).join(', ')}`);
+  else fail(`lands short of their routines: ${short.map(([l, n]) => `${l} ${L.routines[l] ?? 0}/${n}`).join(', ')}`);
+  if (L.joanNoon === 1 && L.joanNight === 0) pass('Joan\'s working day reads off events.between'); else fail(`Joan on events: noon ${L.joanNoon}, night ${L.joanNight}`);
+  if (L.mileDusk === 1 && L.mileNoon === 0) pass('the mile\'s lights read off events.between'); else fail(`the mile on events: dusk ${L.mileDusk}, noon ${L.mileNoon}`);
+  if (L.regattaNoon >= 0 && L.regattaTea < 0) pass('the regatta is on at half past twelve and over by four'); else fail(`the regatta: ${L.regattaNoon} / ${L.regattaTea}`);
+  if (L.amosNight === true) pass('Amos\'s night walk is a registered routine, out at eleven and in at noon'); else fail(`Amos on events: ${L.amosNight}`);
 }
 
 await browser.close();

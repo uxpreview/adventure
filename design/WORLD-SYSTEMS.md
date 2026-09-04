@@ -540,11 +540,36 @@ Four things a later session must not undo:*
 - ***the hour is readable by anyone*** *(`import { clock }`), which is
   the seam STORY §7's routines and §9's mixer both need.*
 
-### Weather — still to come
+### Weather — BUILT, Session 17 ✓
 
 **Rain** is nearly gift-wrapped: the ink library's smudge pass is
 already documented as weather ("her smear as weather"), so rain in this
 world runs the drawing.
+
+*It does, and it is one clock like the day (`src/world/weather.ts`).
+`weather.state` — rain, wind, fog, storm, flash — is a PURE FUNCTION OF
+THE DAY AND THE HOUR (`clock.day` counts the wraps and is saved), so it
+happens whether or not anybody is out in it and two runs of one hour on
+one day are the same weather. Rain is the smudge pass in the paper
+post-pass: every pixel takes the darker of itself and the ink a little
+way up the page, and thin slanted streaks fall. Wind is a multiplier
+over every field's own sway (`StandeeField.update(t, windK)`), exactly
+one at the shipped calm, and it turns the mill and fills the regatta's
+sails. Fog closes the haze to a third of its reach and takes the four
+lures and the keep with it. A storm is rain and wind at one with
+lightning cut into five-second slots by a hash and one thunder per
+strike, a second or two after. Three things a later session must not
+undo:*
+
+- ***day zero is the shipped page:*** *calm at noon and at 19.6, the
+  wind at exactly the fields' own sway, one shower in the middle of the
+  afternoon — so every protected framing is still bit-identical at both
+  hours and the first hour has its four lures;*
+- ***day one is authored*** *(a fog at first light, a shower before
+  noon, the first storm after dark) and every day after is hashed, so
+  the owner's first full cycle meets all four weathers on purpose;*
+- ***the harness pins it*** *(`__inklands.setWeather(kind)`,
+  `?weather=` on the address bar), the way it pins the hour.*
 
 ### The scheduled-event clock — BUILT, Session 15
 
@@ -562,10 +587,19 @@ it is on (`happening.ids`, module scope, the same shape as `Eight15.ts`'s
 the walker is there** (a land draws its event off the number, so an
 unbuilt land is still keeping its hours); **it is a crossing, not a
 window** (`onStart`/`onEnd` fire once, and a jump of more than an hour
-fires nothing); and **anything can ask**. The first three events are the
+fires nothing); and **anything can ask**. The first three events were the
 drove out and home (`wilds.ts`) and the Common's morning (`meadow.ts`).
-Session 17 puts one in every land and moves the hand-rolled routines
-onto it.
+
+*Session 17 put one in every land and moved the hand-rolled routines
+onto it — and grew the file a ROUTINE: `registerRoutine(def)`, a list of
+stops in hour order with the walk between them, a pure function of the
+hour, every leg a registered event; `routineAt(def, hour)` says where
+its figure is; `events.between(a, b)` is the shape every hand-rolled
+routine had, written once. Sixty-three unnamed inhabitants stand on it,
+and `src/world/life.ts` draws them (`Figure`, `Creature`) and reports
+every one to the harness so `check-fields` can drive the hours a
+drawing changes at. The rule for an inhabitant is §5's, unchanged:
+posture, placement and routine, no face, no name.*
 
 ## 8. Mobile and desktop are both first-class
 

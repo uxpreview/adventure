@@ -283,13 +283,24 @@ export const DAY_START = 9.0;
  */
 export class Clock {
   hour = DAY_START;
+  /**
+   * WHICH DAY IT IS (Session 17). The hour wraps and the day counts:
+   * the weather (`weather.ts`) is a pure function of the day and the
+   * hour, the way an event is a pure function of the hour, so that a
+   * shower on the second afternoon is the same shower whether or not
+   * anybody was out in it, and a fresh page always wakes into the same
+   * first day. Saved with the hour; a fresh page is day zero.
+   */
+  day = 0;
   /** Set false to hold the world at one hour (the shoot harness does). */
   running = true;
   private cached: DayState = sample(DAY_START);
 
   advance(dt: number) {
     if (!this.running) return;
-    this.hour = (this.hour + dt / SECONDS_PER_HOUR) % 24;
+    const next = this.hour + dt / SECONDS_PER_HOUR;
+    if (next >= 24) this.day++;
+    this.hour = next % 24;
     this.cached = sample(this.hour);
   }
 

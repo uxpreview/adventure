@@ -358,3 +358,40 @@ ten seconds, and then it is the plainest land in the game again.
 on purpose* stands; the prompt's *one stranger's opening beat* is
 declined for that reason, and the plateau's *one stranger* is Nell.
 Life in the other eleven lands (17). Districts elsewhere (18).
+
+
+---
+
+## Session 17 addendum — LIFE (2026-09-04)
+
+The Common was the model land — the one with all seven of §3's things
+— and this session gave every land what it had, so what it gained is
+the same multipliers everybody gained, at the Common's own scale.
+
+**The unnamed** (`events.ts` routines, drawn by `life.ts`): the three
+arguing under the oaks at ten and at four, and whoever has the floor is
+a stride nearer the swing than the other two — sit in the swing and the
+argument goes by (`QUESTS` §8 L5, owed from 16); the fisher at the bend
+before seven; water drawn at the well at nine; the cart down from
+Brim's gate to the well and back at a quarter to eight; two children
+running the fair ground's ring after three. Nobody argues in the rain.
+
+**The night**: `the-bull-lies-down` at 20.0 for 9.6 hours — the one
+register call Session 15 said it was — and a seventh bull state,
+`lying`, drawn as a mass with no legs. It gets up for a walker inside
+twelve units and at dawn. A fox on a round from the fair ground to the
+well and back from nine, which stops when it sees you and is gone; two
+bats over the well at dusk.
+
+**The weather, and the lures.** Fog closes the vistas and the four
+lures go with it: their opacity and the keep's take `(1 − fog)(1 −
+0.35 rain)` from `weather.state`. In a fog the signpost points at
+nothing you can see, which is the correct picture of a fog and the
+reason day zero has none: the first hour depends on the lures, so the
+shipped day is calm at noon and at 19.6 with one shower at 14.2. The
+mill's smoke leans on the wind.
+
+**What moved, measured.** `diff-sheets` reports the Common's seven
+framings in Session 17's log entry. At noon and at 19.6 on day zero the
+weather is calm by law and no routine stands in the seven; the bull is
+grazing at both hours and lying at neither.

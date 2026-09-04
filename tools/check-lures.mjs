@@ -72,6 +72,32 @@ for (const rig of RIGS) {
   const held = rest.filter((r) => r.inFrame).map((r) => r.name);
   const anyPeek = LURES.map(([n]) => n).filter((n) => rows.some((r) => r.name === n && r.inFrame));
   console.log(`  → holds at rest: ${held.join(', ') || 'nothing'}; with a peek: ${anyPeek.join(', ') || 'nothing'}`);
+  /* AND THE FOG CLOSES THEM (Session 17, `weather.ts`). A lure is a
+   * thing you can see from the crossroads; in a fog you cannot, and the
+   * keep goes with them. Measured off the drawings' own opacity. */
+  const fog = await page.evaluate(() => {
+    const I = window.__inklands;
+    const read = () => {
+      const ops = [];
+      I.scene.traverse((o) => {
+        if (!o.isMesh || !o.material || o.material.fog !== false) return;
+        if (o.position.z < -40 && o.position.z > -75 && o.position.x > -100 && o.position.x < 40) ops.push(+o.material.opacity.toFixed(3));
+      });
+      return ops;
+    };
+    I.goto(-45, 58); I.setTime(0); I.step(1 / 60, 30);
+    const clear = read();
+    I.setWeather('fog'); I.step(1 / 60, 30);
+    const fogged = read();
+    I.setWeather(null); I.step(1 / 60, 30);
+    return { clear, fogged, back: read() };
+  });
+  const maxFog = Math.max(...fog.fogged);
+  const minClear = Math.min(...fog.clear);
+  console.log(`  in fog: the four lures' opacities ${fog.fogged.join(', ')} (clear: ${fog.clear.join(', ')})`);
+  if (!(fog.clear.length >= 4 && minClear > 0.3)) { console.log('  ✗ the lures are not up in clear weather'); fails++; }
+  if (!(maxFog < 0.06)) { console.log('  ✗ the fog does not close the lures'); fails++; }
+  if (!(Math.min(...fog.back) > 0.3)) { console.log('  ✗ the lures do not come back when the fog lifts'); fails++; }
   if (rig.name === 'desktop' && held.length < 4) { console.log('  ✗ desktop must hold all four at rest'); fails++; }
   if (rig.name === 'portrait' && !held.includes('the keep')) { console.log('  ✗ portrait must hold the keep at rest'); fails++; }
   await page.close();

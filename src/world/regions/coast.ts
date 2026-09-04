@@ -12,6 +12,11 @@ import {
   regattaBoatTexture, bellBuoyTexture, smallBuoyTexture, mooringPostTexture,
   barRippleDecal, mooredBoatTexture, fishShoalDecal,
 } from '../textures-coast';
+import { rodTexture, crabTexture, sealTexture, deepBackTexture } from '../textures-life';
+import { Figure, Creature, stops } from '../life';
+import { events } from '../events';
+import { weather } from '../weather';
+import { clock } from '../daylight';
 import type { BuildCtx, RegionBuilder, WorldPOI } from './index';
 
 /** Fire a named audio event up to the App without a plumbing run. */
@@ -67,6 +72,36 @@ const CUT_LINE = CUT_PATH;
  *  huts on the right, and the Holdfast standing at the end of it. */
 const PROM: [number, number][] = [[-229, 94], [-217, 10]];
 const JETTY: [number, number][] = [[-230, 57], [-258, 54]];
+
+/* ================================================================== *
+ * LONGSHORE'S UNNAMED (Session 17): a BEACHCOMBER bent along the wrack
+ * line at first light; the OWNER of the third hut, who opens it at
+ * nine, sits outside it until lunch, and shuts it at half past five;
+ * two BATHERS who sit on the sand in the bight through the early
+ * afternoon and never go in, because nobody on this coast has ever
+ * learned to swim; somebody FISHING off the jetty head in the evening;
+ * and somebody who walks the promenade end to end at eight and at six.
+ * ================================================================== */
+const COMBER = { id: 'the-beachcomber', land: 'beach' as const, pace: 240, stops: stops([
+  [6.15, -206, -1, 0, -1], [6.3, coastX(24) + 7, 24, 2, -1, 0.25], [6.65, coastX(8) + 8, 8, 2, -1, 0.25],
+  [7.0, coastX(-8) + 7, -8, 2, 1, 0.25], [7.35, coastX(-22) + 8, -22, 2, 1, 0.25], [7.8, -206, -1, 0, 1, 0.02],
+]) };
+const HUT_OWNER = { id: 'the-hut-owner', land: 'beach' as const, pace: 260, stops: stops([
+  [8.95, -218, 28, 0, -1], [9.15, -203.5, -0.8, 0, 1, 0.3], [9.5, -206.5, 0.2, 3, 1, 3.0], [12.65, -203.5, -0.8, 0, -1, 0.1],
+  [12.9, -218, 28, 0, 1, 0.02],
+]) };
+const HUT_SHUT = { id: 'the-hut-shut', land: 'beach' as const, pace: 260, stops: stops([
+  [17.4, -218, 28, 0, -1], [17.6, -203.5, -0.8, 0, 1, 0.2], [17.95, -218, 28, 0, 1, 0.02],
+]) };
+const BATHERS = [0, 1].map((i) => ({ id: `the-bathers-${i}`, land: 'beach' as const, pace: 240, stops: stops([
+  [12.95 + i * 0.03, -218, 20, 0, -1], [13.1 + i * 0.03, -214 + i * 2.2, 10 + i * 4, 3, -1, 2.0], [15.3 + i * 0.03, -218, 20, 0, 1, 0.02],
+]) }));
+const JETTY_FISHER = { id: 'the-jetty-fisher', land: 'beach' as const, pace: 260, stops: stops([
+  [17.15, -218, 52, 0, -1], [17.3, -255, 55.5, 3, -1, 2.3], [19.75, -218, 52, 0, 1, 0.02],
+]) };
+const PROM_WALKERS = [8.0, 18.0].map((at, k) => ({ id: `the-prom-walker-${k}`, land: 'beach' as const, pace: 300, stops: stops([
+  [at, -226, 92, 0, 1], [at + 0.28, -218, 12, 0, 1, 0.05], [at + 0.62, -226, 92, 0, -1, 0.02],
+]) }));
 
 export const buildBeach: RegionBuilder = (ctx) => {
   const { r, terrain } = ctx;
@@ -420,6 +455,25 @@ export const buildBeach: RegionBuilder = (ctx) => {
   /* ---- the boardwalk's rope and rail motion ------------------------ */
   const sockMat = sock.material as THREE.MeshBasicMaterial;
 
+  /* ---- THE UNNAMED, AND THE CRABS (Session 17) --------------------- */
+  const comber = new Figure(ctx, COMBER, 2);
+  const hutOwner = new Figure(ctx, HUT_OWNER, 0);
+  const hutShut = new Figure(ctx, HUT_SHUT, 0);
+  const bathers = BATHERS.map((d, i) => new Figure(ctx, d, i ? 1 : 2));
+  const fisher = new Figure(ctx, JETTY_FISHER, 0);
+  fisher.prop = ctx.standee(rodTexture(1350), 1.6, 1.6, -255, 55.5);
+  (fisher.prop.material as THREE.MeshBasicMaterial).transparent = true;
+  fisher.propOffset = { x: -0.9, z: -0.1 };
+  const promWalkers = PROM_WALKERS.map((d, i) => new Figure(ctx, d, i ? 2 : 1));
+  /* THE CRABS on the wrack — the coast's creature (§3 item 1). Six of
+   * them on the tide line in the bight, and they go SIDEWAYS, toward
+   * the water, the moment you come inside four units, and come back
+   * when you have gone. The gulls hold a grudge; the crabs do not. */
+  const CRABS: [number, number][] = [[-20, -6], [-16, 2], [-12, 9], [-8, 14], [-15, 20], [-11, -2]]
+    .map(([o, z]) => [coastX(z) + 10 + o * 0.2, z]);
+  const crabs = CRABS.map(([x, z], i) => new Creature(ctx, `the-crabs-${i}`, 'beach', [crabTexture(1360 + i)], 0.7, 0.5, x, z));
+  const crabState = CRABS.map(() => ({ away: 0 }));
+
   return (dt: number, t: number, px: number, pz: number) => {
     // the windsock is the coast's one instrument: it never stops, and
     // its swing is the same wind the marram is leaning in
@@ -465,6 +519,27 @@ export const buildBeach: RegionBuilder = (ctx) => {
         }
       }
     }
+
+    /* ---- THE UNNAMED, AND THE CRABS (Session 17) --------------------- */
+    const h = clock.hour;
+    const rain = weather.state.rain > 0.5;
+    comber.tick(h);
+    hutOwner.tick(h, rain);
+    hutShut.tick(h);
+    for (const b of bathers) b.tick(h, rain);
+    fisher.tick(h);
+    for (const w of promWalkers) w.tick(h, rain);
+    let scuttled = false;
+    crabs.forEach((c, i) => {
+      const [x, z] = CRABS[i];
+      const st = crabState[i];
+      const d = Math.hypot(px - x, pz - z);
+      if (d < 4.2 && st.away <= 0) { st.away = 12; scuttled = true; }
+      st.away = Math.max(0, st.away - dt);
+      const u = st.away > 0 ? Math.min(1, (12 - st.away) / 0.5) * Math.min(1, st.away / 2) : 0;
+      c.set(0, x - 3.6 * u, z + Math.sin(t * 5 + i) * 0.08 * u, 1, 0.02);
+    });
+    if (scuttled) say('crab-scuttle');
   };
 };
 
@@ -559,6 +634,28 @@ const COURSE: [number, number][] = [
 ];
 const MARK = { x: -308, z: -36 };
 
+/* THE REGATTA STARTS AT NOON (Session 17, `THE-FUN-PASS` §9: *the
+ * regatta start at noon* is on the list of things that happen on the
+ * clock). Before it the fleet drifts about the course the way it has
+ * since Session 5; at twelve the bell goes twice and the halyards run,
+ * and for an hour and a half they RACE — three times the speed, heeled
+ * over, the sails full of whatever wind there is — and then they drift
+ * again, and nobody has won. Whether or not anybody is on the bar. */
+const REGATTA = { at: 12.0, hours: 1.5 };
+events.register({ id: 'the-regatta', land: 'ocean', ...REGATTA, place: { x: -308, z: -36 },
+  onStart: (px, pz) => {
+    if (Math.hypot(px + 308, pz + 36) < 90) { say('bell-buoy'); say('halyard'); }
+  } });
+/* THE SEALS haul out on the bar through the middle of the day. */
+events.register({ id: 'the-seals-haul-out', land: 'ocean', at: 9.5, hours: 7.0, place: { x: -290, z: 10 } });
+/* AND SOMETHING UNDER THE WIDE BLUE SURFACES ONCE AT DUSK (§9 item 4,
+ * §10 THE MONSTERS): ten seconds, fifty units north of the bar's end,
+ * a back and a fin and the water going white, and gone. It is the one
+ * thing in the game that is drawn to be frightening, and it happens
+ * whether or not anybody is on the bar to be frightened. */
+events.register({ id: 'the-deep', land: 'ocean', at: 19.35, hours: 0.1, place: { x: -300, z: -70 },
+  onStart: (px, pz) => { if (Math.hypot(px + 300, pz + 70) < 110) say('deep-surface'); } });
+
 export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
   const { r } = ctx;
 
@@ -652,17 +749,35 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
 
   const bellY = ctx.groundY(MARK.x, MARK.z);
 
+  /* ---- THE SEALS, THE THING, AND TWO ON THE MOORINGS (Session 17) --- */
+  const SEALS: [number, number][] = [0.44, 0.49, 0.54, 0.6].map((u, i) => {
+    const p = alongPath(SANDBAR, u);
+    const side = i % 2 ? 1 : -1;
+    return [p.x - p.az * side * (3.2 + i * 0.6), p.z + p.ax * side * (3.2 + i * 0.6)];
+  });
+  const seals = SEALS.map(([x, z], i) => new Creature(ctx, `the-seals-${i}`, 'ocean', [sealTexture(1460 + i, 0), sealTexture(1470 + i, 1)], 2.4, 1.2, x, z));
+  const sealState = { off: 0, look: 0 };
+  const DEEP = { x: -300, z: -70 };
+  const deep = new Creature(ctx, 'the-deep', 'ocean', [deepBackTexture(1480)], 22, 8.2, DEEP.x, DEEP.z);
+  const moorFolk = [[-272, 152], [-286, 198]].map(([x, z], i) =>
+    new Figure(ctx, { id: `the-moorings-${i}`, land: 'ocean', stops: stops([[9.0 + i * 0.3, x - 0.6, z + 0.4, 2, i ? -1 : 1, 2.0]]) }, i ? 2 : 0, { lift: 0.5 }));
+
   return (dt: number, t: number, px: number, pz: number) => {
     /* THE REGATTA. Boats carry along the course and heel INTO the turn;
      * a standee cannot rotate to a heading, so the flip is the tack and
-     * it happens where the course doubles back. */
+     * it happens where the course doubles back. From Session 17 the
+     * RACE is at noon: three times the speed for an hour and a half,
+     * and the heel goes with the wind. */
+    const race = events.progress('the-regatta') >= 0 ? 1 : 0;
+    const wind = weather.state.wind;
+    const fill = 1 + race * (1.6 + wind * 1.6);
     for (const b of boats) {
-      b.t = (b.t + dt * b.v) % 1;
+      b.t = (b.t + dt * b.v * fill) % 1;
       const p = alongPath(COURSE, b.t);
       const y = ctx.groundY(p.x, p.z);
       b.m.position.set(p.x, y + Math.sin(t * 0.7 + b.ph) * 0.14, p.z);
       // she pitches to the swell and rolls a little as she is steered
-      b.m.rotation.z = Math.sin(t * 0.62 + b.ph) * 0.05 + (p.ax > 0 ? 0.03 : -0.03);
+      b.m.rotation.z = Math.sin(t * 0.62 + b.ph) * 0.05 + (p.ax > 0 ? 0.03 : -0.03) * (1 + race * 2.5 + Math.max(0, wind - 0.5) * 3);
       const s = Math.abs(b.m.scale.x);
       b.m.scale.x = p.az > 0 ? -s : s;
     }
@@ -695,6 +810,37 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
       f.hz = f.z + Math.sin(away) * scatter * 26 + Math.cos(t * 0.33 + f.ph) * 2;
       shoal.set(i, f.hx, f.hz, 0.8 + (i % 3) * 0.2, away + Math.PI / 2, false);
     }
+
+    /* ---- THE SEALS, THE THING, THE MOORINGS (Session 17) ------------ */
+    const h = clock.hour;
+    {
+      const out = events.progress('the-seals-haul-out') >= 0;
+      let near = 1e9;
+      for (const [x, z] of SEALS) near = Math.min(near, Math.hypot(px - x, pz - z));
+      sealState.off = Math.max(0, sealState.off - dt);
+      if (out && sealState.off <= 0 && near < 9) { sealState.off = 45; say('seal-bark'); }
+      if (out && sealState.off > 0 && sealState.off < 5 && near < 20) sealState.off = 45;
+      seals.forEach((c, i) => {
+        if (!out) { c.hide(); return; }
+        const [x, z] = SEALS[i];
+        if (sealState.off > 0) {
+          // into the water: a slither seaward over a second, and gone
+          const u = Math.min(1, (45 - sealState.off) / 1.1);
+          if (u >= 1) { c.hide(); return; }
+          const p = alongPath(SANDBAR, 0.5);
+          c.set(1, x - p.az * (i % 2 ? 1 : -1) * 7 * u, z + p.ax * (i % 2 ? 1 : -1) * 7 * u, i % 2 ? -1 : 1, -0.6 * u, 1 - u * 0.6);
+        } else c.set(near < 16 ? 1 : 0, x, z, i % 2 ? -1 : 1, 0);
+      });
+    }
+    {
+      const k = events.progress('the-deep');
+      if (k < 0) deep.hide();
+      else {
+        const e = Math.sin(k * Math.PI);
+        deep.set(0, DEEP.x + k * 6, DEEP.z, 1, -3.2 + e * 3.6, Math.min(1, e * 1.8));
+      }
+    }
+    for (const f of moorFolk) f.tick(h);
   };
 };
 

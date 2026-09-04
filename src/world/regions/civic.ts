@@ -41,8 +41,16 @@ import {
   greyweatherGateTexture, ridgeWallTexture, tallBannerTexture,
   toppledStatueTexture, gnarledHawthornTexture, farPinesTexture, rookTexture,
   screeDecal, margetStallTexture, margetTexture, marketBoardTexture,
-  standingKingTexture, barePoleTexture, dyeStainDecal,
+  standingKingTexture, barePoleTexture, dyeStainDecal, townRowShutTexture,
 } from '../textures-oldworld';
+import {
+  handcartTexture, childTexture, catTexture, batTexture, lanternGlowTexture,
+  pigeonFlyTexture, ratTexture, magpieTexture, foxTexture,
+} from '../textures-life';
+import { Figure, Creature, stops } from '../life';
+import { events, routineAt as routineState, registerRoutine, type RoutineDef } from '../events';
+import { weather } from '../weather';
+import { rookAt } from '../rooks';
 import { clock } from '../daylight';
 import { knowledge } from '../knowledge';
 /* WHOEVER IS ON A PLATFORM RIGHT NOW (Session 14, `Eight15.ts`).
@@ -107,6 +115,68 @@ function passFade(px: number, pz: number, gx: number, lo: number, hi: number): n
  * town itself plus a reseeded back-street roof rank.
  * ================================================================== */
 
+/* ================================================================== *
+ * BRIM'S UNNAMED (Session 17, `THE-FUN-PASS` §9 item 1), on `events.ts`.
+ * ================================================================== */
+
+/** THE LAMPS, in the order he takes them: south-west, south-east,
+ *  north-east, north-west, and home to the belfry yard. */
+const LAMPS: [number, number][] = [[-58.5, -65], [-33, -65.5], [-32, -96], [-58, -96.5]];
+const LAMP_DOOR: [number, number] = [-61, -40];
+/** THE LAMPLIGHTER'S ROUND at dusk, and the same round at dawn to put
+ *  them out. A lamp is lit from the moment he reaches it in the
+ *  evening until the moment he reaches it in the morning — *a
+ *  lamplighter four lamps behind* — and the hours are the stops'. */
+const LIGHT_AT = [19.05, 19.18, 19.32, 19.45];
+const DOUSE_AT = [5.45, 5.58, 5.72, 5.85];
+const LAMPLIGHTER_DUSK = { id: 'the-lamplighter', land: 'kingdom' as const, pace: 300, walkPose: 6, stops: stops([
+  [18.92, LAMP_DOOR[0], LAMP_DOOR[1], 6, 1],
+  ...LAMPS.map((l, i): [number, number, number, number, -1 | 1, number] => [LIGHT_AT[i], l[0], l[1], 6, i < 2 ? 1 : -1, 0.03]),
+  [19.72, LAMP_DOOR[0], LAMP_DOOR[1], 6, -1, 0.02],
+]) };
+const LAMPLIGHTER_DAWN = { id: 'the-lamplighter-dawn', land: 'kingdom' as const, pace: 300, walkPose: 6, stops: stops([
+  [5.32, LAMP_DOOR[0], LAMP_DOOR[1], 6, 1],
+  ...LAMPS.map((l, i): [number, number, number, number, -1 | 1, number] => [DOUSE_AT[i], l[0], l[1], 6, i < 2 ? 1 : -1, 0.03]),
+  [6.12, LAMP_DOOR[0], LAMP_DOOR[1], 6, -1, 0.02],
+]) };
+/** 0..1 lit, for lamp `i`, at an hour: a pure function, so a walker who
+ *  arrives at half past seven finds all four on and the man gone in. */
+function lampLit(i: number, hour: number): number {
+  const on = LIGHT_AT[i];
+  const off = DOUSE_AT[i];
+  const ramp = 0.02;
+  const rise = Math.max(0, Math.min(1, (hour - on) / ramp));
+  const fall = Math.max(0, Math.min(1, (hour - off) / ramp));
+  // lit from `on` through midnight to `off`
+  return hour >= on ? rise : hour < off ? 1 : 1 - fall;
+}
+/** A DELIVERY THAT FINDS THE STALL SHUT: a handcart in at the south
+ *  gate at half past seven, up to Marget's stall, a wait, and back down. */
+const DELIVERY = { id: 'the-brim-delivery', land: 'kingdom' as const, pace: 300, walkPose: 4, stops: stops([
+  [7.28, -45, -15, 4, 1], [7.62, -43.5, -80.5, 0, -1, 0.35], [8.3, -45, -15, 4, 1, 0.02],
+]) };
+/** THE SWEEPER, before anybody else is in the square. */
+const SWEEPER = { id: 'the-brim-sweeper', land: 'kingdom' as const, pace: 260, stops: stops([
+  [5.75, -61, -40, 2, 1], [5.85, -51, -92, 2, 1, 0.08], [6.0, -44, -85, 2, -1, 0.08],
+  [6.15, -38, -76, 2, 1, 0.08], [6.3, -48, -70, 2, -1, 0.08], [6.5, -61, -40, 0, 1, 0.02],
+]) };
+/** THE WARDEN who counts the orchard twice a day and has never once
+ *  come back with a different number. */
+function warden(id: string, at: number) {
+  return { id, land: 'kingdom' as const, pace: 240, stops: stops([
+    [at, -78, -62, 0, -1], [at + 0.12, -107, -58, 0, -1, 0.06], [at + 0.22, -104, -73, 0, -1, 0.06],
+    [at + 0.33, -119, -86, 0, 1, 0.06], [at + 0.45, -96, -54, 0, 1, 0.06], [at + 0.6, -78, -62, 0, 1, 0.02],
+  ]) };
+}
+const WARDEN_AM = warden('the-orchard-warden', 8.0);
+const WARDEN_PM = warden('the-orchard-warden-evening', 17.6);
+/** THE SHUTTERS: thrown back at first light, pulled to at nine. Every
+ *  row a little after the last, because nobody in Brim does anything
+ *  at the same moment as anybody else. */
+events.register({ id: 'the-shutters-open', land: 'kingdom', at: 6.6, hours: 0.3, place: { x: -45, z: -60 } });
+events.register({ id: 'the-shutters-shut', land: 'kingdom', at: 20.85, hours: 0.3, place: { x: -45, z: -60 } });
+events.register({ id: 'the-square-children', land: 'kingdom', at: 15.2, hours: 2.0, place: { x: -45, z: -81 } });
+
 export const buildKingdom: RegionBuilder = (ctx) => {
   const { r } = ctx;
 
@@ -167,6 +237,20 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     m.position.z += Math.cos(rot) * 0.22;
     (m.material as THREE.MeshBasicMaterial).depthWrite = false;
     m.renderOrder = 3;
+    return m;
+  });
+  /* AND THE SHUTTERS (Session 17): the same casements, shut, from nine
+   * at night to first light — the town's other face, a hair in front
+   * of the row like the lit panes, and never both at once on one
+   * window because a shut shutter is a dark one. */
+  const shutRows: THREE.Mesh[] = terraces.map(([x, z, w, rot], i) => {
+    const m = ctx.standee(townRowShutTexture(1400 + i), w, w * (288 / 512), x, z, { rotY: rot });
+    m.position.x += Math.sin(rot) * 0.24;
+    m.position.z += Math.cos(rot) * 0.24;
+    (m.material as THREE.MeshBasicMaterial).depthWrite = false;
+    (m.material as THREE.MeshBasicMaterial).transparent = true;
+    m.renderOrder = 3;
+    m.visible = false;
     return m;
   });
 
@@ -377,12 +461,50 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   const pLMat = pennantL.material as THREE.MeshBasicMaterial;
   const pRMat = pennantR.material as THREE.MeshBasicMaterial;
 
+  /* ---- THE UNNAMED, drawn (Session 17) ----------------------------- */
+  const lamplighter = new Figure(ctx, LAMPLIGHTER_DUSK, 0);
+  const lamplighterDawn = new Figure(ctx, LAMPLIGHTER_DAWN, 0);
+  const delivery = new Figure(ctx, DELIVERY, 2);
+  delivery.prop = ctx.standee(handcartTexture(1700), 2.6, 1.9, -45, -15);
+  (delivery.prop.material as THREE.MeshBasicMaterial).transparent = true;
+  delivery.propOffset = { x: 1.5, z: 0.2 };
+  const sweeper = new Figure(ctx, SWEEPER, 1);
+  const wardens = [new Figure(ctx, WARDEN_AM, 0), new Figure(ctx, WARDEN_PM, 0)];
+  const children = [0, 1].map((i) =>
+    new Creature(ctx, `the-square-children-${i}`, 'kingdom',
+      [childTexture(1710 + i * 2, 0), childTexture(1711 + i * 2, 1)], 0.8, 1.2, -45, -81));
+  /* THE CAT ON THE ORCHARD WALL. Asleep on the paddock fence all day;
+   * it sits up if you RUN past, and lies down again when you have
+   * gone. The Common's creature is a bull; Brim's is a cat, and the
+   * cat is the one that notices the difference between a walk and a
+   * run, which nothing else in the town does. */
+  /* ON THE SOUTH WALL, beside the gate — the one wall in Brim that faces
+   * the camera, so a cat on it is a cat on a wall and not a cat in the
+   * air (the orchard's paddock fence is edge-on to a north-looking
+   * lens). Six units up, on the wall's top, where the king's road runs
+   * under it. */
+  // the parapet is drawn at seven tenths of the wall's height
+  // (`brimWallTexture`: the walk at y 58 of 192), and a cat sits on the
+  // parapet and not on the standee's top edge
+  const CAT = { x: -61, z: -12.0, lift: 3.8 };
+  const cat = new Creature(ctx, 'the-wall-cat', 'kingdom', [catTexture(1720, 0), catTexture(1721, 1)], 1.3, 0.85, CAT.x, CAT.z);
+  const catState = { awake: 0 };
+  let prevPx = 0;
+  let prevPz = 0;
+  let firstTick = true;
+
   const lampsAndWindows = [...lit, ...litWindows];
 
   return (dt: number, t: number, px: number, pz: number) => {
-    // BRIM AT DUSK: the lamps in the square and the windows over the
-    // high street, straight off the clock. One number, fourteen meshes.
-    lightUp(lampsAndWindows, clock.lamp);
+    const h = clock.hour;
+    const W = weather.state;
+    // BRIM AT DUSK: the windows over the high street, straight off the
+    // clock — and THE LAMPS, off the lamplighter (Session 17): each one
+    // comes on when he reaches it and goes out when he reaches it again
+    // at dawn, so at half past seven there are four on and at ten past
+    // there are two, and it is the same two every night.
+    lightUp(litWindows, clock.lamp);
+    lit.forEach((m, i) => lightUp([m], clock.lamp * lampLit(i, h)));
 
     /* ================================================================ *
      * MARGET'S DAY, AND THE DAY THE MARKET WAS CALLED.
@@ -420,10 +542,12 @@ export const buildKingdom: RegionBuilder = (ctx) => {
      * like a bug rather than a day. They leave a little later than she
      * does and come back a little later, because she is the one who is
      * always first. */
+    /* AND IN THE RAIN THE SQUARE EMPTIES (Session 17): the crowd goes in
+     * under the awnings and the shutters, which is what a crowd does. */
     folk.setDim(Math.min(
       Math.max(0, Math.min(1, (clock.hour - 6.1) / 1.0)),
       Math.max(0, Math.min(1, (21.2 - clock.hour) / 1.0))
-    ));
+    ) * (1 - 0.85 * W.rain));
     for (const m of [stallShut, stallOpen, marget]) {
       (m.material as THREE.MeshBasicMaterial).opacity = outNow;
     }
@@ -529,6 +653,42 @@ export const buildKingdom: RegionBuilder = (ctx) => {
       }
     }
     if (flapped) say('pigeon-flap');
+
+    /* ---- THE UNNAMED (Session 17) ------------------------------------ */
+    lamplighter.tick(h);
+    lamplighterDawn.tick(h);
+    delivery.tick(h);
+    sweeper.tick(h);
+    for (const w of wardens) w.tick(h, W.rain > 0.5);
+    const kids = events.progress('the-square-children');
+    for (let i = 0; i < 2; i++) {
+      if (kids < 0 || W.rain > 0.4) { children[i].hide(); continue; }
+      const a = h * 100 * 0.7 + i * Math.PI;
+      children[i].set(Math.floor(h * 100 / 0.28) % 2, -45 + Math.cos(a) * 5.4, -81 + Math.sin(a) * 5.2, Math.sin(a) > 0 ? 1 : -1);
+    }
+    /* THE SHUTTERS, row by row. A wooden clack when one goes, if you are
+     * in the street to hear it. */
+    const shutting = events.progress('the-shutters-shut');
+    const opening = events.progress('the-shutters-open');
+    let anyChanged = false;
+    shutRows.forEach((m, i) => {
+      const stagger = (i / shutRows.length) * 0.9;
+      let shut: boolean;
+      if (shutting >= 0) shut = shutting >= stagger;
+      else if (opening >= 0) shut = opening < stagger;
+      else shut = h > 21.2 || h < 6.6;
+      if (m.visible !== shut) { m.visible = shut; anyChanged = true; }
+    });
+    if (anyChanged && !firstTick && Math.abs(px + 45) < 30 && pz < -12 && pz > -158) say('shutter');
+    firstTick = false;
+    /* THE CAT wakes for a runner and for nobody else. */
+    const speed = Math.hypot(px - prevPx, pz - prevPz) / Math.max(1e-3, dt);
+    prevPx = px;
+    prevPz = pz;
+    const toCat = Math.hypot(px - CAT.x, pz - CAT.z);
+    catState.awake = Math.max(0, catState.awake - dt);
+    if (toCat < 17 && speed > 4.6 && catState.awake <= 0) { catState.awake = 8; say('cat-mew'); }
+    cat.set(catState.awake > 0 ? 1 : 0, CAT.x, CAT.z, px < CAT.x ? -1 : 1, CAT.lift);
   };
 };
 
@@ -820,10 +980,56 @@ export const buildCastle: RegionBuilder = (ctx) => {
   const gateMat = gate.material as THREE.MeshBasicMaterial;
   const keepMat = keep.material as THREE.MeshBasicMaterial;
 
+  /* ---- THE UNNAMED (Session 17) ------------------------------------- *
+   * A SENTRY walks the wall at dusk and again before dawn, west to east
+   * and back, and the wall's own feet are his stops — he is registered
+   * here, in the builder, because the brow is where the page put it.
+   * A GROOM crosses the bailey with a bucket at seven. A WASHERWOMAN is
+   * at the moat pool through the middle of the morning, which is why
+   * the water carries this week's red. Two PILGRIMS climb the avenue to
+   * the gate and stand there and go down again, twice a day, and the
+   * portcullis stays up either way. */
+  const wallStops = (from: number, eastward: boolean): [number, number, number, number, -1 | 1, number?][] => {
+    // the feet in the order he takes them, tower to tower, one way at
+    // dusk and the other before dawn
+    const feet = [...wallFeet].sort((a, b) => (eastward ? a[0] - b[0] : b[0] - a[0]));
+    const west: [number, number] = [gapL - 1.5, lipZ(gapL - 1.5, 11.8) - 3.4];
+    const east: [number, number] = [gapR + 1.5, lipZ(gapR + 1.5, 11.8) - 3.4];
+    const door = eastward ? west : east;
+    const far = eastward ? east : west;
+    const face: -1 | 1 = eastward ? 1 : -1;
+    const rows: [number, number, number, number, -1 | 1, number?][] = [[from, door[0], door[1], 6, face]];
+    feet.forEach(([x, z], i) => rows.push([from + 0.06 + i * 0.05, x, z + 1.2, 6, face, 0.02]));
+    rows.push([from + 0.1 + feet.length * 0.05, far[0], far[1], 6, face, 0.02]);
+    return rows;
+  };
+  const sentryDusk = new Figure(ctx, { id: 'the-sentry', land: 'castle', pace: 260, walkPose: 6,
+    stops: stops(wallStops(19.3, true)) }, 2);
+  const sentryDawn = new Figure(ctx, { id: 'the-sentry-dawn', land: 'castle', pace: 260, walkPose: 6,
+    stops: stops(wallStops(5.0, false)) }, 2);
+  const groom = new Figure(ctx, { id: 'the-groom', land: 'castle', pace: 300, walkPose: 4, stops: stops([
+    [6.95, -45, -246, 4, 1], [7.1, -33.5, -229.5, 4, 1, 0.15], [7.38, -45, -246, 4, -1, 0.02],
+  ]) }, 2);
+  const washer = new Figure(ctx, { id: 'the-washerwoman', land: 'castle', pace: 260, stops: stops([
+    [9.3, -45, -214, 4, -1], [9.55, -97.5, -211.5, 2, -1, 1.3], [11.1, -45, -214, 4, 1, 0.02],
+  ]) }, 1);
+  const pilgrims = [8.3, 16.2].flatMap((at, k) => [0, 1].map((i) =>
+    new Figure(ctx, { id: `the-pilgrims-${k}-${i}`, land: 'castle', pace: 280, stops: stops([
+      [at + i * 0.01, -45 + (i ? 1.4 : -1.2), -166, 0, 1], [at + 0.12, -45 + (i ? 1.6 : -1.4), -193.5 + i * 0.6, 0, 1, 0.25],
+      [at + 0.5, -45 + (i ? 1.4 : -1.2), -166, 0, -1, 0.02],
+    ]) }, i ? 0 : 1)));
+  /* THE BATS over the moat pool at dusk, and THE ROOKS THAT CROSS
+   * (`rooks.ts`): three that roost on the keep and spend the day on a
+   * scarecrow in another land. Drawn here while they are nearer here. */
+  const moatBats = [0, 1, 2].map((i) => new Creature(ctx, `the-moat-bats-${i}`, 'castle', [batTexture(1730 + i)], 0.9, 0.55, -100, -215));
+  events.register({ id: 'the-moat-bats', land: 'castle', at: 19.6, hours: 2.2, place: { x: -100, z: -215 } });
+  const crossers = [0, 1, 2].map((i) => new Creature(ctx, `the-rooks-cross-${i}`, 'castle', [rookTexture(1740 + i)], 1.5, 1.05, -50, -249));
+
   /** The door, last frame, so the swap is done once and not per tick. */
   let shownRestored: boolean | null = null;
 
   return (dt: number, t: number, px: number, pz: number) => {
+    const h = clock.hour;
     // the fires at the gate, on the same clock as Brim's lamps
     lightUp(braziers, clock.lamp);
 
@@ -894,6 +1100,28 @@ export const buildCastle: RegionBuilder = (ctx) => {
         }
       }
     }
+
+    /* ---- THE UNNAMED, AND THE CROSSING (Session 17) ------------------ */
+    const rain = weather.state.rain > 0.5;
+    sentryDusk.tick(h);
+    sentryDawn.tick(h);
+    groom.tick(h);
+    washer.tick(h, rain);
+    for (const f of pilgrims) f.tick(h);
+    const batsOn = events.progress('the-moat-bats');
+    moatBats.forEach((b, i) => {
+      if (batsOn < 0) { b.hide(); return; }
+      const a = t * (1.7 + i * 0.35) + i * 2.0;
+      b.set(0, -100 + Math.cos(a) * (4 + i * 1.5), -215 + Math.sin(a * 1.4) * 3.5, Math.cos(a) > 0 ? 1 : -1, 3.6 + Math.sin(a * 2.9) * 0.9);
+    });
+    crossers.forEach((c, i) => {
+      const rk = rookAt(i, h);
+      // the flight belongs to whichever land it is nearer; the other
+      // draws nothing
+      if (rk.where !== 'castle') { c.hide(); return; }
+      const flap = rk.flying ? Math.sin(t * 9 + i) * 0.25 : 0;
+      c.set(0, rk.x, rk.z, rk.face, rk.lift + flap);
+    });
   };
 };
 
@@ -1310,11 +1538,64 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
   [[-88, 206], [14, 232], [-30, 176]].forEach(([x, z], i) =>
     folk.set(i, x, z, 0.95 + r() * 0.12, 0, r() > 0.5));
 
+  /* ---- THE UNNAMED (Session 17) ------------------------------------- *
+   * A JOGGER round the court and down main street at half past six. THE
+   * POST, box to box along main street, at ten. Two CHILDREN on the
+   * green after school. THE CAR from the first house, which backs out at
+   * ten past eight, drives to the end of the survey — there is nowhere
+   * else a car in this world can go — and comes back at ten to six. An
+   * EVENING WALKER. Somebody WATERING at seven, who is not the sprinkler
+   * you never find. And A CAT on Val's fence, which sits up for a runner. */
+  const jogger = new Figure(ctx, { id: 'the-jogger', land: 'neighborhood', pace: 640, stops: stops([
+    [6.35, -89, 153.5, 0, 1], [6.42, -78, 146.5, 1, 1], [6.45, -83, 137.5, 1, 1], [6.48, -73, 137.5, 1, 1], [6.51, -78, 146.5, 1, 1],
+    [6.58, -45, 148, 1, 1], [6.68, -45, 200, 1, 1], [6.76, -20, 202, 1, 1], [6.84, -45, 200, 1, -1], [6.95, -89, 153.5, 0, -1, 0.02],
+  ]) }, 2);
+  const BOXES: [number, number][] = [[46.8, 222.1], [29.8, 229.1], [11.8, 223.1], [-15.2, 232.1], [-36.8, 225.1], [-67.8, 224.1], [-79.8, 230.1]];
+  const postie = new Figure(ctx, { id: 'the-post', land: 'neighborhood', pace: 300, walkPose: 4, stops: stops([
+    [9.95, 52, 214, 4, -1],
+    ...BOXES.map((b, i): [number, number, number, number, -1 | 1, number] => [10.05 + i * 0.09, b[0] + 1.2, b[1] + 1.2, 4, -1, 0.04]),
+    [10.75, -78, 246, 4, -1, 0.02],
+  ]) }, 2);
+  const kids = [0, 1].map((i) =>
+    new Creature(ctx, `the-green-children-${i}`, 'neighborhood', [childTexture(1750 + i * 2, 0), childTexture(1751 + i * 2, 1)], 0.8, 1.2, GREEN.x, GREEN.z));
+  events.register({ id: 'the-green-children', land: 'neighborhood', at: 15.5, hours: 2.0, place: GREEN });
+  /* It parks on the empty plot at the end of the survey, twelve units
+   * OFF the king's road's axis: the line's sightline (`THE-LINE` §3.2,
+   * `check-sightline`) allows nothing tall within eight of it, and a
+   * car is 2.3 tall. It drives down the axis to get there, which is
+   * what a road is for. */
+  const CAR_OUT: [number, number][] = [[-85.6, 141.7], [-83, 140], [-78, 146.5], [-64, 147], [-45, 148], [-45, 200], [-45, 246], [-57, 256]];
+  const carOut: RoutineDef = { id: 'the-first-car', land: 'neighborhood', pace: 900, stops: stops([
+    [8.1, -85.6, 141.7, 0, 1, 0.01],
+    ...CAR_OUT.slice(1).map((p, i): [number, number, number, number, -1 | 1] => [8.14 + i * 0.045, p[0], p[1], 0, 1]),
+  ]) };
+  carOut.stops[carOut.stops.length - 1].hold = 9.6;
+  const carHome: RoutineDef = { id: 'the-first-car-home', land: 'neighborhood', pace: 900, stops: stops([
+    [17.75, -57, 256, 0, -1, 0.01],
+    ...[...CAR_OUT].reverse().slice(1).map((p, i): [number, number, number, number, -1 | 1] => [17.79 + i * 0.045, p[0], p[1], 0, -1]),
+  ]) };
+  carHome.stops[carHome.stops.length - 1].hold = 14.3;
+  const car = new Creature(ctx, 'the-first-car', 'neighborhood', [carTexture(8790)], 4.6, 2.3, -85.6, 141.7);
+  const carDefs = [carOut, carHome];
+  for (const d of carDefs) {
+    d.onLeg = (i, px, pz) => { if (i === 0 && Math.hypot(px - d.stops[0].x, pz - d.stops[0].z) < 40) say('car-start'); };
+    registerRoutine(d);
+  }
+  const walker = new Figure(ctx, { id: 'the-evening-walker', land: 'neighborhood', pace: 280, stops: stops([
+    [18.2, 41, 220, 0, -1], [18.55, -45, 202, 0, -1, 0.05], [18.95, 41, 220, 0, 1, 0.02],
+  ]) }, 0);
+  const waterer = new Figure(ctx, { id: 'the-watering', land: 'neighborhood', pace: 260, stops: stops([
+    [18.95, -62, 218.5, 0, 1], [19.0, -58, 223, 0, -1, 0.5], [19.55, -62, 218.5, 0, 1, 0.02],
+  ]) }, 1);
+  const fenceCat = new Creature(ctx, 'the-fence-cat', 'neighborhood', [catTexture(1760, 0), catTexture(1761, 1)], 1.3, 0.85, VAL.x - 5.8, VAL.z + 8.5);
+  const fenceCatState = { awake: 0, px: 0, pz: 0 };
+
   /* ================================================================ */
   let sprinkler = 6;
   let dog = 21;
   return (dt: number, _t: number, px: number, pz: number) => {
     const h = clock.hour;
+    const rain = weather.state.rain > 0.5;
 
     /* THE PORCH LIGHT, AND IT NEVER GOES ALL THE WAY OUT.
      *
@@ -1372,6 +1653,40 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
     }
     // the swing, and nobody is on it
     swing.rotation.z = Math.sin(_t * 0.8) * 0.055 + Math.sin(_t * 0.31) * 0.02;
+
+    /* ---- THE UNNAMED (Session 17) ------------------------------------ */
+    jogger.tick(h, rain);
+    postie.tick(h);
+    walker.tick(h, rain);
+    waterer.tick(h, rain);
+    const green = events.progress('the-green-children');
+    for (let i = 0; i < 2; i++) {
+      if (green < 0 || rain) { kids[i].hide(); continue; }
+      const a = h * 100 * 0.66 + i * Math.PI;
+      kids[i].set(Math.floor(h * 100 / 0.28) % 2, GREEN.x + Math.cos(a) * 4.6, GREEN.z + 2 + Math.sin(a) * 3.6, Math.sin(a) > 0 ? 1 : -1);
+    }
+    // the car is wherever the two halves of its day say it is, and at
+    // home between them
+    {
+      let placed = false;
+      for (const d of carDefs) {
+        const st = routineState(d, h);
+        if (st.present) { car.set(0, st.x, st.z, st.face === 1 ? 1 : -1); placed = true; break; }
+      }
+      if (!placed) {
+        const away = h >= 8.1 && h < 17.75;
+        car.set(0, away ? -57 : -85.6, away ? 256 : 141.7, away ? 1 : -1);
+      }
+    }
+    const speed = Math.hypot(px - fenceCatState.px, pz - fenceCatState.pz) / Math.max(1e-3, dt);
+    fenceCatState.px = px;
+    fenceCatState.pz = pz;
+    fenceCatState.awake = Math.max(0, fenceCatState.awake - dt);
+    if (Math.hypot(px - (VAL.x - 5.8), pz - (VAL.z + 8.5)) < 7 && speed > 4.6 && fenceCatState.awake <= 0) {
+      fenceCatState.awake = 8;
+      say('cat-mew');
+    }
+    fenceCat.set(fenceCatState.awake > 0 ? 1 : 0, VAL.x - 5.8, VAL.z + 8.5, px < VAL.x - 5.8 ? -1 : 1, 1.05);
   };
 };
 
@@ -1697,10 +2012,57 @@ export const buildCity: RegionBuilder = (ctx) => {
   const planters = ctx.field(planterTexture(9601), 6, { w: 2, h: 2 });
   [[126, 208], [114, 196], [156, 212], [140, 190], [166, 198], [104, 208]]
     .forEach(([x, z], i) => planters.set(i, x, z, 0.9 + r() * 0.3, 0, false));
-  const pigeons = ctx.field(pigeonTexture(9602), 7, { w: 0.9, h: 0.7 });
-  [[150, 208], [151.5, 209], [153, 207.5], [136, 213], [137, 214.5],
-   [90, 214], [91, 216]]
-    .forEach(([x, z], i) => pigeons.set(i, x, z, 1, 0, r() > 0.5));
+  /* THE PIGEONS THAT LIFT AS ONE (Session 17, §9 item 2). Seven of
+   * them, and when the walker is among any of them they ALL go up at
+   * once, wheel over the junction for a while, and come down on the
+   * same spots — Brim's pigeons go one at a time, and a city's do not. */
+  const PIGEON_SPOTS: [number, number][] = [[150, 208], [151.5, 209], [153, 207.5], [136, 213], [137, 214.5], [90, 214], [91, 216]];
+  const pigeons = PIGEON_SPOTS.map(([x, z], i) =>
+    new Creature(ctx, `the-city-pigeons-${i}`, 'city', [pigeonTexture(9602 + i), pigeonFlyTexture(9612 + i)], 0.9, 0.7, x, z));
+  const flock = { up: 0, t: 0 };
+
+  /* ---- THE UNNAMED (Session 17) ------------------------------------- *
+   * THE RUSH at eight and at half past five: twice the people, all of
+   * them mid-stride, for an hour, and then the street is what it was.
+   * A SWEEPER before dawn. A DELIVERY at the shop row that finds the
+   * shutter down. A WINDOW CLEANER with a pole. A BUSKER at the junction
+   * through the middle of the day, playing nothing anybody can hear,
+   * because this city has one hum and it never once moves. */
+  const RUSH: [number, number, 0 | 1 | 2][] = [
+    [140, 224, 0], [146, 230, 1], [158, 226, 2], [134, 196, 1], [150, 182, 0], [156, 176, 2],
+    [124, 209, 2], [112, 205, 0], [100, 202, 1], [166, 210, 1], [178, 206, 0], [192, 212, 2],
+    [152, 250, 0], [148, 162, 1], [130, 208, 2], [160, 200, 0], [142, 206, 1], [172, 214, 2],
+    [116, 199, 1], [184, 204, 0], [154, 234, 2], [138, 178, 0], [162, 190, 1], [198, 218, 2],
+  ];
+  const rushFields = [0, 1, 2].map((v) => {
+    const sub = RUSH.filter(([, , k]) => k === v);
+    const f = ctx.field(commuterTexture(9425 + v, v as 0 | 1 | 2), sub.length, { w: 1.2, h: 2.0 });
+    sub.forEach(([x, z], i) => f.set(i, x, z, 0.92 + r() * 0.16, 0, r() > 0.5));
+    f.setDim(0);
+    return f;
+  });
+  events.register({ id: 'the-rush-morning', land: 'city', at: 7.7, hours: 1.4, place: JUNCTION });
+  events.register({ id: 'the-rush-evening', land: 'city', at: 17.1, hours: 1.4, place: JUNCTION });
+  const citySweeper = new Figure(ctx, { id: 'the-city-sweeper', land: 'city', pace: 260, stops: stops([
+    [5.35, 150, 160, 2, -1], [5.5, 140, 192, 2, -1, 0.08], [5.65, 128, 205, 2, -1, 0.08], [5.8, 117, 210, 2, -1, 0.08],
+    [5.95, 106, 208, 2, 1, 0.08], [6.35, 150, 160, 0, 1, 0.02],
+  ]) }, 2);
+  const cityDelivery = new Figure(ctx, { id: 'the-city-delivery', land: 'city', pace: 300, walkPose: 4, stops: stops([
+    [6.6, 150, 160, 4, -1], [6.9, 119, 202, 0, -1, 0.3], [7.4, 150, 160, 4, 1, 0.02],
+  ]) }, 0);
+  cityDelivery.prop = ctx.standee(handcartTexture(9630), 2.6, 1.9, 150, 160);
+  (cityDelivery.prop.material as THREE.MeshBasicMaterial).transparent = true;
+  cityDelivery.propOffset = { x: 1.5, z: 0.2 };
+  const cleaner = new Figure(ctx, { id: 'the-window-cleaner', land: 'city', pace: 300, walkPose: 6, stops: stops([
+    [10.05, 150, 160, 6, -1], [10.2, 137, 199, 6, 1, 1.1], [11.5, 150, 160, 6, 1, 0.02],
+  ]) }, 2);
+  const busker = new Figure(ctx, { id: 'the-busker', land: 'city', pace: 300, stops: stops([
+    [11.85, 150, 160, 0, 1], [12.0, 152, 207.5, 0, -1, 2.0], [14.15, 150, 160, 0, 1, 0.02],
+  ]) }, 1);
+  /* AND A RAT in the hollow after dark, which runs when you come down. */
+  const rat = new Creature(ctx, 'the-hollow-rat', 'city', [ratTexture(9640)], 0.9, 0.45, HOLLOW_X - 1, 209);
+  const ratState = { gone: 0 };
+  events.register({ id: 'the-hollow-rat', land: 'city', at: 21.0, hours: 7.5, place: { x: HOLLOW_X, z: 209 } });
 
   /* ================================================================ */
   let stood = 0;
@@ -1711,6 +2073,47 @@ export const buildCity: RegionBuilder = (ctx) => {
     const dusk = Math.max(0, Math.min(1,
       Math.max((h - 16.8) / 2.4, (7.2 - h) / 2)));
     lightUp(towerLits, dusk);
+
+    /* ---- THE UNNAMED, THE RUSH, THE FLOCK (Session 17) --------------- */
+    const rain = weather.state.rain > 0.5;
+    citySweeper.tick(h);
+    cityDelivery.tick(h);
+    cleaner.tick(h, rain);
+    busker.tick(h, rain);
+    {
+      const bump = (p: number) => (p < 0 ? 0 : Math.min(1, p / 0.18, (1 - p) / 0.18));
+      const k = Math.max(bump(events.progress('the-rush-morning')), bump(events.progress('the-rush-evening')));
+      for (const f of rushFields) f.setDim(k);
+    }
+    {
+      let near = 1e9;
+      for (const [x, z] of PIGEON_SPOTS) near = Math.min(near, Math.hypot(px - x, pz - z));
+      if (flock.up <= 0 && near < 3.2) { flock.up = 12; flock.t = 0; say('pigeons-lift'); }
+      flock.up = Math.max(0, flock.up - dt);
+      flock.t += dt;
+      const k = flock.up > 0 ? Math.min(1, flock.t / 1.2, flock.up / 1.5) : 0;
+      pigeons.forEach((p, i) => {
+        const [sx, sz] = PIGEON_SPOTS[i];
+        const a = t * 0.9 + i * 0.9;
+        const wx = JUNCTION.x + Math.cos(a) * (8 + (i % 3) * 3);
+        const wz = JUNCTION.z + Math.sin(a * 2) * 5;
+        const e = k * k * (3 - 2 * k);
+        const x = sx + (wx - sx) * e;
+        const z = sz + (wz - sz) * e;
+        p.set(k > 0.2 ? 1 : 0, x, z, Math.cos(a) > 0 ? 1 : -1, e * (5 + Math.sin(a * 1.7 + i) * 1.8));
+      });
+    }
+    {
+      const on = events.progress('the-hollow-rat');
+      ratState.gone = Math.max(0, ratState.gone - dt);
+      const rx = HOLLOW_X - 1 + Math.sin(t * 0.7) * 2.2;
+      const rz = 209 + Math.cos(t * 0.5) * 1.4;
+      if (on < 0 || ratState.gone > 0) rat.hide();
+      else {
+        if (Math.hypot(px - rx, pz - rz) < 6) ratState.gone = 30;
+        rat.set(0, rx, rz, Math.cos(t * 0.7) > 0 ? 1 : -1);
+      }
+    }
 
     /* ================================================================ *
      * THE ONE THING IN THIS WORLD THAT COSTS YOU FOUR SECONDS.
@@ -2294,6 +2697,79 @@ export const buildOffice: RegionBuilder = (ctx) => {
    * block, forever, and never gets anywhere. */
   const cup = ctx.standee(paperCupTexture(7810), 0.5, 0.5, 334, 191);
 
+  /* ---- THE UNNAMED (Session 17) ------------------------------------- *
+   * THE NINE O'CLOCK: three people from three cars to one door, and at
+   * five the same three the other way. A CAR that comes in past the
+   * barrier at half past eight and goes round to the service yard at
+   * half past five, because there is nowhere else a car in this world
+   * can go. A SMOKER at the smoking patch three times a day. A COURIER
+   * at the barrier at eleven who finds nobody in the hut. A CLEANER at
+   * the atrium in the evening. And a GUARD walking the mile at night
+   * with a lantern, past every light that is on for nobody. */
+  const DOORS = { x: ATRIUM.x, z: ATRIUM.z + 2.8 };
+  const CARS_AT: [number, number][] = [[266, 201], [305, 200], [243, 193.5]];
+  const workersIn = CARS_AT.map(([x, z], i) =>
+    new Figure(ctx, { id: `the-nine-oclock-${i}`, land: 'office', pace: 300, walkPose: 4, stops: stops([
+      [8.7 + i * 0.07, x, z, 4, x < DOORS.x ? 1 : -1, 0.02], [8.93 + i * 0.07, DOORS.x + (i - 1) * 1.1, DOORS.z, 4, 1, 0.01],
+    ]) }, i as 0 | 1 | 2));
+  const workersOut = CARS_AT.map(([x, z], i) =>
+    new Figure(ctx, { id: `the-five-oclock-${i}`, land: 'office', pace: 300, walkPose: 4, stops: stops([
+      [17.02 + i * 0.06, DOORS.x + (i - 1) * 1.1, DOORS.z, 4, x < DOORS.x ? -1 : 1], [17.2 + i * 0.06, x, z, 4, 1, 0.03],
+    ]) }, i as 0 | 1 | 2));
+  const CAR_IN: [number, number][] = [[256, 246], [248, 232], [245, 206], [270, 205.5], [279, 197.5]];
+  const carIn: RoutineDef = { id: 'the-half-past-eight', land: 'office', pace: 900, stops: stops([
+    [8.5, 256, 246, 0, 1, 0.01],
+    ...CAR_IN.slice(1).map((p, i): [number, number, number, number, -1 | 1] => [8.53 + i * 0.03, p[0], p[1], 0, 1]),
+  ]) };
+  carIn.stops[carIn.stops.length - 1].hold = 8.7;
+  const carOutM: RoutineDef = { id: 'the-half-past-five', land: 'office', pace: 900, stops: stops([
+    [17.3, 279, 197.5, 0, -1, 0.01],
+    ...[...CAR_IN].reverse().slice(1).map((p, i): [number, number, number, number, -1 | 1] => [17.33 + i * 0.03, p[0], p[1], 0, -1]),
+  ]) };
+  carOutM.stops[carOutM.stops.length - 1].hold = 15.2;
+  for (const d of [carIn, carOutM]) {
+    d.onLeg = (i, px, pz) => { if (i === 0 && Math.hypot(px - d.stops[0].x, pz - d.stops[0].z) < 40) say('car-start'); };
+    registerRoutine(d);
+  }
+  const officeCar = new Creature(ctx, 'the-half-past-eight', 'office', [officeCarTexture(7413, 1)], 4.4, 2.64, 256, 246);
+  const officeCarDefs = [carIn, carOutM];
+  const smokers = [10.3, 12.4, 15.1].map((at, k) =>
+    new Figure(ctx, { id: `the-smoker-${k}`, land: 'office', pace: 260, stops: stops([
+      [at, DOORS.x, DOORS.z, 0, 1], [at + 0.06, ATRIUM.x + 10.6, ATRIUM.z + 5.8, 0, -1, 0.2], [at + 0.32, DOORS.x, DOORS.z, 0, -1, 0.01],
+    ]) }, 2));
+  const courier = new Figure(ctx, { id: 'the-courier', land: 'office', pace: 300, walkPose: 4, stops: stops([
+    [11.0, 232.5, 203.5, 4, 1], [11.08, 241.5, 203.6, 0, -1, 0.2], [11.4, 232.5, 203.5, 4, -1, 0.02],
+  ]) }, 0);
+  courier.prop = ctx.standee(handcartTexture(7820), 2.6, 1.9, 232.5, 203.5);
+  (courier.prop.material as THREE.MeshBasicMaterial).transparent = true;
+  courier.propOffset = { x: 1.5, z: 0.2 };
+  const officeCleaner = new Figure(ctx, { id: 'the-office-cleaner', land: 'office', pace: 260, stops: stops([
+    [19.2, DOORS.x, DOORS.z, 2, 1], [19.3, ATRIUM.x + 3, ATRIUM.z + 6, 2, 1, 0.2], [19.55, ATRIUM.x - 4, ATRIUM.z + 7, 2, -1, 0.2],
+    [19.8, ATRIUM.x + 6, ATRIUM.z + 9, 2, 1, 0.2], [20.1, DOORS.x, DOORS.z, 0, -1, 0.01],
+  ]) }, 1);
+  const guard = new Figure(ctx, { id: 'the-night-guard', land: 'office', pace: 280, stops: stops([
+    [22.3, 239.5, 201.5, 0, 1], [22.45, 270, 206.5, 0, 1], [22.6, 300, 206.5, 0, 1], [22.72, 330, 205, 0, 1, 0.05],
+    [22.87, 300, 206.5, 0, -1], [23.02, 270, 206.5, 0, -1], [23.15, 239.5, 201.5, 0, -1, 0.02],
+  ]) }, 0);
+  guard.prop = ctx.standee(lanternGlowTexture(7830), 2.2, 2.2, 239.5, 201.5);
+  guard.prop.geometry.translate(0, 0.2, 0);
+  (guard.prop.material as THREE.MeshBasicMaterial).transparent = true;
+  (guard.prop.material as THREE.MeshBasicMaterial).depthWrite = false;
+  guard.prop.renderOrder = 3;
+  guard.propOffset = { x: 0.7, z: -0.1 };
+  /* A MAGPIE on the muster sign by day that hops off for you, and A FOX
+   * across the car park after midnight that does not stop for anybody. */
+  const magpie = new Creature(ctx, 'the-muster-magpie', 'office', [magpieTexture(7840, 0), magpieTexture(7841, 1)], 0.8, 0.6, 283.5, 240.6);
+  const magpieState = { off: 0 };
+  const mileFox = new Creature(ctx, 'the-mile-fox', 'office', [foxTexture(7842, 0), foxTexture(7843, 1)], 2.2, 1.4, 336, 150);
+  const foxState = { gone: 0, seen: 0 };
+  events.register({ id: 'the-mile-fox', land: 'office', at: 23.4, hours: 2.2, place: { x: 300, z: 190 } });
+  /* THE LIGHTS, ON EVENTS (Session 17): what was a smoothstep in a
+   * builder is two registered events now, so the harness can drive them
+   * and `happening` can say the mile is lit. */
+  events.register({ id: 'the-mile-lights', land: 'office', at: 17.4, hours: 2.2, place: STOP });
+  events.register({ id: 'the-mile-dark', land: 'office', at: 4.8, hours: 1.8, place: STOP });
+
   /* ================================================================ */
   let plant = 9;
   let carDoor = 26;
@@ -2304,12 +2780,10 @@ export const buildOffice: RegionBuilder = (ctx) => {
 
     /* THE LIGHTS. Every window in the mile that is still occupied at
      * seven, and every lighting column over every car park — and the
-     * shelter is NOT among them until you have walked the line. */
-    const dusk = Math.max(
-      Math.min(1, (h - 17.4) / 2.2),
-      Math.min(1, (6.6 - h) / 1.8)
-    );
-    const k = Math.max(0, Math.min(1, dusk));
+     * shelter is NOT among them until you have walked the line. On
+     * `events.ts` since Session 17: the same curve, read off two
+     * registered events instead of rolled by hand. */
+    const k = events.between('the-mile-lights', 'the-mile-dark', h);
     lightUp(lits, k);
     lightUp(lampLits, k);
 
@@ -2369,6 +2843,56 @@ export const buildOffice: RegionBuilder = (ctx) => {
     cup.position.x = 334 + Math.cos(a) * 1.5 + Math.cos(a * 2.7) * 0.35;
     cup.position.z = 191 + Math.sin(a) * 1.1 + Math.sin(a * 3.1) * 0.25;
     cup.rotation.z = Math.sin(a * 2) * 0.5;
+
+    /* ---- THE UNNAMED (Session 17) ------------------------------------ */
+    const rain = weather.state.rain > 0.5;
+    for (const f of workersIn) f.tick(h);
+    for (const f of workersOut) f.tick(h);
+    for (const f of smokers) f.tick(h, rain);
+    courier.tick(h);
+    officeCleaner.tick(h);
+    guard.tick(h);
+    {
+      let placed = false;
+      for (const d of officeCarDefs) {
+        const st = routineState(d, h);
+        if (st.present) { officeCar.set(0, st.x, st.z, st.face === 1 ? 1 : -1); placed = true; break; }
+      }
+      if (!placed) {
+        const inBay = h >= 8.5 && h < 17.3;
+        officeCar.set(0, inBay ? 279 : 256, inBay ? 197.5 : 246, inBay ? 1 : -1);
+      }
+    }
+    {
+      const day = h > 6 && h < 20;
+      magpieState.off = Math.max(0, magpieState.off - dt);
+      if (!day) magpie.hide();
+      else {
+        if (magpieState.off <= 0 && Math.hypot(px - 283.5, pz - 240.6) < 5.5) magpieState.off = 30;
+        if (magpieState.off > 0) {
+          const u = Math.min(1, (30 - magpieState.off) / 1.4);
+          magpie.set(u < 1 ? 1 : 0, 283.5 + (296 - 283.5) * u, 240.6 + (160 - 240.6) * u, 1, 2.75 + (6.2 - 2.75) * u + Math.sin(u * Math.PI) * 3);
+        } else magpie.set(0, 283.5, 240.6, Math.sin(t * 0.3) > 0 ? 1 : -1, 2.75);
+      }
+    }
+    {
+      const on = events.progress('the-mile-fox');
+      foxState.gone = Math.max(0, foxState.gone - dt);
+      foxState.seen = Math.max(0, foxState.seen - dt);
+      if (on < 0 || foxState.gone > 0) mileFox.hide();
+      else {
+        // across the whole mile, corner to corner, and back, on the hour
+        const u = (h * 100 * 0.006) % 2;
+        const e = u < 1 ? u : 2 - u;
+        const fx = 336 + (240 - 336) * e;
+        const fz = 150 + (238 - 150) * e;
+        if (foxState.seen > 0) {
+          mileFox.set(1, fx, fz, px < fx ? -1 : 1);
+          if (foxState.seen < 0.05) foxState.gone = 45;
+        } else if (Math.hypot(px - fx, pz - fz) < 12) { foxState.seen = 1.0; say('fox-bark'); mileFox.set(1, fx, fz, px < fx ? -1 : 1); }
+        else mileFox.set(0, fx, fz, u < 1 ? -1 : 1);
+      }
+    }
 
     /* THE VOICES. Four, and all four are the same joke told four ways:
      * a building that promises nothing will change. */

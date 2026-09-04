@@ -58,6 +58,18 @@ export class PaperFX {
         uDayLamp: { value: 0 },
         uPoolWarm: { value: new THREE.Vector3(1, 1, 1) },
         uPoolCool: { value: new THREE.Vector3(1, 1, 1) },
+        /* ---- THE WEATHER (Session 17, `world/weather.ts`) --------------
+         * Rain is THE SMUDGE PASS RUNNING THE DRAWING: every mark on the
+         * page bleeds a little downward, the way ballpoint does when a
+         * wet thumb goes over it, and thin streaks fall across the whole
+         * frame. It is the one weather that touches the ink, and it may,
+         * because rain on a drawing is a thing that happens to the
+         * drawing and not to the world drawn on it — the medium is the
+         * style, and this is the style getting wet. A storm's flash is
+         * one add over the whole frame, gone in half a second. */
+        uRain: { value: 0 },
+        uFlash: { value: 0 },
+        uPixel: { value: new THREE.Vector2(1 / 1280, 1 / 720) },
       },
       vertexShader: /* glsl */ `
         varying vec2 vUv;
@@ -79,6 +91,9 @@ export class PaperFX {
         uniform float uDayLamp;
         uniform vec3 uPoolWarm;
         uniform vec3 uPoolCool;
+        uniform float uRain;
+        uniform float uFlash;
+        uniform vec2 uPixel;
         varying vec2 vUv;
 
         float hash(vec2 p) {
@@ -108,6 +123,26 @@ export class PaperFX {
             hash(vUv * 9.0 + seed + 4.0) - 0.5
           ) * 0.0016;
           vec4 col = texture2D(tDiffuse, vUv + wob);
+
+          /* ---- THE RAIN ------------------------------------------------
+           * The run: the ink a little way UP the page bleeds down into
+           * this pixel, and only the dark wins — a run can only ever
+           * darken paper, never lighten a line. The streaks: the frame
+           * cut into narrow slanted columns, a few of them carrying a
+           * short falling mark on a phase of their own. */
+          if (uRain > 0.001) {
+            vec2 up = vec2(0.0, uPixel.y) * (2.0 + 5.0 * uRain);
+            vec3 a1 = texture2D(tDiffuse, vUv + wob + up * 0.5).rgb;
+            vec3 a2 = texture2D(tDiffuse, vUv + wob + up).rgb;
+            vec3 run = min(col.rgb, (a1 + a2) * 0.5);
+            col.rgb = mix(col.rgb, run, 0.5 * uRain);
+            float colId = floor((vUv.x + vUv.y * 0.16) * 240.0);
+            float ph = hash(vec2(colId, 1.0));
+            float drop = fract(vUv.y * (6.0 + ph * 5.0) - uTime * (1.5 + ph * 0.9) + ph * 7.0);
+            float streak = smoothstep(0.0, 0.05, drop) * (1.0 - smoothstep(0.05, 0.26, drop));
+            float dens = step(1.0 - 0.42 * uRain, hash(vec2(colId, 3.0)));
+            col.rgb -= streak * dens * 0.09 * uRain;
+          }
 
           // animated paper grain — the sheet's own tooth is drawn in the
           // ground now, so this is only the pen-and-page shimmer over the
@@ -171,6 +206,9 @@ export class PaperFX {
           // one multiply over the whole frame, so nothing is exempt
           col.rgb *= uDim;
 
+          // the lightning: the whole room, lit, for a moment
+          col.rgb += uFlash * 0.42;
+
           gl_FragColor = col;
         }
       `,
@@ -202,6 +240,12 @@ export class PaperFX {
     (this.pass.uniforms.uPoolCool.value as THREE.Vector3).set(poolCool[0], poolCool[1], poolCool[2]);
   }
 
+  /** THE WEATHER ON THE FRAME: how hard it is raining, and the flash. */
+  setWeather(rain: number, flash: number) {
+    this.pass.uniforms.uRain.value = rain;
+    this.pass.uniforms.uFlash.value = flash;
+  }
+
   setVignette(v: number) {
     this.pass.uniforms.uVignette.value = v;
   }
@@ -224,6 +268,7 @@ export class PaperFX {
   setSize(w: number, h: number, dpr: number) {
     this.composer.setSize(w, h);
     this.composer.setPixelRatio(dpr);
+    (this.pass.uniforms.uPixel.value as THREE.Vector2).set(1 / Math.max(1, w * dpr), 1 / Math.max(1, h * dpr));
   }
 
   render(dt: number) {
