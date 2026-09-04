@@ -305,7 +305,7 @@ export class World {
    * tick fields and region updates, and run the ink wave when the
    * walker first crosses into a land.
    */
-  tick(dt: number, t: number, x: number, z: number, currentId: RegionId) {
+  tick(dt: number, t: number, x: number, z: number, currentId: RegionId, windK = 1) {
     let builtOne = false;
     for (const spec of REGION_SPECS) {
       const d = rectDist(spec.rect, x, z);
@@ -320,7 +320,7 @@ export class World {
       b.group.visible = d < SHOW_REACH;
       if (b.group.visible) {
         for (const f of b.fields) {
-          f.update(t);
+          f.update(t, windK);
           f.setPlayer(x, z);
         }
         b.update?.(dt, t, x, z);

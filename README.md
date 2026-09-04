@@ -158,6 +158,46 @@ and deals a region card — nothing else, because the sheet is continuous.
   Downs walk the lane from the fold to the field at first light and
   back at dusk, whether or not anybody is there to see it — the first
   scheduled event, and the plumbing for one in every land.
+- **And the world is alive in every land now** (Session 17, LIFE — the
+  four multipliers of `THE-FUN-PASS` §9). **Sixty-three unnamed
+  inhabitants with routines**, on `events.ts`, every one of them
+  somewhere at a given hour and indoors otherwise: a lamplighter who
+  does Brim's four lamps in order at dusk and puts them out at dawn,
+  and each lamp comes on as he reaches it; shutters that go over row by
+  row at nine; a delivery that finds the stall shut; a car in Maple
+  Court that backs out at ten past eight, drives to the end of the
+  survey because there is nowhere else a car in this world can go, and
+  comes back at ten to six; the nine o'clock in the Cubicle Mile, from
+  three cars to one door; a sentry on Greyweather's wall; cutters in the
+  Penwood who never go inside the forty; and three people arguing under
+  the oaks while you sit in the swing. Brim's lamps, the shelter's
+  light, Amos's night walk and Joan's working day moved onto the clock
+  with them. **The animals**: a dog at the Downs' field gate that falls
+  in beside you and stops dead at the Downs' edge on every road — the
+  second co-walker, and the one that teaches the rule; a herd of cows
+  that parts; a heron at the tarn that goes up when you come; seals on
+  the sandbar that slip in; seven pigeons in Greyline that lift as one;
+  crabs on the wrack that go sideways; a cat on Brim's wall and another
+  on Val's fence that sit up if you RUN past; three rooks that roost on
+  the keep and spend the day on a scarecrow in the Downs — birds cross
+  borders and nobody looks up, and it is recorded so nobody fixes it;
+  and after dark a fox on the Common, a fox across the car park, bats
+  over the well, the moat pool, the slot and the deep pines, and
+  **something under the Wide Blue that surfaces once at dusk.** **The
+  weather**: one clock like the day, a pure function of the day and the
+  hour, so a shower falling for ten minutes when you arrive has been
+  falling for ten minutes — rain that runs the drawing (the ink bleeds
+  down the page), wind that leans every field harder and actually turns
+  the mill, fog that closes the vistas and the four lures with them, and
+  a storm once in a while at night with the whole frame flashing and
+  the thunder a second behind. Day zero is the shipped page: calm at
+  noon and at dusk, one shower in the afternoon; day one has a fog at
+  first light and the first storm. **And night is a different game**:
+  the bull lies down at dusk and gets up if you come within twelve
+  units; in the deep pines after dark the pine-tick stops and nothing
+  fires but the bed and, once in a long while, a branch a long way off;
+  Holt's window is a light you can steer by. `?hour=19.4`, `?day=1` and
+  `?weather=storm` on the address bar set the page up before the title.
 - Position, discovered lands, strides walked, the boat, the hour, what
   you know, what you chose, and where you left the cart, saved to
   `localStorage`. (The gate, the bull and the goat are not: a fresh
@@ -234,7 +274,10 @@ node tools/check-sightline.mjs # THE LINE'S CORRIDOR: nothing tall within eight
                                #   a DRAWING is in it if any part of it is
 node tools/shoot-textures.mjs  # EVERY DRAWING IN A PROP BOX, AT ACTUAL SIZE
 node tools/montage.mjs <dir> <out.png> a.png b.png …   # a land on one sheet
-node tools/check-fields.mjs    # no instanced field is ever half inked in
+node tools/check-fields.mjs    # no instanced field is ever half inked in —
+                               #   and every routine is drawn when it is out
+                               #   and not when it is in, at every hour it
+                               #   changes at (Session 17)
 node tools/check-verbs.mjs     # THE VERBS: the cart stops at the border, the
                                #   stone lands inside it, one thing in hand, a
                                #   seated walker is due north, the drove keeps
@@ -242,7 +285,11 @@ node tools/check-verbs.mjs     # THE VERBS: the cart stops at the border, the
 node tools/shoot-session15.mjs # the proofs, both states, both viewports
 node tools/shoot-session16.mjs # THE FIRST HOUR: the bull, the gate, the goat,
                                #   the lures, Nell's doors, both viewports
-node tools/check-lures.mjs     # which of the four lures each rig can hold
+node tools/check-lures.mjs     # which of the four lures each rig can hold,
+                               #   and that a fog closes all four
+node tools/shoot-session17.mjs # LIFE: a day in the life of twelve lands, at
+                               #   the hours the routines are out, the moment
+                               #   the animals react, and in every weather
 HOUR=19.6 node tools/shoot-first-minute.mjs   # any sheet, at any hour
 node tools/shoot.mjs           # all twelve lands, walkability smoke test
 node tools/shoot-mobile.mjs    # the CHROME, at 320/360/390/430 points AND at

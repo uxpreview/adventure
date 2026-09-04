@@ -1076,11 +1076,49 @@ export function nellTexture(seed: number, pose: 0 | 1 | 2): THREE.CanvasTexture 
  * a different animal at forty units, so the mass is the drawing and the
  * legs are short and thick, and the horns are the only fine line on it.
  */
-export function bullTexture(seed: number, pose: 0 | 1 | 2): THREE.CanvasTexture {
+export function bullTexture(seed: number, pose: 0 | 1 | 2 | 3): THREE.CanvasTexture {
   return makeTexture(192, 128, seed, (ctx, r) => {
     const charge = pose === 2;
     const look = pose === 1;
+    const lying = pose === 3;
     const dark = '#3a3630';
+    /* LYING DOWN (Session 17, `THE-FUN-PASS` §9 item 4): the same mass
+     * with its legs folded under it and its head low — the night's
+     * bull, from dusk to dawn, and the one drawing of it that is not
+     * a threat. */
+    if (lying) {
+      /* The whole animal is a low mass with nothing under it: the legs
+       * are folded and out of sight, the belly is on the grass, and the
+       * head is carried low on a short neck. What says "bull" is the
+       * hump and the horns; what says "lying" is that the drawing has
+       * no legs. */
+      const body: [number, number][] = [[18, 100], [30, 76], [76, 62], [122, 64], [148, 78], [158, 104], [146, 120], [64, 122], [24, 116]];
+      fillPoly(ctx, body, dark, 0.44);
+      poly(ctx, body, r, { width: 2.4, alpha: 0.9, jitter: 1.6 });
+      fillBlob(ctx, 104, 66, 22, r, dark, 0.5, 0.6);
+      for (let i = 0; i < 26; i++) {
+        const x = 34 + r() * 108;
+        const y = 70 + r() * 44;
+        line(ctx, x, y, x + (r() - 0.5) * 14, y + 5 + r() * 8, r,
+          { width: 1.1, alpha: 0.18 + r() * 0.16, passes: 1 }, 2);
+      }
+      // the haunch and the folded foreleg, drawn as lines INSIDE the mass
+      stroke(ctx, [[42, 118], [56, 104], [86, 108], [100, 120]], r, { width: 1.8, alpha: 0.5, passes: 1 });
+      stroke(ctx, [[126, 121], [136, 108], [152, 112]], r, { width: 1.8, alpha: 0.5, passes: 1 });
+      const hx = 168;
+      const hy = 102;
+      const head: [number, number][] = [[hx - 20, hy - 12], [hx + 14, hy - 10], [hx + 18, hy + 12], [hx - 16, hy + 14]];
+      fillPoly(ctx, [[hx - 24, hy - 14], [146, 78], [156, 108], [hx - 18, hy + 12]], dark, 0.45);
+      fillPoly(ctx, head, dark, 0.55);
+      poly(ctx, head, r, { width: 2.2, alpha: 0.9 });
+      line(ctx, hx - 6, hy + 8, hx + 8, hy + 8, r, { width: 2, alpha: 0.35, passes: 1, color: '#f5f2ea' });
+      stroke(ctx, [[hx - 10, hy - 12], [hx + 2, hy - 30], [hx + 16, hy - 34]], r, { width: 2, alpha: 0.9, passes: 1 });
+      stroke(ctx, [[hx - 18, hy - 10], [hx - 12, hy - 26], [hx - 2, hy - 30]], r, { width: 1.6, alpha: 0.7, passes: 1 });
+      // the tail, lying along the ground
+      stroke(ctx, [[22, 108], [8, 116], [14, 124]], r, { width: 2, alpha: 0.8, passes: 1 });
+      scribbleCircle(ctx, hx + 10, hy + 12, 4, r, { width: 1.2, alpha: 0.55 });
+      return;
+    }
     // the body: deep at the shoulder, falling to the hip
     const body: [number, number][] = charge
       ? [[22, 62], [40, 46], [90, 40], [130, 44], [150, 56], [146, 84], [110, 90], [60, 90], [28, 82]]

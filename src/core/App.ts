@@ -24,7 +24,9 @@ import { clock as dayClock, LAMP_POOL, LAMP_EDGE } from '../world/daylight';
 import { tearX } from '../world/elevation';
 import { knowledge } from '../world/knowledge';
 import { things } from '../world/things';
-import { events } from '../world/events';
+import { events, routines, routineAt } from '../world/events';
+import { drawn } from '../world/life';
+import { weather, PRESETS, type WeatherKind } from '../world/weather';
 import { fistStoneTexture } from '../world/textures-common';
 import { MEADOW_POIS, common } from '../world/regions/meadow';
 import { FOREST_POIS, CANYON_POIS, DESERT_POIS, DOWNS_POIS } from '../world/regions/wilds';
@@ -276,6 +278,25 @@ export class App {
     this.ui.onContinue = () => this.start(false);
 
     if (this.save.data.hour !== null) dayClock.set(this.save.data.hour);
+    dayClock.day = this.save.data.day ?? 0;
+
+    /* THE HOUR, THE DAY AND THE WEATHER FROM THE ADDRESS BAR (Session
+     * 17). The play sheet asks the owner to play ten minutes at three
+     * hours of the day, and forty real minutes is a long wait for a
+     * dusk: `?hour=19.4`, `?day=1`, `?weather=storm` set the page up
+     * before the title. The weather pin is the harness's own, and it
+     * holds for the whole visit; the hour and the day are the clock's
+     * and run on from there. */
+    {
+      const q = new URLSearchParams(location.search);
+      const hour = Number(q.get('hour'));
+      if (q.has('hour') && Number.isFinite(hour)) dayClock.set(hour);
+      const day = Number(q.get('day'));
+      if (q.has('day') && Number.isFinite(day)) dayClock.day = Math.max(0, Math.floor(day));
+      const w = q.get('weather');
+      if (w && w in PRESETS) weather.pin(w as WeatherKind);
+    }
+    weather.tick();
 
     /* WHAT THE WALKER ALREADY KNOWS (Session 7, WORLD-SYSTEMS §6).
      * Loaded before the first frame and before the first map, because
@@ -471,6 +492,19 @@ export class App {
         common,
         barriers,
         districtAt,
+        /* THE WEATHER, FOR THE HARNESS (Session 17). `setWeather('rain')`
+         * pins a preset; `setWeather(null)` gives it back to the clock.
+         * Every existing sheet shoots on day zero at noon or at 19.6,
+         * which the clock keeps calm, so nothing that was pinned before
+         * this session moved. */
+        weather,
+        /* EVERYTHING ALIVE, for `check-fields` (Session 17): every
+         * figure and creature reports whether it should be on the page
+         * and whether it is, and every routine says where it should
+         * be, so the tool can drive the hours a drawing changes at. */
+        life: { drawn: () => drawn.map((d) => d.report()), routines, routineAt },
+        setWeather: (k: WeatherKind | null) => weather.pin(k),
+        setDay: (d: number) => { dayClock.day = d; weather.tick(); },
 
         /* ================================================================ *
          * THE HARNESS OWNS THE CLOCK (Session 9).
@@ -1357,10 +1391,42 @@ export class App {
     const lift = Math.max(0, this.camGround) * C.fogPerUnit;
     const fog = this.scene.fog as THREE.Fog;
     const day = dayClock.state.fogScale;
-    fog.near = (C.fogNear + lift * 0.28) * day;
-    fog.far = (C.fogFar + lift) * day;
+    /* FOG CLOSES THE VISTAS (Session 17). The haze comes in to a third
+     * of its reach at the thickest, which takes every far silhouette
+     * off the page — the keep from the Common, the towers from the
+     * Downs — and the four lures go with it, by their own hand (the
+     * Common's builder reads the same number). Rain brings it in a
+     * little too, the way rain does. */
+    const w = weather.state;
+    const close = 1 - 0.68 * w.fog - 0.22 * w.rain * (1 - w.fog);
+    fog.near = (C.fogNear + lift * 0.28) * day * close;
+    fog.far = (C.fogFar + lift) * day * close;
+    this.terrain.setFogCap(0.74 + 0.26 * Math.max(w.fog, w.rain * 0.5));
     this.camera.far = Math.max(320, fog.far * 1.7);
     this.camera.updateProjectionMatrix();
+  }
+
+  /* ---- THE WEATHER'S VOICES (Session 17) ---------------------------- *
+   * The patter and the wind are BEDS (`Audio.setWeather`), ramped from
+   * the same state the frame reads. The thunder is a crossing: one
+   * strike, one thunder, a second or two after it, and never twice for
+   * one flash. The gusts are the only one-shot the wind makes, and only
+   * once it is up. */
+  private lastFlash = -1;
+  private gustAcc = 4;
+  private weatherVoices(dt: number) {
+    if (!this.started) return;
+    const w = weather.state;
+    this.audio.setWeather(w.rain, w.wind);
+    if (w.flashId !== this.lastFlash) {
+      this.lastFlash = w.flashId;
+      if (w.flashId >= 0) this.audio.event('thunder', 0.5 + Math.random() * 1.8);
+    }
+    this.gustAcc -= dt;
+    if (this.gustAcc <= 0) {
+      this.gustAcc = 7 + Math.random() * 9;
+      if (w.wind > 0.7) this.audio.event('wind-gust');
+    }
   }
 
   private tick() {
@@ -1387,7 +1453,15 @@ export class App {
     /* THE WORLD'S BUSINESS (Session 15): what is happening this hour,
      * whether or not the walker is there to see it. */
     if (this.started) events.tick(this.char.pos.x, this.char.pos.z);
+    /* AND THE WEATHER (Session 17, `world/weather.ts`): one read a
+     * frame, a pure function of the day and the hour, and everything
+     * that answers it — the haze, the smudge pass, the fields' sway,
+     * the voices — reads the same state. */
+    weather.tick();
+    const W = weather.state;
     this.fx.setDay(day.tint, day.value, day.lamp, LAMP_POOL, LAMP_EDGE);
+    this.fx.setWeather(W.rain, W.flash);
+    this.weatherVoices(dt);
     /* THE HAZE TAKES THE SUNSET (world/daylight.ts, `skyOf`). The fog
      * colour and the clear colour are the same colour and always have
      * been — the horizon is where the page stops and the light starts —
@@ -1574,7 +1648,7 @@ export class App {
 
     this.prints.update(dt);
     this.terrain.update(dt);
-    this.world.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.region.id);
+    this.world.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.region.id, weather.windK);
 
     const here = regionAt(this.char.pos.x, this.char.pos.z);
     if (here.id !== this.region.id) this.crossInto(here);
@@ -1686,8 +1760,22 @@ export class App {
            * notices it has noticed the same thing the road is saying. */
           const toTarn = Math.hypot(this.char.pos.x - 150, this.char.pos.z + 195);
           const toBrack = Math.hypot(this.char.pos.x - 150, this.char.pos.z + 153);
+          /* THE DEEP PINES AFTER DARK (Session 17, `THE-FUN-PASS` §9 item
+           * 4, §10 THE MONSTERS): the pine-tick stops. Inside the deep
+           * stand at night nothing fires but the bed, the way it stops
+           * near Brack — and once in a long while, a long way off, a
+           * branch goes, and nothing is ever drawn to have done it. The
+           * rest of the wood gets an owl. */
+          const toDeep = Math.hypot(this.char.pos.x - 188, this.char.pos.z + 246);
+          const night = dayClock.phase === 'night';
           if (toBrack < 20) {
             this.ambientAcc = 2.5;
+          } else if (night && toDeep < 34) {
+            if (Math.random() < 0.18) this.audio.event('branch-crack');
+            this.ambientAcc = 14 + Math.random() * 22;
+          } else if (night && Math.random() < 0.4) {
+            this.audio.event('owl-hoot');
+            this.ambientAcc = 12 + Math.random() * 14;
           } else {
             const roll = Math.random();
             if (toTarn < 30 && roll > 0.45) {
@@ -1830,6 +1918,7 @@ export class App {
         this.save.data.pos = { x: this.char.pos.x, z: this.char.pos.z };
         this.save.data.boat = { x: this.boat.pos.x, z: this.boat.pos.y };
         this.save.data.hour = dayClock.hour;
+        this.save.data.day = dayClock.day;
         this.save.persist();
       }
     }

@@ -140,12 +140,178 @@ class Events {
     }
   }
 
+  /**
+   * 0..1 BETWEEN TWO EVENTS (Session 17): nothing before the first,
+   * rising through it, one until the second, falling through that, and
+   * nothing after. The shape every hand-rolled routine in the game had
+   * — Brim's lamps, the shelter's light, Joan's working day — written
+   * once, off two registered events, so the harness can see them.
+   */
+  between(startId: string, endId: string, hour = clock.hour): number {
+    const a = this.list.find((e) => e.id === startId);
+    const b = this.list.find((e) => e.id === endId);
+    if (!a || !b) return 0;
+    const pa = Events.progressOf(a, hour);
+    if (pa >= 0) return pa;
+    const pb = Events.progressOf(b, hour);
+    if (pb >= 0) return 1 - pb;
+    // inside the span between the two, the day wrapping as it does
+    const aEnd = (a.at + a.hours) % 24;
+    let d = hour - aEnd;
+    if (d < 0) d += 24;
+    let span = b.at - aEnd;
+    if (span < 0) span += 24;
+    return d < span ? 1 : 0;
+  }
+
   /** The harness's reset, so a crossing can be re-armed at any hour. */
   resync() {
     this.lastHour = clock.hour;
   }
 }
 
+/* ================================================================== *
+ * A ROUTINE — a person somewhere at a given hour (Session 17,
+ * `THE-FUN-PASS` §9 item 1).
+ *
+ * *Five to twelve per land, none of them named, all of them somewhere
+ * at a given hour.* A routine is a list of STOPS in hour order — at
+ * this hour, at this place, in this posture — and the walk between
+ * them. It is a pure function of the hour, exactly as an event is, so a
+ * land that was not built when the lamplighter set out still draws him
+ * four lamps along when the walker arrives; and every leg of it is
+ * REGISTERED as an event, so `happening` can say who is on the move and
+ * the harness can drive every hour a drawing changes at.
+ *
+ * Between two stops the figure leaves the first as late as it can and
+ * arrives at the second on the hour: `departure = arrival − distance ÷
+ * pace`. Before the first stop and after the last one (plus its
+ * `hold`) the figure is indoors and not drawn, which is why a routine's
+ * first stop is a doorway. A routine may run over midnight by giving a
+ * stop an hour past twenty-four.
+ * ================================================================== */
+
+export type Stop = {
+  /** The o'clock it arrives here. Past 24 for the next morning. */
+  at: number;
+  x: number;
+  z: number;
+  /** The posture held here: 0 stand · 1 walk · 2 bend · 3 sit · 4 carry. */
+  pose: number;
+  /** Which way it faces while it stands here: −1 west, +1 east. */
+  face?: -1 | 1;
+  /** Hours it stays after arriving — for the LAST stop, how long it
+   *  is present before it goes in. */
+  hold?: number;
+};
+
+export type RoutineDef = {
+  id: string;
+  land: RegionId;
+  stops: Stop[];
+  /** Units an hour on the walk between stops. The walker's own walk is
+   *  four hundred and ten; a stroll is two hundred and fifty. */
+  pace?: number;
+  /** A posture held on the walk instead of the stride: a lamplighter
+   *  keeps his pole, a delivery keeps its hands on the cart. */
+  walkPose?: number;
+  /** Fired once on the crossing into leg `i` (setting out from stop
+   *  `i`), with the walker's position, for a sound if anybody is near. */
+  onLeg?: (i: number, px: number, pz: number) => void;
+};
+
+export type RoutineState = {
+  /** Out at all. */
+  present: boolean;
+  x: number;
+  z: number;
+  pose: number;
+  /** On a leg between two stops. */
+  moving: boolean;
+  face: -1 | 1;
+  /** Which stop it is at or has left. */
+  leg: number;
+  /** 0..1 in over the first two seconds out and out over the last:
+   *  a figure comes out of a door rather than appearing. */
+  fade: number;
+};
+
+const DEFAULT_PACE = 410;
+
+/** Where a routine is at an hour. Exported pure, for the harness. */
+export function routineAt(def: RoutineDef, hour: number): RoutineState {
+  const st = def.stops;
+  const pace = def.pace ?? DEFAULT_PACE;
+  const first = st[0];
+  const last = st[st.length - 1];
+  const end = last.at + (last.hold ?? 0);
+  // a routine that runs over midnight: the small hours are past 24
+  let h = hour;
+  if (end > 24 && h < first.at) h += 24;
+  const gone: RoutineState = { present: false, x: first.x, z: first.z, pose: first.pose, moving: false, face: first.face ?? 1, leg: 0, fade: 0 };
+  if (h < first.at || h >= end) return gone;
+  const FADE = 0.03;
+  const fade = Math.min(1, (h - first.at) / FADE, (end - h) / FADE);
+  for (let i = 0; i < st.length; i++) {
+    const a = st[i];
+    const b = st[i + 1];
+    if (!b) {
+      return { present: true, x: a.x, z: a.z, pose: a.pose, moving: false, face: a.face ?? 1, leg: i, fade };
+    }
+    const d = Math.hypot(b.x - a.x, b.z - a.z);
+    const travel = d / pace;
+    const depart = Math.max(a.at + (a.hold ?? 0), b.at - travel);
+    if (h < depart) {
+      return { present: true, x: a.x, z: a.z, pose: a.pose, moving: false, face: a.face ?? 1, leg: i, fade };
+    }
+    if (h < b.at) {
+      const u = (h - depart) / Math.max(1e-6, b.at - depart);
+      return {
+        present: true, x: a.x + (b.x - a.x) * u, z: a.z + (b.z - a.z) * u, pose: 1, moving: true,
+        face: b.x < a.x ? -1 : 1, leg: i, fade,
+      };
+    }
+  }
+  return gone;
+}
+
+/** Every routine registered, for the harness. */
+export const routines: RoutineDef[] = [];
+
+/**
+ * Register a routine: one event for its whole day out, and one per
+ * leg, so `happening` knows who is walking where.
+ */
+export function registerRoutine(def: RoutineDef): RoutineDef {
+  if (routines.some((r) => r.id === def.id)) return def;
+  routines.push(def);
+  const st = def.stops;
+  const last = st[st.length - 1];
+  const end = last.at + (last.hold ?? 0);
+  events.register({ id: def.id, land: def.land, at: st[0].at % 24, hours: Math.max(0.01, end - st[0].at),
+    place: { x: st[0].x, z: st[0].z } });
+  const pace = def.pace ?? DEFAULT_PACE;
+  for (let i = 0; i < st.length - 1; i++) {
+    const a = st[i];
+    const b = st[i + 1];
+    const travel = Math.hypot(b.x - a.x, b.z - a.z) / pace;
+    const depart = Math.max(a.at + (a.hold ?? 0), b.at - travel);
+    if (b.at - depart <= 0) continue;
+    events.register({
+      id: `${def.id}/${i}`, land: def.land, at: depart % 24, hours: b.at - depart,
+      place: { x: a.x, z: a.z },
+      onStart: def.onLeg ? (px, pz) => def.onLeg!(i, px, pz) : undefined,
+    });
+  }
+  return def;
+}
+
 /** One instance, module scope, readable by anything — the same shape as
  *  `daylight.ts`'s clock and `knowledge.ts`'s set. */
 export const events = new Events();
+
+/** A routine's state now, by id. */
+export function routine(id: string, hour = clock.hour): RoutineState | null {
+  const def = routines.find((r) => r.id === id);
+  return def ? routineAt(def, hour) : null;
+}

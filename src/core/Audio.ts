@@ -1498,6 +1498,226 @@ export class Audio {
         this.surge(0.06, 0.34, 520, 240, 0.0038, 0.06, 'lowpass');
         break;
       }
+
+      /* ================================================================ *
+       * SESSION 17 — LIFE. The weather's three one-shots, and the
+       * animals: every creature that reacts to the walker adds a voice
+       * (`THE-FUN-PASS` §9 items 2 and 3). In the ear pack, unheard.
+       * ================================================================ */
+      case 'thunder': {
+        /* THUNDER, a second or two after the flash (`_data` is the
+         * delay, decided by App from the strike). A crack at the front
+         * — the one bright thing in it — and then the rumble, low noise
+         * with the room shut, rolling for two and a half seconds. The
+         * loudest thing in the game after dark, on purpose. */
+        const at = _data ?? 1.2;
+        const j = 0.9 + Math.random() * 0.2;
+        this.surge(0.004, 0.22, 1400 * j, 400, 0.028, at, 'bandpass');
+        this.knock(48 * j, 0.06, at + 0.02);
+        this.surge(0.08, 2.4, 160 * j, 50, 0.055, at + 0.05, 'lowpass');
+        this.surge(0.5, 1.8, 110 * j, 45, 0.03, at + 0.9, 'lowpass');
+        break;
+      }
+      case 'wind-gust': {
+        /* A GUST: one breath of low noise, rising over most of a second
+         * and letting go over two, the same shape as a swell and half
+         * the height. Fired only once the wind is up. */
+        const j = 0.9 + Math.random() * 0.2;
+        this.surge(0.9, 2.1, 520 * j, 210, 0.013, 0, 'lowpass');
+        this.surge(0.4, 1.2, 1900 * j, 700, 0.0035, 0.3, 'bandpass');
+        break;
+      }
+      case 'dog-bark': {
+        /* THE DOWNS' DOG: two barks, the second a little lower, each a
+         * sawtooth falling through a fifth in a tenth of a second with
+         * a breath of noise on the front. Bigger than the goat and not
+         * as big as the bull, which is the order they come in. */
+        const j = 0.92 + Math.random() * 0.16;
+        this.surge(0.005, 0.07, 1500 * j, 600, 0.014, 0, 'bandpass');
+        this.glide(640 * j, 420 * j, 0.01, 0.11, 0.03, 'sawtooth');
+        this.surge(0.005, 0.07, 1400 * j, 560, 0.012, 0.21, 'bandpass');
+        this.glide(590 * j, 380 * j, 0.22, 0.12, 0.028, 'sawtooth');
+        break;
+      }
+      case 'cow-low': {
+        /* A COW, from across a field: a long low sawtooth bending down
+         * over most of a second, with the chest under it. */
+        const j = 0.9 + Math.random() * 0.2;
+        this.glide(150 * j, 112 * j, 0, 0.95, 0.022, 'sawtooth');
+        this.glide(152 * j, 108 * j, 0.03, 0.9, 0.012, 'triangle');
+        this.surge(0.1, 0.8, 300 * j, 140, 0.006, 0, 'lowpass');
+        break;
+      }
+      case 'heron-croak': {
+        /* THE HERON, leaving the tarn: two harsh croaks, all noise and
+         * no note, and then nothing, because it is gone. */
+        const j = 0.9 + Math.random() * 0.2;
+        this.surge(0.01, 0.16, 800 * j, 350, 0.02, 0, 'bandpass');
+        this.knock(160 * j, 0.012, 0.01);
+        this.surge(0.01, 0.2, 720 * j, 320, 0.018, 0.28, 'bandpass');
+        this.knock(150 * j, 0.01, 0.29);
+        break;
+      }
+      case 'seal-bark': {
+        /* A SEAL, off the bar: a hoarse square-wave bark with the sea's
+         * own splash under it as it goes in. */
+        const j = 0.9 + Math.random() * 0.2;
+        this.glide(330 * j, 230 * j, 0, 0.26, 0.02, 'square');
+        this.surge(0.01, 0.24, 900 * j, 400, 0.01, 0.02, 'bandpass');
+        this.surge(0.04, 0.5, 2200, 900, 0.012, 0.3, 'bandpass');
+        break;
+      }
+      case 'fox-bark': {
+        /* THE FOX, at night: one yelp, high and thin, and a second one
+         * further off. The first frightening sound the Common makes
+         * after dark. */
+        const j = 0.92 + Math.random() * 0.16;
+        this.glide(1300 * j, 760 * j, 0, 0.17, 0.016, 'sawtooth');
+        this.surge(0.005, 0.12, 2600 * j, 1000, 0.008, 0, 'bandpass');
+        this.glide(1240 * j, 700 * j, 0.42, 0.16, 0.008, 'sawtooth');
+        break;
+      }
+      case 'owl-hoot': {
+        /* AN OWL, somewhere in the deep pines: two soft hoots, the
+         * second lower and longer, sine with a little breath. */
+        const j = 0.94 + Math.random() * 0.12;
+        this.tone(392 * j, 0, 0.32, 0.028);
+        this.surge(0.05, 0.25, 500 * j, 300, 0.003, 0, 'bandpass');
+        this.tone(370 * j, 0.5, 0.55, 0.026);
+        this.surge(0.05, 0.4, 480 * j, 280, 0.003, 0.5, 'bandpass');
+        break;
+      }
+      case 'branch-crack': {
+        /* SOMETHING IN THE WOOD, at night, a long way off: a dry crack
+         * and nothing after it. It is the only sound the deep pines
+         * make after dark, and nothing is ever drawn to make it. */
+        const j = 0.9 + Math.random() * 0.2;
+        this.knock(170 * j, 0.03);
+        this.surge(0.003, 0.14, 2100 * j, 700, 0.016, 0, 'bandpass');
+        this.knock(140 * j, 0.012, 0.06);
+        break;
+      }
+      case 'cat-mew': {
+        /* THE CAT ON THE WALL, woken: one thin complaint, up and down,
+         * over a quarter of a second. */
+        const j = 0.92 + Math.random() * 0.16;
+        this.glide(760 * j, 1180 * j, 0, 0.14, 0.012, 'triangle');
+        this.glide(1180 * j, 820 * j, 0.14, 0.16, 0.012, 'triangle');
+        break;
+      }
+      case 'shutter': {
+        /* A SHUTTER, thrown back or pulled to: wood on stone, twice, the
+         * second the catch. Brim's morning and Brim's evening. */
+        const j = 0.92 + Math.random() * 0.16;
+        this.knock(250 * j, 0.024);
+        this.knock(190 * j, 0.016, 0.11);
+        this.surge(0.003, 0.06, 1800 * j, 700, 0.006, 0.0, 'bandpass');
+        break;
+      }
+      case 'deep-surface': {
+        /* SOMETHING UNDER THE WIDE BLUE, surfacing once at dusk: a low
+         * heave of water, a breath the size of a room, and the water
+         * closing over it. Never seen whole. */
+        const j = 0.94 + Math.random() * 0.12;
+        this.surge(0.5, 1.6, 220 * j, 80, 0.03, 0, 'lowpass');
+        this.surge(0.3, 0.9, 700 * j, 260, 0.018, 0.55, 'bandpass');
+        this.knock(42 * j, 0.04, 0.5);
+        this.surge(0.2, 1.8, 1600, 500, 0.012, 1.3, 'bandpass');
+        break;
+      }
+      case 'car-start': {
+        /* A CAR STARTING on a drive in Maple Court, twice a day: the
+         * turn-over, three knocks and a catch, and the engine going
+         * away down the street. */
+        const j = 0.95 + Math.random() * 0.1;
+        this.knock(90 * j, 0.014, 0);
+        this.knock(92 * j, 0.014, 0.12);
+        this.knock(88 * j, 0.014, 0.24);
+        this.surge(0.1, 1.6, 180 * j, 90, 0.014, 0.34, 'lowpass');
+        break;
+      }
+      case 'crab-scuttle': {
+        /* CRABS, going sideways off the wrack: a handful of dry ticks,
+         * quick, and the last one further off. */
+        for (let i = 0; i < 6; i++) {
+          this.knock(1600 + Math.random() * 900, 0.005 - i * 0.0005, i * 0.045 + Math.random() * 0.02);
+        }
+        break;
+      }
+      case 'pigeons-lift': {
+        /* THE WHOLE FLOCK GOING UP AT ONCE in Greyline: Brim's flap,
+         * seven times over, a shade apart. */
+        for (let i = 0; i < 5; i++) {
+          this.surge(0.01, 0.09, 1400 + Math.random() * 500, 500, 0.006, i * 0.06, 'bandpass');
+        }
+        break;
+      }
+    }
+  }
+
+  /* ================================================================ *
+   * THE WEATHER'S BEDS (Session 17). Two loops over the ambient bus:
+   * the patter — noise with the top open and the bottom shut, the sound
+   * of rain on a page — and the wind, low noise whose filter breathes.
+   * Both ramp from the state the frame reads (`world/weather.ts`), so
+   * a shower that has been falling for ten minutes when the walker
+   * arrives is already falling when they arrive. Calm is exactly
+   * silent: on the shipped page these two nodes carry nothing.
+   * ================================================================ */
+  private rainGain: GainNode | null = null;
+  private windGain: GainNode | null = null;
+  private windFilter: BiquadFilterNode | null = null;
+  private weatherSent = { rain: -1, wind: -1 };
+
+  setWeather(rain: number, wind: number) {
+    if (!this.ctx || !this.ambient) return;
+    const ctx = this.ctx;
+    if (!this.rainGain) {
+      const src = ctx.createBufferSource();
+      src.buffer = this.noiseBuffer(6);
+      src.loop = true;
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 1700;
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 5200;
+      const g = ctx.createGain();
+      g.gain.value = 0;
+      src.connect(hp).connect(lp).connect(g).connect(this.ambient);
+      src.start();
+      this.rainGain = g;
+      const wsrc = ctx.createBufferSource();
+      wsrc.buffer = this.noiseBuffer(7);
+      wsrc.loop = true;
+      const wf = ctx.createBiquadFilter();
+      wf.type = 'lowpass';
+      wf.frequency.value = 340;
+      wf.Q.value = 0.8;
+      const wg = ctx.createGain();
+      wg.gain.value = 0;
+      wsrc.connect(wf).connect(wg).connect(this.ambient);
+      wsrc.start();
+      const lfo = ctx.createOscillator();
+      lfo.frequency.value = 0.11;
+      const depth = ctx.createGain();
+      depth.gain.value = 160;
+      lfo.connect(depth).connect(wf.frequency);
+      lfo.start();
+      this.windGain = wg;
+      this.windFilter = wf;
+    }
+    // ramped only when the number has moved, the way the mixer is
+    const r = Math.round(rain * 40) / 40;
+    const w = Math.round(wind * 40) / 40;
+    if (r !== this.weatherSent.rain) {
+      this.weatherSent.rain = r;
+      this.rainGain!.gain.linearRampToValueAtTime(r * 0.03, ctx.currentTime + 1.5);
+    }
+    if (w !== this.weatherSent.wind) {
+      this.weatherSent.wind = w;
+      const up = Math.max(0, (w - 0.55) / 0.45);
+      this.windGain!.gain.linearRampToValueAtTime(up * 0.034, ctx.currentTime + 2);
     }
   }
 

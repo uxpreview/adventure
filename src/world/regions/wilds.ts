@@ -31,15 +31,33 @@ import {
   sheepTexture, stoneTroughTexture, fieldGateTexture, fordStonesDecal,
   shedAxleTexture, downsScarecrowTexture, sackCartTexture,
 } from '../textures-farm';
+import { lampGlowTexture } from '../textures';
+import {
+  heronTexture, batTexture, childTexture, lizardTexture, kiteTexture, snakeTexture,
+  cowTexture, dogTexture,
+} from '../textures-life';
+import { rookTexture } from '../textures-oldworld';
+import { Figure, Creature, stops } from '../life';
+import { Follower } from '../company';
+import { weather } from '../weather';
+import { rookAt } from '../rooks';
+import { SPEC_BY_ID } from '../layout';
 import { clock } from '../daylight';
 import { platform } from '../../engine/Eight15';
 import { knowledge } from '../knowledge';
-import { events } from '../events';
+import { events, registerRoutine, routine as routineNow } from '../events';
 import type { RegionBuilder, WorldPOI } from './index';
 
 /** Fire a named audio event up to the App without a plumbing run. */
 function say(name: string) {
   window.dispatchEvent(new CustomEvent('inklands:event', { detail: name }));
+}
+
+/** Fade one drawing up or down. Materials only. */
+function lightUpOne(m: THREE.Mesh, k: number) {
+  const mat = m.material as THREE.MeshBasicMaterial;
+  mat.opacity = k;
+  m.visible = k > 0.02;
 }
 
 /* ------------------------------------------------------------------ *
@@ -195,6 +213,38 @@ const tarnD = (x: number, z: number) => Math.hypot(x - TARN.x, z - TARN.z);
 const RING_R = 42;
 const ringPt = (a: number): [number, number] =>
   [TARN.x + Math.cos(a) * RING_R, TARN.z + Math.sin(a) * RING_R];
+
+/* ================================================================== *
+ * THE PENWOOD'S UNNAMED (Session 17). Two CUTTERS who walk in from the
+ * wood gate before seven, work the failing edge where the stumps are,
+ * sit at noon, and walk out at dusk — the axe you hear a long way off
+ * is theirs, and they never go inside the forty. A PICKER bent in the
+ * thicket in the morning. SOMEBODY WALKING THE ROUND at noon, the way
+ * everybody does, all the way round and out the way they came in. A
+ * CHILD on the wood road at four who runs to the first bend and back.
+ * ================================================================== */
+function cutter(id: string, dx: number, dh: number) {
+  return { id, land: 'forest' as const, pace: 330, stops: stops([
+    [6.45 + dh, 64, -117, 4, 1], [6.7 + dh, 110 + dx, -140, 4, 1], [7.05 + dh, 200 + dx, -149, 2, 1, 4.9],
+    [12.0 + dh, 204 + dx, -152, 3, -1, 0.7], [12.75 + dh, 200 + dx, -149, 2, 1, 4.7], [17.55 + dh, 110 + dx, -140, 4, -1],
+    [17.85 + dh, 64, -117, 4, -1, 0.02],
+  ]) };
+}
+const CUTTERS = [cutter('the-cutters-0', 0, 0), cutter('the-cutters-1', 3.5, 0.04)];
+const PICKER = { id: 'the-picker', land: 'forest' as const, pace: 240, stops: stops([
+  [7.3, 64, -117, 0, 1], [7.55, 98, -168, 2, 1, 0.4], [8.05, 106, -178, 2, -1, 0.4], [8.55, 92, -186, 2, 1, 0.4],
+  [9.2, 64, -117, 4, -1, 0.02],
+]) };
+const RING_WALK: [number, number, number, number, -1 | 1][] = [];
+for (let k = 0; k <= 12; k++) {
+  const a = Math.PI / 2 + (k / 12) * Math.PI * 2;
+  RING_WALK.push([12.08 + k * 0.055, 150 + Math.cos(a) * 42, -195 + Math.sin(a) * 42, 0, Math.cos(a) < 0 ? -1 : 1]);
+}
+const ROUND_WALKER = { id: 'the-round-walked', land: 'forest' as const, pace: 410, stops: stops([
+  [11.95, 100, -134, 0, 1], ...RING_WALK, [12.85, 100, -134, 0, -1, 0.02],
+]) };
+events.register({ id: 'the-wood-road-child', land: 'forest', at: 16.0, hours: 0.3, place: { x: 80, z: -122 } });
+events.register({ id: 'the-deep-pines-bats', land: 'forest', at: 20.5, hours: 8.0, place: { x: 188, z: -246 } });
 
 export const buildForest: RegionBuilder = (ctx) => {
   const { r, terrain, rect } = ctx;
@@ -604,6 +654,22 @@ export const buildForest: RegionBuilder = (ctx) => {
     ctx.field(goatTexture(3400 + p, p as 0 | 1 | 2 | 3), 1, { w: 2.4, h: 1.8 }));
   const goat = { x: 124, z: -212, hx: 124, hz: -212, pose: 0, hold: 0 };
 
+  /* ---- THE UNNAMED, AND THE HERON (Session 17) --------------------- */
+  const cutters = CUTTERS.map((d, i) => new Figure(ctx, d, i ? 0 : 2));
+  const picker = new Figure(ctx, PICKER, 1);
+  const roundWalker = new Figure(ctx, ROUND_WALKER, 0);
+  const woodChild = new Creature(ctx, 'the-wood-road-child', 'forest', [childTexture(3500, 0), childTexture(3501, 1)], 0.8, 1.2, 66, -116);
+  /* THE HERON AT THE TARN — the wood's creature (§3 item 1). It stands
+   * at the water's edge from first light to dusk, on one leg, the only
+   * thing in the land that goes down to the water; and it goes up when
+   * you come inside fourteen units, croaks twice, and is gone into the
+   * deep pines, and comes back when you have gone. Nothing else about
+   * the tarn has ever moved. */
+  const HERON = { x: 137, z: -185.5 };
+  const heron = new Creature(ctx, 'the-heron', 'forest', [heronTexture(3510, 0), heronTexture(3511, 1)], 2.6, 2.6, HERON.x, HERON.z);
+  const heronState = { up: 0, away: 0 };
+  const deepBats = [0, 1, 2].map((i) => new Creature(ctx, `the-deep-pines-bats-${i}`, 'forest', [batTexture(3520 + i)], 0.9, 0.55, 188, -246));
+
   return (dt: number, t: number, px: number, pz: number) => {
     /* BRACK'S PACE. Thirty units of arc, out and back, on a triangle
      * wave — a man on a beat does not ease in and out of the ends, he
@@ -677,6 +743,50 @@ export const buildForest: RegionBuilder = (ctx) => {
     for (let p = 0; p < 4; p++) {
       if (p === goat.pose) goatPoses[p].set(0, goat.hx, goat.hz, 0.9, 0, facing);
       else goatPoses[p].hide(0, goat.hx, goat.hz);
+    }
+
+    /* ---- THE UNNAMED, THE HERON, THE BATS (Session 17) --------------- */
+    const h = clock.hour;
+    const rain = weather.state.rain > 0.5;
+    for (const c of cutters) c.tick(h);
+    picker.tick(h, rain);
+    roundWalker.tick(h, rain);
+    {
+      const on = events.progress('the-wood-road-child');
+      if (on < 0 || rain) woodChild.hide();
+      else {
+        const e = on < 0.5 ? on * 2 : 2 - on * 2;
+        const x = 62 + (101 - 62) * e;
+        const z = -114 + (-134 + 114) * e;
+        woodChild.set(Math.floor(h * 100 / 0.26) % 2, x, z, on < 0.5 ? 1 : -1);
+      }
+    }
+    {
+      const day = h > 5.4 && h < 20.2;
+      heronState.away = Math.max(0, heronState.away - dt);
+      const near = Math.hypot(px - HERON.x, pz - HERON.z) < 14;
+      if (!day) heron.hide();
+      else if (heronState.up > 0) {
+        heronState.up += dt;
+        const u = Math.min(1, heronState.up / 6);
+        heron.set(1, HERON.x + (172 - HERON.x) * u, HERON.z + (-232 - HERON.z) * u, 1, Math.sin(u * Math.PI) * 9 + u * 6, 1 - Math.max(0, (u - 0.7) / 0.3));
+        if (u >= 1) { heronState.up = 0; heronState.away = 60; }
+      } else if (heronState.away > 0) {
+        if (near) heronState.away = 60;
+        heron.hide();
+      } else if (near) {
+        heronState.up = 0.01;
+        say('heron-croak');
+        heron.set(1, HERON.x, HERON.z, 1, 0.4);
+      } else heron.set(0, HERON.x, HERON.z, px < HERON.x ? -1 : 1, 0);
+    }
+    {
+      const on = events.progress('the-deep-pines-bats');
+      deepBats.forEach((b, i) => {
+        if (on < 0) { b.hide(); return; }
+        const a = t * (1.5 + i * 0.3) + i * 2.2;
+        b.set(0, 188 + Math.cos(a) * (5 + i * 2), -246 + Math.sin(a * 1.6) * 4, Math.cos(a) > 0 ? 1 : -1, 5 + Math.sin(a * 2.4) * 1.2);
+      });
     }
   };
 };
@@ -762,6 +872,26 @@ const BOAT = { x: 306, z: -234 };
 /** HOLT'S, on the rim above the head wall — which is where the fifth
  *  mark says it is. */
 const HOUSE = { x: 302, z: -272 };
+
+/* ================================================================== *
+ * SPLITROCK'S UNNAMED (Session 17): three, and no more, because the
+ * land's thesis is that nobody comes here. Two HIKERS down the mouth to
+ * the arch and back in the afternoon. Somebody at THE OVERLOOK in the
+ * morning, who sits. And a figure on THE FAR RIM at four — the other
+ * rim, forty units away and about an hour — walking along it, whom you
+ * cannot reach and who cannot reach you.
+ * ================================================================== */
+const HIKERS = [0, 1].map((i) => ({ id: `the-hikers-${i}`, land: 'canyon' as const, pace: 330, stops: stops([
+  [13.45 + i * 0.02, 291 + i * 1.6, -132, 0, 1], [13.7 + i * 0.02, 296 + i * 1.5, -160, 0, 1], [13.98 + i * 0.02, 300 + i * 1.8, -178, 0, i ? -1 : 1, 0.25],
+  [14.35 + i * 0.02, 296 + i * 1.5, -160, 0, -1], [14.7 + i * 0.02, 291 + i * 1.6, -132, 0, -1, 0.02],
+]) }));
+const OVERLOOKER = { id: 'the-overlook', land: 'canyon' as const, pace: 260, stops: stops([
+  [9.3, 262, -150, 0, 1], [9.42, 272, -176, 3, 1, 0.55], [10.0, 273, -179, 0, 1, 0.2], [10.35, 262, -150, 0, -1, 0.02],
+]) };
+const FAR_RIM = { id: 'the-far-rim', land: 'canyon' as const, pace: 240, stops: stops([
+  [16.0, 336, -222, 0, 1], [16.15, 331, -206, 0, 1, 0.1], [16.35, 340, -170, 0, 1, 0.05], [16.55, 336, -222, 0, -1, 0.02],
+]) };
+events.register({ id: 'the-slot-bats', land: 'canyon', at: 19.4, hours: 2.0, place: { x: 300, z: -200 } });
 
 export const buildCanyon: RegionBuilder = (ctx) => {
   const { r } = ctx;
@@ -994,6 +1124,24 @@ export const buildCanyon: RegionBuilder = (ctx) => {
   for (const m of [houseDark, houseLit]) {
     (m.material as THREE.MeshBasicMaterial).transparent = true;
   }
+  /* AND THE WINDOW'S GLOW (Session 17, a debt since Session 11: *Holt's
+   * lit window is one warm pixel at forty units*). The same spill Brim
+   * hangs at a lantern, hung at his window, so the only lit thing in
+   * the east half of the world is a thing you can steer by. */
+  const houseGlow = ctx.standee(lampGlowTexture(6233), 5.2, 5.2, HOUSE.x + 0.6, HOUSE.z + 0.3);
+  ctx.hang(houseGlow, 1.4);
+  (houseGlow.material as THREE.MeshBasicMaterial).transparent = true;
+  (houseGlow.material as THREE.MeshBasicMaterial).depthWrite = false;
+  houseGlow.renderOrder = 3;
+
+  /* ---- THE UNNAMED, THE LIZARD, THE BATS (Session 17) --------------- */
+  const hikers = HIKERS.map((d, i) => new Figure(ctx, d, i ? 1 : 2));
+  const overlooker = new Figure(ctx, OVERLOOKER, 0);
+  const farRim = new Figure(ctx, FAR_RIM, 2);
+  const LIZARD = { x: 306.5, z: -170 };
+  const lizard = new Creature(ctx, 'the-slot-lizard', 'canyon', [lizardTexture(6260)], 0.9, 0.45, LIZARD.x, LIZARD.z);
+  const lizardState = { gone: 0 };
+  const slotBats = [0, 1].map((i) => new Creature(ctx, `the-slot-bats-${i}`, 'canyon', [batTexture(6270 + i)], 0.9, 0.55, 300, -200));
   ctx.standee(cairnTexture(6232), 2.4, 3.6, 292, -268, { rotY: 0.2 });
 
   /* ================================================================ *
@@ -1058,6 +1206,29 @@ export const buildCanyon: RegionBuilder = (ctx) => {
     }
     houseDark.visible = day;
     houseLit.visible = !day;
+    lightUpOne(houseGlow, day ? 0 : 0.9);
+
+    /* ---- THE UNNAMED, THE LIZARD, THE BATS (Session 17) ------------- */
+    for (const f of hikers) f.tick(h);
+    overlooker.tick(h);
+    farRim.tick(h);
+    {
+      lizardState.gone = Math.max(0, lizardState.gone - _dt);
+      const warm = h > 9 && h < 18;
+      if (!warm || lizardState.gone > 0) lizard.hide();
+      else {
+        if (Math.hypot(px - LIZARD.x, pz - LIZARD.z) < 5.5) lizardState.gone = 20;
+        lizard.set(0, LIZARD.x, LIZARD.z, Math.sin(t * 0.13) > 0 ? 1 : -1, 1.3);
+      }
+    }
+    {
+      const on = events.progress('the-slot-bats');
+      slotBats.forEach((b, i) => {
+        if (on < 0) { b.hide(); return; }
+        const a = t * (1.6 + i * 0.4) + i * 1.9;
+        b.set(0, axisAt(-200 + Math.sin(a * 0.7) * 12) + Math.cos(a) * 4, -200 + Math.sin(a * 0.7) * 12, Math.cos(a) > 0 ? 1 : -1, 7 + Math.sin(a * 2.2) * 1.4);
+      });
+    }
 
     /* THE BIRD. One turn every forty seconds, thirteen units up, and it
      * is the only thing in SPLITROCK that is above you. */
@@ -1161,6 +1332,35 @@ const OASIS = { x: 305, z: 55 };
 /** THE CATCH — Amos's, forty units south, and on the pan's RIM, which
  *  is why the water he carries goes uphill both ways. */
 const CATCH = { x: 302, z: 95 };
+
+/* ================================================================== *
+ * THE FLATS' UNNAMED (Session 17): two, because the answer is elsewhere
+ * and so is everybody. Somebody walks the east road in from the Downs'
+ * side at seven, gets as far as THE HANDS, reads a post that points at
+ * everywhere but here, and turns round; and again in the afternoon.
+ * That is the delivery that finds the stall shut, in a land with no
+ * stall. AND AMOS'S NIGHT WALK, moved onto `events.ts` (owed from
+ * Session 15): six round trips from the catch to the oasis and back,
+ * down empty and up loaded, with the wait at the water while the cans
+ * fill, every one of them a registered leg.
+ * ================================================================== */
+const ROAD_WALKERS = [7.2, 15.4].map((at, k) => ({ id: `the-road-walker-${k}`, land: 'desert' as const, pace: 330, stops: stops([
+  [at, 234.5, 14.5, 0, 1], [at + 0.1, 263.5, 15.5, 0, 1, 0.2], [at + 0.4, 234.5, 14.5, 0, -1, 0.02],
+]) }));
+const TRACK_X = (z: number) => 303.5 + Math.sin(z * 0.17) * 1.3;
+const AMOS_NIGHT = (() => {
+  const rows: [number, number, number, number, (-1 | 1)?, number?][] = [];
+  for (let k = 0; k < 6; k++) {
+    const t0 = 20.5 + k * 1.333;
+    rows.push([t0, TRACK_X(95) + 1.1, 95, 1, -1, 0.02]);
+    rows.push([t0 + 0.56, TRACK_X(64) + 1.1, 64, 2, 1]);
+  }
+  rows.push([28.5, TRACK_X(95) - 1.1, 95, 1, -1, 0.02]);
+  return { id: 'amos-night', land: 'desert' as const, pace: 72, walkPose: 1, stops: stops(rows) };
+})();
+registerRoutine(AMOS_NIGHT);
+events.register({ id: 'the-pale-kite', land: 'desert', at: 11.0, hours: 4.0, place: { x: 268, z: 52 } });
+events.register({ id: 'the-snake-crosses', land: 'desert', at: 19.7, hours: 0.08, place: { x: 304, z: 82 } });
 
 export const buildDesert: RegionBuilder = (ctx) => {
   const { r, terrain } = ctx;
@@ -1403,6 +1603,14 @@ export const buildDesert: RegionBuilder = (ctx) => {
   for (const m of devils) (m.material as THREE.MeshBasicMaterial).transparent = true;
   const devil = { x: 276, z: 24, a: 1.9 };
 
+  /* ---- THE UNNAMED, AND THE PALE'S ANIMALS (Session 17) ------------- */
+  const roadWalkers = ROAD_WALKERS.map((d, i) => new Figure(ctx, d, i ? 2 : 0));
+  const PALE_LIZARD = { x: 262.5, z: 49.5 };
+  const paleLizard = new Creature(ctx, 'the-pale-lizard', 'desert', [lizardTexture(7150)], 0.9, 0.45, PALE_LIZARD.x, PALE_LIZARD.z);
+  const paleLizardState = { gone: 0 };
+  const kite = new Creature(ctx, 'the-pale-kite', 'desert', [kiteTexture(7151)], 2.6, 1.3, 268, 52);
+  const snake = new Creature(ctx, 'the-snake', 'desert', [snakeTexture(7152)], 1.9, 0.6, 296, 80);
+
   return (dt: number, t: number, px: number, pz: number) => {
     const h = clock.hour;
 
@@ -1424,19 +1632,22 @@ export const buildDesert: RegionBuilder = (ctx) => {
      * him going the other way, and the only way to make that happen is
      * for it to be true. In the day he is at the catch, and what he is
      * doing there is maintenance on a machine that has never worked. */
-    const night = h > 20.5 || h < 4.5;
+    const walk = routineNow('amos-night', h);
+    const night = !!walk && walk.present;
     let pose: 0 | 1 | 2 = 1;
     let ax = CATCH.x - 4.6;
     let az = CATCH.z + 2.4;
-    if (night) {
-      // one round trip every eighty game-minutes; the loaded half is
-      // slower, because it is
-      const phase = (((h + 3.5) / 1.333) % 1 + 1) % 1;
-      const down = phase < 0.42;
-      const u = down ? phase / 0.42 : 1 - (phase - 0.42) / 0.58;
-      az = CATCH.z + (OASIS.z + 9 - CATCH.z) * u;
-      ax = 303.5 + Math.sin(az * 0.17) * 1.3 + (down ? 1.1 : -1.1);
-      pose = down ? 1 : 0;
+    if (night && walk) {
+      /* ON `events.ts` since Session 17: one round trip every eighty
+       * game-minutes, down empty and back with two full cans, the
+       * loaded half slower because it is, and a wait at the water
+       * while they fill. `amos-night` is registered at module scope
+       * with every leg, so a walker who arrives at two in the morning
+       * finds him where the hour says. */
+      ax = walk.x;
+      az = walk.z;
+      const down = walk.leg % 2 === 0;
+      pose = walk.moving ? (down ? 1 : 0) : (walk.leg % 2 === 1 ? 2 : 1);
     } else {
       /* Round 1 had him crouched at the gutter for most of the day and
        * at forty units a bent figure a metre and a half tall reads as an
@@ -1492,6 +1703,31 @@ export const buildDesert: RegionBuilder = (ctx) => {
     for (let p = 0; p < 2; p++) {
       devils[p].visible = p === lean;
       devils[p].position.set(devil.x, ctx.groundY(devil.x, devil.z), devil.z);
+    }
+
+    /* ---- THE UNNAMED, AND THE PALE'S ANIMALS (Session 17) ----------- */
+    for (const f of roadWalkers) f.tick(h);
+    {
+      paleLizardState.gone = Math.max(0, paleLizardState.gone - dt);
+      const warm = h > 8.5 && h < 18.5;
+      if (!warm || paleLizardState.gone > 0) paleLizard.hide();
+      else {
+        if (Math.hypot(px - PALE_LIZARD.x, pz - PALE_LIZARD.z) < 5.5) paleLizardState.gone = 20;
+        paleLizard.set(0, PALE_LIZARD.x, PALE_LIZARD.z, Math.sin(t * 0.11) > 0 ? 1 : -1, 0.1);
+      }
+    }
+    {
+      const on = events.progress('the-pale-kite');
+      if (on < 0) kite.hide();
+      else {
+        const a = t * 0.11;
+        kite.set(0, 268 + Math.cos(a) * 24, 52 + Math.sin(a) * 14, Math.sin(a) < 0 ? -1 : 1, 15 + Math.sin(a * 2.3) * 1.5);
+      }
+    }
+    {
+      const on = events.progress('the-snake-crosses');
+      if (on < 0) snake.hide();
+      else snake.set(0, 296 + (313 - 296) * on, 80 + (85 - 80) * on, 1, 0.05);
     }
   };
 };
@@ -1656,6 +1892,33 @@ events.register({ id: 'the-drove-out', land: 'downs', ...DROVE_OUT,
   place: { x: 101, z: 100 }, onStart: droveSound });
 events.register({ id: 'the-drove-home', land: 'downs', ...DROVE_HOME,
   place: { x: 101, z: 100 }, onStart: droveSound });
+
+/* JOAN'S DAY, ON `events.ts` (Session 17; owed from 15). Out at first
+ * light, at the table through the middle of the day, in when the light
+ * goes: three registered events, and the builder reads them back. */
+events.register({ id: 'joan-out', land: 'downs', at: 5.6, hours: 0.8, place: { x: 174, z: -40 } });
+events.register({ id: 'joan-at-table', land: 'downs', at: 11.6, hours: 1.3, place: PICNIC });
+events.register({ id: 'joan-in', land: 'downs', at: 19.8, hours: 0.8, place: { x: 174, z: -40 } });
+
+/* ================================================================== *
+ * THE DOWNS' UNNAMED (Session 17): THE MILLER, in and out of his door
+ * all day and once to the granary with a sack; A CARTER who walks down
+ * from the field gate, over the ford on the stones, up to the mill and
+ * back, in the middle of the morning; and THE SHEPHERD, who is at the
+ * back of the flock at dawn and at dusk and stands at the field's edge
+ * with his stick between. And the four hands, who were already here.
+ * ================================================================== */
+const MILLER = { id: 'the-miller', land: 'downs' as const, pace: 260, walkPose: 4, stops: stops([
+  [6.95, 150, -1.5, 0, 1], [7.05, 152.5, -3, 0, 1, 1.8], [9.0, 162.5, -12.5, 4, 1, 0.12], [9.3, 152.5, -3, 0, -1, 3.0],
+  [12.4, 154.5, -2, 3, -1, 0.6], [13.1, 152.5, -3, 0, 1, 4.5], [17.8, 150, -1.5, 0, -1, 0.02],
+]) };
+const CARTER = { id: 'the-downs-carter', land: 'downs' as const, pace: 280, stops: stops([
+  [9.4, 155, 29, 0, -1], [9.52, 141.5, 20.5, 0, -1, 0.1], [9.66, 146, 15, 0, 1], [9.8, 150, 3, 0, 1, 0.2], [10.2, 155, 29, 0, 1, 0.02],
+]) };
+const SHEPHERD = { id: 'the-shepherd', land: 'downs' as const, pace: 56, walkPose: 6, stops: stops([
+  [5.62, 101, 117, 6, 1], [6.75, 96.5, 63, 6, -1, 12.5], [20.35, 101, 117, 6, 1, 0.05],
+]) };
+events.register({ id: 'the-cows-lie-down', land: 'downs', at: 20.5, hours: 9.0, place: { x: 140, z: -12 } });
 
 /** Where the flock is at an hour: 0 in the fold, 1 in the field, and
  *  in between it is walking. Symmetric, so the same path serves both. */
@@ -2036,6 +2299,45 @@ export const buildDowns: RegionBuilder = (ctx) => {
   /* ---- and the drove's mouth, where it meets the east road -------- */
   ctx.standee(fieldGateTexture(5950, false), 4.8, 3.0, 101, 79, { rotY: 0.04 });
 
+  /* ---- THE UNNAMED, THE HERD, THE DOG, THE ROOKS (Session 17) ------ */
+  const miller = new Figure(ctx, MILLER, 2);
+  const carter = new Figure(ctx, CARTER, 0);
+  const shepherd = new Figure(ctx, SHEPHERD, 0);
+  /* THE HERD, in the headland, and it PARTS the way the flock does —
+   * square off the lane, to whichever side is nearer — and it is
+   * slower about it, and the heads come up first (§9 item 2: *cows in
+   * the Downs with one bull that means it*; the bull is the Common's). */
+  const HERD: [number, number][] = [[137, -30], [142, -22], [138, -12], [143, -4], [136, 4], [141, 12]];
+  const cows = HERD.map(([x, z], i) => new Creature(ctx, `the-herd-${i}`, 'downs', [cowTexture(5960 + i, 0), cowTexture(5966 + i, 1)], 3.2, 2.2, x, z));
+  const cowState = HERD.map(() => ({ hx: 0, hz: 0, low: 0, side: 0 }));
+  HERD.forEach(([x, z], i) => { cowState[i].hx = x; cowState[i].hz = z; cowState[i].side = (i % 2 ? 1 : -1); });
+  /* THE DOG — the second co-walker (`critique-story-3` RECOMMENDED:
+   * *not another goat, on a road the goat did not take*). It lives at
+   * the drove's mouth, falls in beside anybody who comes up the lane,
+   * follows them anywhere in the Downs, and STOPS DEAD AT THE DOWNS'
+   * EDGE on every road, and sits, and looks after them. The same
+   * `Follower` as the goat with different numbers, which is the whole
+   * point of `company.ts`. */
+  /* IT LIVES AT THE FIELD GATE ON THE EAST ROAD, north of the river: a
+   * follower cannot find a bridge, and the drove's mouth is across the
+   * water from every road out of the land. From the gate the east road
+   * runs to the Common's border one way and the Flats' the other, and
+   * the mill lane fords the river, so there is nowhere in the Downs a
+   * walker can go that the dog cannot follow — and nowhere out of it
+   * that it can. */
+  const dog = new Follower({
+    id: 'the-downs-dog', rect: SPEC_BY_ID.downs.rect, home: { x: 106.5, z: 40.5 },
+    gap: 2.6, notice: 14, walk: 4.0, trot: 9.2, margin: 2,
+  });
+  const dogDrawn = new Creature(ctx, 'the-downs-dog', 'downs', [0, 1, 2, 3].map((p) => dogTexture(5970 + p, p as 0 | 1 | 2 | 3)), 1.5, 1.12, dog.x, dog.z);
+  let dogBark = 0;
+  /* THE ROOKS ON THE SCARECROW (`rooks.ts`): Greyweather's three, here
+   * all day, and they lift off the scarecrow's arms when you come and
+   * settle again when you have gone. */
+  const scarecrowRooks = [0, 1, 2].map((i) => new Creature(ctx, `the-scarecrow-rooks-${i}`, 'downs', [rookTexture(5980 + i)], 1.5, 1.05, 128, 112));
+  const rookState = { up: 0 };
+  let sailSpin = 0;
+
   return (dt: number, t: number, px: number, pz: number) => {
     /* THE SAILS. One revolution in about ten minutes of game time —
      * slow enough that "they were mid-turn when you came over the rise
@@ -2043,7 +2345,11 @@ export const buildDowns: RegionBuilder = (ctx) => {
      * fast enough that a player who comes back finds them a quarter
      * round (THE-STRANGERS U24). It is the only clock in this world
      * that a player can read by looking at it twice. */
-    sails.rotation.z = -t * 0.0105;
+    /* AND FROM SESSION 17 THE WIND ACTUALLY TURNS THEM: at the shipped
+     * calm the sails keep their ten-minute revolution; when the wind
+     * gets up they go round in two. */
+    sailSpin += dt * Math.max(0, weather.state.wind - 0.5) * 0.14;
+    sails.rotation.z = -t * 0.0105 - sailSpin;
 
     /* JOAN'S DAY, and it is a working day.
      *
@@ -2055,11 +2361,10 @@ export const buildDowns: RegionBuilder = (ctx) => {
      * something that actually arrives, and is therefore the only one
      * who is not really waiting. */
     const h = clock.hour;
-    const outNow = Math.min(
-      Math.max(0, Math.min(1, (h - 5.6) / 0.8)),
-      Math.max(0, Math.min(1, (20.6 - h) / 0.8))
-    );
-    const atTable = h > 11.6 && h < 12.9;
+    // on `events.ts` since Session 17: the same day, read off three
+    // registered events
+    const outNow = events.between('joan-out', 'joan-in', h);
+    const atTable = events.progress('joan-at-table', h) >= 0;
     (joanWork.material as THREE.MeshBasicMaterial).opacity = outNow * (atTable ? 0 : 1);
     (joanRest.material as THREE.MeshBasicMaterial).opacity = outNow * (atTable ? 1 : 0);
     joanWork.visible = outNow > 0.02 && !atTable;
@@ -2136,6 +2441,60 @@ export const buildDowns: RegionBuilder = (ctx) => {
         else sheepFields[p].hide(i, s.hx, s.hz);
       }
     }
+
+    /* ---- THE UNNAMED (Session 17) ------------------------------------ */
+    const rain = weather.state.rain > 0.5;
+    miller.tick(h, rain);
+    carter.tick(h, rain);
+    shepherd.tick(h);
+
+    /* THE HERD PARTS, slowly, and looks up first. At night they lie
+     * down — which is one drawing, the grazing one, drawn lower. */
+    const lying = events.progress('the-cows-lie-down') >= 0;
+    for (let i = 0; i < HERD.length; i++) {
+      const c = cowState[i];
+      const [x0, z0] = HERD[i];
+      const d = Math.hypot(c.hx - px, c.hz - pz);
+      let tx = x0;
+      let tz = z0;
+      if (d < 11 && !lying) {
+        const push = (1 - d / 11) * 6;
+        tx = x0 + c.side * push;
+        tz = z0 + (c.hz > pz ? 1.2 : -1.2) * (1 - d / 11);
+      }
+      const k = 1 - Math.exp(-dt * (d < 11 ? 1.4 : 0.5));
+      c.hx += (tx - c.hx) * k;
+      c.hz += (tz - c.hz) * k;
+      c.low = Math.max(0, c.low - dt);
+      const near = d < 15;
+      if (near && c.low <= 0 && !lying) { c.low = 18 + i * 3; if (Math.random() < 0.5) say('cow-low'); }
+      cows[i].set(near && !lying ? 1 : 0, c.hx, c.hz, px < c.hx ? -1 : 1, lying ? -0.55 : 0);
+    }
+
+    /* THE DOG. */
+    const wasFollowing = dog.following;
+    dog.tick(dt, px, pz, (x, z) => terrain.blockedAt(x, z));
+    if (!wasFollowing && dog.following) say('dog-bark');
+    if (dog.justStopped) say('dog-bark');
+    dogBark -= dt;
+    if (dog.following && dog.pose === 'trot' && dogBark <= 0) { say('dog-bark'); dogBark = 11 + (t % 6); }
+    const dp = dog.pose === 'walk' ? 1 : dog.pose === 'trot' ? 2 : dog.atBorder ? 3 : 0;
+    dogDrawn.set(dp, dog.x, dog.z, dog.face < 0 ? -1 : 1);
+
+    /* THE ROOKS on the scarecrow, and off it. */
+    rookState.up = Math.max(0, rookState.up - dt);
+    scarecrowRooks.forEach((c, i) => {
+      const rk = rookAt(i, h);
+      if (rk.where !== 'downs') { c.hide(); return; }
+      if (rk.flying) { c.set(0, rk.x, rk.z, rk.face, rk.lift + Math.sin(t * 9 + i) * 0.25); return; }
+      const near = Math.hypot(px - 128, pz - 112) < 6.5;
+      if (near && rookState.up <= 0) { rookState.up = 10; say('rook-caw'); }
+      if (rookState.up > 0) {
+        const u = Math.min(1, (10 - rookState.up) / 1.2) * Math.min(1, rookState.up / 1.2);
+        const a = t * 0.8 + i * 2.1;
+        c.set(0, rk.x + Math.cos(a) * 9 * u, rk.z + Math.sin(a * 2) * 4 * u, Math.cos(a) > 0 ? 1 : -1, rk.lift + u * (6 + Math.sin(a * 2.4) * 2));
+      } else c.set(0, rk.x, rk.z, rk.face, rk.lift);
+    });
   };
 };
 

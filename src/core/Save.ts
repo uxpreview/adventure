@@ -24,6 +24,10 @@ export type SaveData = {
    * to the middle of last night's dusk.
    */
   hour: number | null;
+  /** WHICH DAY IT IS (Session 17): the weather is a function of the day
+   *  and the hour, so the day is saved with the hour. Absent in an older
+   *  save, which reads as day zero. */
+  day?: number;
   /**
    * WHAT THE WALKER KNOWS. Names, facts, routes and reasons, as
    * readable ids (`fact:brim-hour`, `route:the-line`) — the content
