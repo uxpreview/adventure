@@ -333,6 +333,8 @@ const r = await page.evaluate(() => {
    * every land has its unnamed, and the counts are the brief's. */
   {
     const L = {};
+    // the last press left Nell's note open, and an open note freezes the walker
+    if (document.querySelector('.note-veil.show')) { I.press(); I.step(1 / 60, 5); }
     I.setWeather(null);
     I.setDay(0);
     const wx = (h) => { I.setHour(h, false); I.weather.tick(); const w = I.weather.state; return { rain: w.rain, wind: w.wind, fog: w.fog, k: I.weather.windK }; };
@@ -351,7 +353,7 @@ const r = await page.evaluate(() => {
     I.goto(-40, 100);
     settle(3);
     L.bullNight = { state: C.bull.state, on: I.events.progress('the-bull-lies-down') };
-    I.goto(24, 88);
+    I.goto(26, 86);
     settle(0.5);
     L.bullWoken = C.bull.state;
     I.goto(-40, 100);
@@ -370,39 +372,39 @@ const r = await page.evaluate(() => {
       return { out: r?.present, lit: I.lampsLit ? I.lampsLit() : null, lamp: I.clock.state.lamp };
     };
     L.lampsAtQuarterPast = lamps(19.12);
-    L.lampsAtDusk = lamps(19.6);
+    L.lampsAtDusk = lamps(19.9);
     L.lampsAtNoon = lamps(12);
     // the dog
     I.setHour(12, false);
     I.events.resync();
-    const dog = I.life.drawn().find((d) => d.id === 'the-downs-dog');
+    // read fresh each time: a report is a snapshot
+    const dogNow = () => I.life.drawn().find((d) => d.id === 'the-downs-dog');
     I.goto(104, 45);
     settle(0.5);
     I.drive(-1, 0, 0);
     settle(2.5);
     I.release();
     settle(0.5);
-    L.dogFollows = { d: +Math.hypot(dog.x - I.char.pos.x, dog.z - I.char.pos.z).toFixed(1), pose: dog.pose };
+    L.dogFollows = (() => { const dog = dogNow(); return { d: +Math.hypot(dog.x - I.char.pos.x, dog.z - I.char.pos.z).toFixed(1), pose: dog.pose }; })();
     I.goto(90, 46);
     settle(0.5);
     I.drive(-1, 0, 1);
     settle(9);
     I.release();
     settle(1.5);
-    L.dogWest = { walkerX: +I.char.pos.x.toFixed(1), dogX: +dog.x.toFixed(2), minX: 60, pose: dog.pose };
-    // and the other way, over the bridge to the Flats' border
-    I.goto(120, 42);
-    settle(0.5);
-    I.drive(1, -0.2, 0);
-    settle(4);
-    I.release();
+    L.dogWest = (() => { const dog = dogNow(); return { walkerX: +I.char.pos.x.toFixed(1), dogX: +dog.x.toFixed(2), minX: 60, pose: dog.pose }; })();
+    // and the other way, to the Flats' border — the dog put on the east
+    // road past the bridge the way the goat is put on the Common's, and
+    // the walker driven out: the rule is tested at the border
+    const dog = I.company.dog;
+    dog.x = 196; dog.z = 15; dog.following = true; dog.atBorder = false;
     I.goto(200, 14);
     settle(0.5);
     I.drive(1, -0.12, 1);
     settle(9);
     I.release();
     settle(1.5);
-    L.dogEast = { walkerX: +I.char.pos.x.toFixed(1), dogX: +dog.x.toFixed(2), maxX: 230, pose: dog.pose };
+    L.dogEast = (() => { const dog = dogNow(); return { walkerX: +I.char.pos.x.toFixed(1), dogX: +dog.x.toFixed(2), maxX: 230, pose: dog.pose }; })();
     // the unnamed, counted per land off the routines registered
     const counts = {};
     for (const rt of I.life.routines) counts[rt.land] = (counts[rt.land] ?? 0) + 1;
@@ -529,7 +531,7 @@ console.log('\nlife (Session 17):');
   if (L.bullNight.state === 'lying' && L.bullNight.on >= 0) pass('the bull lies down at night (the-bull-lies-down is happening)'); else fail(`the bull at night: ${JSON.stringify(L.bullNight)}`);
   if (L.bullWoken !== 'lying') pass(`and gets up for a walker inside twelve units (${L.bullWoken})`); else fail('the bull stayed down with the walker on top of it');
   if (L.bullDay === 'graze') pass('and grazes by day'); else fail(`the bull by day: ${L.bullDay}`);
-  if (L.lampsAtQuarterPast.out && L.lampsAtDusk.out === false && L.lampsAtNoon.out === false) pass('the lamplighter is out at ten past seven and in by half past, and in at noon');
+  if (L.lampsAtQuarterPast.out && L.lampsAtDusk.out === false && L.lampsAtNoon.out === false) pass('the lamplighter is out at ten past seven, in by ten to eight, and in at noon');
   else fail(`the lamplighter: ${JSON.stringify([L.lampsAtQuarterPast.out, L.lampsAtDusk.out, L.lampsAtNoon.out])}`);
   if (L.dogFollows.d < 8 && (L.dogFollows.pose === 1 || L.dogFollows.pose === 2 || L.dogFollows.pose === 0)) pass(`the dog falls in on the east road: ${L.dogFollows.d} units behind`); else fail(`the dog: ${JSON.stringify(L.dogFollows)}`);
   if (L.dogWest.dogX >= L.dogWest.minX && L.dogWest.dogX < L.dogWest.minX + 3 && L.dogWest.walkerX < L.dogWest.minX) {

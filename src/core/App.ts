@@ -29,6 +29,7 @@ import { drawn } from '../world/life';
 import { weather, PRESETS, type WeatherKind } from '../world/weather';
 import { fistStoneTexture } from '../world/textures-common';
 import { MEADOW_POIS, common } from '../world/regions/meadow';
+import { downsDog } from '../world/regions/wilds';
 import { FOREST_POIS, CANYON_POIS, DESERT_POIS, DOWNS_POIS } from '../world/regions/wilds';
 import { OCEAN_POIS, BEACH_POIS } from '../world/regions/coast';
 import {
@@ -490,6 +491,8 @@ export class App {
         /* THE OPENING (Session 16): the bull, the gate, Nell and the
          * goat, for `check-verbs` and the proofs sheet. */
         common,
+        /* THE COMPANY (Session 17): every follower, for the same tests. */
+        company: { goat: common.goat, dog: downsDog },
         barriers,
         districtAt,
         /* THE WEATHER, FOR THE HARNESS (Session 17). `setWeather('rain')`

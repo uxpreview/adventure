@@ -1559,14 +1559,19 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
   const kids = [0, 1].map((i) =>
     new Creature(ctx, `the-green-children-${i}`, 'neighborhood', [childTexture(1750 + i * 2, 0), childTexture(1751 + i * 2, 1)], 0.8, 1.2, GREEN.x, GREEN.z));
   events.register({ id: 'the-green-children', land: 'neighborhood', at: 15.5, hours: 2.0, place: GREEN });
-  const CAR_OUT: [number, number][] = [[-85.6, 141.7], [-83, 140], [-78, 146.5], [-64, 147], [-45, 148], [-45, 200], [-45, 262]];
+  /* It parks on the empty plot at the end of the survey, twelve units
+   * OFF the king's road's axis: the line's sightline (`THE-LINE` §3.2,
+   * `check-sightline`) allows nothing tall within eight of it, and a
+   * car is 2.3 tall. It drives down the axis to get there, which is
+   * what a road is for. */
+  const CAR_OUT: [number, number][] = [[-85.6, 141.7], [-83, 140], [-78, 146.5], [-64, 147], [-45, 148], [-45, 200], [-45, 246], [-57, 256]];
   const carOut: RoutineDef = { id: 'the-first-car', land: 'neighborhood', pace: 900, stops: stops([
     [8.1, -85.6, 141.7, 0, 1, 0.01],
     ...CAR_OUT.slice(1).map((p, i): [number, number, number, number, -1 | 1] => [8.14 + i * 0.045, p[0], p[1], 0, 1]),
   ]) };
   carOut.stops[carOut.stops.length - 1].hold = 9.6;
   const carHome: RoutineDef = { id: 'the-first-car-home', land: 'neighborhood', pace: 900, stops: stops([
-    [17.75, -45, 262, 0, -1, 0.01],
+    [17.75, -57, 256, 0, -1, 0.01],
     ...[...CAR_OUT].reverse().slice(1).map((p, i): [number, number, number, number, -1 | 1] => [17.79 + i * 0.045, p[0], p[1], 0, -1]),
   ]) };
   carHome.stops[carHome.stops.length - 1].hold = 14.3;
@@ -1670,7 +1675,7 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
       }
       if (!placed) {
         const away = h >= 8.1 && h < 17.75;
-        car.set(0, away ? -45 : -85.6, away ? 262 : 141.7, away ? 1 : -1);
+        car.set(0, away ? -57 : -85.6, away ? 256 : 141.7, away ? 1 : -1);
       }
     }
     const speed = Math.hypot(px - fenceCatState.px, pz - fenceCatState.pz) / Math.max(1e-3, dt);

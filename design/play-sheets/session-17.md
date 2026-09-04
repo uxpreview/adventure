@@ -5,7 +5,8 @@
 of this is fun, and this session did not run the gate. It hands you the
 script.*
 
-**The build:** the branch's Vercel preview (the PR carries the link).
+**The build:** the branch's Vercel preview,
+[adventure-git-claude-next-session-uh9q0l-ryankm.vercel.app](https://adventure-git-claude-next-session-uh9q0l-ryankm.vercel.app).
 Once merged it is [adventure.ryankm.com](https://adventure.ryankm.com).
 
 **The clock is yours this time.** A day is forty minutes and this

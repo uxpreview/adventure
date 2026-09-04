@@ -1933,6 +1933,15 @@ function droveAt(hour: number): number {
   return hour >= dayStart && hour < dayEnd ? 1 : 0;
 }
 
+/** THE DOG, at module scope like the Common's goat so the harness can
+ *  put it on a road the way `check-verbs` puts the goat: the border rule
+ *  is tested at the border, not by path-finding a follower over a
+ *  bridge whose east end runs along the water. */
+export const downsDog = new Follower({
+  id: 'the-downs-dog', rect: SPEC_BY_ID.downs.rect, home: { x: 106.5, z: 40.5 },
+  gap: 2.6, notice: 14, walk: 4.0, trot: 9.2, margin: 2,
+});
+
 export const buildDowns: RegionBuilder = (ctx) => {
   const { r, terrain } = ctx;
 
@@ -2325,10 +2334,8 @@ export const buildDowns: RegionBuilder = (ctx) => {
    * the mill lane fords the river, so there is nowhere in the Downs a
    * walker can go that the dog cannot follow — and nowhere out of it
    * that it can. */
-  const dog = new Follower({
-    id: 'the-downs-dog', rect: SPEC_BY_ID.downs.rect, home: { x: 106.5, z: 40.5 },
-    gap: 2.6, notice: 14, walk: 4.0, trot: 9.2, margin: 2,
-  });
+  const dog = downsDog;
+  dog.reset();
   const dogDrawn = new Creature(ctx, 'the-downs-dog', 'downs', [0, 1, 2, 3].map((p) => dogTexture(5970 + p, p as 0 | 1 | 2 | 3)), 1.5, 1.12, dog.x, dog.z);
   let dogBark = 0;
   /* THE ROOKS ON THE SCARECROW (`rooks.ts`): Greyweather's three, here
