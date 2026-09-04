@@ -1254,3 +1254,33 @@ export function cityBinsTexture(seed: number): THREE.CanvasTexture {
     scribbleCircle(ctx, 178, 112, 13, r, { width: 1.6, alpha: 0.7 }, 1.05);
   });
 }
+
+/** THE BICYCLE (Session 18): two wheels, a frame, the handlebars up
+ *  and the bell on them. Drawn broadside and mirrored to lead with the
+ *  front wheel, like the rowboat. The rider is the walker. */
+export function bicycleTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(128, 80, seed, (ctx, r) => {
+    for (const wx of [30, 98]) {
+      scribbleCircle(ctx, wx, 56, 20, r, { width: 2.2, alpha: 0.9 }, 1.15);
+      scribbleCircle(ctx, wx, 56, 3, r, { width: 1.2, alpha: 0.6 });
+      for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * Math.PI;
+        line(ctx, wx + Math.cos(a) * 3, 56 + Math.sin(a) * 3, wx + Math.cos(a) * 19, 56 + Math.sin(a) * 19, r, { width: 0.9, alpha: 0.35, passes: 1 });
+        line(ctx, wx - Math.cos(a) * 3, 56 - Math.sin(a) * 3, wx - Math.cos(a) * 19, 56 - Math.sin(a) * 19, r, { width: 0.9, alpha: 0.35, passes: 1 });
+      }
+    }
+    // the frame: a diamond, a seat post, the forks
+    stroke(ctx, [[30, 56], [52, 30], [88, 30], [98, 56]], r, { width: 2.2, alpha: 0.9 });
+    stroke(ctx, [[52, 30], [64, 56], [88, 30]], r, { width: 2, alpha: 0.85 });
+    line(ctx, 30, 56, 64, 56, r, { width: 1.8, alpha: 0.7 });
+    // the saddle, and the handlebars up to nobody
+    line(ctx, 44, 30, 60, 26, r, { width: 2.6, alpha: 0.9 });
+    stroke(ctx, [[88, 30], [92, 16], [84, 14]], r, { width: 2, alpha: 0.85 });
+    line(ctx, 96, 15, 82, 13, r, { width: 2.2, alpha: 0.9 });
+    // the bell
+    scribbleCircle(ctx, 90, 12, 2.6, r, { width: 1.2, alpha: 0.8, color: WASH.kingdom });
+    // pedals
+    line(ctx, 64, 56, 70, 66, r, { width: 1.4, alpha: 0.7 });
+    line(ctx, 66, 66, 74, 66, r, { width: 1.8, alpha: 0.8 });
+  });
+}

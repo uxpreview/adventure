@@ -419,6 +419,183 @@ const r = await page.evaluate(() => {
     L.amosNight = (() => { const r = I.life.routines.find((x) => x.id === 'amos-night'); return r ? I.life.routineAt(r, 23).present && !I.life.routineAt(r, 12).present : null; })();
     out.life = L;
   }
+
+  /* ---- 9. THE ROADS (Session 18) ----------------------------------- */
+  /* The law around the roads, asserted where a tool can: the bicycle is
+   * a thing and stops at its border with the walker still on it; the
+   * bell is the key on the move and the land answers it; the plane
+   * glides from height and lands inside its land; the 8:15 is a
+   * registered event and the second run is a train, not an ending;
+   * the dawn dog stops at a line that is not a border; the hat stops at
+   * one that is; forty-five districts, none overlapping; and earshot is
+   * a pure function the tool can ask. */
+  {
+    const R = {};
+    I.setWeather('clear');
+    I.setDay(0);
+    I.setHour(12, false);
+    I.events.resync();
+    I.standUp();
+    // THE BICYCLE STOPS AT THE BORDER, and the walker on it
+    I.putBicycle(-45, 128);
+    at(-45, 130);
+    settle(0.6);
+    R.bikePrompt = I.promptText();
+    I.press();
+    settle(0.3);
+    R.aboard = I.bicycle.aboard;
+    I.drive(0, -1, 1);
+    settle(6);
+    R.bikeHeld = { walkerZ: +I.char.pos.z.toFixed(2), bikeZ: +I.bicycle.pos.y.toFixed(2), region: I.region(), minZ: 120 };
+    I.release();
+    settle(0.8);
+    R.stoppedPrompt = I.promptText();
+    I.press();     // off
+    settle(0.5);
+    R.offBike = { aboard: I.bicycle.aboard, walkerZ: +I.char.pos.z.toFixed(2) };
+    I.drive(0, -1, 0);
+    settle(2.5);
+    I.release();
+    R.walkerCrossed = { region: I.region(), bikeZ: +I.bicycle.pos.y.toFixed(2) };
+    // THE BELL, and the cat sits up for it
+    I.putBicycle(-90, 150);
+    at(-90, 152);
+    settle(0.6);
+    I.press();
+    settle(0.3);
+    I.drive(1, 0, 0);
+    settle(1.0);
+    R.movingPrompt = I.promptText();
+    const catBefore = I.life.drawn().find((d) => d.id === 'the-fence-cat')?.pose;
+    I.press();
+    settle(0.6);
+    I.release();
+    R.bell = { catBefore, catAfter: I.life.drawn().find((d) => d.id === 'the-fence-cat')?.pose };
+    // FASTER THAN A WALK on the flat
+    I.putBicycle(-30, 202);
+    I.stepOff();
+    at(-30, 204);
+    settle(0.6);
+    I.press();
+    settle(0.3);
+    const x0 = I.char.pos.x;
+    I.drive(1, 0, 0);
+    settle(3);
+    I.release();
+    R.bikeSpeed = +((I.char.pos.x - x0) / 3).toFixed(2);
+    I.stepOff();
+    // THE PLANE glides off the overlook and lands in its land
+    at(278.5, -167.5);
+    settle(0.6);
+    R.planePrompt = I.promptText();
+    I.press();
+    settle(0.3);
+    R.planeHeld = I.holding();
+    // back off the lip and run at it: the throw is pressed on the move,
+    // before the steep stops the walker two units short of the edge
+    I.goto(274, -167.5);
+    settle(0.3);
+    I.drive(1, 0, 1);
+    settle(0.7);
+    I.press();       // thrown, moving east, off the lip
+    settle(0.2);
+    I.release();
+    const plane = I.things.get('paper-plane');
+    R.planeFlying = plane.state;
+    settle(12);
+    R.planeLanded = { state: plane.state, x: +plane.x.toFixed(1), z: +plane.z.toFixed(1), from: 278.5, maxX: plane.rect.maxX, blocked: I.terrain.blockedAt(plane.x, plane.z) };
+    if (document.querySelector('.note-veil.show')) { I.press(); I.step(1 / 60, 5); }
+    // and SET DOWN by a standing walker it is set down at the feet
+    at(plane.x - 1.5, plane.z);
+    settle(0.6);
+    I.press();
+    settle(0.3);
+    const px0 = I.char.pos.x;
+    I.press();
+    settle(3);
+    R.planeSetDown = { state: plane.state, d: +Math.hypot(plane.x - px0, plane.z - I.char.pos.z).toFixed(2) };
+    if (document.querySelector('.note-veil.show')) { I.press(); I.step(1 / 60, 5); }
+    // THE 8:15 is an event, and the second run is a train
+    R.eventRegistered = I.events.all.some((e) => e.id === 'the-8-15' && Math.abs(e.at - 8.25) < 1e-6);
+    for (const id of Object.values(I.waitAnswers)) I.learn(id);
+    I.learn('route:the-line');
+    R.qualified = I.knowledge.answeredWaits() >= 6 && I.knowledge.has('route:the-line');
+    I.hideTrain();
+    I.parkTrain();
+    I.setHour(8.2, false);
+    I.events.resync();
+    at(252, 210);
+    settle(0.3);
+    I.setHour(8.3, false);
+    settle(0.5);
+    R.firstRun = { phase: I.train.phase, ending: I.train.ending };
+    I.parkTrain();
+    I.learn('fact:the-8-15-ran');
+    I.setHour(8.2, false);
+    settle(0.3);
+    I.setHour(8.3, false);
+    settle(0.5);
+    R.secondRun = { phase: I.train.phase, ending: I.train.ending };
+    I.hideTrain();
+    I.setHour(12, false);
+    I.events.resync();
+    // THE DAWN DOG stops at a line that is not a border
+    I.setHour(6.0, false);
+    I.events.resync();
+    at(-118, 64);
+    settle(1.5);
+    I.drive(1, 0, 0);
+    settle(4);
+    I.release();
+    const dawn = () => I.life.drawn().find((d) => d.id === 'the-dawn-dog');
+    R.dawnDogFollows = (() => { const d = dawn(); return d ? { visible: d.visible, d: +Math.hypot(d.x - I.char.pos.x, d.z - I.char.pos.z).toFixed(1) } : null; })();
+    at(-40, 60);
+    settle(0.3);
+    I.drive(1, 0, 1);
+    settle(6);
+    I.release();
+    settle(1);
+    R.dawnDogStops = (() => { const d = dawn(); return d ? { dogX: +d.x.toFixed(2), walkerX: +I.char.pos.x.toFixed(1), pose: d.pose, line: -28 } : null; })();
+    I.setHour(12, false);
+    I.events.resync();
+    // THE HAT stops at the Common's border
+    at(-190, 60);
+    I.setHour(11.45, false);
+    I.events.resync();
+    settle(0.5);
+    const hatMid = I.life.drawn().find((d) => d.id === 'the-hat');
+    I.setHour(11.6, false);
+    settle(0.5);
+    const hatEnd = I.life.drawn().find((d) => d.id === 'the-hat');
+    R.hat = { midX: +hatMid.x.toFixed(1), endX: +hatEnd.x.toFixed(1), border: -150 };
+    I.setHour(12, false);
+    // DISTRICTS: forty-five, none overlapping, every land has some
+    const D = I.layout.DISTRICTS;
+    let overlaps = 0;
+    for (let a = 0; a < D.length; a++) for (let b = a + 1; b < D.length; b++) {
+      const p = D[a].rect, q = D[b].rect;
+      if (p.minX < q.maxX && q.minX < p.maxX && p.minZ < q.maxZ && q.minZ < p.maxZ) overlaps++;
+    }
+    const perLand = {};
+    for (const d of D) perLand[d.land] = (perLand[d.land] ?? 0) + 1;
+    R.districts = { n: D.length, overlaps, lands: Object.keys(perLand).length, min: Math.min(...Object.values(perLand)) };
+    // EARSHOT is pure
+    R.earshot = {
+      well: I.earshot(-57, 45, 12).map((h) => h.id),
+      crossroads: I.earshot(-45, 58, 12).map((h) => h.id),
+      brack: I.earshot(150, -153, 12).map((h) => h.id),
+      funeralNoon: I.earshot(150, 60, 12).map((h) => h.id),
+      funeralThree: I.earshot(150, 60, 15.3).map((h) => h.id),
+    };
+    // THE ENCOUNTERS are registered
+    const rids = new Set(I.life.routines.map((r) => r.id));
+    const eids = new Set(I.events.all.map((e) => e.id));
+    R.encounters = {
+      routines: ['the-wheelwright', 'the-dusk-walker', 'the-ladder-front', 'the-ladder-back-home', 'the-tideline-comber-0', 'the-fire-folk-1', 'the-funeral-3'].filter((id) => !rids.has(id)),
+      events: ['the-fire', 'the-hat-2', 'the-cove-light', 'the-felled-pine', 'the-tarn-rings', 'the-road-flock', 'the-dawn-dog', 'the-8-15'].filter((id) => !eids.has(id)),
+    };
+    out.roads = R;
+  }
   return out;
 });
 
@@ -548,6 +725,38 @@ console.log('\nlife (Session 17):');
   if (L.mileDusk === 1 && L.mileNoon === 0) pass('the mile\'s lights read off events.between'); else fail(`the mile on events: dusk ${L.mileDusk}, noon ${L.mileNoon}`);
   if (L.regattaNoon >= 0 && L.regattaTea < 0) pass('the regatta is on at half past twelve and over by four'); else fail(`the regatta: ${L.regattaNoon} / ${L.regattaTea}`);
   if (L.amosNight === true) pass('Amos\'s night walk is a registered routine, out at eleven and in at noon'); else fail(`Amos on events: ${L.amosNight}`);
+}
+
+console.log('\nthe roads (Session 18):');
+{
+  const R = r.roads;
+  if (R.bikePrompt === 'GET ON THE BICYCLE' && R.aboard) pass('the bicycle is a place you walk up to and get on'); else fail(`the bicycle's prompt: ${R.bikePrompt}, aboard ${R.aboard}`);
+  if (R.bikeHeld.walkerZ >= R.bikeHeld.minZ && R.bikeHeld.region === 'neighborhood' && R.bikeHeld.bikeZ >= R.bikeHeld.minZ) {
+    pass(`THE BICYCLE STOPS AT THE BORDER, with the walker on it: walker z ${R.bikeHeld.walkerZ} against ${R.bikeHeld.minZ}, still in ${R.bikeHeld.region}`);
+  } else fail(`THE BICYCLE CROSSED: ${JSON.stringify(R.bikeHeld)}`);
+  if (R.stoppedPrompt === 'GET OFF' && !R.offBike.aboard) pass('stopped, the key gets off'); else fail(`getting off: ${R.stoppedPrompt}, ${JSON.stringify(R.offBike)}`);
+  if (R.walkerCrossed.region === 'meadow' && R.walkerCrossed.bikeZ >= 120) pass(`and the walker walks on into the Common while the bicycle stays at z ${R.walkerCrossed.bikeZ}`); else fail(`after getting off: ${JSON.stringify(R.walkerCrossed)}`);
+  if (R.movingPrompt === 'RING THE BELL') pass('moving, the key is the bell'); else fail(`moving prompt: ${R.movingPrompt}`);
+  if (R.bell.catAfter === 1) pass(`and the cat on Val's fence sits up for it (pose ${R.bell.catBefore} → ${R.bell.catAfter})`); else fail(`the bell went unanswered: ${JSON.stringify(R.bell)}`);
+  if (R.bikeSpeed > 5.5) pass(`faster than a walk on the flat: ${R.bikeSpeed} u/s against 4.1`); else fail(`the bicycle is slow: ${R.bikeSpeed} u/s`);
+  if (R.planePrompt === 'PICK UP THE PLANE' && R.planeHeld === 'paper-plane') pass('the plane is picked up at the overlook'); else fail(`the plane: ${R.planePrompt}, holding ${R.planeHeld}`);
+  if (R.planeFlying === 'flying' && R.planeLanded.state === 'ground' && R.planeLanded.x - R.planeLanded.from > 18 && R.planeLanded.x < R.planeLanded.maxX && !R.planeLanded.blocked) {
+    pass(`THROWN OFF THE LIP IT GLIDES THE CUT: from x ${R.planeLanded.from} to (${R.planeLanded.x}, ${R.planeLanded.z}), on ground a foot can stand on, inside Splitrock`);
+  } else fail(`the plane: flying ${R.planeFlying}, landed ${JSON.stringify(R.planeLanded)}`);
+  if (R.planeSetDown.state === 'ground' && R.planeSetDown.d < 3) pass(`and set down by a standing walker it is set down, ${R.planeSetDown.d} units away`); else fail(`the set-down glided: ${JSON.stringify(R.planeSetDown)}`);
+  if (R.eventRegistered) pass('the 8:15 is a registered event at 8.25'); else fail('the-8-15 is not on events.ts');
+  if (R.qualified && R.firstRun.phase === 'running' && R.firstRun.ending === true) pass('the first 8:15 after qualifying is THE ENDING'); else fail(`the first run: ${JSON.stringify(R.firstRun)}, qualified ${R.qualified}`);
+  if (R.secondRun.phase === 'running' && R.secondRun.ending === false) pass('and once the ending is written down the next 8:15 is a train, every day'); else fail(`the second run: ${JSON.stringify(R.secondRun)}`);
+  if (R.dawnDogFollows && R.dawnDogFollows.visible && R.dawnDogFollows.d < 8) pass(`the dawn dog falls in on the coast road: ${R.dawnDogFollows.d} units behind`); else fail(`the dawn dog: ${JSON.stringify(R.dawnDogFollows)}`);
+  if (R.dawnDogStops && R.dawnDogStops.dogX <= R.dawnDogStops.line && R.dawnDogStops.dogX > R.dawnDogStops.line - 3 && R.dawnDogStops.walkerX > R.dawnDogStops.line) {
+    pass(`and stops dead at a line that is not a border: dog x ${R.dawnDogStops.dogX} against ${R.dawnDogStops.line}, walker at ${R.dawnDogStops.walkerX}, sat (pose ${R.dawnDogStops.pose})`);
+  } else fail(`THE DAWN DOG AT ITS LINE: ${JSON.stringify(R.dawnDogStops)}`);
+  if (R.hat.midX > -200 && R.hat.midX < -160 && R.hat.endX <= R.hat.border && R.hat.endX > R.hat.border - 4) pass(`the hat goes the other way and stops at the border: x ${R.hat.midX} mid-run, ${R.hat.endX} after`); else fail(`the hat: ${JSON.stringify(R.hat)}`);
+  if (R.districts.n === 45 && R.districts.overlaps === 0 && R.districts.lands === 12 && R.districts.min >= 3) pass(`forty-five districts in twelve lands, none overlapping, every land three or more`); else fail(`districts: ${JSON.stringify(R.districts)}`);
+  if (R.earshot.well.includes('well-plink') && !R.earshot.crossroads.includes('well-plink') && R.earshot.brack.includes('brack-silence') && !R.earshot.funeralNoon.includes('the-funeral-silence') && R.earshot.funeralThree.includes('the-funeral-silence')) {
+    pass('earshot is a pure function of place and hour: the well at the well and not at the crossroads, Brack\'s silence, the funeral\'s at three and not at noon');
+  } else fail(`earshot: ${JSON.stringify(R.earshot)}`);
+  if (!R.encounters.routines.length && !R.encounters.events.length) pass('every encounter is a routine or an event on the clock'); else fail(`encounters missing: ${JSON.stringify(R.encounters)}`);
 }
 
 await browser.close();

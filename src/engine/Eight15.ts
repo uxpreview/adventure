@@ -5,6 +5,7 @@ import {
 import { LINE_STOPS, LINE_STOP_S, LINE_LENGTH, lineAt } from '../world/layout';
 import { knowledge, WAITS_FOR_THE_LINE } from '../world/knowledge';
 import { clock } from '../world/daylight';
+import { events } from '../world/events';
 
 /**
  * THE 8:15 — the last mount, and the world's ending.
@@ -151,6 +152,22 @@ export class Eight15 {
   carrying = 0;
   /** True on the frame the doors open, for the one sound it makes. */
   justOpened = false;
+  /**
+   * WHETHER THIS RUN IS THE ENDING, OR THE DAY AFTER IT (Session 18,
+   * `THE-FUN-PASS` §8 item 3, `WORLD-SYSTEMS` §4).
+   *
+   * The first time it comes the whole length of the world, it is the
+   * ending: somebody is on every platform whose wait was answered, and
+   * they get on, and the windows fill. That happens ONCE, and it is
+   * written down (`fact:the-8-15-ran`, in the save with everything else
+   * the walker knows). After that **the 8:15 runs every day at 8:15 and
+   * stops twelve times**, and nobody is on any platform, and the doors
+   * stand open the same thirteen seconds at every one of them, and you
+   * can get on. That is the in-fiction fast travel the whole world was
+   * waiting for, and it is the only fast travel this game will ever
+   * have. The ending stays absolute: it is not re-run, it is remembered.
+   */
+  ending = true;
 
   private side: THREE.Mesh;
   private front: THREE.Mesh;
@@ -226,6 +243,13 @@ export class Eight15 {
     this.s = 0;
     this.stop = 0;
     this.phase = 'away';
+    /* AND IT IS A SCHEDULED EVENT like everything else now (Session 18,
+     * `events.ts`): a quarter past eight, for the hour and three
+     * quarters the run takes, from the gate. `happening.ids` knows it
+     * is on the line, which is all the registration is for; the run
+     * itself is driven below, because a train you can be inside is a
+     * position and not a progress. */
+    events.register({ id: 'the-8-15', land: 'office', at: 8.25, hours: 1.85, place: { x: -45, z: -218 } });
   }
 
   /**
@@ -275,6 +299,10 @@ export class Eight15 {
      * and she is the only person who does not have to leave to get what
      * she was waiting for. Nothing anywhere says why. */
     if (st.land === 'downs') return false;
+    /* AFTER THE ENDING, NOBODY IS WAITING: they went, or they did not,
+     * once. The daily train stops at every platform for the same
+     * thirteen seconds and takes nobody, which is what a timetable is. */
+    if (!this.ending) return false;
     return knowledge.answered(st.land);
   }
 
@@ -301,6 +329,8 @@ export class Eight15 {
       this.carrying = 0;
       this.phase = 'running';
       this.aboard = false;
+      // the ending, once; the daily transit every morning after it
+      this.ending = !knowledge.has('fact:the-8-15-ran');
     }
     if (this.phase === 'away') {
       // nowhere, and nothing in the world knows it is coming
@@ -336,6 +366,9 @@ export class Eight15 {
            * the car park, which is where the line ends. */
           this.phase = 'ended';
           this.stop = LINE_STOPS.length;
+          /* THE ENDING HAS HAPPENED, and it is written down so that
+           * tomorrow's 8:15 is a train and not an ending again. */
+          if (this.ending) knowledge.learn('fact:the-8-15-ran');
         }
       }
     } else if (this.phase === 'dwelling') {

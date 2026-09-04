@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { coastX } from '../terrain';
 import { SANDBAR, barDist } from '../layout';
 import { duneX, CUT_PATH, HOLD_PLAN } from '../elevation';
-import { driftwoodTexture, shellsDecal, signpostTexture, benchTexture } from '../textures';
+import { driftwoodTexture, shellsDecal, signpostTexture, benchTexture, lampGlowTexture } from '../textures';
 import { stoneWearDecal } from '../textures-oldworld';
 import {
   marramTexture, wrackDecal, beachHutTexture, groyneTexture, boardwalkDecal,
@@ -12,8 +12,9 @@ import {
   regattaBoatTexture, bellBuoyTexture, smallBuoyTexture, mooringPostTexture,
   barRippleDecal, mooredBoatTexture, fishShoalDecal,
 } from '../textures-coast';
-import { rodTexture, crabTexture, sealTexture, deepBackTexture } from '../textures-life';
-import { Figure, Creature, stops } from '../life';
+import { rodTexture, crabTexture, sealTexture, deepBackTexture, hatTexture, fireTexture } from '../textures-life';
+import { Figure, Creature, stops, type StopRow } from '../life';
+import { barriers } from '../barriers';
 import { events } from '../events';
 import { weather } from '../weather';
 import { clock } from '../daylight';
@@ -102,6 +103,41 @@ const JETTY_FISHER = { id: 'the-jetty-fisher', land: 'beach' as const, pace: 260
 const PROM_WALKERS = [8.0, 18.0].map((at, k) => ({ id: `the-prom-walker-${k}`, land: 'beach' as const, pace: 300, stops: stops([
   [at, -226, 92, 0, 1], [at + 0.28, -218, 12, 0, 1, 0.05], [at + 0.62, -226, 92, 0, -1, 0.02],
 ]) }));
+
+/* ================================================================== *
+ * THE ENCOUNTERS ON LONGSHORE (Session 18, `THE-STRANGERS` C5–C7).
+ * ================================================================== */
+
+/** C6 · A LINE OF PEOPLE COMBING THE TIDELINE, SPREAD OUT, SILENT.
+ *  Three of them at low water — first light and again before dark —
+ *  a dozen units apart along the wrack in the bight, bent, moving
+ *  north a few units at a time, never any nearer each other. With the
+ *  beachcomber who was already here that is four. */
+function comberLine(id: string, at: number, z0: number) {
+  const rows: StopRow[] = [[at, -206, -1, 0, -1]];
+  for (let k = 0; k < 4; k++) rows.push([at + 0.16 + k * 0.28, coastX(z0 + k * 6) + 7.5, z0 + k * 6, 2, k % 2 ? 1 : -1, 0.2]);
+  rows.push([at + 1.5, -206, -1, 0, 1, 0.02]);
+  return { id, land: 'beach' as const, pace: 160, stops: stops(rows) };
+}
+const COMBERS = [
+  comberLine('the-tideline-comber-0', 6.4, -30), comberLine('the-tideline-comber-1', 6.45, -12), comberLine('the-tideline-comber-2', 6.5, 6),
+  comberLine('the-tideline-comber-3', 18.1, -28), comberLine('the-tideline-comber-4', 18.15, -10), comberLine('the-tideline-comber-5', 18.2, 8),
+];
+/** C7 · A FIRE LIT, AND NOBODY AT IT YET. On the south sand between
+ *  the promenade's end and the boat resting, lit at seven; two come
+ *  down to it at twenty past eight and sit until late; and all the
+ *  next day it is a ring of cold ash, which is what a fire is the
+ *  morning after. */
+const FIRE = { x: -236, z: 104 };
+events.register({ id: 'the-fire', land: 'beach', at: 19.0, hours: 4.6, place: FIRE });
+const FIRE_FOLK = [0, 1].map((i) => ({ id: `the-fire-folk-${i}`, land: 'beach' as const, pace: 260, stops: stops([
+  [20.2 + i * 0.03, -218, 92, 0, -1], [20.4 + i * 0.03, FIRE.x + (i ? 2.4 : -2.4), FIRE.z + 1.4, 3, i ? -1 : 1, 2.9], [23.5, -218, 92, 0, 1, 0.02],
+]) }));
+/** C5 · A HAT, GOING THE OTHER WAY, FASTER THAN YOU. Three times a
+ *  day, east along the coast road from the boardwalk at seven units a
+ *  second, and it stops at the Common's border like everybody else. */
+const HAT_RUNS = [7.4, 11.4, 15.4];
+HAT_RUNS.forEach((at, i) => events.register({ id: `the-hat-${i}`, land: 'beach', at, hours: 0.1 }));
 
 export const buildBeach: RegionBuilder = (ctx) => {
   const { r, terrain } = ctx;
@@ -473,6 +509,12 @@ export const buildBeach: RegionBuilder = (ctx) => {
     .map(([o, z]) => [coastX(z) + 10 + o * 0.2, z]);
   const crabs = CRABS.map(([x, z], i) => new Creature(ctx, `the-crabs-${i}`, 'beach', [crabTexture(1360 + i)], 0.7, 0.5, x, z));
   const crabState = CRABS.map(() => ({ away: 0 }));
+  /* ---- THE ENCOUNTERS (Session 18, `THE-STRANGERS` C5, C6, C7) ------ */
+  const hat = new Creature(ctx, 'the-hat', 'beach', [hatTexture(1370)], 1.1, 0.8, -215, 58.6);
+  const combers = COMBERS.map((d, i) => new Figure(ctx, d, (i % 3) as 0 | 1 | 2));
+  const fireLit = ctx.standee(fireTexture(1371, true), 3.2, 3.2, FIRE.x, FIRE.z);
+  const fireCold = ctx.standee(fireTexture(1372, false), 3.2, 3.2, FIRE.x, FIRE.z);
+  const fireFolk = FIRE_FOLK.map((d, i) => new Figure(ctx, d, i ? 1 : 2));
 
   return (dt: number, t: number, px: number, pz: number) => {
     // the windsock is the coast's one instrument: it never stops, and
@@ -540,6 +582,31 @@ export const buildBeach: RegionBuilder = (ctx) => {
       c.set(0, x - 3.6 * u, z + Math.sin(t * 5 + i) * 0.08 * u, 1, 0.02);
     });
     if (scuttled) say('crab-scuttle');
+
+    /* ---- THE ENCOUNTERS (Session 18) --------------------------------- */
+    for (const c of combers) c.tick(h, rain);
+    {
+      const lit = events.progress('the-fire') >= 0;
+      fireLit.visible = lit;
+      fireCold.visible = !lit;
+      for (const f of fireFolk) f.tick(h, rain);
+    }
+    {
+      /* THE HAT: between runs it lies where it stopped, which is the
+       * border, and the morning puts it back at the boardwalk. */
+      const X0 = -215;
+      const X1 = -152.2;
+      let k = -1;
+      let ran = false;
+      for (let i = 0; i < HAT_RUNS.length; i++) {
+        const p = events.progress(`the-hat-${i}`);
+        if (p >= 0) k = p;
+        if (h >= HAT_RUNS[i]) ran = true;
+      }
+      if (h < HAT_RUNS[0] || h > 22.5) hat.set(0, X0, 58.6, 1, 0.05);
+      else if (k >= 0) hat.set(0, X0 + (X1 - X0) * k, 58.6 + Math.sin(k * 40) * 0.5, 1, 0.3 + Math.abs(Math.sin(k * 60)) * 0.9);
+      else hat.set(0, ran ? X1 : X0, 58.6, 1, 0.05);
+    }
   };
 };
 
@@ -762,6 +829,26 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
   const moorFolk = [[-272, 152], [-286, 198]].map(([x, z], i) =>
     new Figure(ctx, { id: `the-moorings-${i}`, land: 'ocean', stops: stops([[9.0 + i * 0.3, x - 0.6, z + 0.4, 2, i ? -1 : 1, 2.0]]) }, i ? 2 : 0, { lift: 0.5 }));
 
+  /* ---- THE ENCOUNTERS (Session 18, `THE-STRANGERS` C8, C9) ---------- */
+  /* C9 · A GULL THAT WILL NOT MOVE OFF THE CREST, SO YOU GO ROUND. On
+   * the bar's spine where it bends west, all day and all night, and it
+   * is a barrier (`barriers.ts`) two units wide, which is the drawing
+   * standing exactly there: it looks at the sea like every gull, turns
+   * to you when you are close, opens its beak at you at arm's length,
+   * and does not move. The crest is nineteen wide. You go round. */
+  const GULL = { x: SANDBAR[3][0], z: SANDBAR[3][1] };
+  const crestGull = new Creature(ctx, 'the-crest-gull', 'ocean', [2, 1, 3].map((p) => gullTexture(1490 + p, p as 1 | 2 | 3)), 1.9, 1.4, GULL.x, GULL.z);
+  barriers.register({ id: 'the-crest-gull', x0: GULL.x - 1.1, z0: GULL.z - 0.8, x1: GULL.x + 1.1, z1: GULL.z + 0.8, half: 1.0, gaps: [] });
+  const gullState = { cry: 0 };
+  /* C8 · A LIGHT OUT ON THE WATER THAT IS NOT THE MARK. In Shelter
+   * Cove, from nine at night until first light, thirty-five units off
+   * the sand, drifting a little, and nothing anywhere says what is
+   * under it. The mark is fifty units further out and rings. This one
+   * does not. */
+  const COVE_LIGHT = { x: -252, z: -165 };
+  const coveLight = new Creature(ctx, 'the-cove-light', 'ocean', [lampGlowTexture(1495)], 3.2, 3.2, COVE_LIGHT.x, COVE_LIGHT.z);
+  events.register({ id: 'the-cove-light', land: 'ocean', at: 21.0, hours: 7.6 });
+
   return (dt: number, t: number, px: number, pz: number) => {
     /* THE REGATTA. Boats carry along the course and heel INTO the turn;
      * a standee cannot rotate to a heading, so the flip is the tack and
@@ -841,6 +928,19 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
       }
     }
     for (const f of moorFolk) f.tick(h);
+
+    /* ---- THE ENCOUNTERS (Session 18) --------------------------------- */
+    {
+      const d = Math.hypot(px - GULL.x, pz - GULL.z);
+      gullState.cry = Math.max(0, gullState.cry - dt);
+      if (d < 3.6 && gullState.cry <= 0) { gullState.cry = 9; say('gull-cry'); }
+      crestGull.set(d < 3.6 ? 2 : d < 9 ? 1 : 0, GULL.x, GULL.z, px < GULL.x ? -1 : 1, 0.05);
+    }
+    {
+      const on = events.progress('the-cove-light');
+      if (on < 0) coveLight.hide();
+      else coveLight.set(0, COVE_LIGHT.x + Math.sin(t * 0.05) * 5, COVE_LIGHT.z + Math.cos(t * 0.037) * 3, 1, 0.9, 0.55 + Math.sin(t * 0.9) * 0.2);
+    }
   };
 };
 

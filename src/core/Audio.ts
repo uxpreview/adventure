@@ -1644,6 +1644,26 @@ export class Audio {
         }
         break;
       }
+      case 'bicycle-bell': {
+        /* THE BICYCLE'S BELL (Session 18): two bright strikes of a
+         * small dome, the second a shade higher, and the ring dying in
+         * half a second. The neighbourhood answers it. */
+        const j = 0.97 + Math.random() * 0.06;
+        this.knock(2400 * j, 0.006);
+        this.tone(2093 * j, 0.0, 0.5, 0.010);
+        this.tone(2637 * j, 0.0, 0.32, 0.006);
+        this.knock(2500 * j, 0.005, 0.14);
+        this.tone(2217 * j, 0.14, 0.55, 0.010);
+        break;
+      }
+      case 'paper-land': {
+        /* A PAPER PLANE COMING DOWN: a breath of air over a fold, and
+         * the tick of a nose on the page. The quietest landing in the
+         * game. */
+        this.surge(0.03, 0.14, 3000, 1300, 0.0035, 0, 'bandpass');
+        this.knock(900 + Math.random() * 200, 0.004, 0.12);
+        break;
+      }
       case 'pigeons-lift': {
         /* THE WHOLE FLOCK GOING UP AT ONCE in Greyline: Brim's flap,
          * seven times over, a shade apart. */

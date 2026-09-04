@@ -13,6 +13,7 @@ import { UI } from '../ui/UI';
 import { renderMap } from '../ui/map';
 import { PAPER_HEX, INK_HEX } from '../engine/palette';
 import { Boat } from '../engine/Boat';
+import { Bicycle, BICYCLE_HOME } from '../engine/Bicycle';
 import { Eight15 } from '../engine/Eight15';
 import {
   SPAWN, POSTER, regionAt, districtAt, coastX, barDist, roadCarryAt, rowableAt, BOAT_HOME,
@@ -22,7 +23,9 @@ import {
 import { barriers } from '../world/barriers';
 import { clock as dayClock, LAMP_POOL, LAMP_EDGE } from '../world/daylight';
 import { tearX } from '../world/elevation';
-import { knowledge } from '../world/knowledge';
+import { earshotAt, voice, SURF_REACH } from '../world/earshot';
+import { ROADS, BRIDGES, PONDS, RIVER, DISTRICTS } from '../world/layout';
+import { knowledge, WAIT_ANSWERS } from '../world/knowledge';
 import { things } from '../world/things';
 import { events, routines, routineAt } from '../world/events';
 import { drawn } from '../world/life';
@@ -65,6 +68,7 @@ export class App {
   private prints: Footprints;
   private char: Character;
   private boat = new Boat();
+  private bicycle = new Bicycle();
   /* THE 8:15 (Session 14, `THE-LINE` §4). It exists from the first
    * frame, standing in a car park at the end of the world with its
    * doors shut, and it does not move until the walker has walked the
@@ -138,7 +142,7 @@ export class App {
      * visual: the walk cycle, the print and the step all agree, because
      * they are all readouts of one scalar (Character.effort). */
     this.char.onStep = () => {
-      if (this.boat.aboard) return;
+      if (this.boat.aboard || this.bicycle.aboard) return;
       this.audio.step(0.42 + 0.58 * this.char.effort);
     };
     this.scene.add(this.char.group);
@@ -150,6 +154,11 @@ export class App {
     const b = this.save.data.boat ?? BOAT_HOME;
     this.boat.setAt(b.x, b.z);
     this.scene.add(this.boat.group);
+    /* THE BICYCLE (Session 18): on the verge at the mouth of the court
+     * on a fresh page, and wherever it was left after that. */
+    const bk = this.save.data.bicycle ?? BICYCLE_HOME;
+    this.bicycle.setAt(bk.x, bk.z);
+    this.scene.add(this.bicycle.group);
     this.scene.add(this.train.group);
 
     this.fx = new PaperFX(this.renderer, this.scene, this.camera);
@@ -217,6 +226,21 @@ export class App {
        * to a boat and the world says TAKE THE OARS. */
       prompt: 'TAKE THE OARS',
       onInteract: () => this.toggleBoat(),
+    } as unknown as WorldPOI);
+
+    /* THE BICYCLE (Session 18). One prompt, and what it says depends on
+     * what you are doing: GET ON when it is parked; riding, RING THE
+     * BELL while you are moving and GET OFF when you have stopped — the
+     * same speed test the hand uses to choose between a throw and a
+     * set-down. The bell is the toy (`THE-FUN-PASS` §8 item 3): the one
+     * key, on the move, and the neighbourhood answers. */
+    this.poi.add({
+      get x() { return self.bicycle.pos.x; },
+      get z() { return self.bicycle.pos.y; },
+      radius: 4.4,
+      prompt: () => !this.bicycle.aboard ? 'GET ON THE BICYCLE'
+        : Math.hypot(this.char.vel.x, this.char.vel.z) > 0.8 ? 'RING THE BELL' : 'GET OFF',
+      onInteract: () => this.bicycleKey(),
     } as unknown as WorldPOI);
 
     /* THE SEAT. The whole of the last mount's interface, and it is one
@@ -427,10 +451,19 @@ export class App {
          * lifetime by playing the game properly. */
         knowledge,
         learn: (id: string) => knowledge.learn(id),
+        /** The twelve waits' answers, so a test can qualify a walker for
+         *  the 8:15 without playing fifteen hours (Session 18). */
+        waitAnswers: WAIT_ANSWERS,
         takeOars: () => this.toggleBoat(),
         /** Get out, wherever you are. The shoot harness needs this
          *  because `toggleBoat` correctly refuses mid-river. */
         stepOff: () => {
+          if (this.bicycle.aboard) {
+            this.bicycle.aboard = false;
+            this.char.rowing = false;
+            this.char.maxSpeed = App.WALK.max;
+            this.char.runMult = App.WALK.run;
+          }
           if (!this.boat.aboard) return;
           this.boat.aboard = false;
           this.char.rowing = false;
@@ -442,6 +475,15 @@ export class App {
           this.boat.setAt(x, z);
           this.save.data.boat = { x, z };
         },
+        /* THE BICYCLE, FOR THE HARNESS (Session 18): the mount, the key
+         * as the player presses it on it, and a place to put it. */
+        bicycle: this.bicycle,
+        takeBicycle: () => this.bicycleKey(),
+        putBicycle: (x: number, z: number) => {
+          this.bicycle.setAt(x, z);
+          this.save.data.bicycle = { x, z };
+        },
+        bicycleRefuses: (x: number, z: number) => this.bicycleRefuses(x, z),
         carryAt: (x: number, z: number) => roadCarryAt(x, z),
         rowableAt: (x: number, z: number) => rowableAt(x, z),
         effort: () => this.char.effort,
@@ -495,6 +537,11 @@ export class App {
         company: { goat: common.goat, dog: downsDog },
         barriers,
         districtAt,
+        /* THE ROADS AND WHAT IS IN EARSHOT (Session 18), for
+         * `tools/check-roads.mjs`: the road web to walk, the placed
+         * voices to ask, and the skyline to project. */
+        layout: { ROADS, BRIDGES, PONDS, RIVER, DISTRICTS },
+        earshot: earshotAt,
         /* THE WEATHER, FOR THE HARNESS (Session 17). `setWeather('rain')`
          * pins a preset; `setWeather(null)` gives it back to the clock.
          * Every existing sheet shoots on day zero at noon or at 19.6,
@@ -812,7 +859,8 @@ export class App {
     const dist = 1.6 + 4.6 * Math.min(1, sp / (this.char.maxSpeed * this.char.runMult));
     things.throw_(
       this.char.pos.x, this.char.pos.z, this.char.pos.y + 0.8, this.char.heading, dist,
-      (x, z) => this.terrain.heightAt(x, z)
+      (x, z) => this.terrain.heightAt(x, z), sp > 0.6,
+      (x, z) => this.terrain.blockedAt(x, z)
     );
   }
 
@@ -876,6 +924,14 @@ export class App {
     );
   }
 
+  /** Whether the walker is within a placed voice's reach — the table in
+   *  `earshot.ts`, so the number the ambient plays is the number the
+   *  road tool walks against (Session 18). */
+  private hears(land: Parameters<typeof voice>[0], id: string): boolean {
+    const v = voice(land, id);
+    return Math.hypot(this.char.pos.x - v.x, this.char.pos.z - v.z) < v.r;
+  }
+
   /* ================================================================ *
    * TAKING AND LEAVING THE OARS.
    *
@@ -924,6 +980,72 @@ export class App {
     this.save.data.boat = { x: this.boat.pos.x, z: this.boat.pos.y };
     this.save.persist();
   }
+
+  /* ================================================================ *
+   * THE BICYCLE'S KEY (Session 18).
+   *
+   * Three things and one key, decided by what the walker is doing:
+   * parked, you get on; moving, you ring the bell; stopped, you get
+   * off, onto the verge beside it, and it stays where it is. The bell
+   * is answered by the land (`civic.ts` reads `Bicycle.bell`) and it
+   * is answered on the walker too — the touch's recoil — because a
+   * phone is on silent more often than not (`THE-FUN-PASS` §5).
+   * ================================================================ */
+  private bicycleKey() {
+    this.audio.init();
+    if (!this.bicycle.aboard) {
+      if (this.seat) this.standUp();
+      this.bicycle.aboard = true;
+      this.char.rowing = true;
+      this.char.maxSpeed = App.BIKE.max;
+      this.char.runMult = App.BIKE.run;
+      this.char.teleport(this.bicycle.pos.x, this.bicycle.pos.y, this.char.heading);
+      this.snapCamera();
+      return;
+    }
+    const sp = Math.hypot(this.char.vel.x, this.char.vel.z);
+    if (sp > 0.8) {
+      this.audio.event('bicycle-bell');
+      this.bicycle.ring(this.elapsed);
+      this.char.recoil();
+      return;
+    }
+    const verge = this.stepOffNear(this.bicycle.pos.x, this.bicycle.pos.y);
+    if (!verge) return;
+    this.bicycle.aboard = false;
+    this.char.rowing = false;
+    this.char.maxSpeed = App.WALK.max;
+    this.char.runMult = App.WALK.run;
+    this.char.teleport(verge[0], verge[1], this.char.heading);
+    this.char.setGround(
+      this.terrain.heightAt(verge[0], verge[1]),
+      this.terrain.normalAt(verge[0], verge[1])
+    );
+    this.snapCamera();
+    this.save.data.bicycle = { x: this.bicycle.pos.x, z: this.bicycle.pos.y };
+    this.save.persist();
+  }
+
+  /**
+   * WHAT THE BICYCLE REFUSES: sand and stairs (`WORLD-SYSTEMS` §4's
+   * table, since Session 6), water and the steep like a foot, and its
+   * own land's border like a cart — it is a thing, and no thing crosses
+   * a border. The stairs are Val's porch steps, which are a drawing in
+   * `valHouseTexture`; there are no other stairs in Maple Court and no
+   * invisible walls anywhere.
+   */
+  private bicycleRefuses(x: number, z: number): boolean {
+    const here = regionAt(x, z);
+    if (here.id !== 'neighborhood' || here.step === 'sand') return true;
+    if (this.terrain.blockedAt(x, z) || barriers.blocks(x, z)) return true;
+    if (this.terrain.waterAt(x, z) > 0.3 && !this.terrain.onPlanks(x, z)) return true;
+    for (const s of App.STAIRS) {
+      if (x >= s.minX && x < s.maxX && z >= s.minZ && z < s.maxZ) return true;
+    }
+    return false;
+  }
+  /** Val's porch steps: the one flight of stairs in the neighbourhood. */
+  private static STAIRS = [{ minX: -82, maxX: -74, minZ: 128.5, maxZ: 131.8 }];
 
   /* ================================================================ *
    * GETTING ON, AND GETTING OFF.
@@ -1046,7 +1168,7 @@ export class App {
     this.audio.setStepZone(zone);
     // wet paper takes no ink
     // and a passenger leaves no prints either
-    this.char.stamping = water < 0.12 && !this.boat.aboard && !this.train.aboard;
+    this.char.stamping = water < 0.12 && !this.boat.aboard && !this.train.aboard && !this.bicycle.aboard;
     /* DAMP PAPER, which is not the same thing as wet paper. Wet refuses
      * the print outright (above, and it is older than this session);
      * damp takes it and lets it bloom. Running the tide line therefore
@@ -1115,6 +1237,13 @@ export class App {
    * is what caps every speed in this game. */
   private static WALK = { max: 4.1, run: 1.5 };
   private static ROW = { max: 5.4, run: 1.3 };
+  /* THE BICYCLE (Session 18): a shade under twice the walk on the flat
+   * — faster than the run, which is the point of a bicycle — and the
+   * grade paid back downhill, up to half again. It is not faster than
+   * that because the camera's follow caps every speed in this game,
+   * and because a bicycle is FUN before it is quick (`THE-FUN-PASS`
+   * §8). */
+  private static BIKE = { max: 7.4, run: 1.2 };
 
   private static CAM = {
     /** Resting framing: how far back, how high, and what height it aims
@@ -1545,7 +1674,9 @@ export class App {
      * place; there are no invisible walls. */
     const refuses = this.boat.aboard
       ? (x: number, z: number) => !rowableAt(x, z)
-      : (x: number, z: number) => this.terrain.blockedAt(x, z) || barriers.blocks(x, z);
+      : this.bicycle.aboard
+        ? (x: number, z: number) => this.bicycleRefuses(x, z)
+        : (x: number, z: number) => this.terrain.blockedAt(x, z) || barriers.blocks(x, z);
     if (refuses(this.char.pos.x, this.char.pos.z)) {
       const nx = this.char.pos.x;
       const nz = this.char.pos.z;
@@ -1566,6 +1697,7 @@ export class App {
     // down in the boat, which is where a person in a boat is
     this.char.setGround(
       this.terrain.heightAt(this.char.pos.x, this.char.pos.z) - (this.boat.aboard ? 0.34 : 0)
+        + (this.bicycle.aboard ? 0.22 : 0)
         + (this.seat?.sit?.lift ?? 0) + this.seatDy,
       this.boat.aboard ? [0, 1, 0] : this.terrain.normalAt(this.char.pos.x, this.char.pos.z)
     );
@@ -1596,6 +1728,21 @@ export class App {
       this.char.heading,
       this.boat.aboard ? Math.hypot(this.char.vel.x, this.char.vel.z) : 0,
       this.boat.aboard || rowableAt(this.boat.pos.x, this.boat.pos.y)
+    );
+
+    /* ---- THE BICYCLE (Session 18) ------------------------------------ *
+     * Aboard, it IS the walker's position, like the boat; and downhill
+     * the grade the walker paid on foot is paid back. */
+    if (this.bicycle.aboard) {
+      this.bicycle.setAt(this.char.pos.x, this.char.pos.z);
+      const down = Math.max(0, -this.char.grade);
+      this.char.maxSpeed = App.BIKE.max * (1 + Math.min(0.5, down * 3));
+    }
+    this.bicycle.update(
+      dt,
+      this.terrain.heightAt(this.bicycle.pos.x, this.bicycle.pos.y),
+      this.char.heading,
+      this.bicycle.aboard ? Math.hypot(this.char.vel.x, this.char.vel.z) : 0
     );
 
     /* ---- THE 8:15 --------------------------------------------------- *
@@ -1632,6 +1779,8 @@ export class App {
       const t = things.get(l.id);
       if (l.caught) {
         // the well has it; the Common answers on its own delay
+      } else if (t?.def.glide) {
+        this.audio.event('paper-land');
       } else if (water > 0.12) {
         this.audio.event('stone-plop');
       } else {
@@ -1646,7 +1795,7 @@ export class App {
     const held = things.holding;
     if ((held !== null) !== this.handShown) {
       this.handShown = held !== null;
-      this.char.hold(held ? this.handTex : null, 0.42, 0.42);
+      this.char.hold(held ? (held.def.hand ?? this.handTex) : null, held?.def.handSize?.[0] ?? 0.42, held?.def.handSize?.[1] ?? 0.42);
     }
 
     this.prints.update(dt);
@@ -1676,11 +1825,11 @@ export class App {
       this.ambientAcc -= dt;
       if (this.ambientAcc <= 0) {
         if (this.region.id === 'meadow') {
-          const nearWell = Math.hypot(this.char.pos.x + 57, this.char.pos.z - 45) < 8;
+          const nearWell = this.hears('meadow', 'well-plink');
           this.audio.event(nearWell && Math.random() > 0.45 ? 'well-plink' : 'lark');
           this.ambientAcc = 9 + Math.random() * 13;
         } else if (this.region.id === 'kingdom') {
-          const nearSquare = Math.hypot(this.char.pos.x + 45, this.char.pos.z + 82) < 16;
+          const nearSquare = this.hears('kingdom', 'market-murmur');
           if (nearSquare && Math.random() > 0.35) {
             this.audio.event('market-murmur');
             this.ambientAcc = 10 + Math.random() * 10;
@@ -1708,7 +1857,7 @@ export class App {
            * from the water. On the dune it is a distant hush every nine
            * seconds; standing in the wrack it is every three. */
           const toSea = Math.max(0, this.char.pos.x - coastX(this.char.pos.z));
-          const near = Math.max(0, Math.min(1, 1 - toSea / 46));
+          const near = Math.max(0, Math.min(1, 1 - toSea / SURF_REACH));
           if (Math.random() > 0.82) {
             this.audio.event('gull-cry');
             this.ambientAcc = 5 + Math.random() * 9;
@@ -1741,12 +1890,17 @@ export class App {
            * Downs is talking, and that is the loudest thing about the
            * land. */
           const toMill = Math.hypot(this.char.pos.x - 150, this.char.pos.z + 8);
-          const toDrove = Math.hypot(this.char.pos.x - 100, this.char.pos.z - 76);
           const roll = Math.random();
-          if (toMill < 42 && roll > 0.34) {
+          const hd = dayClock.hour;
+          /* A FUNERAL YOU SHOULD NOT INTERRUPT (Session 18, C17): while
+           * it is on the lane, nothing in the land makes a sound near
+           * it — the one silence in a land that is all machines. */
+          if (hd >= 15 && hd < 16 && this.hears('downs', 'the-funeral-silence')) {
+            this.ambientAcc = 3;
+          } else if (this.hears('downs', 'mill-creak') && roll > 0.34) {
             this.audio.event('mill-creak');
             this.ambientAcc = 11 + (toMill / 42) * 9 + Math.random() * 5;
-          } else if (toDrove < 34 && roll > 0.3) {
+          } else if (this.hears('downs', 'sheep') && roll > 0.3) {
             this.audio.event('sheep');
             this.ambientAcc = 6 + Math.random() * 8;
           } else {
@@ -1761,19 +1915,18 @@ export class App {
            * but the bed** — it is the only place in the game where the
            * ambient stops, it is not stated anywhere, and a player who
            * notices it has noticed the same thing the road is saying. */
-          const toTarn = Math.hypot(this.char.pos.x - 150, this.char.pos.z + 195);
-          const toBrack = Math.hypot(this.char.pos.x - 150, this.char.pos.z + 153);
+          const nearTarn = this.hears('forest', 'tarn-drip');
+          const nearBrack = this.hears('forest', 'brack-silence');
           /* THE DEEP PINES AFTER DARK (Session 17, `THE-FUN-PASS` §9 item
            * 4, §10 THE MONSTERS): the pine-tick stops. Inside the deep
            * stand at night nothing fires but the bed, the way it stops
            * near Brack — and once in a long while, a long way off, a
            * branch goes, and nothing is ever drawn to have done it. The
            * rest of the wood gets an owl. */
-          const toDeep = Math.hypot(this.char.pos.x - 188, this.char.pos.z + 246);
           const night = dayClock.phase === 'night';
-          if (toBrack < 20) {
+          if (nearBrack) {
             this.ambientAcc = 2.5;
-          } else if (night && toDeep < 34) {
+          } else if (night && this.hears('forest', 'deep-pines-silence')) {
             if (Math.random() < 0.18) this.audio.event('branch-crack');
             this.ambientAcc = 14 + Math.random() * 22;
           } else if (night && Math.random() < 0.4) {
@@ -1781,7 +1934,7 @@ export class App {
             this.ambientAcc = 12 + Math.random() * 14;
           } else {
             const roll = Math.random();
-            if (toTarn < 30 && roll > 0.45) {
+            if (nearTarn && roll > 0.45) {
               this.audio.event('tarn-drip');
               this.ambientAcc = 9 + Math.random() * 7;
             } else if (roll > 0.6) {
@@ -1817,7 +1970,7 @@ export class App {
           const toBoat = Math.hypot(x - 306, z + 234);
           const h = dayClock.hour;
           const roll = Math.random();
-          if (toBoat < 34 && h > 5.8 && h < 20.4 && roll > 0.45) {
+          if (this.hears('canyon', 'hull-rag') && h > 5.8 && h < 20.4 && roll > 0.45) {
             this.audio.event('hull-rag');
             this.ambientAcc = 7 + (toBoat / 34) * 8 + Math.random() * 5;
           } else if (h > 10.5 && h < 15 && roll > 0.72) {
@@ -1846,11 +1999,11 @@ export class App {
            */
           const { x, z } = this.char.pos;
           const toOasis = Math.hypot(x - 305, z - 55);
-          const onTrack = Math.abs(x - 303.5) < 14 && z > 50 && z < 100;
+          const onTrack = this.hears('desert', 'can-knock');
           const h = dayClock.hour;
           const night = h > 20.5 || h < 4.5;
           const roll = Math.random();
-          if (toOasis < 26 && roll > 0.3) {
+          if (this.hears('desert', 'palm-rattle') && roll > 0.3) {
             this.audio.event('palm-rattle');
             this.ambientAcc = 5 + (toOasis / 26) * 6 + Math.random() * 4;
           } else if (onTrack && night && roll > 0.4) {
@@ -1920,6 +2073,7 @@ export class App {
         this.save.data.passed = k.passed;
         this.save.data.pos = { x: this.char.pos.x, z: this.char.pos.z };
         this.save.data.boat = { x: this.boat.pos.x, z: this.boat.pos.y };
+        this.save.data.bicycle = { x: this.bicycle.pos.x, z: this.bicycle.pos.y };
         this.save.data.hour = dayClock.hour;
         this.save.data.day = dayClock.day;
         this.save.persist();

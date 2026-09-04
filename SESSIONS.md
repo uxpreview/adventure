@@ -1,5 +1,335 @@
 # SESSIONS — the handoff log
 
+## Session 18 — 2026-09-04 — the roads
+
+*The walks between the lands, which the owner called a chore. Three
+fixes, and they stack (`THE-FUN-PASS` §8): the twenty-eight encounters
+of `THE-STRANGERS` Part Three built where they did not exist, as
+routines with a turn; districts in all twelve lands; and **the
+fifteen-second rule measured** — a tool that walks every road at a
+walk on both rigs and fails on fifteen seconds with nothing in frame
+or in earshot. Then the mounts as fun: the bicycle and its bell, the
+paper plane off the tear's lip, and the 8:15 every morning after the
+ending. **The play gate was handed over and not run**
+(`design/play-sheets/session-18.md`). Sessions 16 and 17's sheets had
+not come back when this session started; the opening and the life are
+untouched.*
+
+### THE ONE THING TO KNOW
+
+**The tool found the world more alive than the owner felt, and the
+sheet asks which of them is wrong.** `tools/check-roads.mjs` walks
+every road in `layout.ROADS` at 4.1 units a second with the clock
+running, on a desktop and on a phone, and at every two seconds asks
+two questions of the running page: is anything IN FRAME (the skyline
+grid projected through the shipping camera — every one-off standee
+records its top as it is built — the life registry, the things, the
+bridges, water beside the road; never an instanced field, because a
+road through a wood with nothing on it but trees is the road the owner
+meant), and is anything IN EARSHOT (`src/world/earshot.ts`: the
+placed voices as data, a silence that is itself a place, a scheduled
+event with a place; never the land-wide lark, because a rule a lark
+satisfied could not fail). On eleven roads, from noon, it found **two
+silences**: the canyon trail's run from the Downs' edge across the pan
+to the riverhead (22 s on the desktop, 24 s on a phone — the longest
+silence on any road) and Brack's round's south-west arc on a phone
+(20 s). Both got a midpoint and the sweep is clean on both rigs. But
+the owner said *chore* about the king's road, and the king's road
+never once went fifteen seconds without something in frame. So either
+what the tool counts as *in frame* is too lenient — a mailbox at forty
+units is company by the rule and not by the feel — or the chore is the
+walk itself and not the emptiness, which is the walk speed and the
+bicycle. **§0 of the play sheet puts exactly that question to the
+owner**, with the two silences to walk, and Session 19 changes the
+tool's definition before it opens a land if the answer is the first.
+
+**And a paper plane cannot land on the far rim.** Session 11's brief
+said the plane launches from the tear's east lip or the curled rim,
+and the note at THE OVERLOOK says *the other rim is forty units away
+and about an hour*, so the session built a glide that crossed the cut
+and expected it to come down over there. The height field said no: the
+far rim is as high as the near one (3.5 against 3.9 at the overlook),
+and a thing that falls one unit for every five and a half across
+cannot arrive at its own height. It meets the far wall thirteen units
+up, and `things.ts` now says what a plane that meets a wall does: it
+drops to the wall's foot, the last flat ground under the line — the
+east side of the floor — and the only way to it is round the mouth and
+along the bed, which is the geography lesson the land teaches and the
+one thing Session 11 said the plane must not shorten. It does not.
+
+### WHAT SHIPPED
+
+- **`tools/check-roads.mjs`** — the fifteen-second rule, measured.
+  `HOUR=`, `ROAD=`, `RIG=`, `STEP=`, `VERBOSE=1`, `JSON=`. Its
+  output is every silence of fifteen seconds or more on every road on
+  both rigs, longest first, with where it starts and ends and what was
+  nearest on either side; and it exits non-zero on any. At noon: two
+  silences before, none after. At seven in the evening (`HOUR=19`):
+  the same eleven roads on both
+  rigs, from seven in the evening, are clean too — at dusk the
+  lamplighter, the dusk walker, the fire, the combers going in and the
+  lit windows do the work the standees do by day. Twenty-two road
+  walks in all, none silent.
+- **`src/world/earshot.ts`** — the placed voices as data (`VOICES`,
+  `earshotAt(x, z, hour)`, `voice(land, id)`), the moving ones (the
+  surf as you come down to it, the slot's wind) as distance functions,
+  and the two silences that are places (Brack's twenty, the deep pines
+  after dark) plus one new one. **`App.ts` reads its ambient distances
+  from it** (`hears(land, id)`), so the number the tool walks against
+  is the number the game plays: the well's eight, the square's sixteen,
+  the mill's forty-two, the drove's thirty-four, the tarn's thirty, the
+  hull's thirty-four, the palms' twenty-six, the track's, the sea's
+  forty-six. Nine numbers that were literals in a two-hundred-line
+  `Math.random()` table are one table.
+- **`World.skylineWithin(x, z, r)`** (`regions/index.ts`) — the skyline
+  grid's cells and tops, for the tool to project. `I.layout`,
+  `I.earshot`, `I.bicycle`, `I.takeBicycle`, `I.putBicycle`,
+  `I.bicycleRefuses`, `I.waitAnswers` on the harness.
+- **FIFTEEN ENCOUNTERS built, twelve already there, one deferred.**
+  Every one a routine with a turn, on the clock, with the aftermath
+  authored for whoever comes at the wrong hour. **BRIM** — C1 *a cart
+  with a broken wheel and nobody near it*: on the king's road south of
+  the square all morning, canted on its axle with the wheel off beside
+  it; at one THE WHEELWRIGHT comes down from the back streets, bends
+  over it, and at a quarter past three pushes it home whole (the cart
+  becomes his `prop` on the leg he leaves; at four the road is empty;
+  tomorrow it is broken again). C2 *somebody walking the other way who
+  does not look up*: down the king's road from the square to the gate
+  at dusk and back to a door in the back streets. **THE COMMON** — C3
+  *a dog falls in beside you for half a land and then does not*: a
+  `Follower` at dawn (`the-dawn-dog`, 5.4 for two hours) whose land is
+  the Common's WEST HALF, so it stops dead at a line that is not a
+  border, just past the crossroads, and sits, and nobody says why. C4
+  *two people carrying a long ladder round a bend*: from the oaks round
+  the well to the fair ground at half past nine and back after four,
+  the front one carrying the drawing, the back one twelve hundredths of
+  an hour behind; between the trips it leans at the fair ground.
+  **LONGSHORE** — C5 *a hat, going the other way, faster than you*:
+  three runs a day east along the coast road at seven units a second
+  that stop at the Common's border like everybody else and lie there.
+  C6 *a line of people combing the tideline, spread out, silent*: three
+  at low water, first light and before dark, a dozen units apart on the
+  wrack in the bight, bent, never any nearer each other. C7 *a fire
+  lit, and nobody at it yet*: on the south sand at seven, two come down
+  the promenade and sit at it at twenty past eight, and all the next
+  day it is cold ash. **THE WIDE BLUE** — C8 *a light out on the water
+  that is not the mark*: in Shelter Cove from nine, thirty-five units
+  off the sand, drifting, and it does not ring. C9 *a gull that will
+  not move off the crest, so you go round*: on the bar's spine where it
+  bends west, and it is a `barriers.ts` barrier two units wide — the
+  drawing standing in it — that turns to you and opens its beak at
+  arm's length and does not move; the crest is nineteen wide. **THE
+  PENWOOD** — C14 *a felled pine across the road, and the saw left in
+  it*: across the track's last diagonal from first light, two lengths
+  at the verge and the saw gone by three. C15 *something moves in the
+  water and you do not see what*: rings on the tarn at dusk for half an
+  hour, one every ten seconds, never where you are looking, a plop if
+  you are near. **THE DOWNS** — C17 *a funeral you should not
+  interrupt*: four in file, slow, up the mill lane from the farm to the
+  ford at three and back before four, and inside forty units of the
+  lane while they are on it the land's ambient stops (`the-funeral-
+  silence` in `earshot.ts`, and the one silence in a land that is all
+  machines). C18 *a flock parts around you and closes behind*: seven on
+  the east road at half past four walking west as a scheduled event,
+  each stepping off the road south as you reach it — the river is the
+  other side — and back on when you have gone. **THE FLATS** — C22
+  *the oasis, from the wrong direction, and it is not there*: a stand
+  of palms on the pan north-east of the real one, in the middle of the
+  day, that you can see from sixty units and not from twenty-five.
+  **MAPLE COURT** — C24 *a car with its engine off and its lights on*:
+  one of the drives on main street, six until nine. **ALREADY THERE**
+  (Sessions 10–17): C10 the delivery, C11 the lamplighter, C13 the
+  braziers, C16 the field working, C19 the rockfall, C20 the boots,
+  C21 Amos, C23 the sprinkler (a sound with nothing drawn, by the
+  land's own spec: *you never do find the lawn*), C25 the man in the
+  rush, C26 the four green lights, C27 Dennis at the board at eight,
+  C28 the car park's cars. **DEFERRED, in writing:** C12 *Wick,
+  halfway up the avenue, resting, at dawn* — Wick has no drawing at
+  all, and his wait is Session 19's; the encounter is his first
+  routine and it is in `PROMPT.md` as that.
+- **Five new drawings** in `textures-life.ts` (a ladder, a hat, a fire
+  lit and cold, a saw, a ripple ring, a wheel) and two elsewhere (a
+  bicycle in `textures-now.ts`, a paper plane in `textures-canyon.ts`).
+  The dust devil is a `Creature` now, so the registry — and the tool —
+  knows where it is.
+- **DISTRICTS in all twelve lands** — forty-five, from `THE-FUN-PASS`
+  §7's first cut, sized off the places that already stand in them,
+  none overlapping (asserted), none tiling their land. The card and
+  the map read them since 16. THE YARDS in Greyline is the one new
+  piece of ground named; THE HOLDFAST is drawn as a district of THE
+  WIDE BLUE for the longship Session 19 beaches on it.
+- **THE BICYCLE** (`src/engine/Bicycle.ts`, on `Boat.ts`'s pattern).
+  Found on its side at the mouth of the court (`BICYCLE_HOME`), saved
+  where it is left. One prompt: GET ON parked; riding, RING THE BELL
+  on the move and GET OFF stopped — the hand's own speed test. 7.4
+  units a second on the flat (the run is 6.15) and the grade paid back
+  downhill up to half again. It refuses **sand, stairs** (Val's porch
+  steps, a rect on a drawing), water off the planks, the steep, and
+  **its own land's border with the walker still on it** — `App.
+  bicycleRefuses` — so at the Common's edge it stops dead and you get
+  off and walk on and it is there when you come back. **The bell is
+  answered**: `Bicycle.bell` is read by the neighbourhood — the cat on
+  Val's fence sits up for it, the children on the green stop where
+  they are and look at you for two seconds — and the walker recoils on
+  the press, because a phone is on silent. `bicycle-bell` in
+  `Audio.ts`.
+- **THE PAPER PLANE** (`things.ts` `glide`, `wilds.ts`). A carriable
+  with a glide ratio: thrown, it goes down the air in a line from the
+  hand, five and a half across for one down, until the ground comes up
+  to meet it; set down by a standing walker it is set down at the
+  feet (`throw_`'s `thrown` argument). Its rock is eleven units from
+  THE OVERLOOK's own marker toward the lip, so that holding it the key
+  is the throw and not the note (the well's lesson from 15, applied
+  before it cost a round). Drawn on the rock, in the air with its nose
+  down, in the hand; `paper-land` is the quietest voice in the game.
+- **THE 8:15 AS DAILY TRANSIT** (`Eight15.ts`). Registered as
+  `the-8-15` on `events.ts` at 8.25 for the run's hour and three
+  quarters. `ending` is true for the first run — somebody on every
+  platform whose wait was answered — and the run writes
+  `fact:the-8-15-ran` into knowledge, in the save; every morning after
+  it `ending` is false and `waiting()` is false at every stop: a train
+  that stops twelve times for thirteen seconds each and takes nobody,
+  and you can get on. The ending is not re-run; it is remembered. (It
+  had, in fact, been re-running: the crossing fired every day once the
+  walker qualified, and put people on the platforms every day.)
+- **Tools**: `check-verbs` section 9 (the bicycle at its border with
+  the walker on it, the key's three answers, the cat, the speed, the
+  plane's glide and its set-down, the 8:15's event and its two kinds of
+  run, the dawn dog's line, the hat's border, forty-five districts,
+  earshot pure, every encounter registered); `check-roads`;
+  `shoot-session18` (36 framings, both rigs, with a DO table that
+  rides, rings, throws, and warps the train on the day after).
+  `render-wavs` carries the two new voices under `the-roads`.
+
+### THE GATES, AND WHAT MOVED
+
+- **Build green.** `check-terrain` (every stop on ground a walker can
+  stand on; the line ends in a car park), `check-camera` (both rigs;
+  the rig never gives ground faster than the walker walks, 3.35 / 3.38
+  u/s; walking turns the frame 0.00°/s; home from 25.9° to exactly
+  zero in 2.75 s), `check-sightline` (clear), `check-audio` (−22 dB
+  below full scale with the two new voices in), `check-lures` (the
+  fog closes all four), `check-fields` (81 figures driven through
+  their hours — sixty-three from 17 and eighteen new — all drawn
+  right), `check-verbs` (every section; section 9's nineteen
+  assertions, the bicycle at z 120.01 against a border at 120 with the
+  walker on it, the plane from x 278.5 to the far side of the floor on
+  ground a foot can stand on, the dawn dog at x −30 against its line
+  at −28 with the walker at −2, the hat at −152.2 against −150),
+  `check-roads` (noon and dusk, both rigs, no silence), `shoot-mobile`
+  (the chrome on four widths and a mouse, every card on the page).
+  All pass on the pushed head.
+- **The bicycle is faster than the camera was tuned for**: 11.66
+  units a second on main street driven east at the run (7.4 × 1.2,
+  plus the grade paid back). `check-camera` passes on foot; it has
+  never been run on a bicycle, and there is no assertion for one. It
+  is the first item on the feel gate.
+
+- **What moved, by `diff-sheets` against `origin/main` (d9889fe), 92
+  framings, bearing pinned, twelve game seconds of settle.** 74 of 92
+  bit-identical; 18 moved at all; 3 over the 0.15% threshold. Every
+  frame that moved has an encounter, a mount or a midpoint standing in
+  it at the protected hour, which is the one move `QUALITY-BAR` §3
+  allows when the land is the scope — and the scope was the roads,
+  which run through every one of them:
+  - **`street-shot@12`, 0.38% desktop, 0.62% portrait** — Brim's
+    street shot stands at the foot of the king's road and looks up it,
+    and **C1 stands on it**: the cart with the broken wheel, eight
+    units ahead, all morning. It is the largest move of the session
+    and it is the encounter the brief lists first. At 19.6 the road is
+    empty (the wright pushed it home at a quarter past three) and the
+    frame is bit-identical, which is the aftermath measured. If the
+    owner wants the noon street shot back to the pixel, the cart moves
+    twelve units north or the wright comes earlier, and this is the
+    line that changes. The same cart, small and far, is **`gate-
+    detail@12`** (0.04% / 0.09%), **`gate-fields@12`** (0.015% /
+    0.035%), **`well@12`** (0.017% / 0.036%) and **`oaks@12`**
+    (0.015%): every frame on the Common that looks north up the road
+    sees it.
+  - **`curl-rim@12`, 0.18% desktop** — the Flats' curled rim looks
+    north-west across the pan and **C22 is in its left edge**: the
+    stand of palms that is not there, on from eleven until three.
+    Portrait's narrower frame does not hold it.
+  - **`tide-line@19.6`, 0.13%; `boardwalk@19.6`, 0.03%** — the three
+    tideline combers going in at twenty to eight (C6), and the fire
+    lit on the south sand (C7) in the tide-line's far corner.
+  - **Everything else — the title framing, the Common's seven at 19.6,
+    Brim's other three, Greyweather's four, the coast's other three at
+    both hours, the sandbar — is bit-identical.** Nothing moved for
+    the districts, the earshot table or the 8:15.
+  `SAVE=1 FRAMING=street-shot,curl-rim,tide-line node tools/diff-
+  sheets.mjs` writes both sides and the mask into `.diff/frames/`.
+
+- **The proofs sheet** (`tools/shoot-session18.mjs`, 36 framings, both
+  viewports), reviewed in `critique-art-12.md`: NOT YET at round one
+  (five framings on the wrong side of their subject, the mirage where
+  no road looks, the cove light out of its cove's frame, the rings ink
+  on ink, the district card gone before the shutter, the flock on the
+  river's paint), PASSED at round two with three passed-not-praised:
+  the cove light faint, the rings mid-fade, the airborne plane a
+  contact sheet's wrong instrument. On the phone the mirage is off the
+  trail's frame; a peek finds it.
+- **The ear gate handed over: eighty WAVs in `out/sound/`**, two of
+  them new. Unheard.
+- **The feel gate handed over**, with the bicycle on it.
+- **THE PLAY GATE HANDED OVER AND NOT RUN.**
+  `design/play-sheets/session-18.md`: §0 is the tool's two silences
+  and the question of whether the tool measures what the owner meant;
+  then the broken cart at three hours, the dawn dog, the bicycle and
+  its bell and its border, the plane off the lip, dusk on the coast,
+  and the 8:15 the day after.
+
+### DECLINED, IN WRITING
+
+- **A wash tint per district**, a third time. A district is a name for
+  ground and not a wash, by the layer's own definition in `layout.ts`,
+  and a tint would move every protected framing in every land at once
+  for a thing the card and the map already say. If the owner wants
+  the seams to read in colour it is one line per district and a
+  `diff-sheets` run, and it is their call.
+- **Wick at dawn (C12).** His first drawing decides his wait, and his
+  wait is Session 19's. Building him as a routine now would be
+  building him twice.
+- **A drawn sprinkler (C23).** The land's spec says you never find the
+  lawn it is on. The encounter is the sound, and it was already there.
+- **Counting instanced fields as *in frame*.** Trees and grass would
+  make every road pass; the tool would then be a rule nothing could
+  fail. If the owner says a wood is not empty, the rule changes in one
+  place at the top of the tool.
+- **Making the 8:15 a pure function of the hour.** A train you can be
+  inside is a position, and the harness's `runTheLine`/`warpTrain`
+  drive it as one; registering it as an event gives `happening` the
+  fact, which is all the registration was for.
+
+### Gotchas (new; everything from Sessions 1–17 still applies)
+
+- **A THING'S HOME MAY NOT BE INSIDE ANOTHER PROMPT'S REACH.** The
+  plane's first rock was three units from THE OVERLOOK's marker
+  (reach ten): holding the plane, the key opened the note. The well
+  taught this in 15 and it was learned again. Eleven units.
+- **THE STEEP STOPS THE WALKER SHORT OF THE LIP.** Two units before
+  the tear's edge `blockedAt` is true, so a walker who runs at the lip
+  is standing still by the time they reach it, and a throw from a
+  standing walker is a set-down. The throw is pressed on the move,
+  before the edge. The play sheet says so.
+- **A GLIDE CANNOT LAND HIGHER THAN IT STARTED.** Read the height
+  field before promising a landing place. `things.glideLanding` drops a
+  plane that meets a wall to the wall's foot.
+- **A CHECK STARTED BEFORE A REBUILD TESTS TWO BUILDS.** `check-
+  fields` reads the routine list from the page it loaded and drives
+  the page the server is serving now; a rebuild between the two hands
+  it half of each. Wait, or kill it and start again — and `pkill`
+  from the same shell as the wait ends the shell.
+- **THE TOOL'S TWO NUMBERS ARE THE RULE.** `REACH` (78 units) and the
+  ratio a thing must subtend (0.05: a four-unit thing at eighty is a
+  mark on the horizon, not company) decide what *in frame* means, and
+  they are at the top of `check-roads.mjs` on purpose.
+- **A ROUTINE LEG WITH A PROP** shows the prop whenever the figure is
+  out; a prop that is only carried on one leg is hidden by the land
+  off `state.leg` and `state.moving` (the wheelwright).
+- **A FOLLOWER MAY HAVE ANY RECT.** `company.ts` never assumed a land;
+  the dawn dog's rect is half of one, and the rule holds at its edge.
+
 ## Session 17 — 2026-09-04 — life
 
 *Every land opened at once, and none of them re-drawn. The four

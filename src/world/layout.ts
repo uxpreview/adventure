@@ -121,9 +121,10 @@ export const SPAWN = { x: 24, z: 90 };
  * Districts need not tile a land. The ground between them is the
  * land's own, and the card says so by saying nothing.
  *
- * Session 16 builds the layer and populates THE COMMON only, because
- * the Common is the land being re-opened; Session 18 fills the other
- * eleven from the first cut in §7.
+ * Session 16 built the layer and populated THE COMMON only, because
+ * the Common was the land being re-opened; Session 18 fills the other
+ * eleven from the first cut in §7 — forty-five districts, none of
+ * them overlapping, none of them tiling their land.
  * ================================================================== */
 export type District = {
   land: RegionId;
@@ -150,6 +151,151 @@ export const DISTRICTS: District[] = [
     rect: { minX: -128, maxX: -62, minZ: 78, maxZ: 118 } },
   { land: 'meadow', id: 'the-river-bend', name: 'THE RIVER BEND',
     rect: { minX: 30, maxX: 60, minZ: 94, maxZ: 120 } },
+
+  /* ================================================================ *
+   * THE OTHER ELEVEN (Session 18), from `THE-FUN-PASS` §7's first cut.
+   * Every rect is sized off the places that already stand in it — a
+   * district is a name for ground the land already has, never a reason
+   * to move anything — and none of them overlap, because `districtAt`
+   * takes the first match and a walker should never be told two names
+   * for one step. Two of the cut's names are NEW ground with nothing
+   * standing on it yet, and are drawn as districts anyway so the map
+   * and the card promise them: THE YARDS in Greyline (the goods yards
+   * south of the junction, where the older buildings are) and THE
+   * FAIR GROUND on the Common, which Session 16 already named.
+   * ================================================================ */
+
+  /* BRIM: the square is the square; the back streets are the lanes
+   * between it and the south gate, with the belfry yard in them; the
+   * orchard close is its own wall; the wood gate is the market lane's
+   * far end where the Penwood begins. */
+  { land: 'kingdom', id: 'the-square', name: 'THE SQUARE',
+    rect: { minX: -66, maxX: -22, minZ: -104, maxZ: -62 } },
+  { land: 'kingdom', id: 'the-back-streets', name: 'THE BACK STREETS',
+    rect: { minX: -78, maxX: -20, minZ: -62, maxZ: -22 } },
+  { land: 'kingdom', id: 'the-orchard-close', name: 'THE ORCHARD CLOSE',
+    rect: { minX: -128, maxX: -80, minZ: -94, maxZ: -46 } },
+  { land: 'kingdom', id: 'the-wood-gate', name: 'THE WOOD GATE',
+    rect: { minX: 24, maxX: 60, minZ: -128, maxZ: -92 } },
+
+  /* GREYWEATHER: the avenue is the king's road up the ramp with the
+   * banners either side; the bailey is the plateau with the keep and
+   * the king on it; the moat is the pool at the ridge's west foot; the
+   * ridge is the curtain wall's brow east of the bailey, which the
+   * sentry walks at dusk. */
+  { land: 'castle', id: 'the-avenue', name: 'THE AVENUE',
+    rect: { minX: -62, maxX: -28, minZ: -212, maxZ: -160 } },
+  { land: 'castle', id: 'the-bailey', name: 'THE BAILEY',
+    rect: { minX: -76, maxX: -14, minZ: -256, maxZ: -212 } },
+  { land: 'castle', id: 'the-moat', name: 'THE MOAT',
+    rect: { minX: -124, maxX: -76, minZ: -236, maxZ: -196 } },
+  { land: 'castle', id: 'the-ridge', name: 'THE RIDGE',
+    rect: { minX: -14, maxX: 40, minZ: -262, maxZ: -206 } },
+
+  /* MAPLE COURT: the court is the street the land is named after; the
+   * green is the swing and the three chairs' far side; the end of the
+   * survey is the last house in the world and the road that stops
+   * sixteen units short of the edge. */
+  { land: 'neighborhood', id: 'the-court', name: 'THE COURT',
+    rect: { minX: -104, maxX: -54, minZ: 124, maxZ: 168 } },
+  { land: 'neighborhood', id: 'the-green', name: 'THE GREEN',
+    rect: { minX: -16, maxX: 24, minZ: 160, maxZ: 198 } },
+  { land: 'neighborhood', id: 'the-end-of-the-survey', name: 'THE END OF THE SURVEY',
+    rect: { minX: -70, maxX: -20, minZ: 236, maxZ: 280 } },
+
+  /* THE PENWOOD: the wood road is the track in from Brim's gate; the
+   * round is the ring and the water it keeps forty units from; the deep
+   * pines are the north-east stand where the pine-tick stops at night. */
+  { land: 'forest', id: 'the-wood-road', name: 'THE WOOD ROAD',
+    rect: { minX: 60, maxX: 110, minZ: -142, maxZ: -102 } },
+  { land: 'forest', id: 'the-round', name: 'THE ROUND',
+    rect: { minX: 104, maxX: 196, minZ: -232, maxZ: -150 } },
+  { land: 'forest', id: 'the-deep-pines', name: 'THE DEEP PINES',
+    rect: { minX: 160, maxX: 230, minZ: -280, maxZ: -232 } },
+
+  /* SPLITROCK: the mouth is where the trail drops in; the floor is the
+   * bed of the tear, the only flat walk in the land; the east bench is
+   * the rim above the head wall, Holt's side, where the boat is. */
+  { land: 'canyon', id: 'the-mouth', name: 'THE MOUTH',
+    rect: { minX: 268, maxX: 322, minZ: -150, maxZ: -108 } },
+  { land: 'canyon', id: 'the-floor', name: 'THE FLOOR',
+    rect: { minX: 282, maxX: 322, minZ: -222, maxZ: -150 } },
+  { land: 'canyon', id: 'the-east-bench', name: 'THE EAST BENCH',
+    rect: { minX: 282, maxX: 350, minZ: -262, maxZ: -222 } },
+
+  /* THE DOWNS: the harrow is the home field where the whole field
+   * works; the mill rise is the lane's climb to the mill; the drove is
+   * the fold and the lane's mouth; the ford is where the river goes
+   * light. */
+  { land: 'downs', id: 'the-harrow', name: 'THE HARROW',
+    rect: { minX: 160, maxX: 230, minZ: -58, maxZ: 8 } },
+  { land: 'downs', id: 'the-mill-rise', name: 'THE MILL RISE',
+    rect: { minX: 124, maxX: 160, minZ: -40, maxZ: 8 } },
+  { land: 'downs', id: 'the-drove', name: 'THE DROVE',
+    rect: { minX: 80, maxX: 124, minZ: 76, maxZ: 124 } },
+  { land: 'downs', id: 'the-ford', name: 'THE FORD',
+    rect: { minX: 124, maxX: 162, minZ: 8, maxZ: 34 } },
+
+  /* THE FLATS: the pale is the ruled ground where the aliens will land;
+   * the pan is the flattest ground in the world, north of the oasis;
+   * the catch is Amos's tank on the pan's rim; where the road stops is
+   * where it does. */
+  { land: 'desert', id: 'the-pale', name: 'THE PALE',
+    rect: { minX: 240, maxX: 296, minZ: 26, maxZ: 78 } },
+  { land: 'desert', id: 'the-pan', name: 'THE PAN',
+    rect: { minX: 296, maxX: 380, minZ: -84, maxZ: 2 } },
+  { land: 'desert', id: 'the-catch', name: 'THE CATCH',
+    rect: { minX: 288, maxX: 330, minZ: 84, maxZ: 114 } },
+  { land: 'desert', id: 'where-the-road-stops', name: 'WHERE THE ROAD STOPS',
+    rect: { minX: 330, maxX: 372, minZ: 2, maxZ: 36 } },
+
+  /* LONGSHORE: the promenade is the boardwalk north from the coast
+   * road; the huts are the painted huts; the cut is the surfers' gap
+   * in the dune; the point is the Holdfast's tip. */
+  { land: 'beach', id: 'the-promenade', name: 'THE PROMENADE',
+    rect: { minX: -250, maxX: -206, minZ: 4, maxZ: 100 } },
+  { land: 'beach', id: 'the-huts', name: 'THE HUTS',
+    rect: { minX: -226, maxX: -184, minZ: -30, maxZ: 4 } },
+  { land: 'beach', id: 'the-cut', name: 'THE CUT',
+    rect: { minX: -250, maxX: -206, minZ: -62, maxZ: -30 } },
+  { land: 'beach', id: 'the-point', name: 'THE POINT',
+    rect: { minX: -250, maxX: -220, minZ: -104, maxZ: -62 } },
+
+  /* THE WIDE BLUE: the shallows below the boardwalk; the bar itself,
+   * out to the long water; the mark and the water round it; and the
+   * Holdfast's seaward face, where the longship will beach. */
+  { land: 'ocean', id: 'the-shallows', name: 'THE SHALLOWS',
+    rect: { minX: -280, maxX: -250, minZ: 70, maxZ: 110 } },
+  { land: 'ocean', id: 'the-bar', name: 'THE BAR',
+    rect: { minX: -306, maxX: -256, minZ: 8, maxZ: 70 } },
+  { land: 'ocean', id: 'the-mark', name: 'THE MARK',
+    rect: { minX: -324, maxX: -280, minZ: -30, maxZ: 8 } },
+  { land: 'ocean', id: 'the-holdfast', name: 'THE HOLDFAST',
+    rect: { minX: -292, maxX: -250, minZ: -124, maxZ: -30 } },
+
+  /* GREYLINE: the junction with its four green lights; the hollow, one
+   * block west; the north end where the grid gives up; the yards
+   * south of the junction, where the older, lower buildings stand. */
+  { land: 'city', id: 'the-junction', name: 'THE JUNCTION',
+    rect: { minX: 128, maxX: 170, minZ: 184, maxZ: 224 } },
+  { land: 'city', id: 'the-hollow', name: 'THE HOLLOW',
+    rect: { minX: 70, maxX: 108, minZ: 188, maxZ: 240 } },
+  { land: 'city', id: 'the-north-end', name: 'THE NORTH END',
+    rect: { minX: 136, maxX: 184, minZ: 140, maxZ: 184 } },
+  { land: 'city', id: 'the-yards', name: 'THE YARDS',
+    rect: { minX: 120, maxX: 180, minZ: 224, maxZ: 270 } },
+
+  /* THE CUBICLE MILE: the barrier and the 8:15 stop at the gate; the
+   * atrium behind the sliding doors; the overflow, the car park nobody
+   * needs; the car park, the one they use. */
+  { land: 'office', id: 'the-barrier', name: 'THE BARRIER',
+    rect: { minX: 230, maxX: 262, minZ: 186, maxZ: 222 } },
+  { land: 'office', id: 'the-atrium', name: 'THE ATRIUM',
+    rect: { minX: 262, maxX: 300, minZ: 164, maxZ: 200 } },
+  { land: 'office', id: 'the-overflow', name: 'THE OVERFLOW',
+    rect: { minX: 284, maxX: 332, minZ: 134, maxZ: 164 } },
+  { land: 'office', id: 'the-car-park', name: 'THE CAR PARK',
+    rect: { minX: 300, maxX: 352, minZ: 184, maxZ: 226 } },
 ];
 
 /** The district at (x, z), if any. The list is authored so that no
