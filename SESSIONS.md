@@ -1,5 +1,199 @@
 # SESSIONS — the handoff log
 
+## Session 16 — 2026-09-03 — the first hour
+
+*The Common re-opened, hardest. The opening the owner chose on
+2026-09-01 (`THE-FUN-PASS` §11: THE BULL + THE FOUR LURES + THE COMMON
+AS THE PLATEAU) is built, the co-walker is a rule of the world, the
+Common has districts, and NELL's wait is built with two doors. **The
+play gate was handed over and not run** (`design/play-sheets/session-16.md`).*
+
+### THE ONE THING TO KNOW
+
+**You wake in long grass with a bull looking at you, and the camera
+decided where the field gate is.** The owner's words this answers:
+*"the starting point is bland and expected but also confuses users
+because they don't know where to go or what to do."* The bull charges,
+you run — the one hint the game may print prints at the charge — it
+tails you two strides short and never touches you, you get through the
+gate, Nell shuts it behind you, and the bull stops at the hedge because
+the hedge is a rule. Then the crossroads is forty units away with four
+things on the horizon, and a goat has fallen in behind you that will
+stop dead at the Common's edge on whichever road you take.
+
+**The chase runs east to west, and that is the session's real
+finding.** The first build ran it north through the long fence, exactly
+as the brief's sentence reads, and the proofs sheet showed a bull that
+was never in the picture: the camera only looks north, so a pursuer is
+behind the lens the whole way and its stop at the rails happens at your
+back. A chase that CROSSES the frame is seen. So the field gate is in
+the field's west hedge (`HEDGE_X = −12`, `GATE = (−12, 82)`), the bull
+comes at you from your right and stays there, and at the hedge it is in
+frame while Nell reaches for the leaf. The long fence keeps its stile;
+its old gate is a drawing of a shut gate.
+
+### WHAT SHIPPED
+
+- **THE BULL** (`meadow.ts`, `common.bull`): the Common's first
+  creature, a six-state machine — graze, watch, charge, balk, fence,
+  home — bound to `FIELD` and clamped before it moves. 8.4 units a
+  second against the run's 6.15; it pulls up at 2.3 every time and
+  snorts; three balks and it loses interest; at the hedge it stands,
+  looks, and goes home. It grazes all night; §9 item 4 is Session 17's
+  one register call. Three drawings, mirrored; the mass is a
+  half-strength stain the pen fills, because a black slab with legs
+  read as a hole in the page.
+- **THE RUN, TAUGHT BY NECESSITY.** `inklands:run-now` at the charge;
+  `taughtRun` set; Session 12's six seconds of walking stays for a save
+  that wakes elsewhere. Never to the harness, never twice.
+- **`src/world/barriers.ts`** — the first thing besides the page to
+  refuse a foot. A segment with a half-thickness and gaps; a gap is a
+  SLAB through the band, not a disc (the disc pinned a walker who came
+  into the gate on a diagonal). App asks it beside `terrain.blockedAt`.
+  The long fence (stile open), the hedge return (gate open until Nell).
+  **Every barrier is a drawing in the same place.**
+- **NELL** (`nellTexture`, three poses): leaning, straight, reaching.
+  Straightens for whoever comes to the gate, settles after four
+  seconds; slams the gate once you are through and the bull is coming,
+  or when the bull is at the hedge and you went another way, never
+  with anybody in the gap; stands and faces the cart once it has moved
+  (three signals: posture, half a unit off the post, her feet). Hidden
+  while the 8:15's doors are open at the Common's stop.
+- **HER WAIT, TWO DOORS** (`NELL_CARD`): the `choice` is a getter and
+  does not exist until `fact:the-timetable`; the prompt says TELL HER
+  THE FOURTH NAME then and LEAN ON THE GATE WITH HER otherwise. Door
+  one: `door:the-cart-turned-north` — the cart drawn from behind,
+  loaded and roped, pinned home, PUSH THE CART retired;
+  `WAIT_ANSWERS.meadow`. Door two: `door:the-cart-pushed` — the cart is
+  yours and her platform stays empty. `WAITS_FOR_THE_LINE` is six.
+- **`src/world/company.ts`** — `critique-story-2` MANDATORY 1 as a
+  rule: a `Follower` has a land, follows inside it, and the clamp is
+  before the move. `keepOut` for ground it will not follow you onto
+  (the field: the first goat walked in through the open gate and was
+  shut in with the bull). **THE GOAT**: the Penwood's four postures as
+  standees, home (−22, 72), notices at eighteen, gap three, trots at
+  8.6 when left behind, stops two inside the rect and stays.
+- **THE FOUR LURES**: the sea's glint (−92, −44) hung seven up, above
+  the oaks; the mill's smoke (0, −44) with the mill behind Brim's wall;
+  the city's towers (28, −70), faintest, the one lie (the city is
+  south-east; the map tells the truth). Same law as the keep, fading a
+  little sooner. **Measured** (`tools/check-lures.mjs`): desktop holds
+  all four at rest (x −0.09, −0.62, +0.59, +0.77 in NDC); portrait
+  holds the keep at rest (−0.25), the sea on a peek left (−0.87), the
+  smoke on a peek right (+0.80), and the towers never (+1.25 at best).
+- **DISTRICTS** (`layout.DISTRICTS`, `districtAt`): the layer general,
+  the Common populated — THE CROSSROADS, THE WELL, THE FAIR GROUND
+  (new), THE RIVER BEND. The region card says a district's name under
+  its land's; a district crossing inside a land deals a smaller card;
+  the map draws them dashed inside a land you have stood in.
+- **THE FAIR GROUND**: a ring in the grass, a maypole with hanging
+  ribbons, a board that says THE FAIR and NEXT with the dates rubbed
+  out, two bales, and a note. The plateau's absurdity, played straight.
+- **`POSTER` and `SPAWN`**: the title camera stands at (−45, 58) on a
+  fresh page and SET OUT wakes you at (24, 90) through a blink of paper
+  (`UI.blink`; the harness's `begin` cuts). A saved walk opens where it
+  was left.
+- **Four voices** in `Audio.ts`: `bull-snort`, `bull-hooves`,
+  `gate-slam`, `goat-bleat`; in the ear pack.
+- **Tools**: `check-verbs` +17 assertions; `check-lures`;
+  `shoot-session16` (25 framings, `fresh:` for a stateful opening);
+  `shoot-mobile` asserts Nell's card, which carries the longest door in
+  the game now (KEEP IT, AND PUSH THE CART YOURSELF).
+
+### THE GATES, AND WHAT MOVED
+
+- Build green. `check-terrain` (the spawn moved and every place is
+  still reachable from it), `check-camera` (all claims, both rigs),
+  `check-fields` (twelve lands), `check-sightline`, `check-audio`,
+  `check-verbs` (forty-three assertions, seventeen of them the first
+  hour's), `check-lures` (new) all pass. `shoot-mobile`: five rigs, the
+  stick assertion, the king's card and Nell's card all on the page at
+  320 — KEEP IT, AND PUSH THE CART YOURSELF breaks to two lines and
+  holds.
+- **`diff-sheets` against `origin/main` (6e35329), the full set, first
+  run: 66 of 92 bit-identical, 26 moved, and two of the 26 were not
+  the lures.** `well@12` on desktop moved 2.32% with a mask that was
+  the poppies — the wake's seedheads had been pushed into the tall-
+  grass run and drew their scales from the land's `r`, so every flower
+  drift built after them re-placed (Session 15's gotcha, found the
+  same way). And `crease-east-road`, a Downs framing, moved 1.06% on
+  desktop and 1.10% in portrait: the city's towers stood at the left
+  of it, because the lures faded on the walker's z and not on their x.
+  Both fixed — the grass is its own field with its own seed, built
+  last; the lures let go over twelve units beyond the Common's edges —
+  and the Common's seven framings plus the crease re-run: **14 of 32
+  bit-identical, the crease bit-identical at both hours, and every
+  remaining diff a horizontal band at the top of a frame, which is the
+  lures.** At noon on desktop: `crossroads` 1.22%, `common-THE-SHOT`
+  1.07%, `well` 0.90%, `common-wide` 0.84%, `gate-fields` 0.13%,
+  `oaks` 0.05%. At dusk under 0.06% everywhere — pencil at the horizon
+  goes first in the grade. Portrait: `oaks` 0.10% (the sea's horizon
+  above the canopy), `well` 0.03%, everything else bit-identical,
+  because a phone's frame does not reach the lures at rest. **These
+  are the framings that moved, and they moved by the lures, under
+  `QUALITY-BAR` §3's permission with the Common in scope; the verdict
+  is re-earned in `critique-art-10.md`.**
+- **The title re-shot at noon and at 19.6, both viewports**
+  (`shots-s2-noon`, `shots-s2-dusk`): the composition is
+  critique-art-1's, the walker low on the ring, with the sea's horizon
+  and the towers in the pencil register at the desktop frame's edges
+  and nothing new in portrait. The spawn is NOT in the poster: the
+  poster stands at `POSTER` and the walker wakes at `SPAWN`, and the
+  cut between them is a blink.
+- **The proofs sheet** (`tools/shoot-session16.mjs`, 25 framings, both
+  viewports), reviewed in `critique-art-10.md`: NOT YET at round one
+  (the bull never in the picture; a hole in the page; the goat shut in
+  with the bull; the wake card saying THE RIVER BEND), PASSED at round
+  two with three passed-not-praised: THE FIELD GATE's label in the sky,
+  the sea's glint as pencil on a phone, the goat small at a border.
+- **The lures, measured** (`tools/check-lures.mjs`): desktop holds all
+  four at rest; portrait holds the keep at rest, the sea on a peek
+  left, the smoke on a peek right, and never the towers.
+- **The ear gate handed over: 63 WAVs in `out/sound/`**, four of them
+  new — the snort, the hooves, the gate, the goat. Unheard.
+- **The feel gate handed over**, with one new thing: the run taught
+  under a bull, with a camera that does not help by turning.
+- **THE PLAY GATE HANDED OVER AND NOT RUN.**
+  `design/play-sheets/session-16.md`, with the build at
+  https://adventure-git-claude-session-16-8idifp-ryankm.vercel.app
+  (PR #13): wake, run, the gate, four things, the goat, Nell, the card,
+  the districts. Ten minutes, with the questions the session could not
+  answer — and one the sheet asks first: whether ten seconds of bull is
+  ten seconds on a thumb.
+
+### DECLINED, IN WRITING
+
+- **A stranger's opening beat on the Common.** `THE-STRANGERS.md`:
+  *the Common hosts no stranger, on purpose* — a crossroads that sends
+  you somewhere is a quest board. The plateau's "one stranger" is Nell.
+- **The oaks' argument going by while you sit** (`QUESTS` §8, L5) —
+  not built; it is a routine, and Session 17 is routines.
+- **A wash tint per district** (`THE-FUN-PASS` §7) — the prompt's
+  scope was the layer, the card and the map; the terrain was not
+  touched.
+
+### Gotchas (new; everything from Sessions 1–15 still applies)
+
+- **A PURSUER BEHIND A NORTH-LOCKED CAMERA IS NEVER SEEN.** A chase
+  has to cross the frame. Anything that comes AT the walker comes from
+  the side, or it is a sound.
+- **A GAP IN A BARRIER IS A SLAB, NOT A DISC.** A disc about the gap's
+  centre leaves the corners of the band blocked and a walker who
+  entered on a diagonal stands still forever.
+- **A COMPANION FOLLOWS THE WALKER'S POSITION, INCLUDING INTO A FIELD
+  WITH A BULL IN IT**, through a gate that is about to be shut.
+  `keepOut` exists because of this.
+- **A GATE SHUT IN THE WALKER'S FACE IS A WALL.** The slam waits for
+  the walker to be through; a bull that is near the fence is also near
+  the walker who is nearly through it.
+- **`pkill -f` MATCHES THE SHELL THAT RAN IT** when the pattern is in
+  that shell's own command line. Kill by pid.
+- **THE HARNESS'S NOTE STAYS OPEN.** A `press` that opened a note
+  three assertions ago freezes every walk after it; close it first.
+- **THE SANDBOX'S BROWSER GATES TAKE LONGER THAN A TOOL CALL.** The
+  whole chain is about forty minutes; run it in the background, one
+  browser at a time, and read the logs.
+
 ## Session 15 — 2026-09-02 — the verbs and the law
 
 *Foundations, and the first session of THE FUN PASS. No land was

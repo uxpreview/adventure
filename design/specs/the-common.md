@@ -241,3 +241,120 @@ ARGUING OAKS' label, re-placed six units west.
 **Not this session's:** the bull, the four lures, the goat, Nell's
 straightening, the cart getting away (Session 16). The Common's
 districts (16).
+
+
+---
+
+## Session 16 addendum — THE FIRST HOUR (2026-09-03)
+
+The opening the owner chose (`THE-FUN-PASS` §11): THE BULL + THE FOUR
+LURES + THE COMMON AS THE PLATEAU. The Common is the land re-opened
+hardest in the fun pass, and this is what changed in it.
+
+**The spawn moved and the poster did not.** `layout.POSTER` (−45, 58)
+is where the title camera stands on a fresh page — THE SHOT, to the
+unit. `layout.SPAWN` (24, 90) is where SET OUT puts you: in the wheat at
+the east end of the field beyond the long fence, with a bull at
+fourteen units. The cut between them is a blink of paper.
+
+**THE BULL.** The Common's first creature (§3 item 1). It grazes at
+(33, 80); it looks up when you are within twenty-six units in its
+field; it charges a second later, or the moment you move; it runs at
+8.4 units a second against your 6.15 and **pulls up two strides short,
+every time**, and snorts, and comes again — three times, then it loses
+interest. It is drawn in the field's ink (`FIELD` in `meadow.ts`) and
+clamped to it before it moves, so at the hedge it stops dead, whatever
+you do. No fail state, no timer, no villain: fear is a sound (the
+snort, the hooves on its stride), a distance (two strides), and a thing
+that moved.
+
+**THE CHASE RUNS EAST TO WEST, and the reason is the camera.** The
+camera only looks north; a bull chasing you north is behind the lens
+the whole way and its stop at the rails happens at your back. A chase
+that crosses the frame is seen. So the field gate is in the field's
+**west hedge** at (−12, 82), not in the long fence, and the run is from
+the wheat to the gate with the bull on your right the whole way and at
+the hedge, in frame, once you are through. The long fence keeps its
+stile and its old gate stays shut in the drawing.
+
+**THE FENCE IS A RULE FOR THE WALKER** (`src/world/barriers.ts`). For
+fourteen sessions a fence was a drawing you could walk through. The
+long fence and the hedge return refuse a foot now, everywhere but the
+stile and the gate, and the gate shuts. Every barrier is a drawing
+standing in the same place: there are no invisible walls, and a land
+that registers one without drawing it has broken the file's rule.
+
+**NELL, at the gate, in three drawings** (`THE-WAITS` §9, and
+`critique-story-2`'s note that her straighten needs two or three
+signals). Leaning on the gate; straight; reaching for the leaf. She
+straightens when somebody comes up to the gate and settles when they
+are not who it is; **she slams the gate when the bull comes at it**,
+once the walker is through — the first thing anybody in this world has
+done on purpose in front of them; and when the cart moves she stands,
+steps off the post, and faces wherever it went, from then on. Three
+signals: the posture, the half-unit off the post, and which way her
+feet point.
+
+**HER WAIT, WITH TWO DOORS.** Without the fourth name the gate is a note
+in the plainest register in the game. With `fact:the-timetable` the
+prompt is TELL HER THE FOURTH NAME and a card is offered, once: TELL
+HER THE FOURTH NAME (`door:the-cart-turned-north` — the cart is loaded,
+roped, turned north at its home, drawn from behind, and never pushed
+again; `WAIT_ANSWERS.meadow`; her platform has somebody on it) or KEEP
+IT, AND PUSH THE CART YOURSELF (`door:the-cart-pushed` — nothing
+happens to the cart but what you do to it; it stops at any border; she
+does not follow it, and she has stopped watching the road).
+`WAITS_FOR_THE_LINE` is six.
+
+**THE FOUR LURES.** The keep vista was one. The other three are built
+the same way — false perspective, `fog = false`, pencil-pale, fading on
+the keep's own law — and placed where the frame can hold them rather
+than at true bearings: the sea's glint at (−92, −44), hung seven up,
+above the oaks; the mill's smoke at (0, −44), the mill itself behind
+Brim's wall and only its plume showing; the city's towers at (28, −70),
+faintest, to the right of the smoke, **which is the one lie** — the
+city is south-east, and the towers are drawn north-east because the
+city is further off than the mill and reached past it. The map tells
+the truth. Measured (`tools/check-lures.mjs`): desktop holds all four
+at rest; **portrait holds the keep at rest, the sea and the smoke on a
+full peek, and never the towers.** Said, as the brief asked.
+
+**THE GOAT** (`src/world/company.ts`, the co-walker as a rule of the
+world). Drawn in the Common's ink with the Penwood's four postures, at
+(−22, 72) on the way from the gate to the crossroads. It notices you at
+eighteen units, follows at three and a bit, trots when left behind,
+and **stops two units inside the Common's rect on every road**, stands
+looking after you, and stays until you come back. It bleats when it
+falls in and when the border takes you.
+
+**DISTRICTS** (`layout.DISTRICTS`, the layer built generally and
+populated here only): THE CROSSROADS, THE WELL, THE FAIR GROUND (new),
+THE RIVER BEND. A crossing between two deals a smaller card — the
+land's name over the district's — and the map draws them dashed inside
+a land you have stood in.
+
+**THE FAIR GROUND** is the plateau's absurdity (§3 item 2), played
+straight: a ring in the grass where the roundabout goes, a maypole
+nobody has taken down, and a board that says THE FAIR and, under it,
+NEXT, with several dates rubbed out beneath.
+
+**What moved, measured.** The lures stand in every north-facing framing
+of the Common: `common-wide`, `common-THE-SHOT`, `crossroads`,
+`gate-fields` and the title poster all gained pencil at their edges.
+The spawn's own frames are new. `diff-sheets` reports the numbers in
+Session 16's log entry, and `critique-art-10.md` re-earns the verdict
+on the new frame under `QUALITY-BAR` §3's permission to regress.
+
+**The plateau, counted against §3's seven:** a creature (the bull); an
+absurdity (the fair ground); a toy (the well, the cart, the stone, the
+swing — Session 15's); a choice with two doors (Nell's); motion (the
+swallows, the swing, the pennants, the wind, the bull, the goat, Nell,
+the smoke, the maypole — nine idle and five responsive); districts
+(four); nothing empty for fifteen seconds — **not measured; Session
+18's tool.** And a tone: WAITS & THE UNSEEN, frightening — for exactly
+ten seconds, and then it is the plainest land in the game again.
+
+**Not this session's:** THE-STRANGERS' *the Common hosts no stranger,
+on purpose* stands; the prompt's *one stranger's opening beat* is
+declined for that reason, and the plateau's *one stranger* is Nell.
+Life in the other eleven lands (17). Districts elsewhere (18).

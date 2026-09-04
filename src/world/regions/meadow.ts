@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { ringTexture, loopsTexture } from '../../engine/ink';
-import { hayBaleTexture, doodleFolkTexture, logTexture, wheatDecal } from '../textures';
+import { ringTexture, loopsTexture, rng } from '../../engine/ink';
+import { hayBaleTexture, logTexture, wheatDecal } from '../textures';
 import {
   leanGrassTexture, tallGrassTexture, driftFlowersTexture, commonOakTexture,
   wornGroundDecal, wheelRutsDecal, commonWellTexture, crossroadsSignTexture,
@@ -8,9 +8,17 @@ import {
   fistStoneTexture, wellRopeTexture, wellBucketTexture,
   leafLitterDecal, reedsTexture, ropeSwingTexture, swallowTexture,
   keepVistaTexture,
+  nellTexture, fieldGateTexture, bullTexture, seaGlintTexture, millSmokeTexture,
+  cityTowersTexture, maypoleTexture, fairBoardTexture,
 } from '../textures-common';
+import { goatTexture } from '../textures-wood';
 import { things } from '../things';
 import { events } from '../events';
+import { barriers } from '../barriers';
+import { Follower } from '../company';
+import { knowledge } from '../knowledge';
+import { SPEC_BY_ID } from '../layout';
+import { platform } from '../../engine/Eight15';
 import type { RegionBuilder, WorldPOI } from './index';
 
 function say(name: string) {
@@ -75,6 +83,94 @@ things.register({
   home: { x: 18.5, z: 70.5 },
 });
 things.addCatcher('the-well', -57.6, 44.6, 1.9);
+
+/* ================================================================== *
+ * THE FIRST HOUR (Session 16, `THE-FUN-PASS` §11) — THE BULL, THE FOUR
+ * LURES, THE COMMON AS THE PLATEAU. The owner's words this answers:
+ * *"the starting point is bland and expected but also confuses users
+ * because they don't know where to go or what to do."*
+ *
+ * You wake in the wheat south of the long fence. A bull is already
+ * looking at you. You run — taught by necessity, in ten seconds — it
+ * chases, NELL slams the field gate, and the bull stops at the fence,
+ * because the fence is a rule. Then you are on the east road with the
+ * crossroads forty units west and four things on the horizon: the
+ * castle, the mill's smoke, the glint of the sea, the city's towers.
+ * A goat falls in beside you. Whichever road you take, it stops dead
+ * at the Common's edge, and you go on.
+ *
+ * Nothing here is a fail state, a timer or a villain. The bull never
+ * touches you: it stops two strides short, every time, and snorts. Fear
+ * is a sound, a distance and a thing that moved (`THE-FUN-PASS` §2.3).
+ * ================================================================== */
+
+/** THE FIELD, which is the bull's whole land. The long fence is its
+ *  north edge, the hedge return its west, and the bull is drawn in
+ *  this rect's ink and cannot leave it — `company.ts`'s rule, applied
+ *  to a thing that chases rather than follows. */
+const FIELD = { minX: -10, maxX: 46, minZ: 65.6, maxZ: 112 };
+/** How far inside the field's edge the bull stops: its nose at the
+ *  rails. */
+const BULL_MARGIN = 0.7;
+const FENCE_Z = 64.5;
+/** THE FIELD GATE IS IN THE WEST HEDGE, not the north fence — and the
+ *  reason is the camera. It only ever looks north, so a bull chasing
+ *  you north is behind the lens the whole way and its stop at the rails
+ *  happens behind your back. A chase that CROSSES the frame is seen:
+ *  you wake at the field's east end, the bull comes at you from the
+ *  east, you run west with it beside you in the picture, through the
+ *  gate in the hedge, and it stops at the hedge to your right — in
+ *  frame — while Nell shuts the gate. The hedge is the fence it stops
+ *  at; the long fence keeps its stile and its old gate stays shut. */
+const HEDGE_X = -12;
+const GATE = { x: HEDGE_X, z: 82 };
+const STILE = { x: 12.6, z: 63.8 };
+/** In frame from the spawn on both rigs: nine units east and ten north
+ *  of where you wake, on the edge of portrait's frame and well inside
+ *  desktop's. The gate is due west, so the run is away from it and it
+ *  comes at you from your right and stays there. */
+const BULL_HOME = { x: 33, z: 80 };
+
+/* THE FENCE IS A RULE FOR THE WALKER, since Session 16 (`barriers.ts`).
+ * One segment the length of the drawn run, a stile you can always get
+ * over, and a gate that is open until Nell shuts it. */
+barriers.register({
+  id: 'the-long-fence', x0: -12, z0: FENCE_Z, x1: 44, z1: FENCE_Z, half: 0.9,
+  gaps: [{ id: 'the-stile', x: STILE.x, z: STILE.z, r: 1.15, open: true }],
+});
+barriers.register({
+  id: 'the-hedge-return', x0: HEDGE_X, z0: FENCE_Z, x1: HEDGE_X, z1: 104, half: 1.5,
+  gaps: [{ id: 'the-field-gate', x: GATE.x, z: GATE.z, r: 1.4, open: true }],
+});
+
+/** THE GOAT — the second co-walker, and the first thing in the game to
+ *  show the rule rather than say it. Drawn in the Common's ink; it
+ *  follows you anywhere on the Common and stops dead at the edge, on
+ *  every road. (The Penwood's goat runs away; `THE-STRANGERS` E12 says
+ *  a goat gets out. This is the one that did.) */
+const goat = new Follower({
+  id: 'the-common-goat', rect: SPEC_BY_ID.meadow.rect, home: { x: -22, z: 72 },
+  gap: 3.2, notice: 18, walk: 3.6, trot: 8.6, margin: 2,
+  // it will not go in with the bull, and it does not follow you in
+  keepOut: { minX: -14, maxX: 46, minZ: 63, maxZ: 112 },
+});
+
+/** THE OPENING'S STATE, for the builder, the POIs and the harness. */
+export const common = {
+  bull: { x: BULL_HOME.x, z: BULL_HOME.z, state: 'graze' as 'graze' | 'watch' | 'charge' | 'balk' | 'fence' | 'home', t: 0, face: -1, stride: 0, balks: 0 },
+  gate: { shut: false },
+  nell: { pose: 0 as 0 | 1 | 2, t: 0, straightFor: 0 },
+  goat,
+  /** Put the opening back where a fresh page has it: the harness's. */
+  reset() {
+    this.bull.x = BULL_HOME.x; this.bull.z = BULL_HOME.z; this.bull.state = 'graze';
+    this.bull.t = 0; this.bull.balks = 0;
+    this.gate.shut = false;
+    barriers.gap('the-field-gate')!.open = true;
+    this.nell.pose = 0; this.nell.t = 0;
+    goat.reset();
+  },
+};
 
 /* THE MORNING PUTS THINGS BACK — the Common's own scheduled event, and
  * the smallest one in the game: at first light anything the walker
@@ -247,14 +343,33 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   ctx.decal(wheelRutsDecal(436), 11, 5.5, -45, 38, Math.PI / 2, 0.5);
 
   /* ---- THE LONG FENCE --------------------------------------------- */
-  const fenceRun: { x: number; kind: 0 | 1 | 2 | 3 }[] = [
+  /* The long fence as Session 2 drew it: its gate (the sixth panel) is
+   * a drawing of a shut gate, and the stile is the way over. */
+  const fenceRun: { x: number; kind: 0 | 1 | 2 | 3 | 4 }[] = [
     { x: -12, kind: 0 }, { x: -5, kind: 1 }, { x: 2, kind: 0 },
     { x: 9, kind: 2 }, { x: 16, kind: 0 }, { x: 23, kind: 3 },
     { x: 30, kind: 0 }, { x: 37, kind: 1 },
   ];
   fenceRun.forEach((seg, i) =>
     ctx.standee(longFenceTexture(440 + i, seg.kind), 7, 2.6, seg.x + 3.5,
-      64.5 + Math.sin(i * 1.7) * 0.8));
+      FENCE_Z + Math.sin(i * 1.7) * 0.8));
+  /* THE HEDGE RETURN: the field's west side, so the bull's stop there
+   * is a thing you can see and not a line you cannot. Hedgerow masses
+   * stepped south, the way the gate fields' hedges are stepped north —
+   * a hedge that runs away from the camera is a column of hedge, and it
+   * reads — with the gate in the gap between the second and the third. */
+  ctx.standee(hedgerowTexture(1612), 12, 5.6, HEDGE_X, 69);
+  ctx.standee(hedgerowTexture(1613), 11, 5.2, HEDGE_X - 0.4, 76.5);
+  ctx.standee(hedgerowTexture(1615, true), 11, 5.2, HEDGE_X + 0.3, 88);
+  ctx.standee(hedgerowTexture(1614), 12, 5.6, HEDGE_X, 96);
+  ctx.standee(hedgerowTexture(1616), 11, 5.0, HEDGE_X - 0.3, 103);
+  /* THE GATE: its frame — two posts and a rail either side, one fence
+   * panel's worth — and the leaf, open and shut, two drawings, one
+   * showing. */
+  ctx.standee(longFenceTexture(1609, 4), 7, 2.6, GATE.x, GATE.z + 0.3);
+  const gateOpen = ctx.standee(fieldGateTexture(1610, false), 2.6, 2.6, GATE.x, GATE.z + 0.35);
+  const gateShut = ctx.standee(fieldGateTexture(1611, true), 2.6, 2.6, GATE.x, GATE.z + 0.35);
+  gateShut.visible = false;
   // the fence dies out east of the gate: one leaning post, then nothing
   ctx.standee(milestoneTexture(449), 1.1, 1.5, 45, 66);
   ctx.decal(wornGroundDecal(450), 5, 4, 9.5, 62.5, 0.4, 0.5);
@@ -264,9 +379,16 @@ export const buildMeadow: RegionBuilder = (ctx) => {
    * river and the roads' cousins, the steep; the border is the
    * registry's own. */
   const cartThing = things.get('hay-cart')!;
-  cartThing.def.refuse = (x, z) => terrain.waterAt(x, z) > 0.04 || terrain.slopeAt(x, z) > 0.5;
+  cartThing.def.refuse = (x, z) =>
+    terrain.waterAt(x, z) > 0.04 || terrain.slopeAt(x, z) > 0.5 || barriers.blocks(x, z);
   const cart = ctx.standee(hayCartTexture(451), 5.6, 4.0, cartThing.x, cartThing.z, { rotY: -0.25 });
   cartThing.mesh = cart;
+  /* THE CART LOADED AND TURNED NORTH — NELL's first door, drawn from
+   * behind, at the cart's home. Shown instead of the cart once
+   * `door:the-cart-turned-north` is known; the registry pins the cart
+   * home and the push is retired. */
+  const cartLoaded = ctx.standee(hayCartTexture(1620, true), 5.4, 4.2, cartThing.def.home.x, cartThing.def.home.z);
+  cartLoaded.visible = false;
   /* AND THE STONE, by the gate it props. The mesh is only drawn when the
    * stone is on the ground or in the air; in the hand it is the walker's
    * own drawing of it (`Character.hold`). */
@@ -285,8 +407,28 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   for (let i = 0; i < 5; i++) {
     ctx.decal(wheatDecal(454 + i), 10, 6.6, -2 + i * 9 + r() * 3, 76 + r() * 8, r() * 0.4, 0.55);
   }
-  // someone leaning at the field gate, watching the road
-  ctx.standee(doodleFolkTexture(459), 1.15, 1.9, 26.6, 63.8);
+  /* NELL, at the gate, watching the road — three drawings, one showing
+   * (`THE-WAITS` §9; the doodle-folk figure that stood here since
+   * Session 2 is retired, because she has a name now and a name is
+   * three drawings). She stands a step east of the leaf's hinge, on
+   * the fence line, and she faces WEST, up the east road toward the
+   * crossroads, because that is the road people come down. */
+  const NELL = { x: HEDGE_X - 2.4, z: 82.6 };
+  const nellPoses = [0, 1, 2].map((p) =>
+    ctx.standee(nellTexture(1630 + p, p as 0 | 1 | 2), 1.15, 1.9, NELL.x, NELL.z));
+
+  /* THE BULL: three drawings, one showing, mirrored to face its way. */
+  const bullPoses = [0, 1, 2].map((p) =>
+    ctx.standee(bullTexture(1640 + p, p as 0 | 1 | 2), 3.6, 2.4, BULL_HOME.x, BULL_HOME.z));
+  // its own trodden ground, where it has stood the longest
+  ctx.decal(wornGroundDecal(1643), 7, 6, BULL_HOME.x, BULL_HOME.z + 0.5, 0.6, 0.45);
+
+  /* THE GOAT: the Penwood's four postures, as one-off standees rather
+   * than a field, because a standee has no birth to get wrong
+   * (`StandeeField.hide`'s note) and there is one of it. */
+  const goatPoses = [0, 1, 2, 3].map((p) =>
+    ctx.standee(goatTexture(1650 + p, p as 0 | 1 | 2 | 3), 2.2, 1.65, goat.x, goat.z));
+
 
   /* ---- RIVERBEND --------------------------------------------------- */
   const reedSpots: [number, number, number][] = [
@@ -307,6 +449,70 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   (vista.material as THREE.MeshBasicMaterial).fog = false;
   const vistaMat = vista.material as THREE.MeshBasicMaterial;
 
+  /* ---- THE FOUR LURES (Session 16, `THE-FUN-PASS` §11 candidate 2) --- *
+   * The keep is one of the four and has stood here since Session 2.
+   * The other three are built the same way — false perspective with
+   * `fog = false`, pencil-pale, and fading before the walker can catch
+   * them working — and PLACED WHERE THE FRAME CAN HOLD THEM rather than
+   * at their true bearings, because the camera is due north and the
+   * frame is 68.6° across on desktop and 26.5° in portrait. The sea IS
+   * north-west of here, and the mill north-east; the towers are the
+   * lie, drawn to the right of the mill's smoke because the city is
+   * further off than the mill and reached past it. The map tells the
+   * truth. The angles, from the crossroads, off north:
+   *
+   *   the keep      −4°     the sea    −25°
+   *   the mill      +24°    the towers +30°
+   *
+   * so desktop holds all four at rest; portrait holds the keep at rest
+   * and the sea and the mill on a full peek (12°), and never the towers.
+   * `tools/check-lures.mjs` measures it. */
+  const seaGlint = ctx.standee(seaGlintTexture(1660), 40, 15, -92, -44, { opacity: 0.7 });
+  ctx.hang(seaGlint, 7);
+  const millSmoke = ctx.standee(millSmokeTexture(1661), 7, 18, 0, -44, { opacity: 0.7 });
+  ctx.hang(millSmoke, 4.5);
+  const towers = ctx.standee(cityTowersTexture(1662), 30, 17.5, 28, -70, { opacity: 0.55 });
+  ctx.hang(towers, 4);
+  const lures = [seaGlint, millSmoke, towers].map((m) => {
+    const mat = m.material as THREE.MeshBasicMaterial;
+    mat.fog = false;
+    mat.transparent = true;
+    return { m, mat, base: mat.opacity };
+  });
+
+  /* ---- THE FAIR GROUND (a district, new) --------------------------- *
+   * The open grass south-west of the crossroads was a composed void.
+   * It is where the fair is held, and the fair is not on: a ring in
+   * the grass where the roundabout goes, a maypole nobody has taken
+   * down, a board that says THE FAIR and, under it, NEXT. */
+  ctx.decal(wornGroundDecal(1670), 13, 12, -95, 99, 0.3, 0.42);
+  ctx.decal(ringTexture(), 11, 11, -95, 99, 0, 0.26);
+  const maypole = ctx.standee(maypoleTexture(1671), 1.3, 4.3, -95, 96.5);
+  ctx.standee(fairBoardTexture(1672), 2.6, 2.6, -104, 104);
+  ctx.standee(hayBaleTexture(1673), 2.6, 2.0, -86, 104.5);
+  ctx.standee(hayBaleTexture(1674), 2.2, 1.7, -103, 92);
+
+  /* ---- THE LONG GRASS YOU WAKE IN (Session 16) -------------------- *
+   * A stand of seedheads round the spawn, south of the wheat, so the
+   * first frame is grass at eye level with a bull's horns over it. ITS
+   * OWN FIELD AND ITS OWN SEED, built after everything else: the first
+   * version pushed its points into the tall-grass run above and drew
+   * their scales from the land's `r`, and every flower drift built
+   * after it moved — 2.3% of the well's protected framing, found by
+   * `diff-sheets` and by nothing else (Session 15's gotcha, again). */
+  {
+    const gr = rng(1601);
+    const pts: [number, number][] = [];
+    for (let i = 0; i < 26; i++) {
+      const a = gr() * Math.PI * 2;
+      const d = 1.6 + Math.pow(gr(), 0.7) * 6.5;
+      pts.push([24 + Math.cos(a) * d, 90 + Math.sin(a) * d * 0.7]);
+    }
+    const f = ctx.field(tallGrassTexture(1602), pts.length,
+      { w: 1.9, h: 1.9, wind: { amp: 0.11, freq: 0.95 } });
+    pts.forEach(([x, z], k) => f.set(k, x, z, 0.75 + gr() * 0.5, 0, false));
+  }
+
   /* ---- the swallows ------------------------------------------------ */
   const swallows = [
     { m: ctx.standee(swallowTexture(490), 1.6, 0.8, -70, 40), cx: -72, cz: 44, rx: 16, rz: 9, w: 0.42, ph: 0 },
@@ -320,12 +526,197 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   let flinch = 0;
   let stoneWasFlying = false;
   const cartRest = cart.rotation.z;
+  let goatBleat = 0;
+  let prevPx = 0;
+  let prevPz = 0;
+  let firstFrame = true;
+  const gateGap = barriers.gap('the-field-gate')!;
+  const inField = (x: number, z: number) =>
+    x >= FIELD.minX && x < FIELD.maxX && z >= FIELD.minZ && z < FIELD.maxZ;
 
-  return (dt: number, t: number, _px: number, pz: number) => {
+  return (dt: number, t: number, px: number, pz: number) => {
     // the swing: a slow pendulum nobody is sitting in
     swing.rotation.z = Math.sin(t * 0.9) * 0.07 + Math.sin(t * 0.37) * 0.03;
+    const walkerSpeed = firstFrame ? 0 : Math.hypot(px - prevPx, pz - prevPz) / Math.max(1e-3, dt);
+    firstFrame = false;
+    prevPx = px;
+    prevPz = pz;
+
+    /* ================================================================ *
+     * THE BULL — a local stake, never a fail state.
+     *
+     *   graze   head down, at home
+     *   watch   head up, facing you: it has noticed
+     *   charge  at you, faster than you can run, and it pulls up two
+     *           strides short every time
+     *   balk    stopped in your face, snorting; then again
+     *   fence   it ran at you and the field's edge held it. It stands
+     *           at the fence and looks; after a while it goes home
+     *   home    walking back
+     * ================================================================ */
+    const B = common.bull;
+    const bd = Math.hypot(px - B.x, pz - B.z);
+    const walkerIn = inField(px, pz);
+    const leash = Math.hypot(B.x - BULL_HOME.x, B.z - BULL_HOME.z);
+    B.t += dt;
+    const clampField = (x: number, z: number): [number, number] => [
+      Math.max(FIELD.minX + BULL_MARGIN, Math.min(FIELD.maxX - BULL_MARGIN, x)),
+      Math.max(FIELD.minZ + BULL_MARGIN, Math.min(FIELD.maxZ - BULL_MARGIN, z)),
+    ];
+    if (B.state === 'graze') {
+      if (walkerIn && bd < 26) { B.state = 'watch'; B.t = 0; }
+    } else if (B.state === 'watch') {
+      B.face = px < B.x ? -1 : 1;
+      if (!walkerIn || bd > 36) { B.state = 'graze'; B.t = 0; B.balks = 0; }
+      else if ((B.t > 1.1 || walkerSpeed > 1.2) && B.t > 0.35 && leash < 40) {
+        B.state = 'charge'; B.t = 0; B.stride = 0;
+        say('bull-snort');
+        /* THE RUN IS TAUGHT BY NECESSITY. App prints the one hint the
+         * game is allowed to print, now, if this player has never been
+         * told; Session 12's six-seconds-of-walking rule is what an old
+         * save still gets. */
+        window.dispatchEvent(new CustomEvent('inklands:run-now'));
+      }
+    } else if (B.state === 'charge') {
+      const speed = 8.4;
+      const ux = (px - B.x) / Math.max(1e-3, bd);
+      const uz = (pz - B.z) / Math.max(1e-3, bd);
+      B.face = ux < 0 ? -1 : 1;
+      /* IT NEVER TOUCHES YOU: it will not step inside two strides. */
+      const step = Math.min(speed * dt, Math.max(0, bd - 2.3));
+      const [nx, nz] = clampField(B.x + ux * step, B.z + uz * step);
+      const moved = Math.hypot(nx - B.x, nz - B.z);
+      B.stride += moved;
+      if (B.stride > 2.6) { B.stride = 0; say('bull-hooves'); }
+      B.x = nx; B.z = nz;
+      if (!walkerIn && moved < step - 1e-3) {
+        /* THE FENCE IS A RULE. The walker is out and the edge held it:
+         * it stops dead, and says so. */
+        B.state = 'fence'; B.t = 0;
+        say('bull-snort');
+      } else if (bd <= 2.35) {
+        B.state = 'balk'; B.t = 0; B.balks++;
+        say('bull-snort');
+      } else if (!walkerIn && bd > 14) {
+        B.state = 'fence'; B.t = 0;
+      } else if (leash > 44) {
+        B.state = 'home'; B.t = 0;
+      }
+    } else if (B.state === 'balk') {
+      B.face = px < B.x ? -1 : 1;
+      if (B.t > 1.1) {
+        if (walkerIn && bd < 30 && B.balks < 3) { B.state = 'charge'; B.t = 0; B.stride = 0; }
+        else if (walkerIn && bd < 30) { B.state = 'watch'; B.t = -3; B.balks = 0; }
+        else { B.state = 'home'; B.t = 0; B.balks = 0; }
+      }
+    } else if (B.state === 'fence') {
+      B.face = px < B.x ? -1 : 1;
+      if (walkerIn && bd < 26) { B.state = 'watch'; B.t = 0; }
+      else if (B.t > 6) { B.state = 'home'; B.t = 0; B.balks = 0; }
+    } else if (B.state === 'home') {
+      const hd = Math.hypot(BULL_HOME.x - B.x, BULL_HOME.z - B.z);
+      if (hd < 0.4) { B.state = 'graze'; B.t = 0; B.face = -1; }
+      else {
+        const k = Math.min(hd, 2.4 * dt);
+        B.face = BULL_HOME.x < B.x ? -1 : 1;
+        B.x += ((BULL_HOME.x - B.x) / hd) * k;
+        B.z += ((BULL_HOME.z - B.z) / hd) * k;
+        if (walkerIn && bd < 20) { B.state = 'watch'; B.t = 0; }
+      }
+    }
+    const bullPose = B.state === 'graze' ? 0 : B.state === 'charge' ? 2 : 1;
+    for (let p = 0; p < 3; p++) {
+      const m = bullPoses[p];
+      m.visible = p === bullPose;
+      m.position.set(B.x, ctx.groundY(B.x, B.z), B.z);
+      // the drawing faces right; a bull going west is the same bull mirrored
+      m.scale.x = B.face < 0 ? 1 : -1;
+      // a charge rocks the mass; at rest it is exactly still
+      m.rotation.z = B.state === 'charge' ? Math.sin(B.t * 18) * 0.05 : 0;
+    }
+
+    /* ================================================================ *
+     * NELL, AND THE GATE. She leans. She straightens when somebody
+     * comes up the road and settles when they are not who it is. When
+     * the bull comes at the fence she slams the gate — the first thing
+     * anybody in this world has done on purpose in front of the walker
+     * — and when the cart moves she stands, and faces wherever it went,
+     * from then on.
+     * ================================================================ */
+    const N = common.nell;
+    N.t += dt;
+    const cartMoved = Math.hypot(cartThing.x - cartThing.def.home.x, cartThing.z - cartThing.def.home.z) > 2;
+    const turned = knowledge.has('door:the-cart-turned-north');
+    const nearRoad = Math.hypot(px - NELL.x, pz - NELL.z) < 15 && px < HEDGE_X;
+    const coming = B.state === 'charge' || (B.state === 'fence' && B.t < 2.5);
+    const through = px < HEDGE_X - 0.6;
+    const elsewhere = Math.abs(pz - GATE.z) > 6;
+    const toHedge = B.x - HEDGE_X;
+    if (!common.gate.shut && coming && toHedge > 0
+      && ((through && toHedge < 16) || (elsewhere && toHedge < 5))) {
+      /* THE SLAM: once you are through and it is coming — never in your
+       * face — or, if you went over the stile or are being chased along
+       * the fence, when it is all but at the rails. Never with anybody
+       * standing in the gap: a gate shut on the walker would leave them
+       * inside a rule with no way out. */
+      const inGap = Math.abs(pz - GATE.z) < gateGap.r + 0.6 && Math.abs(px - HEDGE_X) < 2.2;
+      if (!inGap) {
+        common.gate.shut = true;
+        gateGap.open = false;
+        say('gate-slam');
+        N.pose = 2; N.t = 0; N.straightFor = 7;
+      }
+    }
+    if (N.pose === 2 && N.t > 0.7) { N.pose = 1; N.t = 0; }
+    else if (N.pose === 1) {
+      N.straightFor -= dt;
+      if (N.straightFor <= 0 && !cartMoved && !turned) { N.pose = 0; N.t = 0; }
+    } else if (N.pose === 0) {
+      if (cartMoved || turned) { N.pose = 1; N.straightFor = Infinity; }
+      else if (nearRoad && N.t > 2.5) { N.pose = 1; N.straightFor = 4; N.t = 0; }
+    }
+    gateOpen.visible = !common.gate.shut;
+    gateShut.visible = common.gate.shut;
+    // where her feet point: the crossroads, or the cart, or up the king's road
+    const nellFace = turned ? 1 : cartMoved ? (cartThing.x < NELL.x ? -1 : 1) : -1;
+    const nellOff = N.pose === 0 ? 0 : 0.45;
+    const nellGone = platform.land === 'meadow';
+    for (let p = 0; p < 3; p++) {
+      const m = nellPoses[p];
+      m.visible = p === N.pose && !nellGone;
+      m.position.x = NELL.x + nellOff * -nellFace;
+      m.scale.x = nellFace < 0 ? 1 : -1;
+    }
+
+    /* ================================================================ *
+     * THE GOAT — `company.ts`'s rule, drawn. It follows; it stops at
+     * the Common's edge; it bleats when it notices you and when the
+     * border takes you away from it.
+     * ================================================================ */
+    const wasFollowing = goat.following;
+    goat.tick(dt, px, pz, (x, z) => terrain.blockedAt(x, z) || barriers.blocks(x, z));
+    if (!wasFollowing && goat.following) say('goat-bleat');
+    if (goat.justStopped) say('goat-bleat');
+    goatBleat -= dt;
+    if (goat.following && goat.pose === 'trot' && goatBleat <= 0) { say('goat-bleat'); goatBleat = 9 + (t % 5); }
+    const gp = goat.pose === 'walk' || goat.pose === 'trot' ? 1 : goat.pose === 'stopped' ? 2 : goat.atBorder ? 3 : 0;
+    for (let p = 0; p < 4; p++) {
+      const m = goatPoses[p];
+      m.visible = p === gp;
+      m.position.set(goat.x, ctx.groundY(goat.x, goat.z), goat.z);
+      m.scale.x = goat.face < 0 ? 1 : -1;
+    }
 
     /* ---- THE CART, where the registry has it ------------------------ */
+    if (turned) {
+      // the first door: loaded, roped, turned north, at home, and never
+      // pushed again. The registry keeps it there.
+      cartThing.x = cartThing.def.home.x;
+      cartThing.z = cartThing.def.home.z;
+      cartThing.vx = 0; cartThing.vz = 0;
+    }
+    cart.visible = !turned;
+    cartLoaded.visible = turned;
     cart.position.set(cartThing.x, ctx.groundY(cartThing.x, cartThing.z), cartThing.z);
     // a cart going west is the same cart drawn the other way round
     if (Math.abs(cartThing.vx) > 0.3) cart.scale.x = cartThing.vx < 0 ? -1 : 1;
@@ -482,7 +873,31 @@ export const buildMeadow: RegionBuilder = (ctx) => {
     const near = Math.max(0, Math.min(1, (pz - 12) / 22));
     const far = 1 - Math.max(0, Math.min(1, (pz - 136) / 32));
     vistaMat.opacity = 0.8 * near * far;
+    /* The three new lures fade on the same law as the keep, and a
+     * little sooner going north — they are further off than it and go
+     * first. The mill's smoke leans on the wind. */
+    /* AND THEY ARE THE COMMON'S: a lure is a thing you see from the
+     * crossroads, and from the Downs' crease the towers were standing
+     * at the left of a protected frame in a land that never asked for
+     * them. They let go over the twelve units beyond the Common's east
+     * and west edges. */
+    const inX = Math.min(1, Math.max(0, (48 - px) / 12 + 1), Math.max(0, (px + 138) / 12 + 1));
+    for (const l of lures) l.mat.opacity = l.base * Math.max(0, Math.min(1, (pz - 18) / 22)) * far * inX;
+    millSmoke.rotation.z = Math.sin(t * 0.31) * 0.03 - 0.02;
+    maypole.rotation.z = Math.sin(t * 0.7) * 0.012;
   };
+};
+
+/** NELL'S CARD — both doors visible before either is taken, each with
+ *  a cost, and nothing anywhere says which was right. Door one is the
+ *  wait's answer; door two is the cart, yours, and Nell has a cart at
+ *  a border. The card is offered once. */
+const NELL_CARD: NonNullable<WorldPOI['choice']> = {
+  body: 'you came back up the road with the fourth name, and for once she does not settle. the cart is behind her. it has been almost loaded for years, and it was only ever waiting on which way it was going.',
+  options: [
+    { label: 'TELL HER THE FOURTH NAME', door: 'door:the-cart-turned-north' },
+    { label: 'KEEP IT, AND PUSH THE CART YOURSELF', door: 'door:the-cart-pushed' },
+  ],
 };
 
 export const MEADOW_POIS: WorldPOI[] = [
@@ -559,6 +974,9 @@ export const MEADOW_POIS: WorldPOI[] = [
      * cart is. */
     get x() { return things.get('hay-cart')!.x; },
     get z() { return things.get('hay-cart')!.z; },
+    // loaded and turned north, it is not pushed again
+    get enabled() { return !knowledge.has('door:the-cart-turned-north'); },
+    set enabled(_v: boolean) { /* the door decides */ },
     radius: 4.6,
     prompt: 'PUSH THE CART',
     touch: (px: number, pz: number) => {
@@ -585,11 +1003,51 @@ export const MEADOW_POIS: WorldPOI[] = [
     touch: () => { things.pickUp('fist-stone'); },
   } as unknown as WorldPOI,
   {
-    x: 12, z: 63, radius: 6, label: 'THE LONG FENCE',
+    x: 12.6, z: 62.4, radius: 4.2, label: 'THE LONG FENCE',
     prompt: 'LEAN ON THE STILE',
     note: {
       title: 'the long fence',
-      body: 'a fence with one stile, one gate, and several strong opinions about which side is the field. the hay cart has been almost done being loaded for as long as anyone at this gate can remember.',
+      body: 'a fence with one stile, one gate, and several strong opinions about which side is the field. the bull is on the field side. the stile is for people who have met it.',
+    },
+  },
+  {
+    /* NELL (Session 16, `THE-WAITS` §9, `THE-FUN-PASS` §6). Her place
+     * is the gate. Before you have the fourth name it is a note in the
+     * plainest register in the game; with it, it is a card with two
+     * doors, and it is offered once. The `choice` is a getter so the
+     * card does not exist until the name does. */
+    /* Reachable from both sides of the fence — the road, where you meet
+     * her, and the field, where the camera can see her — so the reach
+     * is six, centred on where she stands. */
+    x: HEDGE_X - 1.2, z: 82.2, radius: 6, label: 'THE FIELD GATE',
+    get prompt() {
+      const done = knowledge.has('door:the-cart-turned-north') || knowledge.has('door:the-cart-pushed');
+      if (!done && knowledge.has('fact:the-timetable')) return 'TELL HER THE FOURTH NAME';
+      return 'LEAN ON THE GATE WITH HER';
+    },
+    get choice() {
+      if (!knowledge.has('fact:the-timetable')) return undefined;
+      return NELL_CARD;
+    },
+    note: {
+      title: 'the field gate',
+      body: () => {
+        if (knowledge.has('door:the-cart-turned-north')) {
+          return 'the cart is loaded and roped and its shafts point up the king\'s road. it has not moved. she is not leaning on anything any more, and she looks at it the way you look at a bag by the door.';
+        }
+        if (knowledge.has('door:the-cart-pushed')) {
+          return 'the cart is wherever you left it. she can see it from here. she has not gone to fetch it, and she is not going to, and she has stopped watching the road.';
+        }
+        return 'nell. she leans here most days and watches whoever comes up the road: straightens, and settles again. the cart behind her has been nearly loaded for as long as the fence has been a fence. it will be loaded, she says, the day she knows which way it is going, and three of the four names on the signpost she could go to tomorrow.';
+      },
+    },
+  } as unknown as WorldPOI,
+  {
+    x: -95, z: 101, radius: 7, label: 'THE FAIR GROUND',
+    prompt: 'READ THE BOARD',
+    note: {
+      title: 'the fair ground',
+      body: 'the board says the fair, and under that it says next, and under that it has said several dates, each rubbed out with more care than the last. the ring in the grass is where the roundabout goes. nobody has taken the maypole down, because taking it down is what you do after.',
     },
   },
   {

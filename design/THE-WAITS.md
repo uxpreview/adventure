@@ -475,6 +475,22 @@ could have.
 *The Common is the first land and it resolves from the furthest corner
 of the sheet. That is on purpose.*
 
+**BUILT, Session 16, with two doors from the start** (`THE-FUN-PASS`
+§6). She is at the gate in the field's west hedge, in three drawings:
+leaning, straight, reaching. She straightens for whoever comes to the
+gate and settles again; she shuts the gate on the bull; and when the
+cart moves she stands, steps off the post and faces wherever it went.
+Without the fourth name the gate is a note. With `fact:the-timetable`
+it is a card, once: **TELL HER THE FOURTH NAME** — the cart is loaded,
+roped and turned north at its home, drawn from behind, never pushed
+again (`door:the-cart-turned-north`, `WAIT_ANSWERS.meadow`) — or
+**KEEP IT, AND PUSH THE CART YOURSELF** (`door:the-cart-pushed`): the
+cart is yours, it stops at any border, she does not follow it, and she
+has stopped watching the road. Nothing says which was right. Only the
+first door answers the wait; the second leaves her platform empty,
+which is what having had the option and a cart at a border looks like.
+`WAITS_FOR_THE_LINE` is six.
+
 ---
 
 ## WAITS & WORK

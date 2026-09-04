@@ -1,181 +1,153 @@
-# PROMPT — Session 16: THE FIRST HOUR
+# PROMPT — Session 17: LIFE
 
 You are continuing INKLANDS in `uxpreview/adventure`. Read, in order:
-**`design/THE-FUN-PASS.md` in full** (the owner's brief; binding), §11
-twice (the opening the owner chose), `design/specs/controls.md` (the
-verbs, as built), `design/QUESTS.md` §3 and §8, `design/THE-WAITS.md`
-§9 (NELL), `design/critiques/critique-story-2.md` MANDATORY 1 (the
-co-walker), `design/specs/the-common.md` with its Session 15 addendum,
-then `PLAN.md`, `README.md`, `SESSIONS.md`. **Play sheet first:**
-`design/play-sheets/session-15.md` is what the owner was handed; if
-they have played it, their verdict is in `SESSIONS.md` above Session
-15's entry and it governs this session. If they have not, the sheet's
-questions are still open and you build on the assumption that the
-verbs are right until told otherwise.
+**`design/THE-FUN-PASS.md` in full** (the owner's brief; binding), §9
+twice (the four multipliers, which are this session), §3 (the bar for a
+playable land — seven things, and item 5 is *five idle motions and
+three that respond*, per land), `design/specs/the-common.md` with its
+Session 15 and 16 addenda (the one land that has all seven, as the
+model), `src/world/events.ts` and `src/world/company.ts` (the two
+systems this session multiplies), then `PLAN.md`, `README.md`,
+`SESSIONS.md`. **Play sheet first:** `design/play-sheets/session-16.md`
+is what the owner was handed; if they have played it, their verdict is
+in `SESSIONS.md` above Session 16's entry and it governs this session.
+If they have not, the sheet's questions are still open — the bull's ten
+seconds, the goat's stop, the lures on a phone — and you build on the
+assumption that the opening is right until told otherwise.
 
 ---
 
-## 0. THE VERBS EXIST. THE FIRST HOUR DOES NOT.
+## 0. THE FIRST HOUR EXISTS. THE OTHER ELEVEN LANDS ARE STILL DIORAMAS.
 
-Session 15 built the systems: touch, carry, sit, throw on one key; the
-choice card; the scheduled-event clock; the things registry. It proved
-them with a well, a cart, a stone, a swing, a king and a flock. **It
-did not touch the first minute**, on purpose, because the ordering rule
-says systems land before the lands are re-opened, and the Common is
-the land that is about to be re-opened hardest.
+Session 16 built the opening: a bull, a gate, a goat that stops at the
+border, four lures, districts, Nell with two doors. It is one land with
+all seven of §3's things in it. The owner's words, which this session
+exists to answer:
 
-The owner's words, which this session exists to answer:
+> *"The parts between sections feel empty."*
+> *"More interaction and motion."*
+> *"Think of aliens, Vikings, UX designers, surfers, baristas, monsters,
+> other types of animals, etc."*
 
-> *"The starting point is bland and expected but also confuses users
-> because they don't know where to go or what to do."*
-
-And the decision, made 2026-09-01 and not re-opened without them:
-**THE BULL + THE FOUR LURES + THE COMMON AS THE PLATEAU**, with the
-cart as the first toy and the goat as the second co-walker.
+The cast (§10) is Sessions 19 and 20. **This session is the four
+multipliers in §9** — the things that raise all twelve lands at once —
+and it is bigger than it was on the old ladder, on purpose.
 
 ---
 
 ## 1. THE JOB
 
-### 1. THE BULL (`THE-FUN-PASS` §11, candidate 5)
+### 1. UNNAMED INHABITANTS, WITH ROUTINES (§9 item 1)
 
-You wake in long grass. A bull is already looking at you. You run —
-taught by necessity, in ten seconds, which retires Session 12's *hold
-shift to run* hint for a fresh page — it chases, **Nell holds the field
-gate and slams it, and the bull stops at the fence.** You are standing
-at the crossroads, breathing, with everything visible. Funny, and
-frightening for exactly ten seconds.
+Five to twelve per land, none of them named, all of them somewhere at
+a given hour. Shutters that open. A lamplighter four lamps behind.
+Children on the green. A delivery that finds the stall shut. **On
+`events.ts`, every one of them** — *at this hour, in this place, this
+happens* — so that a land not built when the routine started still
+draws it right when the walker arrives. The named cast stays exactly as
+it is. And **the hand-rolled routines** (Brim's lamps, the shelter's
+light, Amos's night walk, Joan's working day) move onto `events.ts`
+this session, which was owed from 15.
 
-What it needs: a bull (the first creature of the Common, `THE-FUN-PASS`
-§3 item 1); a chase that is a local stake and not a fail state (§2.3 —
-it never touches you; it stops at the fence because the fence is a
-rule); Nell at the gate, moving for the first time; and a spawn point
-in the long grass rather than at the signpost. **The title poster's
-verdict is held on a frame that includes the spawn**: say which
-framing moves and by how much, re-shoot the title at both hours, and
-re-earn the verdict (`QUALITY-BAR` §3, permission to regress).
+### 2. THE ANIMALS (§9 item 2)
 
-### 2. THE FOUR LURES (candidate 2)
+The cheapest life per byte in any world. A fox and bats at night; seals
+on the sandbar; cows in the Downs (the bull is the Common's; the Downs
+gets a herd that parts); a heron at the tarn; pigeons in Greyline that
+lift as one; crabs on the wrack; a cat on a wall that wakes if you run
+past; rooks at Greyweather and on the scarecrow; something under the
+Wide Blue that surfaces once at dusk. **At least one creature per land
+that reacts to the walker** (§3 item 1), and **the second co-walker** —
+`critique-story-3` RECOMMENDED: not another goat, on a road the goat
+did not take. A dog on the Downs' lane that stops at the Downs' edge is
+the obvious one, and `company.ts` is built for it: one `Follower` and
+four drawings.
 
-The castle on the ridge, smoke from the mill, the glint of the sea,
-the city's towers — **all four in frame from the crossroads**, so the
-signpost points at things you can already see. The keep vista already
-does one of the four (`meadow.ts`, false perspective). Build the other
-three the same way: pencil-pale, fogged, and fading before the walker
-can catch them working. The camera is due north and the frame is
-68.6° across on desktop and 26.5° in portrait: **measure which lures
-portrait can hold, and say so.** A lure that only works in landscape
-is not done.
+### 3. WEATHER (§9 item 3)
 
-### 3. THE COMMON AS THE PLATEAU (candidate 10)
+Rain (the smudge pass runs the drawing, and it is nearly free); wind
+that turns the mill and fills the sails; fog that closes the vistas —
+**and the four lures with them, which is a thing the Common's opening
+now depends on**; a storm once in a while at night. Weather is a
+system, not a land's: one clock, like the day, readable by anything.
 
-One of everything, before the world opens. Session 15 put in a thing
-to shout down, a thing to push, a thing to throw, a thing to sit on
-and a stone. This session adds: **an animal** (the bull, and the goat
-that follows you — the second co-walker, `critique-story-2`
-MANDATORY 1, which stops at the border), **one choice card** (Nell's,
-below), **one stranger's opening beat** (S1 or S2's Common end), and
-**the Common's districts** as the first land to have them — the
-crossroads, the river bend, the fair ground (new) and the well
-(`THE-FUN-PASS` §7). Districts are a `DISTRICTS` layer under the
-twelve rects in `layout.ts`, a card that can say a district's name
-under its land's, and the map. Build the layer generally; populate it
-for the Common only.
+### 4. NIGHT AS A DIFFERENT GAME (§9 item 4)
 
-### 4. NELL'S WAIT, WITH TWO DOORS
+Night is a colour grade today. It should be where the frightening
+content lives (WAITS & THE UNSEEN: the deep pines when the pine-tick
+stops; the sea at the torn edge; the moat pool), where lit windows are
+navigation, and where certain people and animals only exist. Amos and
+Kay already do. **The bull lies down at dusk and gets up at dawn** —
+one `events.register` call, as Session 15 said.
 
-`THE-WAITS` §9. She leans on the field gate watching the road, already
-drawn (the doodle-folk at 26.6, 63.8). Door one: bring the fourth name
-from the timetable and the cart is loaded and turned north. Door two
-(`THE-FUN-PASS` §6): **push the cart yourself, down any of the other
-three roads; it stops at the border; Nell does not follow it.** The
-cart is already pushable and already stops at the border
-(`src/world/things.ts`). What is new is that Nell notices: she
-straightens when the cart moves, and where it ends up is what she is
-looking at from then on. `WAIT_ANSWERS.meadow` goes in, and
-`WAITS_FOR_THE_LINE` goes to six.
+### 5. THE PLAY SHEET, AND `check-fields` EXTENDED TO ROUTINES
 
-### 5. THE CO-WALKER AS A RULE OF THE WORLD
-
-`critique-story-2` MANDATORY 1: Act I's second and third facts have one
-optional teacher between them. The fix is a co-walker who stops at the
-border — the goat (from the Penwood, on the Common for the opening) —
-so the rule *nobody crosses a border but the walker* is SEEN in the
-first ten minutes rather than read in the third hour. It follows; it
-stops dead at the Brim gate; you go on. That is I.7's repetition and it
-arrives whichever road you take.
-
-### 6. THE PLAY SHEET, AND THE STORY GATE ON ACT I
-
-Ten minutes: wake, run, the gate slams, look at four things, pick a
-road, be followed, be left at the border. The story gate re-run on
-Act I (`design/critiques/critique-story-3.md`): can a reader who has
-only played the first hour say what the Common believes? Log it.
-**Say in the log that the play gate was handed over and not run.**
+Ten minutes at three hours of the day. And `tools/check-fields.mjs`
+drives at every creature that changes posture; extend it to every
+routine that changes drawing, because the owner found the last such
+bug and no contact sheet could have.
 
 ---
 
-## 2. WHAT SESSION 15 LEFT YOU
+## 2. WHAT SESSION 16 LEFT YOU
 
-- **`src/world/things.ts`** — pushable and carriable things, one slot,
-  the border clamp. The cart is `hay-cart`; the stone is `fist-stone`.
-  A thing has a `home` and the morning puts lost things back. A new
-  thing is one `register` call and a mesh the land moves.
-- **`src/world/events.ts`** — *at this hour, in this place, this
-  happens.* `events.register`, `events.progress(id)` (a pure function
-  of the hour), `happening.ids`. The drove and the Common's morning are
-  registered at module scope in their lands' files. **A bull that gets
-  up at dawn and lies down at dusk is one register call.**
-- **`WorldPOI`** (`regions/index.ts`) — `touch`, `sit`, `choice`,
-  `weak`, a `prompt` that may be a function, a `note.body` that may
-  be a function. App dispatches choice → note → touch → sit.
-  **Nell's card is a `choice` on her POI**, exactly like the king's.
-- **`src/ui/UI.ts` `openChoice`** — the card, measured at every width,
-  asserted in `shoot-mobile`. The longest door in the game is LEAVE HIM
-  WHERE HE LANDED; if Nell's is longer, `shoot-mobile` will tell you.
-- **`Character.hold` / `setSitting`** — the hand and the pose.
-- **`tools/check-verbs.mjs`** — the law around the verbs. It shoves the
-  cart at the border; it will shove it wherever you move it.
-- **`tools/shoot-session15.mjs`** — the pattern for a proofs sheet:
-  `do` scripts on the harness, both states, both viewports.
-- **The POI constructor no longer spreads its definition**, so a live
-  getter stays live. The rowboat's prompt follows the boat now, which
-  it had not done since Session 6. Nell's cart-watching can be a getter.
-- **`fact:the-place-kept` is taught by sitting** and by nothing else,
-  and was taught by nothing at all before Session 15. Check every wait's
-  id is actually learned somewhere; that one was not.
+- **`src/world/company.ts`** — the co-walker rule. `new Follower({ rect,
+  home, gap, notice, walk, trot })`, `tick(dt, px, pz, blocked)`, poses
+  `stand | walk | trot | stopped`, `justStopped` on the frame the border
+  holds it. The goat is the instance; the drawing is the land's.
+- **`src/world/barriers.ts`** — fences that refuse a foot, with gaps
+  that open and shut. App asks it beside the terrain. **Every barrier
+  is a drawing standing in the same place.**
+- **`layout.DISTRICTS`, `districtAt`** — the layer is general; the
+  Common is populated. The card and the map read it. Session 18 fills
+  the other eleven; if a routine this session wants a district to be in,
+  add the district.
+- **`layout.POSTER` and `SPAWN`** are two places now. The title stands at
+  the poster; SET OUT wakes you in the field, through a blink of paper.
+  A saved walk opens where it was left.
+- **The bull** in `meadow.ts` is a six-state machine on `common.bull`;
+  its rect is `FIELD`; its stop at the hedge is a clamp before the
+  move. **It grazes all night today**; §9 item 4 is one register call.
+- **The four lures** stand in every north-facing framing of the Common
+  and are measured (`tools/check-lures.mjs`). **Fog that closes the
+  vistas must close them** — they are `fog = false` standees and fade
+  on the walker's z; a weather system needs a hand on their opacity.
+- **Nell** watches the cart through a getter. Her card is offered only
+  with `fact:the-timetable`; `WAITS_FOR_THE_LINE` is six.
+- **`tools/shoot-session16.mjs`** is the pattern for a stateful proofs
+  sheet: `fresh: true` on a framing re-opens the page, because the
+  opening is stateful and a bull that has already charged is a
+  different picture.
+- **The gates that moved**, and by how much: `SESSIONS.md` Session 16
+  has the `diff-sheets` numbers; the lures are the reason, and
+  `critique-art-10.md` re-earned the verdict on the new frame.
 
 ---
 
 ## 3. THREE THINGS THAT CONSTRAIN THE WHOLE SESSION
 
-1. **NOBODY CROSSES A BORDER BUT THE WALKER.** The bull stops at the
-   fence. The goat stops at the gate. The cart stops at the edge. It is
-   the engine of the ending and this session is the first time the
-   player SEES it.
-2. **THE FIRST MINUTE HOLDS A VERDICT AND YOU ARE ABOUT TO MOVE IT.**
-   Permission to regress is written (`QUALITY-BAR` §3). It is
-   permission to measure, not to skip: `diff-sheets` on every Common
-   framing, the title re-shot at both hours, the numbers in the log,
-   and the verdict re-earned in a critique.
-3. **FUNNY, AND FRIGHTENING FOR EXACTLY TEN SECONDS.** The Common is
-   WAITS & THE UNSEEN (§4: frightening), and the bull is the first
-   local stake in the game (§2.3). No villain, no fail state, no timer.
-   Fear is a sound, a distance, and a thing that moved. It never
-   touches you.
+1. **IT FIRES WHETHER OR NOT THE WALKER IS THERE.** Every routine is a
+   pure function of the hour (`events.progress`). A routine that only
+   runs when somebody is watching is a diorama with a motor.
+2. **NOBODY CROSSES A BORDER BUT THE WALKER — and birds do** (§9's one
+   free thematic layer). Every inhabitant and every animal is drawn in
+   its land's ink; the rooks cross and nobody looks up. Record it, do
+   not fix it.
+3. **A PROTECTED FRAMING MAY MOVE WHEN THE LAND INSIDE IT IS THE
+   SCOPE** (`QUALITY-BAR` §3). This session opens every land. Say which
+   framings moved and by how much; `diff-sheets` reports; the verdicts
+   are re-earned in a critique, not assumed.
 
 ---
 
 ## 4. THE GATES THAT ARE THE OWNER'S
 
-1. **THE PLAY GATE** — Session 15's sheet may have come back. Read it
-   first. This session's sheet is the first hour.
-2. **THE EAR GATE** — fifty-eight WAVs in `out/sound/`, unheard. The
-   bull, the gate slamming and the goat all go in.
-3. **THE FEEL GATE** — owed since Session 12, plus sitting since 15,
-   plus the run taught by a bull. `check-camera` still has to pass; the
-   chase is the first time anything in the game asks the walker to run
-   somewhere specific, and the camera may not help by turning.
+1. **THE PLAY GATE** — Session 16's sheet may have come back. Read it
+   first. This session's sheet is a day in the life of three lands.
+2. **THE EAR GATE** — sixty-three WAVs in `out/sound/`, unheard. Every
+   animal and every weather adds a voice.
+3. **THE FEEL GATE** — owed since Session 12, plus sitting, plus the run
+   taught by a bull. `check-camera` still has to pass.
 
 ---
 
@@ -188,43 +160,49 @@ outside `palette.ts` invents a colour; all marks via `src/engine/ink.ts`;
 resting bearing is due north, walking does not turn the frame, and a
 stopped walker (seated or standing) is always in the shipped
 composition**; the medium is the style and never the subject; **nobody
-crosses a border but the walker — and no thing does either**; 60fps
-mobile with DPR capped at 2; the chrome is shot too, on the desktop as
-well as the phone, and the choice card is chrome; build green before
-every push; the walker has two dots and nobody else has a face; nothing
-reads as an array; nothing is generated, ever; no fifth reward; a
-number may record where the player has been and may never grade what
-they did, and the ending stays absolute; portrait is judged, not
-checked; looking is the first verb and not the only one; a choice card
-is allowed and a dialogue wheel is not; local stakes are allowed and a
-villain is not; districts are allowed and more sheet is not; the world
-may point the way and may never say the turn; a protected framing may
-move when the land inside it is the scope, measured. End the session:
-pushed, `SESSIONS.md` handoff updated, verdicts logged, **play sheet
-written**.
+crosses a border but the walker — and no thing does either, and no
+companion**; 60fps mobile with DPR capped at 2; the chrome is shot too,
+on the desktop as well as the phone, and the choice card is chrome;
+build green before every push; the walker has two dots and nobody else
+has a face; nothing reads as an array; nothing is generated, ever; no
+fifth reward; a number may record where the player has been and may
+never grade what they did, and the ending stays absolute; portrait is
+judged, not checked; looking is the first verb and not the only one; a
+choice card is allowed and a dialogue wheel is not; local stakes are
+allowed and a villain is not; districts are allowed and more sheet is
+not; the world may point the way and may never say the turn; a
+protected framing may move when the land inside it is the scope,
+measured; **every barrier is a drawing, and there are no invisible
+walls**. End the session: pushed, `SESSIONS.md` handoff updated,
+verdicts logged, **play sheet written**.
 
 ## Standing debts, carried forward
 
 - **THE ENDING HAS NO CONSEQUENCE THAT LASTS** — Session 21, owner's call.
-- **THE PAPER PLANE** — Session 18; the throw exists now and it is the
+- **THE PAPER PLANE** — Session 18; the throw exists and it is the
   plane's first half.
-- **The rowboat's first-meeting composition at THE RIVER MOUTH** — eight
-  gates have passed it. (Its prompt follows the boat now, at least.)
+- **The rowboat's first-meeting composition at THE RIVER MOUTH** — nine
+  gates have passed it.
 - **THE HARROW DOWNS' stooked field**, **THE PENWOOD's east arc**, **THE
   BLEACH FLATS' `WHERE THE ROAD STOPS`**, **GREYLINE CITY's THE HOLLOW**.
 - **Holt's lit window** is one warm pixel at forty units.
-- **Brim Square is full**, and Session 17 puts a crowd in it.
+- **Brim Square is full**, and this session puts a crowd in it.
 - **READ THE PROCLAMATION** and **THE 8:15 STOP's label** in the SKYLINE.
 - **`critique-story-2` RECOMMENDED 2** — Session 22's.
-- **The hand-rolled routines** (Brim's lamps, the shelter, Amos, Joan)
-  are not on `events.ts` yet — Session 17 moves them.
-- **The well's note is gone** (it was a description of the toy). If the
-  owner misses it, the answer is a sign on the well, not a note.
+- **The oaks' argument going by while you sit** (`QUESTS` §8, L5) —
+  Session 16 did not build it; it is a routine, and it is this
+  session's.
+- **The Common's fifteen-second rule is not measured** — Session 18's
+  tool; the Common is the first land it should walk.
+- **The bull's chase is heard more than seen on a phone**: at 13° off
+  the lens in portrait the bull is at the frame's edge at the wake and
+  behind it for most of the run. The east–west chase was the fix for
+  desktop; the owner's phone decides whether it is enough.
 
 ## Not this session's job
 
 - **Districts in the other eleven lands** — 18.
-- **Life** (unnamed inhabitants, weather, night) — 17.
-- **Second doors for the other ten waits** — 19 to 21.
+- **The twenty-eight encounters and the fifteen-second tool** — 18.
 - **The cast** — 19 and 20. Not one Viking this session.
+- **Second doors for the other ten waits** — 19 to 21.
 - **THE JUROR** — last.

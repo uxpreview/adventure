@@ -83,7 +83,84 @@ export function regionAt(x: number, z: number): RegionSpec {
   return SPEC_BY_ID.ocean;
 }
 
-export const SPAWN = { x: -45, z: 58 };
+/* ================================================================== *
+ * WHERE YOU WAKE, AND WHERE THE POSTER STANDS — two places, since
+ * Session 16, and they used to be one.
+ *
+ * For fourteen sessions the walker woke at the signpost, which is
+ * exactly where the title camera stands, so THE SHOT and the poster
+ * and the spawn were one composition. The owner's verdict on it
+ * (`THE-FUN-PASS` §0): *"bland and expected, and it confuses users
+ * because they don't know where to go or what to do."* The opening
+ * the owner chose (§11: THE BULL) wakes you in long grass with a bull
+ * already looking at you, and the long grass is the field beyond the
+ * long fence, sixty units east of the poster.
+ *
+ * So the poster keeps its ground and the walker does not. `POSTER` is
+ * where the title camera stands on a fresh page — the frame six WOWED
+ * verdicts were awarded on, to the unit — and `SPAWN` is where SET
+ * OUT puts you: in the wheat at the field's east end, with the bull
+ * at fourteen units and the gate thirty-six to the west. The cut between them is a blink of paper (`App`).
+ * A saved walk still opens where it was left.
+ * ================================================================== */
+export const POSTER = { x: -45, z: 58 };
+export const SPAWN = { x: 24, z: 90 };
+
+/* ================================================================== *
+ * DISTRICTS — more regions, no more sheet (`THE-FUN-PASS` §2.4, §7).
+ *
+ * The twelve rects stay the shared truth of terrain, map, audio and
+ * collision, and they are not touched. Under them, a layer: two to
+ * four named sub-rects per land, each with a reason, so that crossing
+ * a land is three arrivals instead of one. A district has a card (its
+ * name is written under its land's), a place on the map, and nothing
+ * else — no wash, no step zone, no mood. It is a NAME for a piece of
+ * ground, and a name is the cheapest thing in this game and the most
+ * load-bearing.
+ *
+ * Districts need not tile a land. The ground between them is the
+ * land's own, and the card says so by saying nothing.
+ *
+ * Session 16 builds the layer and populates THE COMMON only, because
+ * the Common is the land being re-opened; Session 18 fills the other
+ * eleven from the first cut in §7.
+ * ================================================================== */
+export type District = {
+  land: RegionId;
+  /** Readable, like everything else: `the-crossroads`. */
+  id: string;
+  /** Written under the land's name on the card, and on the map. */
+  name: string;
+  rect: Rect;
+};
+
+export const DISTRICTS: District[] = [
+  /* THE COMMON — four, from the places that already exist and one new.
+   * The crossroads is the spawn's whole first minute; the well is the
+   * first landmark off the road; the river bend is the south-east
+   * corner where the river clips the land; and THE FAIR GROUND is new
+   * — the open grass south-west of the crossroads, which was a
+   * composed void and is now a place with a reason: it is where the
+   * fair is held, and the fair is not on. */
+  { land: 'meadow', id: 'the-crossroads', name: 'THE CROSSROADS',
+    rect: { minX: -62, maxX: -24, minZ: 50, maxZ: 80 } },
+  { land: 'meadow', id: 'the-well', name: 'THE WELL',
+    rect: { minX: -84, maxX: -48, minZ: 24, maxZ: 50 } },
+  { land: 'meadow', id: 'the-fair-ground', name: 'THE FAIR GROUND',
+    rect: { minX: -128, maxX: -62, minZ: 78, maxZ: 118 } },
+  { land: 'meadow', id: 'the-river-bend', name: 'THE RIVER BEND',
+    rect: { minX: 30, maxX: 60, minZ: 94, maxZ: 120 } },
+];
+
+/** The district at (x, z), if any. The list is authored so that no
+ *  two overlap; the first match would win if one day they did. */
+export function districtAt(x: number, z: number): District | null {
+  for (const d of DISTRICTS) {
+    const r = d.rect;
+    if (x >= r.minX && x < r.maxX && z >= r.minZ && z < r.maxZ) return d;
+  }
+  return null;
+}
 
 /* ------------------------------------------------------------------ *
  * THE COAST. Lives here rather than in terrain.ts because the height

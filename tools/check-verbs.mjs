@@ -219,6 +219,109 @@ const r = await page.evaluate(() => {
     promptAfter: I.promptText(),
     cardAgain: (() => { I.press(); I.step(1 / 60, 5); const o = I.choiceOpen(); return o; })(),
   };
+  /* ---- 7. THE FIRST HOUR (Session 16) ------------------------------ */
+  /* The opening on a fresh page: the bull looks, charges, never touches;
+   * the walker runs through the gate; Nell shuts it; the bull stops at
+   * the fence — and the fence is a rule for the walker too. Then the
+   * goat follows, and stops at the Common's edge on two roads. */
+  {
+    const C = I.common;
+    // the plinth's note is still open from the last press: put it back
+    if (document.querySelector('.note-veil.show')) { I.press(); I.step(1 / 60, 5); }
+    C.reset();
+    I.setHour(12, false);
+    I.save.data.taughtRun = false;
+    I.goto(24, 90);
+    I.setTime(0);
+    I.step(1 / 60, 6);
+    const o = { wake: { bull: C.bull.state, gate: C.gate.shut, taughtRun: I.save.data.taughtRun } };
+    settle(1.6);
+    o.afterStanding = C.bull.state;
+    o.taughtByTheBull = I.save.data.taughtRun;
+    // run for the gate, the way a player who saw it would
+    I.drive(-1, -0.22, 1);
+    let nearest = 1e9;
+    let touched = false;
+    let slamAt = -1;
+    for (let f = 0; f < 420; f++) {
+      I.step(1 / 60, 1);
+      const d = Math.hypot(I.char.pos.x - C.bull.x, I.char.pos.z - C.bull.z);
+      nearest = Math.min(nearest, d);
+      if (d < 1.2) touched = true;
+      if (slamAt < 0 && C.gate.shut) slamAt = f / 60;
+    }
+    I.release();
+    settle(1.5);
+    o.chase = { nearest: +nearest.toFixed(2), touched, slamAt: +slamAt.toFixed(2), walker: { x: +I.char.pos.x.toFixed(1), z: +I.char.pos.z.toFixed(1) } };
+    o.bullAtFence = { state: C.bull.state, x: +C.bull.x.toFixed(2), hedgeX: -12 };
+    o.nell = C.nell.pose;
+    o.hint = document.querySelector('.hint')?.classList.contains('show') ?? false;
+    // the fence refuses the walker everywhere but the stile now
+    I.goto(20, 62);
+    settle(0.2);
+    I.drive(0, 1, 0);
+    settle(2.5);
+    I.release();
+    o.fenceHolds = { z: +I.char.pos.z.toFixed(2) };
+    I.goto(12.6, 62);
+    settle(0.2);
+    I.drive(0, 1, 0);
+    settle(2.5);
+    I.release();
+    o.stilePasses = { z: +I.char.pos.z.toFixed(2) };
+    // the goat: it falls in, and it stops at the Brim gate
+    C.reset();
+    at(-24, 62);
+    I.drive(-1, -0.4, 0);
+    settle(3);
+    I.release();
+    o.goatFollows = { following: C.goat.following, d: +Math.hypot(C.goat.x - I.char.pos.x, C.goat.z - I.char.pos.z).toFixed(1) };
+    at(-45, 30);
+    C.goat.x = -45; C.goat.z = 34; C.goat.following = true;
+    I.drive(0, -1, 1);
+    settle(12);
+    I.release();
+    settle(1);
+    o.goatNorth = { walkerZ: +I.char.pos.z.toFixed(1), goatZ: +C.goat.z.toFixed(2), minZ: C.goat.def.rect.minZ, atBorder: C.goat.atBorder };
+    // and at the east edge, on the other road
+    at(20, 50);
+    C.goat.x = 20; C.goat.z = 54; C.goat.following = true; C.goat.atBorder = false;
+    I.drive(1, 0, 1);
+    settle(12);
+    I.release();
+    settle(1);
+    o.goatEast = { walkerX: +I.char.pos.x.toFixed(1), goatX: +C.goat.x.toFixed(2), maxX: C.goat.def.rect.maxX, atBorder: C.goat.atBorder };
+    // Nell's card, and the door that answers her wait
+    C.reset();
+    I.setHour(12, false);
+    at(-16, 78);
+    settle(0.5);
+    o.nellPromptBefore = I.promptText();
+    I.press();
+    I.step(1 / 60, 5);
+    o.nellCardBefore = I.choiceOpen();
+    o.nellNoteBefore = !!document.querySelector('.note-veil.show:not(.choice-veil)');
+    I.press(); // closes the note
+    I.step(1 / 60, 5);
+    I.learn('fact:the-timetable');
+    I.goto(-16, 78);
+    settle(0.5);
+    o.nellPromptWithName = I.promptText();
+    I.press();
+    I.step(1 / 60, 5);
+    o.nellCard = { open: I.choiceOpen(), doors: [...document.querySelectorAll('.choice-btn')].map((b) => b.getAttribute('aria-label')) };
+    I.choose(0);
+    I.step(1 / 60, 30);
+    const cart = I.things.get('hay-cart');
+    o.doorOne = {
+      turned: I.knowledge.has('door:the-cart-turned-north'),
+      answered: I.knowledge.answered('meadow'),
+      cartHome: Math.hypot(cart.x - cart.def.home.x, cart.z - cart.def.home.z) < 0.01,
+      promptAfter: I.promptText(),
+      cardAgain: (() => { I.press(); I.step(1 / 60, 5); return I.choiceOpen(); })(),
+    };
+    out.opening = o;
+  }
   return out;
 });
 
@@ -287,6 +390,37 @@ else fail(`doors after choosing: restored ${r.door.restored}, left ${r.door.left
 if (r.door.oldName) pass('and reading the card read the plinth (fact:the-old-name)'); else fail('the plinth was not read');
 if (r.door.promptAfter === 'READ THE PLINTH' && !r.door.cardAgain) pass(`after the door the plinth says ${r.door.promptAfter} and the card is never offered again`);
 else fail(`after the door: prompt "${r.door.promptAfter}", card again ${r.door.cardAgain}`);
+
+console.log('\nthe first hour:');
+{
+  const o = r.opening;
+  if (o.wake.bull === 'watch') pass('you wake and the bull is already looking at you'); else fail(`at the wake the bull is ${o.wake.bull}`);
+  if (o.afterStanding === 'charge' || o.afterStanding === 'balk') pass(`stand still and it comes anyway (${o.afterStanding})`); else fail(`after 1.6s standing the bull is ${o.afterStanding}`);
+  if (!o.chase.touched && o.chase.nearest > 1.5) pass(`it never touches you: nearest ${o.chase.nearest} units`); else fail(`THE BULL TOUCHED THE WALKER: nearest ${o.chase.nearest}`);
+  if (o.chase.slamAt > 0 && o.chase.slamAt < 9) pass(`Nell shuts the gate at ${o.chase.slamAt}s, and the walker is through (x ${o.chase.walker.x})`); else fail(`the gate: slam at ${o.chase.slamAt}, walker at x ${o.chase.walker.x}`);
+  if (o.chase.walker.x < -12) pass('the walker is west of the hedge'); else fail(`the walker never got through: x ${o.chase.walker.x}`);
+  if (o.bullAtFence.x > -12 && o.bullAtFence.x < -8 && (o.bullAtFence.state === 'fence' || o.bullAtFence.state === 'balk' || o.bullAtFence.state === 'home')) {
+    pass(`and the bull stops at the hedge: x ${o.bullAtFence.x} against the hedge at −12 (${o.bullAtFence.state})`);
+  } else fail(`the bull at the hedge: x ${o.bullAtFence.x}, ${o.bullAtFence.state}`);
+  if (o.nell === 1 || o.nell === 2) pass(`Nell is off the gate (pose ${o.nell})`); else fail(`Nell's pose after the slam: ${o.nell}`);
+  if (o.wake.taughtRun === false && o.taughtByTheBull) pass('the run is taught by the bull: told once, at the charge'); else fail(`the run: taught before ${o.wake.taughtRun}, taught by the bull ${o.taughtByTheBull}`);
+  if (o.fenceHolds.z < 64.2) pass(`the fence refuses a foot: driven south at x 20 the walker stops at z ${o.fenceHolds.z}`); else fail(`THE WALKER WALKED THROUGH THE FENCE: z ${o.fenceHolds.z}`);
+  if (o.stilePasses.z > 66) pass(`and the stile lets one over: z ${o.stilePasses.z}`); else fail(`the stile does not pass: z ${o.stilePasses.z}`);
+  if (o.goatFollows.following && o.goatFollows.d < 8) pass(`the goat falls in: ${o.goatFollows.d} units behind`); else fail(`the goat: following ${o.goatFollows.following}, ${o.goatFollows.d} behind`);
+  if (o.goatNorth.goatZ >= o.goatNorth.minZ && o.goatNorth.walkerZ < o.goatNorth.minZ && o.goatNorth.goatZ < o.goatNorth.minZ + 3) {
+    pass(`and stops dead at the Brim gate: goat z ${o.goatNorth.goatZ} against a border at ${o.goatNorth.minZ}, walker at ${o.goatNorth.walkerZ}`);
+  } else fail(`THE GOAT AT THE NORTH BORDER: goat z ${o.goatNorth.goatZ}, border ${o.goatNorth.minZ}, walker ${o.goatNorth.walkerZ}`);
+  if (o.goatEast.goatX <= o.goatEast.maxX && o.goatEast.walkerX > o.goatEast.maxX && o.goatEast.goatX > o.goatEast.maxX - 3) {
+    pass(`and at the east edge on the other road: goat x ${o.goatEast.goatX} against ${o.goatEast.maxX}, walker at ${o.goatEast.walkerX}`);
+  } else fail(`THE GOAT AT THE EAST BORDER: goat x ${o.goatEast.goatX}, border ${o.goatEast.maxX}, walker ${o.goatEast.walkerX}`);
+  if (o.nellPromptBefore === 'LEAN ON THE GATE WITH HER' && !o.nellCardBefore && o.nellNoteBefore) pass(`without the fourth name Nell is a note: ${o.nellPromptBefore}`);
+  else fail(`Nell before: "${o.nellPromptBefore}", card ${o.nellCardBefore}, note ${o.nellNoteBefore}`);
+  if (o.nellPromptWithName === 'TELL HER THE FOURTH NAME' && o.nellCard.open && o.nellCard.doors.length === 2) pass(`with it she is a card with two doors: ${o.nellCard.doors.join(' / ')}`);
+  else fail(`Nell with the name: "${o.nellPromptWithName}", card ${JSON.stringify(o.nellCard)}`);
+  if (o.doorOne.turned && o.doorOne.answered && o.doorOne.cartHome) pass('door one: the cart is loaded and turned north at home, and the wait is answered');
+  else fail(`door one: ${JSON.stringify(o.doorOne)}`);
+  if (o.doorOne.promptAfter === 'LEAN ON THE GATE WITH HER' && !o.doorOne.cardAgain) pass('and the card is never offered again'); else fail(`after the door: "${o.doorOne.promptAfter}", card again ${o.doorOne.cardAgain}`);
+}
 
 await browser.close();
 console.log(fails ? `\n${fails} FAILURE(S)` : '\nall verb checks pass');

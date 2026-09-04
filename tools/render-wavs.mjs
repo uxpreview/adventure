@@ -98,7 +98,11 @@ const VOICES = [
    * the cart taking a shove, and a stone landing on the page and in
    * the water: the first sounds in the game the walker makes ON
    * PURPOSE, and they go into the pack unheard like everything else. */
-  ['the-common', ['lark', 'well-plink', 'well-shout', 'well-answer', 'cart-wheels', 'cart-stuck', 'stone-land', 'stone-plop']],
+  /* SESSION 16 — THE FIRST HOUR. The bull, close; its feet at a
+   * gallop; the field gate going shut between you and it; and the
+   * goat. The first frightening sounds in the game, and the joke after
+   * them, in the pack unheard like everything else. */
+  ['the-common', ['lark', 'well-plink', 'well-shout', 'well-answer', 'cart-wheels', 'cart-stuck', 'stone-land', 'stone-plop', 'bull-snort', 'bull-hooves', 'gate-slam', 'goat-bleat']],
   ['brim', ['brim-bell', 'market-murmur', 'pigeon-flap']],
   ['castle-greyweather', ['banner-snap', 'rook-caw']],
   ['longshore', ['surf-break', 'gull-cry', 'halyard', 'oar', 'oar-ship']],
