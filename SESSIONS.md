@@ -197,9 +197,64 @@ assumed.
 
 ### THE GATES, AND WHAT MOVED
 
-[GATES]
+- **Build green.** `check-terrain`, `check-camera` (the rig never gives
+  ground faster than the walker walks, 3.38 u/s), `check-sightline`
+  (clear — the first car's parking place had been in THE LINE's corridor
+  at (−45, 262) and it parks on the empty plot at (−57, 256) now),
+  `check-audio` (−22 dB below full scale with the fifteen new voices
+  in), `check-lures` (in fog the four lures' opacities 0.04, 0.035,
+  0.035, 0.028 against 0.8, 0.7, 0.7, 0.55 clear, and back after),
+  `check-fields` (63 figures driven through their hours, all drawn
+  right), `check-verbs` (every section, Session 17's included: the dog
+  at 62.04 against the west border at 60 and 227.99 against the east at
+  230, sat looking after you both times), `shoot-mobile` (the chrome on
+  four widths, every card on the page). All pass on the pushed head.
+- **The dog on the harness.** The east-border test first tried to walk
+  the dog over the bridge behind a teleported walker and found the
+  east end of the deck runs along the water for a few units: a follower
+  slides per axis and was held mid-land, and when the walker left the
+  Downs it took the hold for a border. That is a path-finding gap in a
+  thing built not to path-find, so the test does what the goat's does:
+  the dog is `__inklands.company.dog`, put on the road past the bridge,
+  and the walker driven out. The rule is tested at the border.
 
-[DIFF]
+- **What moved, by `diff-sheets` against `origin/main` (19bb05d), 92
+  framings, bearing pinned, twelve game seconds of settle.** 45 of 92
+  bit-identical; 47 moved at all; 5 over the 0.15% threshold. Every
+  frame that moved is a protected frame with a routine, an animal or an
+  event standing in it at the protected hour, which is the one move
+  `QUALITY-BAR` §3 allows when the land is the scope — and all twelve
+  were:
+  - **`sandbar@12`, 1.5–2.9% on the desktop** — THE REGATTA. It starts
+    at noon (`THE-FUN-PASS` §9 names the hour), so at the protected
+    noon the fleet is racing at three and a half times its drift and
+    the two boats that sat beside the buoy are one boat, further on,
+    heeled. This is the largest move of the session and it is the
+    brief's own beat; the number varies run to run because a racing
+    fleet's position after twelve seconds is more sensitive to the
+    frame clock than a drifting one. **`sandbar@19.6`, 1.5–2.9%** —
+    the same fleet, further round the course than a page that never
+    raced would have it: a boat's place on the course was always a
+    function of elapsed time, and the race adds an hour and a half of
+    it. If the owner wants the noon sandbar back to the pixel, the race
+    starts at half past twelve and this line is the one that changes.
+  - **`tide-line@12`, 0.13% desktop, 0.22% portrait** — the crabs on
+    the wrack and the hut owner sat outside the third hut.
+    **`tide-line@19.6`, 0.09% / 0.21%** — the crabs and the jetty
+    fisher. **`boardwalk@12` 0.10%, `@19.6` 0.07%** — the same beach
+    from the promenade.
+  - **`well@19.6`, 0.10% desktop, 0.19% portrait** — the bats over
+    the well, out from twenty to eight. `well@12` moved 0.014%: nine
+    pixels by seven, a distant figure on the road.
+  - **`bailey@19.6`, 0.07%** — the sentry on the curtain wall at dusk.
+  - **`square-wide@19.6`, 0.05%** — the lamplighter walking home from
+    the fourth lamp; all four lamps are lit, as the framing had them.
+  - **Everything else — the title framing, the Common's seven at both
+    hours (the well aside), Brim's other three, Greyweather's other
+    three, the coast's other two — is bit-identical**, which is what
+    day zero's calm at noon and at 19.6 was for.
+  `SAVE=1 FRAMING=sandbar,tide-line,well node tools/diff-sheets.mjs`
+  writes both sides and the mask into `.diff/frames/` for any of it.
 
 - **The proofs sheet** (`tools/shoot-session17.mjs`, 59 framings, both
   viewports), reviewed in `critique-art-11.md`: NOT YET at round one

@@ -118,7 +118,10 @@ the owner to walk the three worst.
 - **The dog** is `Follower` on the Downs, home at the field gate on the
   east road **north of the river** — a follower cannot find a bridge,
   and the first home was in the water. Put a companion where every road
-  out of its land is reachable without crossing water.
+  out of its land is reachable without crossing water. Both followers
+  are on the harness as `__inklands.company.goat` and `.dog`, and the
+  border tests place them and drive the walker out: the rule is tested
+  at the border, not by path-finding a thing built not to path-find.
 - **`tools/check-fields.mjs`** drives every routine through every hour
   it changes at; **`tools/check-verbs.mjs`** section 8 asserts the dog
   at both borders, the night's bull, the calm page at the protected
