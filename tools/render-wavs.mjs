@@ -122,6 +122,10 @@ const VOICES = [
   ['the-weather', ['thunder', 'wind-gust']],
   ['the-animals', ['dog-bark', 'cow-low', 'heron-croak', 'seal-bark', 'fox-bark', 'owl-hoot', 'cat-mew', 'crab-scuttle', 'pigeons-lift', 'deep-surface']],
   ['the-routines', ['shutter', 'car-start', 'branch-crack']],
+  /* SESSION 18 — THE ROADS. The bicycle's bell, and a paper plane
+   * coming down, which is the quietest landing in the game. In the
+   * pack unheard like everything else. */
+  ['the-roads', ['bicycle-bell', 'paper-land']],
 ];
 console.log('');
 for (const [land, names] of VOICES) {

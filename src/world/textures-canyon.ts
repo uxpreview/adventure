@@ -949,3 +949,26 @@ export function slotShadowTexture(seed: number): THREE.CanvasTexture {
     ctx.restore();
   });
 }
+
+/** THE PAPER PLANE (Session 18): a dart, seen from the side and a
+ *  little above — the fold down the middle, the two wings, the nose.
+ *  The one thing on this sheet that is made of the thing the sheet is
+ *  made of, and nothing about it says so. */
+export function paperPlaneTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(96, 48, seed, (ctx, r) => {
+    const body: [number, number][] = [[6, 30], [90, 18], [30, 36]];
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = '#f4f0e4';
+    ctx.beginPath();
+    ctx.moveTo(body[0][0], body[0][1]);
+    for (const p of body.slice(1)) ctx.lineTo(p[0], p[1]);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    stroke(ctx, [...body, body[0]], r, { width: 1.8, alpha: 0.88, color: INK });
+    stroke(ctx, [[8, 22], [90, 18]], r, { width: 1.4, alpha: 0.7, color: INK });
+    stroke(ctx, [[8, 22], [6, 30]], r, { width: 1.4, alpha: 0.7, color: INK });
+    line(ctx, 30, 36, 34, 26, r, { width: 1, alpha: 0.45, color: PENCIL, passes: 1 });
+  });
+}

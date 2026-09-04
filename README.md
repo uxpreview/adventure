@@ -198,9 +198,33 @@ and deals a region card — nothing else, because the sheet is continuous.
   fires but the bed and, once in a long while, a branch a long way off;
   Holt's window is a light you can steer by. `?hour=19.4`, `?day=1` and
   `?weather=storm` on the address bar set the page up before the title.
-- Position, discovered lands, strides walked, the boat, the hour, what
-  you know, what you chose, and where you left the cart, saved to
-  `localStorage`. (The gate, the bull and the goat are not: a fresh
+- **And the roads are not a chore, or the tool says which one still
+  is** (Session 18, THE ROADS — `THE-FUN-PASS` §8). **The
+  fifteen-second rule is measured**: `tools/check-roads.mjs` walks
+  every road at a walk on both rigs and fails on fifteen seconds with
+  nothing in frame and nothing in earshot, and `src/world/earshot.ts`
+  is the placed voices as data so the tool and the ambient agree on a
+  number. **Fifteen encounters** from `THE-STRANGERS` Part Three, every
+  one a routine with a turn on the clock: a broken cart on the king's
+  road that is mended by three, a dog that falls in at dawn for half a
+  land, a ladder carried round the well, a hat going the other way
+  faster than you, combers at low water, a fire on the sand with nobody
+  at it yet, a light in Shelter Cove that is not the mark, a gull on the
+  crest you go round, a felled pine with the saw in it, rings on the
+  tarn at dusk, a funeral up the mill lane, a flock that parts round you
+  and closes behind, an oasis that is not there, a car with its lights
+  on. **Forty-five districts** across all twelve lands, on the card and
+  the map. **THE BICYCLE** on the verge at the mouth of Maple Court:
+  get on, ring the bell on the move (the cat sits up, the children stop
+  and look), fast downhill, and it stops dead at the Common's edge with
+  you on it, because it is a thing and no thing crosses a border.
+  **THE PAPER PLANE** on the overlook's rock in Splitrock: thrown off
+  the lip it glides the whole cut and lands on the far rim, which is
+  about an hour. **And after the ending the 8:15 runs every day at
+  8:15** and stops twelve times for nobody, and you can get on.
+- Position, discovered lands, strides walked, the boat, the bicycle,
+  the hour, what you know, what you chose, and where you left the
+  cart, saved to `localStorage`. (The gate, the bull and the goat are not: a fresh
   page has the gate open, and a save that wakes elsewhere finds the
   bull grazing.)
 
@@ -290,6 +314,13 @@ node tools/check-lures.mjs     # which of the four lures each rig can hold,
 node tools/shoot-session17.mjs # LIFE: a day in the life of twelve lands, at
                                #   the hours the routines are out, the moment
                                #   the animals react, and in every weather
+node tools/check-roads.mjs     # THE FIFTEEN-SECOND RULE: walks every road at
+                               #   4.1 u/s on both rigs and fails on fifteen
+                               #   seconds with nothing in frame or in earshot
+                               #   (HOUR=19 ROAD=east-road RIG=portrait VERBOSE=1)
+node tools/shoot-session18.mjs # THE ROADS: the encounters at their hours and
+                               #   after, the districts' cards, the bicycle,
+                               #   the plane over the cut, the 8:15 the day after
 HOUR=19.6 node tools/shoot-first-minute.mjs   # any sheet, at any hour
 node tools/shoot.mjs           # all twelve lands, walkability smoke test
 node tools/shoot-mobile.mjs    # the CHROME, at 320/360/390/430 points AND at

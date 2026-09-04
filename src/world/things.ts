@@ -55,6 +55,20 @@ export type ThingDef = {
   shove?: number;
   /** For a pushable: what it may not roll onto. */
   refuse?: (x: number, z: number) => boolean;
+  /**
+   * A CARRIABLE THAT GLIDES (Session 18, the paper plane): units it
+   * travels across for every unit it falls. A throw is then not an arc
+   * of a few units but a line down the air from the hand until the
+   * ground comes up to meet it — off the tear's lip that is the far
+   * side of the canyon, on the flat it is eight units. The one input is
+   * the throw; it is not steered (`WORLD-SYSTEMS` §4: *refuses being
+   * steered, mostly*).
+   */
+  glide?: number;
+  /** How it is drawn in the hand, and how big; the stone's drawing and
+   *  size otherwise. Set by the land that draws it. */
+  hand?: THREE.Texture;
+  handSize?: [number, number];
 };
 
 export type Thing = {
@@ -226,25 +240,87 @@ class Things {
    * land.
    */
   throw_(px: number, pz: number, y0: number, heading: number, dist: number,
-    groundAt: (x: number, z: number) => number): boolean {
+    groundAt: (x: number, z: number) => number, thrown = true,
+    refuse?: (x: number, z: number) => boolean): boolean {
     const t = this.holding;
     if (!t) return false;
-    const x1 = this.clampX(t, px + Math.sin(heading) * dist);
-    const z1 = this.clampZ(t, pz + Math.cos(heading) * dist);
+    let x1: number;
+    let z1: number;
+    // a plane SET DOWN by a standing walker is set down, at the feet
+    const glides = !!t.def.glide && thrown;
+    if (glides) {
+      [x1, z1] = this.glideLanding(t, px, pz, y0, heading, groundAt, refuse);
+    } else {
+      x1 = this.clampX(t, px + Math.sin(heading) * dist);
+      z1 = this.clampZ(t, pz + Math.cos(heading) * dist);
+    }
     const d = Math.hypot(x1 - px, z1 - pz);
     t.state = 'flying';
     this.held = null;
-    t.fly = {
-      x0: px, z0: pz, x1, z1, t: 0,
-      // a stone goes about eight units a second underarm; a set-down at
-      // the feet is nearly instant
-      dur: Math.max(0.18, d / 8),
-      y0, y1: groundAt(x1, z1),
-      // the arc's height rises with the throw, capped at a body's height
-      h: Math.min(1.4, 0.25 + d * 0.16),
-    };
+    t.fly = glides
+      ? {
+        x0: px, z0: pz, x1, z1, t: 0,
+        // a plane goes about nine units a second and comes down in a
+        // line, with the little lift a throw gives it first
+        dur: Math.max(0.4, d / 9),
+        y0, y1: groundAt(x1, z1),
+        h: 0.35,
+      }
+      : {
+        x0: px, z0: pz, x1, z1, t: 0,
+        // a stone goes about eight units a second underarm; a set-down at
+        // the feet is nearly instant
+        dur: Math.max(0.18, d / 8),
+        y0, y1: groundAt(x1, z1),
+        // the arc's height rises with the throw, capped at a body's height
+        h: Math.min(1.4, 0.25 + d * 0.16),
+      };
     this.dirty = true;
     return true;
+  }
+
+  /**
+   * WHERE A GLIDE COMES DOWN: walk the line from the hand, falling one
+   * unit for every `glide` units across, until the ground is above it
+   * — or the thing's own border is, in which case it lands on the
+   * border like everything else. Clamped BEFORE it flies, so nothing in
+   * the air is ever over another land.
+   */
+  private glideLanding(
+    t: Thing, px: number, pz: number, y0: number, heading: number,
+    groundAt: (x: number, z: number) => number,
+    refuse?: (x: number, z: number) => boolean
+  ): [number, number] {
+    const g = t.def.glide ?? 6;
+    const sx = Math.sin(heading);
+    const sz = Math.cos(heading);
+    let lx = px;
+    let lz = pz;
+    // the last ground a foot could stand on under the line: where a
+    // plane that meets a wall comes down, at the wall's foot
+    let ox = px;
+    let oz = pz;
+    for (let s = 1; s <= 160; s += 1) {
+      const x = px + sx * s;
+      const z = pz + sz * s;
+      if (this.clampX(t, x) !== x || this.clampZ(t, z) !== z) break;
+      // a little lift off the hand, then the line down
+      const y = y0 + 0.5 - Math.max(0, s - 3) / g;
+      const steep = refuse ? refuse(x, z) : false;
+      if (groundAt(x, z) >= y) {
+        /* THE GROUND CAME UP TO MEET IT. If that ground is a face a foot
+         * could not stand on — the far wall of the cut — the plane has
+         * hit a wall, and a plane that hits a wall drops to its foot,
+         * which is the last flat ground under the line. The far rim is
+         * as high as the near one; nothing thrown from it lands on it. */
+        if (steep) { lx = ox; lz = oz; } else { lx = x; lz = z; }
+        break;
+      }
+      lx = x;
+      lz = z;
+      if (!steep) { ox = x; oz = z; }
+    }
+    return [this.clampX(t, lx), this.clampZ(t, lz)];
   }
 
   /** Where a flying thing is right now, for the land that draws it. */

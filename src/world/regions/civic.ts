@@ -45,7 +45,7 @@ import {
 } from '../textures-oldworld';
 import {
   handcartTexture, childTexture, catTexture, batTexture, lanternGlowTexture,
-  pigeonFlyTexture, ratTexture, magpieTexture, foxTexture,
+  pigeonFlyTexture, ratTexture, magpieTexture, foxTexture, wheelTexture,
 } from '../textures-life';
 import { Figure, Creature, stops } from '../life';
 import { events, routineAt as routineState, registerRoutine, type RoutineDef } from '../events';
@@ -57,6 +57,7 @@ import { knowledge } from '../knowledge';
  * Nobody may be in two places at once: while the 8:15's doors are open
  * at a land's stop, that land's own person is the one standing on it. */
 import { platform } from '../../engine/Eight15';
+import { bell } from '../../engine/Bicycle';
 import type { RegionBuilder, WorldPOI } from './index';
 import type { StandeeField } from '../../engine/StandeeField';
 
@@ -170,6 +171,30 @@ function warden(id: string, at: number) {
 }
 const WARDEN_AM = warden('the-orchard-warden', 8.0);
 const WARDEN_PM = warden('the-orchard-warden-evening', 17.6);
+
+/* ================================================================== *
+ * THE ENCOUNTERS IN BRIM (Session 18, `THE-STRANGERS` C1 and C2).
+ * ================================================================== */
+
+/** C1 · A CART WITH A BROKEN WHEEL AND NOBODY NEAR IT. On the king's
+ *  road south of the square, all morning: the cart canted on its axle,
+ *  the wheel off beside it, nobody. At one the wheelwright comes down
+ *  from the back streets, bends over it until it is done, and pushes
+ *  it home whole — a routine with a turn, on the clock, so a walker
+ *  who comes at ten finds the cart and a walker who comes at four
+ *  finds the road. Tomorrow it is broken again, and nobody in Brim
+ *  would think that strange. */
+const BROKEN_CART = { x: -41.6, z: -34 };
+const MENDED_AT = 14.9;
+const WRIGHT = { id: 'the-wheelwright', land: 'kingdom' as const, pace: 260, stops: stops([
+  [13.0, -62, -40, 0, 1], [13.2, BROKEN_CART.x - 2.3, BROKEN_CART.z + 0.2, 2, 1, 1.7], [15.35, -62, -40, 4, -1, 0.02],
+]) };
+/** C2 · SOMEBODY WALKING THE OTHER WAY WHO DOES NOT LOOK UP: down the
+ *  king's road from the square to the south gate at dusk, past whoever
+ *  is coming up it, and back to a door in the back streets. */
+const DUSK_WALKER = { id: 'the-dusk-walker', land: 'kingdom' as const, pace: 380, stops: stops([
+  [18.85, -46, -84, 0, 1], [19.2, -44, -16, 0, -1, 0.04], [19.55, -38, -48, 0, 1, 0.02],
+]) };
 /** THE SHUTTERS: thrown back at first light, pulled to at nine. Every
  *  row a little after the last, because nobody in Brim does anything
  *  at the same moment as anybody else. */
@@ -470,6 +495,17 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   delivery.propOffset = { x: 1.5, z: 0.2 };
   const sweeper = new Figure(ctx, SWEEPER, 1);
   const wardens = [new Figure(ctx, WARDEN_AM, 0), new Figure(ctx, WARDEN_PM, 0)];
+  /* ---- THE ENCOUNTERS (Session 18, `THE-STRANGERS` C1, C2) --------- */
+  const brokenCart = ctx.standee(handcartTexture(1703), 2.6, 1.9, BROKEN_CART.x, BROKEN_CART.z);
+  brokenCart.rotation.z = -0.3;
+  brokenCart.position.y += 0.36;
+  const offWheel = ctx.decal(wheelTexture(1704), 1.3, 1.3, BROKEN_CART.x + 1.9, BROKEN_CART.z + 0.9, 0.3, 0.9);
+  const mendedCart = ctx.standee(handcartTexture(1705), 2.6, 1.9, BROKEN_CART.x, BROKEN_CART.z);
+  const wright = new Figure(ctx, WRIGHT, 2);
+  wright.prop = ctx.standee(handcartTexture(1705), 2.6, 1.9, -62, -40);
+  (wright.prop.material as THREE.MeshBasicMaterial).transparent = true;
+  wright.propOffset = { x: 1.5, z: 0.2 };
+  const duskWalker = new Figure(ctx, DUSK_WALKER, 1);
   const children = [0, 1].map((i) =>
     new Creature(ctx, `the-square-children-${i}`, 'kingdom',
       [childTexture(1710 + i * 2, 0), childTexture(1711 + i * 2, 1)], 0.8, 1.2, -45, -81));
@@ -660,6 +696,17 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     delivery.tick(h);
     sweeper.tick(h);
     for (const w of wardens) w.tick(h, W.rain > 0.5);
+    /* ---- THE ENCOUNTERS (Session 18) --------------------------------- */
+    {
+      const st = wright.tick(h, W.rain > 0.5);
+      const pushing = st.present && st.leg === 1 && st.moving;
+      if (wright.prop) wright.prop.visible = pushing;
+      const mended = h >= MENDED_AT;
+      brokenCart.visible = !mended;
+      offWheel.visible = !mended;
+      mendedCart.visible = mended && h < 15.35 && !pushing;
+    }
+    duskWalker.tick(h, W.rain > 0.5);
     const kids = events.progress('the-square-children');
     for (let i = 0; i < 2; i++) {
       if (kids < 0 || W.rain > 0.4) { children[i].hide(); continue; }
@@ -1589,6 +1636,16 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
   ]) }, 1);
   const fenceCat = new Creature(ctx, 'the-fence-cat', 'neighborhood', [catTexture(1760, 0), catTexture(1761, 1)], 1.3, 0.85, VAL.x - 5.8, VAL.z + 8.5);
   const fenceCatState = { awake: 0, px: 0, pz: 0 };
+  let kidsStill = 0;
+  const kidsA = [0, Math.PI];
+  /* C24 · A CAR WITH ITS ENGINE OFF AND ITS LIGHTS ON (Session 18,
+   * `THE-STRANGERS`): one of the cars on the drives along main street,
+   * every evening from a little after six until nine, with its lights
+   * left on and nobody in it. Nobody comes out to it. By nine they are
+   * off, and nothing says who did that either. */
+  const carLights = ctx.standee(lampGlowTexture(8795), 3.6, 2.2, -57.6, 222.2);
+  (carLights.material as THREE.MeshBasicMaterial).transparent = true;
+  (carLights.material as THREE.MeshBasicMaterial).opacity = 0.85;
 
   /* ================================================================ */
   let sprinkler = 6;
@@ -1659,10 +1716,25 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
     postie.tick(h);
     walker.tick(h, rain);
     waterer.tick(h, rain);
+    /* THE BELL IS ANSWERED (Session 18, the bicycle): ring it anywhere
+     * in the built part of the land and the children on the green stop
+     * where they are and look at you for two seconds; ring it near
+     * Val's fence and the cat sits up, the way it does for a runner. A
+     * visible answer, with the bell under it. */
+    const rang = _t - bell.at < 0.5 && bell.x > -110 && bell.x < 55 && bell.z > 124 && bell.z < 260;
+    if (rang && kidsStill <= 0) kidsStill = 2.2;
+    kidsStill = Math.max(0, kidsStill - dt);
     const green = events.progress('the-green-children');
     for (let i = 0; i < 2; i++) {
       if (green < 0 || rain) { kids[i].hide(); continue; }
+      if (kidsStill > 0) {
+        const a = kidsA[i];
+        const kx = GREEN.x + Math.cos(a) * 4.6;
+        kids[i].set(0, kx, GREEN.z + 2 + Math.sin(a) * 3.6, px < kx ? -1 : 1);
+        continue;
+      }
       const a = h * 100 * 0.66 + i * Math.PI;
+      kidsA[i] = a;
       kids[i].set(Math.floor(h * 100 / 0.28) % 2, GREEN.x + Math.cos(a) * 4.6, GREEN.z + 2 + Math.sin(a) * 3.6, Math.sin(a) > 0 ? 1 : -1);
     }
     // the car is wherever the two halves of its day say it is, and at
@@ -1678,10 +1750,15 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
         car.set(0, away ? -57 : -85.6, away ? 256 : 141.7, away ? 1 : -1);
       }
     }
+    carLights.visible = h >= 18.2 && h < 21.0;
     const speed = Math.hypot(px - fenceCatState.px, pz - fenceCatState.pz) / Math.max(1e-3, dt);
     fenceCatState.px = px;
     fenceCatState.pz = pz;
     fenceCatState.awake = Math.max(0, fenceCatState.awake - dt);
+    if (rang && Math.hypot(bell.x - (VAL.x - 5.8), bell.z - (VAL.z + 8.5)) < 24 && fenceCatState.awake <= 0) {
+      fenceCatState.awake = 8;
+      say('cat-mew');
+    }
     if (Math.hypot(px - (VAL.x - 5.8), pz - (VAL.z + 8.5)) < 7 && speed > 4.6 && fenceCatState.awake <= 0) {
       fenceCatState.awake = 8;
       say('cat-mew');

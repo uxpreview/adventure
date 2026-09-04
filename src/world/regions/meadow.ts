@@ -12,7 +12,7 @@ import {
   cityTowersTexture, maypoleTexture, fairBoardTexture,
 } from '../textures-common';
 import { goatTexture } from '../textures-wood';
-import { foxTexture, batTexture, childTexture, handcartTexture, rodTexture } from '../textures-life';
+import { foxTexture, batTexture, childTexture, handcartTexture, rodTexture, dogTexture, ladderTexture } from '../textures-life';
 import { Figure, Creature, stops } from '../life';
 import { weather } from '../weather';
 import { clock } from '../daylight';
@@ -158,6 +158,46 @@ const goat = new Follower({
   // it will not go in with the bull, and it does not follow you in
   keepOut: { minX: -14, maxX: 46, minZ: 63, maxZ: 112 },
 });
+
+/* ================================================================== *
+ * THE ENCOUNTERS ON THE COMMON (Session 18, `THE-STRANGERS` Part
+ * Three, C3 and C4). Every encounter is a routine with a turn, on the
+ * clock; a walker who comes at the wrong hour finds the aftermath.
+ * ================================================================== */
+
+/** C3 · A DOG FALLS IN BESIDE YOU FOR HALF A LAND AND THEN DOES NOT.
+ *  At dawn only. Its land is the Common's WEST HALF — the coast road's
+ *  end to just past the crossroads — so it is the rule of `company.ts`
+ *  told a third way: it stops dead at a line that is not a border, and
+ *  sits, and a walker who has met the goat knows exactly what has
+ *  happened and cannot say why the line is there. Nobody says. */
+const dawnDog = new Follower({
+  id: 'the-dawn-dog', rect: { minX: -150, maxX: -28, minZ: -10, maxZ: 120 }, home: { x: -122, z: 64 },
+  gap: 2.4, notice: 13, walk: 4.0, trot: 9.0, margin: 2,
+});
+events.register({ id: 'the-dawn-dog', land: 'meadow', at: 5.4, hours: 2.1 });
+
+/** C4 · TWO PEOPLE CARRYING A LONG LADDER ROUND A BEND. From the oaks,
+ *  round the well — which is the bend — to the fair ground in the
+ *  morning, and back after four. The front one carries the drawing;
+ *  the back one walks the same stops a few units behind. Between the
+ *  two trips the ladder leans at the fair ground, which is what a
+ *  walker who comes at noon finds. */
+function ladderTrip(id: string, at: number, out: boolean, lag: number) {
+  const A: [number, number] = [-100, 34];
+  const B: [number, number] = [-62, 54];
+  const C: [number, number] = [-92, 96];
+  const path = out ? [A, B, C] : [C, B, A];
+  return { id, land: 'meadow' as const, pace: 300, walkPose: 4, stops: stops([
+    [at + lag, path[0][0], path[0][1], 4, out ? 1 : -1],
+    [at + lag + 0.18, path[1][0], path[1][1], 4, out ? -1 : 1],
+    [at + lag + 0.36, path[2][0], path[2][1], 4, out ? -1 : 1, 0.02],
+  ]) };
+}
+const LADDER_TRIPS = [
+  ladderTrip('the-ladder-front', 9.5, true, 0), ladderTrip('the-ladder-back', 9.5, true, 0.012),
+  ladderTrip('the-ladder-front-home', 16.2, false, 0), ladderTrip('the-ladder-back-home', 16.2, false, 0.012),
+];
 
 /** THE OPENING'S STATE, for the builder, the POIs and the harness. */
 export const common = {
@@ -525,6 +565,21 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   events.register({ id: 'the-common-fox', land: 'meadow', at: 21.0, hours: 7.6, place: { x: -95, z: 99 } });
   const bats = [0, 1].map((i) => new Creature(ctx, `the-well-bats-${i}`, 'meadow', [batTexture(1697 + i)], 0.9, 0.55, WELL.x, WELL.z));
   events.register({ id: 'the-well-bats', land: 'meadow', at: 19.4, hours: 3.2, place: WELL });
+
+  /* ---- THE ENCOUNTERS (Session 18, `THE-STRANGERS` C3, C4) --------- */
+  const dawnDogDrawn = new Creature(ctx, 'the-dawn-dog', 'meadow', [0, 1, 2, 3].map((p) => dogTexture(1698 + p, p as 0 | 1 | 2 | 3)), 1.5, 1.12, dawnDog.x, dawnDog.z);
+  let dawnDogBark = 0;
+  const ladderFolk = LADDER_TRIPS.map((d, i) => new Figure(ctx, d, (i % 2) as 0 | 1));
+  for (const i of [0, 2]) {
+    const f = ladderFolk[i];
+    f.prop = ctx.standee(ladderTexture(1699 + i), 6.4, 1.2, -100, 34);
+    (f.prop.material as THREE.MeshBasicMaterial).transparent = true;
+    f.prop.position.y += 0.9;
+    f.propOffset = { x: -3.4, z: 0.15 };
+  }
+  const ladderLeant = ctx.standee(ladderTexture(1702), 6.4, 1.2, -92, 96);
+  ladderLeant.rotation.z = 1.15;
+  ladderLeant.position.y += 2.7;
 
 
   /* ---- RIVERBEND --------------------------------------------------- */
@@ -1047,6 +1102,29 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       const bz = WELL.z + Math.sin(a * 1.3) * 2.5;
       b.set(0, bx, bz, Math.cos(a) > 0 ? 1 : -1, 4.2 + Math.sin(a * 3.3) * 0.8);
     });
+
+    /* ---- THE ENCOUNTERS (Session 18) --------------------------------- */
+    {
+      const on = events.progress('the-dawn-dog') >= 0;
+      if (!on) { if (dawnDog.following) dawnDog.reset(); dawnDogDrawn.hide(); }
+      else {
+        const was = dawnDog.following;
+        dawnDog.tick(dt, px, pz, (x, z) => terrain.blockedAt(x, z) || barriers.blocks(x, z));
+        if (!was && dawnDog.following) say('dog-bark');
+        if (dawnDog.justStopped) say('dog-bark');
+        dawnDogBark -= dt;
+        if (dawnDog.following && dawnDog.pose === 'trot' && dawnDogBark <= 0) { say('dog-bark'); dawnDogBark = 10 + (t % 5); }
+        const dp = dawnDog.pose === 'walk' ? 1 : dawnDog.pose === 'trot' ? 2 : dawnDog.atBorder ? 3 : 0;
+        dawnDogDrawn.set(dp, dawnDog.x, dawnDog.z, dawnDog.face < 0 ? -1 : 1);
+      }
+    }
+    for (const f of ladderFolk) f.tick(h, rain);
+    // the ladder's day: carried out, leant, carried home
+    for (const i of [0, 2]) {
+      const f = ladderFolk[i];
+      if (f.prop) f.prop.position.y = ctx.groundY(f.state.x, f.state.z) + 0.9;
+    }
+    ladderLeant.visible = h >= 9.9 && h < 16.2;
   };
 };
 

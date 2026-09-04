@@ -8,6 +8,7 @@ import {
   boatOnTrestlesTexture, trestlesTexture, boatRightedTexture, holtTexture,
   bootsTexture, cairnTexture, turningBirdTexture, fallDustTexture,
   mouthPostTexture,
+  paperPlaneTexture,
 } from '../textures-canyon';
 import {
   flatsGroundDecal, crackedPanDecal, trackDecal, oasisReedTexture,
@@ -31,10 +32,10 @@ import {
   sheepTexture, stoneTroughTexture, fieldGateTexture, fordStonesDecal,
   shedAxleTexture, downsScarecrowTexture, sackCartTexture,
 } from '../textures-farm';
-import { lampGlowTexture } from '../textures';
+import { lampGlowTexture, logTexture } from '../textures';
 import {
   heronTexture, batTexture, childTexture, lizardTexture, kiteTexture, snakeTexture,
-  cowTexture, dogTexture,
+  cowTexture, dogTexture, sawTexture, rippleDecal,
 } from '../textures-life';
 import { rookTexture } from '../textures-oldworld';
 import { Figure, Creature, stops } from '../life';
@@ -46,6 +47,7 @@ import { clock } from '../daylight';
 import { platform } from '../../engine/Eight15';
 import { knowledge } from '../knowledge';
 import { events, registerRoutine, routine as routineNow } from '../events';
+import { things } from '../things';
 import type { RegionBuilder, WorldPOI } from './index';
 
 /** Fire a named audio event up to the App without a plumbing run. */
@@ -245,6 +247,24 @@ const ROUND_WALKER = { id: 'the-round-walked', land: 'forest' as const, pace: 41
 ]) };
 events.register({ id: 'the-wood-road-child', land: 'forest', at: 16.0, hours: 0.3, place: { x: 80, z: -122 } });
 events.register({ id: 'the-deep-pines-bats', land: 'forest', at: 20.5, hours: 8.0, place: { x: 188, z: -246 } });
+
+/* ================================================================== *
+ * THE ENCOUNTERS IN THE PENWOOD (Session 18, `THE-STRANGERS` C14, C15).
+ * ================================================================== */
+
+/** C14 · A FELLED PINE ACROSS THE ROAD, AND THE SAW LEFT IN IT. Across
+ *  the track's last diagonal before the ring, from first light, the
+ *  saw standing in the cut; and from three it is two lengths at the
+ *  verge and the saw is gone — the cutters' work, done off-stage,
+ *  which is what a routine with a turn looks like when nobody was
+ *  there to watch it. */
+const FELLED = { x: 124.5, z: -153.3, sawnAt: 15.0 };
+events.register({ id: 'the-felled-pine', land: 'forest', at: 5.6, hours: 9.4 });
+/** C15 · SOMETHING MOVES IN THE WATER AND YOU DO NOT SEE WHAT. At
+ *  dusk, for half an hour, rings on the tarn, one every ten seconds or
+ *  so, never where you are looking, and a plop if you are near enough
+ *  to hear it. The heron has gone in by then. Nothing else. */
+events.register({ id: 'the-tarn-rings', land: 'forest', at: 19.1, hours: 0.6, place: TARN });
 
 export const buildForest: RegionBuilder = (ctx) => {
   const { r, terrain, rect } = ctx;
@@ -670,6 +690,25 @@ export const buildForest: RegionBuilder = (ctx) => {
   const heronState = { up: 0, away: 0 };
   const deepBats = [0, 1, 2].map((i) => new Creature(ctx, `the-deep-pines-bats-${i}`, 'forest', [batTexture(3520 + i)], 0.9, 0.55, 188, -246));
 
+  /* ---- THE ENCOUNTERS (Session 18, `THE-STRANGERS` C14, C15) -------- */
+  /* THE WOODPILE (Session 18): the round's south arc, which
+   * `check-roads` found silent for twenty seconds on a phone — the
+   * Penwood's east arc has been a standing debt since Session 10 and
+   * the tool put it on the south-west. Three lengths the cutters have
+   * stacked at the verge, the way cutters do, and a fourth on top. In
+   * frame from the whole of the south half of the ring. */
+  for (const [dx, dz, dy, ry] of [[0, 0, 0, -0.3], [-2.1, 0.9, 0, -0.1], [2.2, 0.7, 0, -0.45], [0.2, 0.4, 1.15, -0.2]] as [number, number, number, number][]) {
+    const m = ctx.standee(logTexture(3540 + Math.round(dx * 3)), 2.9, 1.3, 149.5 + dx, -240.5 + dz, { rotY: ry });
+    m.position.y += dy;
+  }
+  const felledLog = ctx.standee(logTexture(3530), 5.6, 2.5, FELLED.x, FELLED.z, { rotY: -0.8 });
+  const felledSaw = ctx.standee(sawTexture(3531), 0.9, 1.35, FELLED.x + 0.6, FELLED.z - 0.4);
+  felledSaw.position.y += 0.9;
+  const sawnLogs = [0, 1].map((i) => ctx.standee(logTexture(3532 + i), 2.8, 1.25, 120.5 + i * 0.6, -150.5 - i * 2.2, { rotY: -0.5 + i * 0.2 }));
+  const ripple = ctx.decal(rippleDecal(3534), 4, 4, TARN.x, TARN.z, 0, 0.8);
+  ripple.visible = false;
+  const rippleState = { at: -1, x: TARN.x, z: TARN.z, next: 0 };
+
   return (dt: number, t: number, px: number, pz: number) => {
     /* BRACK'S PACE. Thirty units of arc, out and back, on a triangle
      * wave — a man on a beat does not ease in and out of the ends, he
@@ -780,6 +819,36 @@ export const buildForest: RegionBuilder = (ctx) => {
         heron.set(1, HERON.x, HERON.z, 1, 0.4);
       } else heron.set(0, HERON.x, HERON.z, px < HERON.x ? -1 : 1, 0);
     }
+    /* ---- THE ENCOUNTERS (Session 18) --------------------------------- */
+    {
+      const felled = events.progress('the-felled-pine') >= 0;
+      felledLog.visible = felled;
+      felledSaw.visible = felled;
+      for (const m of sawnLogs) m.visible = !felled && h >= FELLED.sawnAt && h < 23.5;
+    }
+    {
+      const on = events.progress('the-tarn-rings');
+      const mat = ripple.material as THREE.MeshBasicMaterial;
+      if (on < 0) { ripple.visible = false; rippleState.at = -1; rippleState.next = 0; }
+      else {
+        rippleState.next -= dt;
+        if (rippleState.next <= 0) {
+          rippleState.next = 8 + Math.abs(Math.sin(t * 7.3)) * 6;
+          const a = t * 1.7;
+          rippleState.x = TARN.x + Math.cos(a) * 7;
+          rippleState.z = TARN.z + Math.sin(a * 1.3) * 6;
+          rippleState.at = t;
+          ripple.position.set(rippleState.x, ctx.groundY(rippleState.x, rippleState.z) + 0.06, rippleState.z);
+          if (Math.hypot(px - rippleState.x, pz - rippleState.z) < 40) say('stone-plop');
+        }
+        const age = rippleState.at < 0 ? 9 : t - rippleState.at;
+        const u = Math.min(1, age / 2.6);
+        ripple.visible = u < 1;
+        const s = 0.4 + u * 1.8;
+        ripple.scale.set(s, s, 1);
+        mat.opacity = (1 - u) * 0.8;
+      }
+    }
     {
       const on = events.progress('the-deep-pines-bats');
       deepBats.forEach((b, i) => {
@@ -872,6 +941,33 @@ const BOAT = { x: 306, z: -234 };
 /** HOLT'S, on the rim above the head wall — which is where the fifth
  *  mark says it is. */
 const HOUSE = { x: 302, z: -272 };
+
+/* ================================================================== *
+ * THE PAPER PLANE — the wilds' mount, and the throw from height
+ * (Session 18; `WORLD-SYSTEMS` §4, deferred four times and not again).
+ *
+ * A carriable (`things.ts`) that GLIDES: thrown, it goes down the air
+ * in a line, five and a half units across for every one it falls,
+ * until the ground comes up to meet it. On the flat that is eight
+ * units. Off the tear's lip at THE OVERLOOK, east, it is the whole
+ * cut: it crosses the floor thirteen units up and meets the far wall,
+ * and a plane that meets a wall drops to its foot — so it is lying at
+ * the east side of the floor, and the only way to it is round the
+ * mouth and along the bed, which the note says is about an hour. The
+ * far rim is as high as this one; nothing thrown from here lands on
+ * it, and the height field is the one authority on that. It is found on the
+ * overlook's own rock, it is left wherever it lands, it is clamped to
+ * Splitrock like every thing, and the one thing it does not do is
+ * shorten the walk round the mouth: the geography lesson this land
+ * teaches by making you walk it (Session 11's brief, kept).
+ * ================================================================== */
+things.register({
+  id: 'paper-plane', kind: 'carriable', land: 'canyon', name: 'THE PLANE',
+  /* Eleven units from the overlook's own marker, toward the lip, so
+   * that holding it the key is the throw and not the note (the well's
+   * lesson from Session 15, applied before it cost a round). */
+  home: { x: 278.5, z: -169 }, glide: 5.5,
+});
 
 /* ================================================================== *
  * SPLITROCK'S UNNAMED (Session 17): three, and no more, because the
@@ -1128,6 +1224,14 @@ export const buildCanyon: RegionBuilder = (ctx) => {
    * lit window is one warm pixel at forty units*). The same spill Brim
    * hangs at a lantern, hung at his window, so the only lit thing in
    * the east half of the world is a thing you can steer by. */
+  /* THE PLANE, where the registry has it: on the rock, in the air, or
+   * in the hand (drawn by the walker then, and not here). */
+  const planeThing = things.get('paper-plane')!;
+  const planeTex = paperPlaneTexture(6300);
+  planeThing.def.hand = planeTex;
+  planeThing.def.handSize = [0.8, 0.4];
+  const plane = ctx.standee(planeTex, 1.3, 0.65, planeThing.x, planeThing.z);
+  planeThing.mesh = plane;
   const houseGlow = ctx.standee(lampGlowTexture(6233), 5.2, 5.2, HOUSE.x + 0.6, HOUSE.z + 0.3);
   ctx.hang(houseGlow, 1.4);
   (houseGlow.material as THREE.MeshBasicMaterial).transparent = true;
@@ -1208,6 +1312,25 @@ export const buildCanyon: RegionBuilder = (ctx) => {
     houseLit.visible = !day;
     lightUpOne(houseGlow, day ? 0 : 0.9);
 
+    /* ---- THE PLANE (Session 18) -------------------------------------- */
+    {
+      const fp = things.flyPos(planeThing);
+      if (fp) {
+        plane.visible = true;
+        plane.position.set(fp.x, fp.y, fp.z);
+        // it leads with its nose, and it noses down as it goes
+        const f = planeThing.fly!;
+        plane.scale.x = f.x1 < f.x0 ? -1 : 1;
+        plane.rotation.z = (f.x1 < f.x0 ? 1 : -1) * Math.min(0.5, Math.max(0, (f.y0 - f.y1) / Math.max(1, Math.hypot(f.x1 - f.x0, f.z1 - f.z0)) * 0.8));
+      } else if (planeThing.state === 'ground') {
+        plane.visible = true;
+        plane.position.set(planeThing.x, ctx.groundY(planeThing.x, planeThing.z) + 0.05, planeThing.z);
+        plane.rotation.z = 0.12;
+      } else {
+        plane.visible = false;
+      }
+    }
+
     /* ---- THE UNNAMED, THE LIZARD, THE BATS (Session 17) ------------- */
     for (const f of hikers) f.tick(h);
     overlooker.tick(h);
@@ -1244,6 +1367,18 @@ export const buildCanyon: RegionBuilder = (ctx) => {
 };
 
 export const CANYON_POIS: WorldPOI[] = [
+  {
+    /* THE PLANE, where it lies. Off while it is in the hand or in the
+     * air; the registry decides. Reachable from arm's length, so the
+     * overlook's own note wins when you are standing at the note. */
+    get x() { return things.get('paper-plane')!.x; },
+    get z() { return things.get('paper-plane')!.z; },
+    get enabled() { return things.get('paper-plane')!.state === 'ground'; },
+    set enabled(_v: boolean) { /* the registry decides */ },
+    radius: 2.6,
+    prompt: 'PICK UP THE PLANE',
+    touch: () => { things.pickUp('paper-plane'); },
+  } as unknown as WorldPOI,
   {
     /* Short sentences. People out here do not use two words
      * (THE-WAITS §4), and that is the register for every note in this
@@ -1598,9 +1733,11 @@ export const buildDesert: RegionBuilder = (ctx) => {
   weedState[3].z = 52;
   weedState.forEach((s, i) => weeds.set(i, s.x, s.z, 0.55 + r() * 0.6, s.spin, false));
 
-  const devils = [0, 1].map((p) =>
-    ctx.standee(dustDevilTexture(7140 + p, p as 0 | 1), 5.4, 12.2, 280, 20));
-  for (const m of devils) (m.material as THREE.MeshBasicMaterial).transparent = true;
+  /* A CREATURE since Session 18, so the life registry — and the road
+   * tool that reads it — knows where the devil is: it crosses the
+   * canyon trail's run over the pan, and it is the biggest moving thing
+   * in the land, and the skyline grid only knew where it was built. */
+  const devilDrawn = new Creature(ctx, 'the-dust-devil', 'desert', [0, 1].map((p) => dustDevilTexture(7140 + p, p as 0 | 1)), 5.4, 12.2, 280, 20);
   const devil = { x: 276, z: 24, a: 1.9 };
 
   /* ---- THE UNNAMED, AND THE PALE'S ANIMALS (Session 17) ------------- */
@@ -1610,6 +1747,29 @@ export const buildDesert: RegionBuilder = (ctx) => {
   const paleLizardState = { gone: 0 };
   const kite = new Creature(ctx, 'the-pale-kite', 'desert', [kiteTexture(7151)], 2.6, 1.3, 268, 52);
   const snake = new Creature(ctx, 'the-snake', 'desert', [snakeTexture(7152)], 1.9, 0.6, 296, 80);
+  /* C22 · THE OASIS, FROM THE WRONG DIRECTION, AND IT IS NOT THERE
+   * (Session 18, `THE-STRANGERS`): a stand of palms out on the pan,
+   * north-east of the real one, in the middle of the day, that you can
+   * see from sixty units and not from twenty-five. Nothing under them
+   * and no water. It stands where the canyon trail's run across the
+   * pan looks — north and a little east of the Downs' edge — so a
+   * walker on the trail sees it dead ahead and walks toward it, and
+   * it is not there. */
+  const MIRAGE = { x: 300, z: -86 };
+  /* THE CAIRN (Session 18): the canyon trail's midpoint across the pan.
+   * `tools/check-roads.mjs` found the trail's run from the Downs' edge
+   * to the riverhead silent for twenty-two seconds on both rigs — the
+   * longest silence on any road at noon — and a cairn is what a land
+   * whose thesis is *the answer is elsewhere* puts at a halfway mark:
+   * five stones and a rag that say the way without saying the turn.
+   * A lizard on the top stone, gone before you are sure, like the
+   * pale's. The drawing is the canyon's own cairn. */
+  const CAIRN = { x: 261.5, z: -24.5 };
+  ctx.standee(cairnTexture(7161), 2.6, 3.2, CAIRN.x, CAIRN.z, { rotY: 0.08 });
+  const cairnLizard = new Creature(ctx, 'the-cairn-lizard', 'desert', [lizardTexture(7162)], 0.9, 0.45, CAIRN.x + 0.3, CAIRN.z - 0.2);
+  const cairnLizardState = { gone: 0 };
+  const mirage = [0, 1, 2].map((i) => ctx.standee(PALM[i], 8.4, 10.8, MIRAGE.x - 5 + i * 5, MIRAGE.z + (i % 2) * 2.5, { opacity: 0 }));
+  for (const m of mirage) (m.material as THREE.MeshBasicMaterial).transparent = true;
 
   return (dt: number, t: number, px: number, pz: number) => {
     const h = clock.hour;
@@ -1700,10 +1860,7 @@ export const buildDesert: RegionBuilder = (ctx) => {
     if (devil.z < -92) { devil.z = -92; devil.a = -devil.a; }
     if (devil.z > 124) { devil.z = 124; devil.a = -devil.a; }
     const lean = Math.sin(t * 0.9) > 0 ? 0 : 1;
-    for (let p = 0; p < 2; p++) {
-      devils[p].visible = p === lean;
-      devils[p].position.set(devil.x, ctx.groundY(devil.x, devil.z), devil.z);
-    }
+    devilDrawn.set(lean, devil.x, devil.z, 1, 0);
 
     /* ---- THE UNNAMED, AND THE PALE'S ANIMALS (Session 17) ----------- */
     for (const f of roadWalkers) f.tick(h);
@@ -1728,6 +1885,21 @@ export const buildDesert: RegionBuilder = (ctx) => {
       const on = events.progress('the-snake-crosses');
       if (on < 0) snake.hide();
       else snake.set(0, 296 + (313 - 296) * on, 80 + (85 - 80) * on, 1, 0.05);
+    }
+    {
+      cairnLizardState.gone = Math.max(0, cairnLizardState.gone - dt);
+      const warm = h > 8.5 && h < 18.5;
+      if (!warm || cairnLizardState.gone > 0) cairnLizard.hide();
+      else {
+        if (Math.hypot(px - CAIRN.x, pz - CAIRN.z) < 5.5) cairnLizardState.gone = 20;
+        cairnLizard.set(0, CAIRN.x + 0.3, CAIRN.z - 0.2, Math.sin(t * 0.13) > 0 ? 1 : -1, 1.75);
+      }
+    }
+    {
+      const noon = h > 11.0 && h < 15.0;
+      const d = Math.hypot(px - MIRAGE.x, pz - MIRAGE.z);
+      const k = noon ? Math.max(0, Math.min(1, (d - 26) / 24)) * 0.55 : 0;
+      for (const m of mirage) { m.visible = k > 0.02; (m.material as THREE.MeshBasicMaterial).opacity = k; }
     }
   };
 };
@@ -1919,6 +2091,39 @@ const SHEPHERD = { id: 'the-shepherd', land: 'downs' as const, pace: 56, walkPos
   [5.62, 101, 117, 6, 1], [6.75, 96.5, 63, 6, -1, 12.5], [20.35, 101, 117, 6, 1, 0.05],
 ]) };
 events.register({ id: 'the-cows-lie-down', land: 'downs', at: 20.5, hours: 9.0, place: { x: 140, z: -12 } });
+
+/* ================================================================== *
+ * THE ENCOUNTERS ON THE DOWNS (Session 18, `THE-STRANGERS` C17, C18).
+ * ================================================================== */
+
+/** C17 · A FUNERAL YOU SHOULD NOT INTERRUPT. Four, in file, slow, up
+ *  the lane from the farm to the ford at three and back before four;
+ *  nobody looks up, nothing is said, and inside forty units of the
+ *  lane while they are on it the land's ambient stops (`earshot.ts`,
+ *  `App.ts`). Nothing is carried that you can see. */
+const FUNERAL = [0, 1, 2, 3].map((i) => ({ id: `the-funeral-${i}`, land: 'downs' as const, pace: 190, walkPose: 4, stops: stops([
+  [15.0 + i * 0.014, 153 + (i % 2) * 1.2, 96, 4, 1], [15.4 + i * 0.014, 149.5 + (i % 2) * 1.2, 32 - i * 2.4, 0, i % 2 ? 1 : -1, 0.22],
+  [15.95 + i * 0.014, 153 + (i % 2) * 1.2, 96, 0, 1, 0.02],
+]) }));
+/** C18 · A FLOCK PARTS AROUND YOU AND CLOSES BEHIND. Seven, on the east
+ *  road at half past four, walking west from the Flats' end of the
+ *  Downs to the field gate — a scheduled event, so the flock is where
+ *  the hour says whether you are on the road or not — and each one
+ *  steps off the road as you reach it and back on when you have gone.
+ *  South, always: the river is the other side. */
+const ROAD_FLOCK = { at: 16.55, hours: 0.42 };
+events.register({ id: 'the-road-flock', land: 'downs', ...ROAD_FLOCK, place: { x: 136, z: 34 } });
+const FLOCK_ROAD: [number, number][] = [[158, 23], [140, 31], [122, 40], [112, 45]];
+function flockRoadAt(u: number): { x: number; z: number; ax: number; az: number } {
+  const n = FLOCK_ROAD.length - 1;
+  const k = Math.max(0, Math.min(n - 1e-6, u * n));
+  const i = Math.floor(k);
+  const f = k - i;
+  const [ax, az] = FLOCK_ROAD[i];
+  const [bx, bz] = FLOCK_ROAD[i + 1];
+  const l = Math.hypot(bx - ax, bz - az) || 1;
+  return { x: ax + (bx - ax) * f, z: az + (bz - az) * f, ax: (bx - ax) / l, az: (bz - az) / l };
+}
 
 /** Where the flock is at an hour: 0 in the fold, 1 in the field, and
  *  in between it is walking. Symmetric, so the same path serves both. */
@@ -2342,6 +2547,10 @@ export const buildDowns: RegionBuilder = (ctx) => {
    * all day, and they lift off the scarecrow's arms when you come and
    * settle again when you have gone. */
   const scarecrowRooks = [0, 1, 2].map((i) => new Creature(ctx, `the-scarecrow-rooks-${i}`, 'downs', [rookTexture(5980 + i)], 1.5, 1.05, 128, 112));
+  /* ---- THE ENCOUNTERS (Session 18, `THE-STRANGERS` C17, C18) -------- */
+  const funeral = FUNERAL.map((d, i) => new Figure(ctx, d, (i % 3) as 0 | 1 | 2));
+  const roadFlock = [0, 1, 2, 3, 4, 5, 6].map((i) => new Creature(ctx, `the-road-flock-${i}`, 'downs', [0, 1, 2, 3].map((p) => sheepTexture(5990 + i * 4 + p, p as 0 | 1 | 2 | 3)), 2.0, 1.5, 158, 23));
+  const flockState = roadFlock.map(() => ({ off: 0 }));
   const rookState = { up: 0 };
   let sailSpin = 0;
 
@@ -2487,6 +2696,25 @@ export const buildDowns: RegionBuilder = (ctx) => {
     if (dog.following && dog.pose === 'trot' && dogBark <= 0) { say('dog-bark'); dogBark = 11 + (t % 6); }
     const dp = dog.pose === 'walk' ? 1 : dog.pose === 'trot' ? 2 : dog.atBorder ? 3 : 0;
     dogDrawn.set(dp, dog.x, dog.z, dog.face < 0 ? -1 : 1);
+
+    /* ---- THE ENCOUNTERS (Session 18) --------------------------------- */
+    for (const f of funeral) f.tick(h);
+    {
+      const on = events.progress('the-road-flock');
+      roadFlock.forEach((c, i) => {
+        if (on < 0) { c.hide(); return; }
+        const u = Math.max(0, Math.min(1, on * 1.3 - i * 0.045));
+        const p = flockRoadAt(u);
+        const st = flockState[i];
+        const d = Math.hypot(px - p.x, pz - p.z);
+        const want = d < 4.6 ? 1 : 0;
+        st.off += (want - st.off) * (1 - Math.exp(-dt * (want ? 4 : 1.2)));
+        // off the road to the south, and back on when you have gone
+        const across = 2.4 + (i % 3) * 0.8 + st.off * 3.2;
+        const pose = u >= 1 ? i % 3 : (want ? 3 : Math.floor(h * 100 / 0.3 + i) % 2 === 0 ? 0 : 1);
+        c.set(pose, p.x - p.az * across, p.z + p.ax * across, -1, 0);
+      });
+    }
 
     /* THE ROOKS on the scarecrow, and off it. */
     rookState.up = Math.max(0, rookState.up - dt);

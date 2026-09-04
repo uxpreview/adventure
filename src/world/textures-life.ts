@@ -528,3 +528,107 @@ export function shutterPairTexture(seed: number): THREE.CanvasTexture {
     }
   });
 }
+
+/* ================================================================== *
+ * THE ENCOUNTERS' PROPS (Session 18, `THE-STRANGERS` Part Three).
+ * What an encounter needs that a figure does not carry: a ladder for
+ * two, a hat with nobody under it, a fire with nobody at it, a saw
+ * left in a pine, and the ring something makes in the water.
+ * ================================================================== */
+
+/** A long ladder, carried level between two people: two rails, nine
+ *  rungs, seen from the side. Drawn wide and low; the figures stand
+ *  at either end of it. */
+export function ladderTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(256, 48, seed, (ctx, r) => {
+    stroke(ctx, [[6, 14], [250, 12]], r, { width: 2.2, alpha: 0.86 });
+    stroke(ctx, [[6, 34], [250, 32]], r, { width: 2.2, alpha: 0.86 });
+    for (let i = 0; i < 9; i++) {
+      const x = 20 + i * 27;
+      line(ctx, x, 13, x + 1, 33, r, { width: 1.8, alpha: 0.8 });
+    }
+  });
+}
+
+/** A hat, on its own, on the road, going the other way: a brim and a
+ *  crown, and a little air under the brim. */
+export function hatTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(64, 48, seed, (ctx, r) => {
+    const crown: [number, number][] = [[20, 30], [22, 10], [44, 9], [46, 30]];
+    fillPoly(ctx, crown, DUN, 0.34);
+    poly(ctx, crown, r, { width: 1.9, alpha: 0.86 });
+    stroke(ctx, [[6, 33], [30, 36], [58, 31]], r, { width: 2.2, alpha: 0.86 });
+    line(ctx, 22, 24, 44, 23, r, { width: 1.1, alpha: 0.5, passes: 1 });
+  });
+}
+
+/** A fire on the sand at dusk: three sticks leant together, the flame
+ *  in a warm wash with two licks of pen, and the glow the sand takes
+ *  from it. Nobody at it yet. */
+export function fireTexture(seed: number, lit: boolean): THREE.CanvasTexture {
+  return makeTexture(96, 96, seed, (ctx, r) => {
+    if (lit) {
+      const g = ctx.createRadialGradient(48, 60, 2, 48, 60, 44);
+      g.addColorStop(0, 'rgba(255,240,210,0.9)');
+      g.addColorStop(0.35, 'rgba(255,200,120,0.45)');
+      g.addColorStop(1, 'rgba(255,200,120,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 8, 96, 88);
+    }
+    // the sticks
+    line(ctx, 22, 84, 52, 56, r, { width: 2.2, alpha: 0.85 });
+    line(ctx, 74, 84, 44, 56, r, { width: 2.2, alpha: 0.85 });
+    line(ctx, 30, 88, 66, 86, r, { width: 2, alpha: 0.8 });
+    line(ctx, 60, 90, 28, 70, r, { width: 1.8, alpha: 0.7 });
+    if (lit) {
+      for (let i = 0; i < 3; i++) {
+        stroke(ctx, [[40 + i * 6, 70], [36 + i * 8 + r() * 6, 50], [46 + i * 4, 30 - r() * 10]], r,
+          { width: 1.4, alpha: 0.42, color: '#ffd79a' });
+      }
+    } else {
+      // the ash, cold
+      hatch(ctx, 34, 76, 30, 10, 0.2, 4, r, { alpha: 0.18 });
+    }
+  });
+}
+
+/** A saw, left in the cut: the blade stuck in the log and the handle
+ *  up in the air. Drawn on its own so the log can be the log. */
+export function sawTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(64, 96, seed, (ctx, r) => {
+    const blade: [number, number][] = [[22, 88], [30, 30], [40, 30], [36, 88]];
+    fillPoly(ctx, blade, CREAMY, 0.5);
+    poly(ctx, blade, r, { width: 1.8, alpha: 0.86 });
+    for (let i = 0; i < 7; i++) line(ctx, 23 + i * 0.9, 84 - i * 7, 20 + i * 0.9, 80 - i * 7, r, { width: 1, alpha: 0.5, passes: 1 });
+    // the handle: a D, open
+    stroke(ctx, [[30, 30], [24, 14], [36, 6], [48, 12], [44, 30]], r, { width: 2.2, alpha: 0.86 });
+    line(ctx, 30, 22, 42, 20, r, { width: 1.6, alpha: 0.7 });
+  });
+}
+
+/** The ring something makes in the water and you do not see what:
+ *  two circles, the outer thinner, on a transparent ground. Scaled up
+ *  and faded by the land over a couple of seconds. */
+export function rippleDecal(seed: number): THREE.CanvasTexture {
+  return makeTexture(128, 128, seed, (ctx, r) => {
+    // pale, not ink: the tarn is the darkest water in the game at the
+    // hour the rings are on, and a dark ring on dark water is no ring
+    scribbleCircle(ctx, 64, 64, 50, r, { width: 1.8, alpha: 0.55, color: '#efe9d8' }, 1.2);
+    scribbleCircle(ctx, 64, 64, 32, r, { width: 2.2, alpha: 0.7, color: '#efe9d8' }, 1.1);
+    scribbleCircle(ctx, 64, 64, 14, r, { width: 1.4, alpha: 0.45, color: '#efe9d8' }, 1.0);
+  });
+}
+
+/** The mended cart's wheel, off, leaning against nothing: a ring with
+ *  spokes, drawn flat on the road beside the cart. */
+export function wheelTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(64, 64, seed, (ctx, r) => {
+    scribbleCircle(ctx, 32, 32, 26, r, { width: 2.2, alpha: 0.86 }, 1.15);
+    scribbleCircle(ctx, 32, 32, 5, r, { width: 1.4, alpha: 0.7 });
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI;
+      line(ctx, 32 + Math.cos(a) * 5, 32 + Math.sin(a) * 5, 32 + Math.cos(a) * 25, 32 + Math.sin(a) * 25, r, { width: 1.3, alpha: 0.6, passes: 1 });
+      line(ctx, 32 - Math.cos(a) * 5, 32 - Math.sin(a) * 5, 32 - Math.cos(a) * 25, 32 - Math.sin(a) * 25, r, { width: 1.3, alpha: 0.6, passes: 1 });
+    }
+  });
+}

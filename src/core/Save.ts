@@ -18,6 +18,10 @@ export type SaveData = {
    * Null until the first walk touches it.
    */
   boat: { x: number; z: number } | null;
+  /** WHERE THE BICYCLE IS (Session 18) — the same promise as the boat:
+   *  yours is where you left it. Absent in an older save, which reads
+   *  as the verge at the mouth of the court. */
+  bicycle?: { x: number; z: number } | null;
   /**
    * WHAT TIME IT IS. The day cycle runs while you play and stops when
    * you stop, so coming back tomorrow morning does not mean coming back
@@ -86,6 +90,7 @@ const DEFAULTS: SaveData = {
   muted: false,
   walked: 0,
   boat: null,
+  bicycle: null,
   hour: null,
   known: [],
   passed: [],

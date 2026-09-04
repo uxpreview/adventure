@@ -368,6 +368,32 @@ export class World {
     return top;
   }
 
+  /**
+   * EVERYTHING STANDING WITHIN `r` OF (x, z), as the skyline knows it
+   * (Session 18): each cell's centre and the top of the tallest thing
+   * over it. This is what `tools/check-roads.mjs` projects through the
+   * shipping camera to ask whether anything is IN FRAME on a road — a
+   * one-off standee is a thing to look at; an instanced field (grass,
+   * trees, a crowd) is not in this grid and does not count, on purpose:
+   * a road through a wood with nothing on it but trees is the road the
+   * owner called a chore.
+   */
+  skylineWithin(x: number, z: number, r: number): { x: number; z: number; top: number }[] {
+    const out: { x: number; z: number; top: number }[] = [];
+    const c0 = Math.floor((x - r) / SKY_CELL);
+    const c1 = Math.floor((x + r) / SKY_CELL);
+    const d0 = Math.floor((z - r) / SKY_CELL);
+    const d1 = Math.floor((z + r) / SKY_CELL);
+    for (let cx = c0; cx <= c1; cx++) {
+      for (let cz = d0; cz <= d1; cz++) {
+        const v = this.sky.get(SKY_KEY(cx, cz));
+        if (v === undefined) continue;
+        out.push({ x: (cx + 0.5) * SKY_CELL, z: (cz + 0.5) * SKY_CELL, top: v });
+      }
+    }
+    return out;
+  }
+
   /** For a fresh save: ink the spawn land instantly, no wave. */
   inkImmediate(id: RegionId) {
     const b = this.built.get(id);
