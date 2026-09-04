@@ -24,6 +24,49 @@ meant. If they answered that, `tools/check-roads.mjs`'s definition of
 
 ---
 
+## READ FIRST — THE LOCAL QA PASS (2026-09-04) COMES BEFORE §1
+
+`design/critiques/qa-local-1.md` is the first time the shipped build
+was played on a real machine, in real time, with real keys, on both
+rigs. Every tool passed. The play did not. **Its fixes are this
+session's first job, in this order, before any land is opened:**
+
+1. **B1 — the first minute traps the player.** A due-west run from
+   the spawn shuts the field gate at x = −9.4 with the walker still in
+   the field (`meadow.ts`'s `elsewhere` clause fires on the spawn row).
+   Spawn on the gate's row or exclude the field's east side from
+   `elsewhere`; put the bull's start where the desktop frame sees the
+   charge; add the due-west run to `check-verbs` so it cannot return.
+2. **B3 — the writing is placed far from what it names.** Place
+   labels within a line-height of the top of their drawing; anchor the
+   prompt beside the thing in reach, not beside the walker; give the
+   region card a paper halo; hide or nudge the map's district labels
+   at portrait scale. The evidence is `shots/qa-local-1/06–09`.
+3. **The tooling.** `shoot-lib.mjs` waits fifteen seconds per viewport
+   for words that are never in `innerText` (the chrome is lettered
+   onto canvas); wait for `.title-veil:not(.gone)`. Put `PW_CHROMIUM`
+   / `npx playwright install chromium` at the top of the README's run
+   section.
+4. **B2 — nothing has collision but three fences and a gull** is a
+   systems session of its own (report §6, items 6–7): every one-off
+   standee registers a footprint barrier as it is built, the way it
+   already records its top into the skyline, and anything within four
+   units of the lens fades. Scope it; if it fits after 1–3, build it
+   before the Vikings. If it does not, it is Session 20's first job
+   and this session must not put the camera inside anything new.
+5. The smaller ones (report §3 B4) go with whichever of the above
+   touches their file: the run hint on a bicycle, the rider above the
+   saddle, the wake card's fallback, the tarn's polygon.
+
+Then §1 below, with one change of emphasis: **Greyweather's re-art is
+the art gate's real job** — the keep is flat cards on empty ground
+when stood in (report §4) — and it comes before a Viking is drawn.
+`tools/qa-play-local.mjs` and `tools/qa-play-local-2.mjs` reproduce
+the play-through; run them headed on the owner's machine before you
+push, alongside the check tools.
+
+---
+
 ## 0. THE ROADS ARE MEASURED. FOUR LANDS ARE STILL DIORAMAS.
 
 Session 18 built the roads: the tool, fifteen encounters, forty-five

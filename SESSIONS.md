@@ -1,5 +1,24 @@
 # SESSIONS — the handoff log
 
+## 2026-09-04 — the first local QA pass, after Session 18 merged (no code)
+
+*The shipped build played on the owner's Mac for the first time: headed
+Chromium, real time, real keys, both rigs. Every check tool passes on
+this machine (once `PW_CHROMIUM` points at an installed Chrome);
+55–61 fps in every land; zero console errors. The play found three
+system faults no tool had seen: **the first minute traps a player who
+runs due west from the bull** (the gate shuts with them still in the
+field), **nothing in the world has collision but three fences and a
+gull** (the walker walks through every cottage, wall, keep and
+fountain and the camera goes inside them), and **labels, prompts and
+cards are placed far from what they name**. Plus a tooling fault
+older than every verdict: `shoot-lib` has waited fifteen silent seconds
+per viewport for title text that is lettered on canvas, since Session
+2. The report, ranked and with a session plan, is
+`design/critiques/qa-local-1.md`; the evidence is `shots/qa-local-1/`;
+the scripts are `tools/qa-play-local.mjs` and `-2.mjs`. `PROMPT.md`
+now opens with the fixes, in order, before Session 19's own scope.*
+
 ## Session 18 — 2026-09-04 — the roads
 
 *The walks between the lands, which the owner called a chore. Three
