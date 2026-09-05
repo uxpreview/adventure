@@ -66,10 +66,10 @@ const SHOTS = [
    * at (41, 211)): the frame is from the road's own verge, north of
    * it, where the cans are in front of the carriage and not behind a
    * roof. */
-  ['27-the-cans-on-the-flats-platform', 34, 206.5, { hour: 8.4, learn: ['fact:the-fold', 'door:the-cistern-yours', 'fact:the-cistern-filled'], do: 'trainAtFlats', wait: 0, fresh: true }],
+  ['27-the-cans-on-the-flats-platform', 37, 207.5, { hour: 8.4, learn: ['fact:the-fold', 'door:the-cistern-yours', 'fact:the-cistern-filled'], do: 'trainAtFlats', wait: 0, fresh: true }],
   ['28-the-pots-on-longshores-platform', -45, 42, { hour: 8.4, learn: ['name:the-mark', 'door:the-pots-hauled'], do: 'trainAtLongshore', wait: 0 }],
   ['29-nobody-on-splitrocks-platform', -45, -60,  { hour: 8.4, learn: ['route:the-river', 'door:the-sea-has-no-bottom'], do: 'trainAtSplitrock', wait: 0 }],
-  ['30-the-morning-after-the-cans',    34, 206.5, { hour: 9.5, learn: ['fact:the-8-15-ran', 'fact:left-at-desert-cans', 'fact:left-at-beach-pots'] }],
+  ['30-the-morning-after-the-cans',    37, 207.5, { hour: 9.5, learn: ['fact:the-8-15-ran', 'fact:left-at-desert-cans', 'fact:left-at-beach-pots'] }],
   ['31-the-morning-after-the-pots',    -45, 42,   { hour: 9.5 }],
 ];
 

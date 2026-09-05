@@ -76,11 +76,11 @@ const SHOTS = [
    * and the morning after the run, the cans and the pots still there,
    * with the train asleep in the car park. Knowledge accrues down this
    * list, so these go after everything that wants a platform empty. */
-  ['28-line-the-cans-instead',     34, 206.5, { train: [9, 3], learn: ['fact:the-fold', 'door:the-cistern-yours', 'fact:the-cistern-filled'] }],
+  ['28-line-the-cans-instead',     37, 207.5, { train: [9, 3], learn: ['fact:the-fold', 'door:the-cistern-yours', 'fact:the-cistern-filled'] }],
   ['29-line-the-pots-instead',    -45,  42, { train: [5, 2], learn: ['name:the-mark', 'door:the-pots-hauled'] }],
   ['30-line-nobody-at-splitrock', -45, -60, { train: [3, 1], learn: ['route:the-river', 'door:the-sea-has-no-bottom'] }],
   ['31-line-marget-at-brim',      -45, -104, { train: [2, 1], learn: ['fact:brim-hour', 'door:the-clock-set-to-eleven'] }],
-  ['32-line-the-morning-after-flats', 34, 206.5, { park: true, hour: 9.5, learn: ['fact:the-8-15-ran', 'fact:left-at-desert-cans', 'fact:left-at-beach-pots'] }],
+  ['32-line-the-morning-after-flats', 37, 207.5, { park: true, hour: 9.5, learn: ['fact:the-8-15-ran', 'fact:left-at-desert-cans', 'fact:left-at-beach-pots'] }],
   ['33-line-the-morning-after-longshore', -45, 42, { park: true, hour: 9.5 }],
 ];
 const VIEWPORTS = [
