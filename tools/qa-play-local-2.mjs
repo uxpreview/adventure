@@ -47,7 +47,7 @@ await fresh();
 const gateRun = await I(`(() => {
   const I = window.__inklands; I.setBearing(true); I.setTime(0);
   const out = [];
-  I.goto(24, 90); I.step(1/60, 70);           // the bull notices, then charges
+  I.goto(24, 82); I.step(1/60, 70);           // the bull notices, then charges
   I.drive(-1, 0, 1);                            // run DUE WEST, away from it
   for (let f = 0; f < 480; f++) {
     I.step(1/60, 1);
@@ -76,7 +76,7 @@ await shot('gate-trap-escape-attempt');
 await fresh();
 const diag = await I(`(() => {
   const I = window.__inklands; I.setBearing(true); I.setTime(0);
-  I.goto(24, 90); I.step(1/60, 70); I.drive(-1, -0.22, 1); I.step(1/60, 400); I.release(); I.step(1/60, 10);
+  I.goto(24, 82); I.step(1/60, 70); I.drive(-1, -0.22, 1); I.step(1/60, 400); I.release(); I.step(1/60, 10);
   return { x: +I.char.pos.x.toFixed(1), z: +I.char.pos.z.toFixed(1), shut: I.common.gate.shut, bull: I.common.bull.state };
 })()`);
 note('DIAGONAL (-1,-0.22) as the shoot script drives it: ' + JSON.stringify(diag));
@@ -85,7 +85,7 @@ await shot('gate-diagonal');
 await fresh();
 const late = await I(`(() => {
   const I = window.__inklands; I.setBearing(true); I.setTime(0);
-  I.goto(24, 90); I.step(1/60, 70); I.drive(-1, 0, 1); I.step(1/60, 250); I.drive(0, -1, 1); I.step(1/60, 120); I.drive(-1, 0, 1); I.step(1/60, 120); I.release(); I.step(1/60, 10);
+  I.goto(24, 82); I.step(1/60, 70); I.drive(-1, 0, 1); I.step(1/60, 250); I.drive(0, -1, 1); I.step(1/60, 120); I.drive(-1, 0, 1); I.step(1/60, 120); I.release(); I.step(1/60, 10);
   return { x: +I.char.pos.x.toFixed(1), z: +I.char.pos.z.toFixed(1), shut: I.common.gate.shut, bull: I.common.bull.state };
 })()`);
 note('WEST THEN NORTH ALONG THE HEDGE: ' + JSON.stringify(late));

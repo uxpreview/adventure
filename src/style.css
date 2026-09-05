@@ -172,6 +172,14 @@ body {
   pointer-events: none;
   z-index: 35;
   transition: opacity 0.8s ease, transform 0.8s ease;
+  /* A PAPER HALO (the local QA pass, 2026-09-04, B3): the note card's
+     own wash at sixty per cent, feathered, so the name reads over
+     Brim's bunting, the Penwood's pines and Greyline's towers, and is
+     still a thing written on the page rather than a box on it. */
+  padding: 6px 20px 9px;
+  border-radius: 40% 46% 44% 42% / 50% 48% 52% 46%;
+  background: rgba(247, 244, 235, 0.6);
+  box-shadow: 0 0 22px 16px rgba(247, 244, 235, 0.6);
 }
 .region-card.show {
   opacity: 1;

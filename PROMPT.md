@@ -1,234 +1,102 @@
-# PROMPT — Session 19: THE NEW CAST, WEST AND NORTH
+# PROMPT — Session 20: THE NEW CAST, EAST AND SOUTH
 
 You are continuing INKLANDS in `uxpreview/adventure`. Read, in order:
 **`design/THE-FUN-PASS.md` in full** (the owner's brief; binding), §10
-twice (the cast — the Vikings, the surfers, the monsters; *none of them
-explains anything*), §6 (the second door: WICK, PYE and WREN's rows),
-§3 (the seven things a playable land needs; every re-opened land is
-judged on all seven), `design/THE-WAITS.md` §1, §5 and §6 (WICK, PYE,
-WREN as designed), `design/THE-STRANGERS.md` (S4, S7, and the errands
-on the coast), `src/world/regions/coast.ts` and the castle half of
-`civic.ts` (the four lands you re-open), `src/world/events.ts`,
-`src/world/life.ts`, `src/world/company.ts`, `src/world/things.ts`,
-`src/world/earshot.ts` (Session 18's placed voices — every new sound
-with a place goes in it), `PLAN.md`, `README.md`, `SESSIONS.md`.
-**Play sheets first:** `design/play-sheets/session-18.md`, `-17.md`,
-`-16.md` are what the owner was handed; if they have played any of
-them, the verdict is in `SESSIONS.md` above Session 18's entry and it
-governs this session. If they have not, the sheets' questions are still
-open, and you build on the assumption that the roads are right until
-told otherwise — **except §0 of the Session 18 sheet**, which asks
-whether the fifteen-second rule as measured is the rule the owner
-meant. If they answered that, `tools/check-roads.mjs`'s definition of
-*in frame* changes first, before any land is opened.
+twice (the cast — the aliens, the barista, the design studio; *none of
+them explains anything*), §6 (the second door: the present-day lands'
+rows — Maple Court, Greyline, the Cubicle Mile, and the Downs, the
+Flats and Splitrock), §3 (the seven things a playable land needs),
+`design/THE-WAITS.md` §3, §5, §10, §11, §12 (the waits whose second
+doors you build), `design/THE-STRANGERS.md` (S2, S4, and the errands
+in the east and south), `src/world/regions/wilds.ts` (the Flats' half)
+and `civic.ts` (Greyline and the Cubicle Mile), `src/world/events.ts`,
+`src/world/life.ts`, `src/world/things.ts`, `src/world/earshot.ts`,
+`src/world/regions/coast.ts` (**Session 19's Vikings, surfers, Pye and
+Wren are the patterns for a cast member: a drawing of their own on a
+`Figure` with `maps`, a routine as a pure function of the hour, a card
+with two doors as a getter, a door read back every frame**), `PLAN.md`,
+`README.md`, `SESSIONS.md`.
+**Play sheets first:** `design/play-sheets/session-19.md`, `-18.md`,
+`-17.md`, `-16.md` are what the owner was handed; if they have played
+any of them, the verdict is in `SESSIONS.md` above Session 19's entry
+and it governs this session. If they have not, the sheets' questions
+are still open. **Sheet 18 §0** (the fifteen-second rule's measure) is
+still the owner's to answer, and `tools/check-roads.mjs`'s definition
+of *in frame* changes first if they have.
 
 ---
 
-## READ FIRST — THE LOCAL QA PASS (2026-09-04) COMES BEFORE §1
+## 0. WHAT SESSION 19 LEFT YOU
 
-`design/critiques/qa-local-1.md` is the first time the shipped build
-was played on a real machine, in real time, with real keys, on both
-rigs. Every tool passed. The play did not. **Its fixes are this
-session's first job, in this order, before any land is opened:**
+- **The local QA pass's fixes are in.** The spawn is on the gate's row
+  (`layout.SPAWN` is (24, 82)); a due-west run goes through the gate,
+  and `check-verbs` drives it and projects the bull through the
+  shipping camera. **A drawing is a barrier**: `ctx.standee(…, {
+  solid })` registers the footprint as it is built (`true` for the
+  width, a number for a trunk's half-width, `{ gap }` for an arch, `{
+  keep }` to stand across a road on purpose — only the fountain does),
+  clipped off any road's own line so no road is ever severed; 140-odd
+  buildings, walls, towers, huts, the keep, the mill, the oaks' trunks
+  have one. Anything within four and a half units of the lens fades to
+  a quarter (`World.nearFade`). Labels sit a line-height over their
+  own drawing (`World.nearTopAt`, the exact footprint, not the grid's
+  disc); the prompt goes beside the walker when the thing is off the
+  frame; the region card has a paper halo; the map hides district
+  names under 560 points and keeps them off each other. The tarn's
+  skin is draped on its bowl. `shoot-lib` waits for the title veil.
+- **Session 19's cast is built the way the next one should be**:
+  `coast.ts`'s longship (`shipAt(h)`, a pure function), Pye and Wren
+  (`Figure` with `maps`, routines whose stops are re-written in place
+  when a door is taken), the two cards (getters that exist once the
+  knowledge does, Nell's pattern), the horn answered across a border
+  (a module-scope flag between two builders). `things.skims` and
+  `things.splashes` for a thing that skips. `Boat.rowboat` for a land
+  that wants to answer the rowboat.
+- **`WAITS_FOR_THE_LINE` is seven.** Eleven waits exist; Joan's never
+  puts her on a platform. `WAIT_ANSWERS` has castle, beach and ocean.
+- **Three protected framings moved, measured** — see `SESSIONS.md`
+  Session 19's `diff-sheets` numbers, and `critique-art-13.md`.
 
-1. **B1 — the first minute traps the player.** A due-west run from
-   the spawn shuts the field gate at x = −9.4 with the walker still in
-   the field (`meadow.ts`'s `elsewhere` clause fires on the spawn row).
-   Spawn on the gate's row or exclude the field's east side from
-   `elsewhere`; put the bull's start where the desktop frame sees the
-   charge; add the due-west run to `check-verbs` so it cannot return.
-2. **B3 — the writing is placed far from what it names.** Place
-   labels within a line-height of the top of their drawing; anchor the
-   prompt beside the thing in reach, not beside the walker; give the
-   region card a paper halo; hide or nudge the map's district labels
-   at portrait scale. The evidence is `shots/qa-local-1/06–09`.
-3. **The tooling.** `shoot-lib.mjs` waits fifteen seconds per viewport
-   for words that are never in `innerText` (the chrome is lettered
-   onto canvas); wait for `.title-veil:not(.gone)`. Put `PW_CHROMIUM`
-   / `npx playwright install chromium` at the top of the README's run
-   section.
-4. **B2 — nothing has collision but three fences and a gull** is a
-   systems session of its own (report §6, items 6–7): every one-off
-   standee registers a footprint barrier as it is built, the way it
-   already records its top into the skyline, and anything within four
-   units of the lens fades. Scope it; if it fits after 1–3, build it
-   before the Vikings. If it does not, it is Session 20's first job
-   and this session must not put the camera inside anything new.
-5. The smaller ones (report §3 B4) go with whichever of the above
-   touches their file: the run hint on a bicycle, the rider above the
-   saddle, the wake card's fallback, the tarn's polygon.
+## 1. THE JOB (`THE-FUN-PASS` §14, Session 20)
 
-Then §1 below, with one change of emphasis: **Greyweather's re-art is
-the art gate's real job** — the keep is flat cards on empty ground
-when stood in (report §4) — and it comes before a Viking is drawn.
-`tools/qa-play-local.mjs` and `tools/qa-play-local-2.mjs` reproduce
-the play-through; run them headed on the owner's machine before you
-push, alongside the check tools.
+1. **THE ALIENS in the Pale** (§10): something landed in the flattest
+   ground in the world and burned ruled patterns into it; at night
+   there are lights over the pan. Frightening at night, absurd by
+   day. Stuck too. THE PALE is a district already. A toy.
+2. **THE BARISTA at the junction** (§10): a coffee cart, and a person
+   calling out names for orders nobody collects — a second list of
+   names in the world. The only person in the city who stands still on
+   purpose. Comedy, then something else. An earshot row.
+3. **THE DESIGN STUDIO in the atrium** (§10): a UX research sprint on
+   the timetable, sticky notes on the shelter glass, a persona pinned
+   up called DENNIS, a journey map of a journey nobody has taken.
+   Deadpan, and accurate.
+4. **The office chair, the bin, the ball** (§5's toys): ride the chair
+   down the mile; push the wheelie bin into the junction; kick a ball
+   on the green. `QUESTS` §8 L8, L9, L10.
+5. **Second doors for the present-day lands** (§6): Maple Court (turn
+   Val's light off), Greyline (walk past), the Cubicle Mile (wipe the
+   board / board the train). Cards, both doors visible, a permanent
+   visible cost, nothing says which was right.
+6. **The art gate on the three re-opened lands, and the play sheet.**
 
----
+## 2. WHAT CONSTRAINS IT
 
-## 0. THE ROADS ARE MEASURED. FOUR LANDS ARE STILL DIORAMAS.
+1. **NOBODY CROSSES A BORDER BUT THE WALKER.** The aliens are stuck
+   too. Nothing of theirs leaves the Flats.
+2. **A MONSTER IS NEVER SEEN WHOLE, AND NEVER EXPLAINED.** The lights
+   over the pan are lights.
+3. **A PROTECTED FRAMING MAY MOVE WHEN THE LAND INSIDE IT IS THE
+   SCOPE** (`QUALITY-BAR` §3). Say which and by how much.
+4. **B2's rule stands**: every new building registers its footprint,
+   and nothing new puts the camera inside a drawing.
 
-Session 18 built the roads: the tool, fifteen encounters, forty-five
-districts, the bicycle, the plane, the daily 8:15. The tool found the
-world more alive at noon than the owner felt, which means either the
-measure or the walk is wrong, and the sheet asks which. What has not
-changed since Session 14 is that CASTLE GREYWEATHER, LONGSHORE and THE
-WIDE BLUE have their named person in a pose and one door or none: WICK,
-PYE and WREN's waits are unbuilt, and three of the owner's cast are
-still a table in a brief.
+## 3. THE GATES THAT ARE THE OWNER'S
 
-**This session is THE NEW CAST, WEST AND NORTH** (`THE-FUN-PASS` §14):
-the Vikings on the Holdfast, the surfers at the Cut, the monsters (the
-moat pool, under the Wide Blue, the deep pines at night), WICK, PYE and
-WREN's waits with two doors from the start, toys in the old world and
-on the coast, and an art gate on the four re-opened lands.
-
----
-
-## 1. THE JOB
-
-### 1. THE VIKINGS ON THE HOLDFAST (§10)
-
-A longship beached on the headland — Session 18 drew the district and
-called it THE HOLDFAST in `layout.DISTRICTS` for this — and a raiding
-party that has been waiting for a wind for four hundred years. **Every
-day they row out to the mark and compete in the regatta** (`the-
-regatta` is registered at noon; their boat joins the fleet, and the
-fleet is drawn by `coast.ts`). They roar at the shore. **They cannot
-land on it**: they are inhabitants of THE WIDE BLUE and the beach is
-LONGSHORE, and the border is the rule that makes them funny. Threat
-first, then comedy: the first time you see them from the promenade
-they are a longship coming in; the tenth time they are four men in a
-boat going round a buoy. A toy: something on the Holdfast you can
-touch, in the house voice.
-
-### 2. THE SURFERS AT THE CUT (§10)
-
-Board racks, a van, a wetsuit on a line, and a coast that only has a
-tide. **They check the water at first light every day** — a routine on
-`events.ts`, like everybody now — and go back to the van. The wait,
-played for laughs. They carry an errand from `THE-STRANGERS` Part Two.
-THE CUT is a district already.
-
-### 3. THE MONSTERS (§10) — never seen whole
-
-Three, and every one of them is a sound, a distance, and a thing that
-moved while you were not looking (`THE-FUN-PASS` §2.3):
-
-- **the moat pool**: the water goes red for two days — Wick's dye, or
-  not. On the clock (`weather.ts` has a day counter; a thing that
-  happens for two days in every nine is a pure function of `clock.day`).
-- **under the Wide Blue**: `the-deep` surfaces once at dusk (Session
-  17). It does not need more. What it needs is a CONSEQUENCE that is
-  not an explanation: the seals do not haul out the day after; the
-  regatta's fleet gives the long water a wider berth; a pot comes up
-  empty. Pick one.
-- **the deep pines at night**: the pine-tick stops (Session 17) and a
-  branch goes a long way off. Add the one thing Session 17 declined:
-  something that is drawn, once, at the edge of the frame, and is not
-  there when you look — and it is drawn by the same law as everything
-  else, and it has no face.
-
-### 4. WICK, PYE AND WREN'S WAITS, WITH TWO DOORS FROM THE START (§6)
-
-`THE-WAITS` §1, §5, §6 are the design; §6 of the brief is the second
-door for each. **Wick gets his drawing this session** — `THE-STRANGERS`
-C12 (*Wick, halfway up the avenue, resting, at dawn*) was the one
-encounter Session 18 deferred, and it is his first routine: it is how
-the walker first sees him, before his wait. Both doors visible before
-either is taken, on a choice card, at the moment it matters (Session
-15's card; Nell's in `meadow.ts` is the pattern). The cost is a
-visible, permanent change. Nothing says which door was right.
-
-### 5. TOYS IN THE OLD WORLD AND ON THE COAST (§3 item 3, §5)
-
-`QUESTS` §8's register: skim a stone off the sandbar (the Common's
-stone has a twin on the bar; `things.ts` and the river's ring), ring
-the belfry early and watch the town react, row into the fleet and
-scatter it. At least one per re-opened land, repeatable, no score.
-
-### 6. THE ART GATE ON FOUR RE-OPENED LANDS, AND THE PLAY SHEET
-
-Greyweather, Longshore, the Wide Blue, and Brim's belfry if the bell
-is touched. `QUALITY-BAR` §3: a protected framing may move when the
-land inside it is the scope; say which and by how much; re-earn the
-verdicts in a critique. The play sheet: ten minutes, the longship
-first.
-
----
-
-## 2. WHAT SESSION 18 LEFT YOU
-
-- **`tools/check-roads.mjs`** walks every road at 4.1 u/s on both
-  rigs from any hour (`HOUR=`), and fails on fifteen seconds with
-  nothing in frame or in earshot. **Run it before you push.** What
-  counts as *in frame* is written at the top of the file and it is the
-  owner's to change (sheet §0). `VERBOSE=1 ROAD=coast-road` prints
-  every sample.
-- **`src/world/earshot.ts`** — the placed voices as data, and
-  `App.ts`'s ambient table reads its distances from it (`hears`).
-  Every new sound with a place is a row here first; every scheduled
-  event with a `place` counts as in earshot while it is on. The
-  land-wide filler does not count, on purpose.
-- **Encounters are routines with a turn**: `civic.ts`'s WRIGHT (the
-  broken cart, mended at three, pushed home), `coast.ts`'s fire (lit,
-  sat at, cold ash), `wilds.ts`'s FELLED (a pine, then two lengths) are
-  the patterns — a drawing that changes with the hour, and the
-  aftermath authored. `meadow.ts`'s `dawnDog` is a `Follower` on a
-  rect that is not a land, with its hours on an event.
-- **A barrier may be a creature**: the gull on the crest
-  (`coast.ts`) registers a two-unit barrier and is the drawing standing
-  in it.
-- **`src/engine/Bicycle.ts`** — a mount on the boat's pattern with a
-  `bell` export the land reads. `App.bicycleRefuses` is the refusal
-  (sand, stairs, water, the border). `check-camera` has not been run on
-  it; the feel gate has it.
-- **`things.ts` `glide`** — a carriable that goes down the air from
-  the hand; `throw_`'s last argument says whether it was thrown or set
-  down. The plane is registered in `wilds.ts` and drawn there.
-- **`Eight15.ending`** — the first run is the ending and writes
-  `fact:the-8-15-ran`; after it, `waiting()` is always false. The
-  harness can set `I.train.ending` before `warpTrain`.
-- **`I.waitAnswers`** on the harness qualifies a walker for the 8:15
-  in a test. `I.layout`, `I.earshot`, `I.world.skylineWithin`,
-  `I.bicycle`, `I.takeBicycle`, `I.putBicycle`.
-- **`check-verbs` section 9** asserts the bicycle at its border, the
-  bell answered, the plane's glide and set-down, the 8:15's two kinds
-  of run, the dawn dog's line, the hat's border, forty-five districts,
-  earshot pure, and every encounter registered.
-- **What moved, and by how much:** `SESSIONS.md` Session 18 has the
-  `diff-sheets` numbers.
-
----
-
-## 3. THREE THINGS THAT CONSTRAIN THE WHOLE SESSION
-
-1. **NOBODY CROSSES A BORDER BUT THE WALKER, and the Vikings are the
-   joke about it.** A longship is a thing (`things.ts` clamps things)
-   and a crew is a routine (stops inside the rect). The Holdfast is in
-   THE WIDE BLUE's rect; the sand they roar at is LONGSHORE's. If a
-   Viking's foot touches LONGSHORE the ending is broken.
-2. **A MONSTER IS NEVER SEEN WHOLE, AND NEVER EXPLAINED.** No face, no
-   name, no note that says what it was. Fear is a sound, a distance,
-   and a thing that moved while you were not looking.
-3. **A PROTECTED FRAMING MAY MOVE WHEN THE LAND INSIDE IT IS THE SCOPE**
-   (`QUALITY-BAR` §3). Three of the four lands hold verdicts. Say which
-   framing and by how much; re-earn the verdict in a critique.
-
----
-
-## 4. THE GATES THAT ARE THE OWNER'S
-
-1. **THE PLAY GATE** — Session 18's sheet may have come back, and 17's
-   and 16's. Read them first. Sheet 18 §0 changes the tool before
-   anything else.
-2. **THE EAR GATE** — eighty WAVs in `out/sound/`, unheard.
-3. **THE FEEL GATE** — owed since 12, plus sitting, the run taught by
-   a bull, and the bicycle, which is the fastest thing the walker has
-   ever steered.
-
----
+1. **THE PLAY GATE** — sheets 16 to 19 may have come back.
+2. **THE EAR GATE** — eighty-six WAVs in `out/sound/`, unheard.
+3. **THE FEEL GATE** — owed since 12, plus the bicycle and a thumb on
+   the joystick.
 
 ## Law (short form — QUALITY-BAR.md is the long form)
 
@@ -249,44 +117,46 @@ checked; looking is the first verb and not the only one; a choice card
 is allowed and a dialogue wheel is not; local stakes are allowed and a
 villain is not; districts are allowed and more sheet is not; the world
 may point the way and may never say the turn; a protected framing may
-move when the land inside it is the scope, measured; every barrier is a
-drawing, and there are no invisible walls; a routine is a pure function
-of the hour, and the weather is a pure function of the day and the
-hour; **a sound with a place is a row in `earshot.ts`, and no road is
-silent for fifteen seconds** (`check-roads`). End the session: pushed,
-`SESSIONS.md` handoff updated, verdicts logged, **play sheet written**.
+move when the land inside it is the scope, measured; **every barrier is
+a drawing, there are no invisible walls, and every building is a
+barrier**; a routine is a pure function of the hour, and the weather is
+a pure function of the day and the hour; a sound with a place is a row
+in `earshot.ts`, and no road is silent for fifteen seconds. End the
+session: pushed, `SESSIONS.md` handoff updated, verdicts logged, **play
+sheet written**.
 
 ## Standing debts, carried forward
 
 - **THE ENDING HAS NO CONSEQUENCE THAT LASTS** — Session 21, owner's
-  call. The daily 8:15 stops at empty platforms; whether the people who
-  left are gone from their lands is that decision.
+  call.
+- **The king's road runs through Brim's fountain** (found by B2): the
+  fountain keeps its footprint and you go round it. Either the road
+  bends or the fountain moves, and the square holds a WOWED framing —
+  Session 22's, or the owner's.
 - **The rowboat's first-meeting composition at THE RIVER MOUTH** —
-  eleven gates have passed it. This session opens LONGSHORE; close it.
+  twelve gates have passed it.
 - **THE HARROW DOWNS' stooked field**, **THE BLEACH FLATS' `WHERE THE
-  ROAD STOPS`**, **GREYLINE CITY's THE HOLLOW** — the Penwood's east
-  arc is CLOSED (the tool found it on the south-west, and there is a
-  woodpile there now).
-- **Brim Square is full**; a market day's crowd is Session 19's if the
-  belfry is touched, else 22's.
+  ROAD STOPS`**, **GREYLINE CITY's THE HOLLOW**.
+- **Brim Square's market-day crowd** — the belfry was not touched in
+  19; Session 22's.
 - **READ THE PROCLAMATION** and **THE 8:15 STOP's label** in the
   SKYLINE.
 - **`critique-story-2` RECOMMENDED 2** — Session 22's.
 - **The fifteen-second rule's measure** — sheet 18 §0; the owner's.
-- **The bicycle on the feel gate**; **`check-camera` on a bicycle** has
-  not been written.
-- **The Wide Blue and the Flats have two and three unnamed**, under the
-  brief's five, on purpose; the tool did not find them too empty.
-- **The bull's chase is heard more than seen on a phone**; **the rain
-  on a phone may be mud** — the owner's phone decides.
+- **The bicycle on the feel gate**; **`check-camera` on a bicycle**.
+- **The bull's chase is heard more than seen on a phone** — re-check:
+  it now runs at the walker's north shoulder on both rigs.
 - **The lamplighter is a dim figure at dusk** — the owner's call.
-- **A wash tint per district** — declined a third time in 18; a
-  district is a name and not a wash by the layer's own definition, and
-  a tint would move every protected framing in every land at once.
+- **A wash tint per district** — declined three times.
+- **The Penwood and the Downs dip under 55 fps** on the owner's Mac:
+  CPU, the instanced fields' per-frame work. A phone first.
+- **Wick, Pye and Wren at dusk are small**: their drawings are the
+  folk's size and the dusk grade takes half of them. If the owner
+  cannot find Wick on the avenue at dawn, scale them 1.15.
 
 ## Not this session's job
 
-- **The aliens, the barista, the design studio** — 20.
-- **Second doors for the other nine waits** — 21.
+- **The 8:15 reading the doors back** — 21.
 - **The tonal re-key and the story rewrite** — 22.
-- **Interiors** — 23. **THE JUROR** — last.
+- **Interiors** — 23 (the van and the longship are on the list).
+- **THE JUROR** — last.

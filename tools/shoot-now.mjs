@@ -73,9 +73,7 @@ for (const vp of VIEWPORTS.filter((v) => !ONLY || v.name === ONLY)) {
   await page.goto(url, { waitUntil: 'networkidle' });
   await page.bringToFront();
   await page
-    .waitForFunction(() => document.body.innerText.toLowerCase().includes('set out'), {
-      timeout: 25000,
-    })
+    .waitForSelector('.title-veil:not(.gone)', { timeout: 25000 })
     .catch(() => {});
   await page.evaluate((h) => {
     window.__inklands.begin();

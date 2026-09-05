@@ -40,6 +40,11 @@ import { BOAT_HOME } from '../world/layout';
  * compromise, it is the house style: nothing on this sheet has ever
  * been anything but a cutout facing you.
  */
+/** WHERE THE ROWBOAT IS, AND WHETHER ANYBODY IS IN IT — module scope,
+ *  one instance, like `Bicycle.bell`, so a land can answer it: the
+ *  regatta scatters for a rowboat rowed into it (Session 19). */
+export const rowboat = { x: 0, z: 0, aboard: false };
+
 export class Boat {
   group = new THREE.Group();
   /** Where the boat is, whether or not anyone is in it. */
@@ -92,6 +97,9 @@ export class Boat {
      * read as sitting IN a boat rather than standing on one. Round 2 of
      * the gate had a figure balanced on a gunwale. */
     this.group.position.set(this.pos.x, y, this.pos.y + (this.aboard ? 0.5 : 0));
+    rowboat.x = this.pos.x;
+    rowboat.z = this.pos.y;
+    rowboat.aboard = this.aboard;
     if (afloat) {
       // a hull sits IN the water, not on it — and it moves, because
       // water does. Drawn up on the sand it does neither: a boat

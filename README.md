@@ -222,6 +222,42 @@ and deals a region card — nothing else, because the sheet is continuous.
   the lip it glides the whole cut and lands on the far rim, which is
   about an hour. **And after the ending the 8:15 runs every day at
   8:15** and stops twelve times for nobody, and you can get on.
+- **The new cast, west and north** (Session 19, `THE-FUN-PASS` §10).
+  **THE VIKINGS on the Holdfast**: a longship beached at the foot of
+  the point with seven shields along her and four men in her who have
+  been waiting for a wind for four hundred years. They come in from
+  the offing at first light, they roar at anybody on the sand by day,
+  at noon they row out and go round the mark with the regatta, and
+  **they have never once stood on the beach**, because the berth is
+  THE WIDE BLUE's and the sand is LONGSHORE's. **THE HORN** on the
+  point: blow it and they answer, every time. **THE SURFERS at the
+  Cut**: a van, a rack, a wetsuit on a line, and two people who check
+  the water at first light every day and go back to the van, on a
+  coast that only has a tide; a board on the wrack that you can carry
+  back to the rack. **THE MONSTERS**, never seen whole: the moat pool
+  goes red for two days in every nine and something moves in it at
+  night; the thing under the Wide Blue surfaces every third dusk and
+  the day after it the seals do not haul out; and in the deep pines
+  at night, once, something is drawn at the edge of the frame that is
+  not there when you look. **WICK, PYE and WREN**, the last three
+  waits, with two doors each from the start: Wick halfway up the
+  avenue at dawn with a banner over his shoulder, and a fifth banner
+  in Brim's colours when Brim's red comes up the road (or, the king
+  put back, nothing to do); Pye's pot line off the cove and two rows
+  a day at the tide, an eighth pot on the mark's name or the pots
+  hauled; Wren's punt on the bar and the noon row to ring the bell, a
+  second mark at the bar's end or the finish called and the fleet at
+  anchor for good. **Toys**: a stone on the bar that skims, a
+  portcullis that comes down a foot, a fleet that scatters for a
+  rowboat. **Castle Greyweather re-drawn where you stand in it**: the
+  keep in coursed stone on a yard with cart tracks, a puddle and
+  straw, a trough, a stack of timber. **And the first local QA pass's
+  fixes**: the first minute no longer traps a player who runs due
+  west; every building, wall, keep, tower, house, hut and the oaks'
+  trunks refuse a foot (*a drawing is a barrier*), and anything within
+  a few units of the lens fades; a name is written a line-height over
+  its own drawing, a prompt beside the thing in reach, the region card
+  on a paper halo; the tarn's water lies on its bowl.
 - Position, discovered lands, strides walked, the boat, the bicycle,
   the hour, what you know, what you chose, and where you left the
   cart, saved to `localStorage`. (The gate, the bull and the goat are not: a fresh
@@ -246,9 +282,20 @@ ladder from Session 15 on.
 
 ```sh
 npm install
+npx playwright install chromium   # ONCE, before any tool below: every gate launches
+                                  #   a browser, and Playwright wants its own build
+                                  #   of Chromium (or set PW_CHROMIUM=/path/to/Chrome)
 npm run dev      # http://localhost:5173
 npm run build    # type-check + production build in dist/
+npx vite preview --port 4173      # what every tool in tools/ drives (http://localhost:4173/?debug)
 ```
+
+**The first line is the one that bites on a real machine.** The
+sandbox the sessions build in keeps Chromium at `/opt/pw-browsers`;
+the owner's Mac does not, and every tool in `tools/` fails at its first
+line about a missing executable until Playwright has installed its
+browser or `PW_CHROMIUM` names one (`tools/pw.mjs`). Nothing about the
+game is wrong when that happens.
 
 Desktop: WASD or arrows, **hold Shift to run**, `E` to look — and to
 touch, pick up, throw and sit, whichever the prompt says — **`,` and
@@ -321,6 +368,14 @@ node tools/check-roads.mjs     # THE FIFTEEN-SECOND RULE: walks every road at
 node tools/shoot-session18.mjs # THE ROADS: the encounters at their hours and
                                #   after, the districts' cards, the bicycle,
                                #   the plane over the cut, the 8:15 the day after
+node tools/shoot-session19.mjs # THE NEW CAST, WEST AND NORTH: the longship in,
+                               #   beached, roaring and round the mark; the horn;
+                               #   the surfers; Pye, Wren and Wick and their doors;
+                               #   the keep re-drawn; the portcullis; the moat red;
+                               #   the shape in the pines; the stone skipping
+node tools/qa-play-local.mjs   # THE LOCAL QA PASS (headed, real keys, real time,
+node tools/qa-play-local-2.mjs #   on the owner's machine): the first hour, the
+                               #   verbs, the walls, the lands at every hour
 HOUR=19.6 node tools/shoot-first-minute.mjs   # any sheet, at any hour
 node tools/shoot.mjs           # all twelve lands, walkability smoke test
 node tools/shoot-mobile.mjs    # the CHROME, at 320/360/390/430 points AND at

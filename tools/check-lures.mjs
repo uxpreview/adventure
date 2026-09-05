@@ -38,7 +38,7 @@ for (const rig of RIGS) {
   await page.addInitScript(() => localStorage.clear());
   await page.goto(URL, { waitUntil: 'networkidle' });
   await page.bringToFront();
-  await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('set out'), { timeout: 25000 }).catch(() => {});
+  await page.waitForSelector('.title-veil:not(.gone)', { timeout: 25000 }).catch(() => {});
   const rows = await page.evaluate((lures) => {
     const I = window.__inklands;
     I.setHour(12, false);

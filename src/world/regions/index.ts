@@ -3,8 +3,9 @@ import { StandeeField, type StandeeFieldOpts } from '../../engine/StandeeField';
 import { makeStandee, makeDecal, disposeGroup } from '../../engine/props';
 import { rng } from '../../engine/ink';
 import { Terrain } from '../terrain';
-import { WORLD, REGION_SPECS, BRIDGES, type RegionId, type RegionSpec, type Rect } from '../layout';
+import { WORLD, REGION_SPECS, BRIDGES, ROADS, type RegionId, type RegionSpec, type Rect } from '../layout';
 import { bridgeTexture, bridgeDeckDecal } from '../textures';
+import { barriers } from '../barriers';
 import { buildMeadow } from './meadow';
 import { buildForest, buildCanyon, buildDesert, buildDowns } from './wilds';
 import { buildOcean, buildBeach } from './coast';
@@ -40,8 +41,19 @@ export type BuildCtx = {
   rect: Rect;
   /** Instanced field: create, add, and register for ticking. */
   field: (tex: THREE.Texture, capacity: number, opts: StandeeFieldOpts) => StandeeField;
-  /** One-off paper stand-up at (x, z), standing on the ground, vertical. */
-  standee: (tex: THREE.Texture, w: number, h: number, x: number, z: number, opts?: { rotY?: number; opacity?: number }) => THREE.Mesh;
+  /** One-off paper stand-up at (x, z), standing on the ground, vertical.
+   *
+   *  `solid` (the local QA pass, 2026-09-04, B2: *nothing has collision
+   *  but three fences and a gull*) registers the drawing's own footprint
+   *  as a barrier as it is built — the same way it already records its
+   *  top into the skyline — so the law *every barrier is a drawing* is
+   *  true the other way round too, for a building. `true` is the
+   *  drawing's whole width; a number is the footprint's half-width (a
+   *  trunk under a canopy); `{ gap }` leaves an arch open in the middle
+   *  (a gatehouse on a road). Fields — trees, grass, a crowd — stay
+   *  walkable, and so does everything that does not ask. */
+  standee: (tex: THREE.Texture, w: number, h: number, x: number, z: number,
+    opts?: { rotY?: number; opacity?: number; solid?: true | number | { hw?: number; gap?: number; keep?: boolean } }) => THREE.Mesh;
   /** Ground decal at (x, z), lying along the page's surface. */
   decal: (tex: THREE.Texture, w: number, h: number, x: number, z: number, rotY?: number, opacity?: number) => THREE.Mesh;
   /** The ground at (x, z) — for anything hung in the air over it. */
@@ -191,6 +203,25 @@ export function lieOnGround(
   m.quaternion.setFromEuler(_e).premultiply(_q);
 }
 
+/** Whether (x, z) is on a road's own metalling — its centreline plus
+ *  half its width and a stride — as distinct from the painted shoulder
+ *  `terrain.roadAt` includes. The footprint clip asks this. */
+function onRoadLine(x: number, z: number): boolean {
+  for (const road of ROADS) {
+    const band = road.width * 0.5 + 0.9;
+    for (let i = 0; i < road.pts.length - 1; i++) {
+      const [ax, az] = road.pts[i];
+      const [bx, bz] = road.pts[i + 1];
+      const dx = bx - ax;
+      const dz = bz - az;
+      const len2 = dx * dx + dz * dz || 1;
+      const u = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / len2));
+      if (Math.hypot(x - (ax + dx * u), z - (az + dz * u)) < band) return true;
+    }
+  }
+  return false;
+}
+
 function rectDist(r: Rect, x: number, z: number): number {
   const dx = Math.max(r.minX - x, 0, x - r.maxX);
   const dz = Math.max(r.minZ - z, 0, z - r.maxZ);
@@ -202,6 +233,19 @@ export class World {
   private bridges: THREE.Group;
   /** The skyline: cell → the highest standee top over it. */
   private sky = new Map<number, number>();
+  /** EVERY STANDEE'S FOOTPRINT, exactly (the local QA pass, 2026-09-04,
+   *  B3). The grid above treats a cutout as a disc of its own width,
+   *  which is right for a tool asking *is anything standing near this
+   *  road* and wrong for a label asking *what is standing under me*:
+   *  an oak's fourteen-unit disc reached the well six units away and
+   *  THE OLD WELL was written above the oak. A standee is a line along
+   *  x, one cell deep; this list keeps that line, and the labels and
+   *  the prompt read it instead of the grid. */
+  private feet: { x: number; z: number; hw: number; top: number; m: THREE.Mesh; h: number }[] = [];
+  /** Standees the lens is inside of, or nearly, this frame: faded, and
+   *  put back when the lens has gone (see `nearFade`). */
+  private faded = new Set<THREE.Mesh>();
+  private solids = 0;
 
   constructor(private scene: THREE.Scene, private terrain: Terrain) {
     // bridges belong to the road web, not to any one land
@@ -264,6 +308,48 @@ export class World {
         if (opts.rotY) m.rotation.y = opts.rotY;
         group.add(m);
         this.raiseSkyline(x, z, w, m.position.y + h);
+        this.feet.push({ x, z, hw: Math.max(0.5, w * 0.5), top: m.position.y + h, m, h });
+        if (opts.solid) {
+          const s = opts.solid;
+          const hw = typeof s === 'number' ? s : typeof s === 'object' && s.hw !== undefined ? s.hw : w * 0.5;
+          const gap = typeof s === 'object' ? s.gap : undefined;
+          // a standee's line runs along its own local x, turned by rotY
+          const cx = Math.cos(opts.rotY ?? 0);
+          const sx = Math.sin(opts.rotY ?? 0);
+          /* AND NEVER ACROSS A ROAD. Four drawings were placed over the
+           * road web before anything had a footprint — Brim's fountain
+           * on the king's road, a terrace leaning over it, the mill on
+           * its own lane, a tower on the spur — and a road the walker
+           * cannot walk is a broken world, not a solid one. So the
+           * footprint is walked in half-unit steps and only the runs
+           * OFF the road (with a stride of margin either side) become
+           * barriers: the drawing refuses a foot everywhere the road
+           * does not already claim the ground. */
+          const keep = typeof s === 'object' && s.keep;
+          const clear = (u: number) => keep || !onRoadLine(x + u * cx, z - u * sx);
+          const runs: [number, number][] = [];
+          let start: number | null = null;
+          const steps = Math.max(2, Math.ceil((hw * 2) / 0.5));
+          for (let i = 0; i <= steps; i++) {
+            const u = -hw + (i / steps) * hw * 2;
+            const ok = clear(u);
+            if (ok && start === null) start = u;
+            if (!ok && start !== null) {
+              const end = u - (hw * 2) / steps;
+              if (end - start >= 0.9) runs.push([start, end]);
+              start = null;
+            }
+          }
+          if (start !== null && hw - start >= 0.9) runs.push([start, hw]);
+          for (const [u0, u1] of runs) {
+            const n = this.solids++;
+            barriers.register({
+              id: `standee:${spec.id}:${n}${keep ? ':keep' : ''}`,
+              x0: x + u0 * cx, z0: z - u0 * sx, x1: x + u1 * cx, z1: z - u1 * sx, half: 0.8,
+              gaps: gap && u0 < 0 && u1 > 0 ? [{ id: `standee:${spec.id}:${n}:arch`, x, z, r: gap, open: true }] : [],
+            });
+          }
+        }
         return m;
       },
       decal: (tex, w, h, x, z, rotY = 0, opacity = 0.9) => {
@@ -305,7 +391,7 @@ export class World {
    * tick fields and region updates, and run the ink wave when the
    * walker first crosses into a land.
    */
-  tick(dt: number, t: number, x: number, z: number, currentId: RegionId, windK = 1) {
+  tick(dt: number, t: number, x: number, z: number, currentId: RegionId, windK = 1, camX?: number, camZ?: number) {
     let builtOne = false;
     for (const spec of REGION_SPECS) {
       const d = rectDist(spec.rect, x, z);
@@ -330,6 +416,62 @@ export class World {
         for (const f of b.fields) f.cascadeFrom(x, z, 34, t, 0.3);
       }
     }
+    if (camX !== undefined && camZ !== undefined) this.nearFade(camX, camZ);
+  }
+
+  /**
+   * ANYTHING WITHIN A FEW UNITS OF THE LENS FADES (the local QA pass,
+   * 2026-09-04, B2 and §4 item 3). A standee is a fixed-resolution
+   * drawing, and the rig trails ten units behind the walker, so a
+   * cottage the walker has just passed is a blurred wash across the
+   * whole frame with the district card lettered on its roof. Inside
+   * `NEAR` of the camera a standee goes to a quarter and stops
+   * occluding; outside it is exactly what its land set it to.
+   *
+   * Lands set opacities of their own every frame (the barbican's arch
+   * fade, the lit windows, a figure's fade in), so this never assumes
+   * ownership: it remembers what it wrote last frame, and if the value
+   * it finds is not that, the land has spoken and the land's number is
+   * the base. Runs AFTER the lands' updates for the same reason.
+   */
+  private static NEAR = 4.5;
+  private static NEAR_IN = 1.4;
+  private nearFade(cx: number, cz: number) {
+    const N = World.NEAR;
+    const touched = new Set<THREE.Mesh>();
+    for (const f of this.feet) {
+      if (f.h < 1.2) continue;
+      const dz = Math.abs(f.z - cz);
+      if (dz > N) continue;
+      const dx = Math.max(0, Math.abs(f.x - cx) - f.hw);
+      const d = Math.hypot(dx, dz);
+      if (d >= N) continue;
+      const m = f.m;
+      if (!m.visible) continue;
+      const mat = m.material as THREE.MeshBasicMaterial;
+      const ud = m.userData as { fadeSet?: number; fadeBase?: number };
+      const base = ud.fadeSet !== undefined && mat.opacity === ud.fadeSet ? ud.fadeBase! : mat.opacity;
+      const u = Math.max(0, Math.min(1, (d - World.NEAR_IN) / (N - World.NEAR_IN)));
+      const k = 0.22 + 0.78 * u * u * (3 - 2 * u);
+      mat.opacity = base * k;
+      ud.fadeBase = base;
+      ud.fadeSet = mat.opacity;
+      touched.add(m);
+      this.faded.add(m);
+    }
+    for (const m of this.faded) {
+      if (touched.has(m)) continue;
+      const mat = m.material as THREE.MeshBasicMaterial;
+      const ud = m.userData as { fadeSet?: number; fadeBase?: number };
+      if (ud.fadeSet !== undefined && mat.opacity === ud.fadeSet) mat.opacity = ud.fadeBase!;
+      ud.fadeSet = undefined;
+      this.faded.delete(m);
+    }
+  }
+
+  /** How many drawings are barriers, for the harness. */
+  get solidCount() {
+    return this.solids;
   }
 
   /** Remember how tall the page is here. A standee is a flat cutout, so
@@ -364,6 +506,24 @@ export class World {
         const v = this.sky.get(SKY_KEY(cx, cz));
         if (v !== undefined && v > top) top = v;
       }
+    }
+    return top;
+  }
+
+  /**
+   * THE TALLEST DRAWING ACTUALLY STANDING WITHIN `r` OF (x, z) — a
+   * cutout's own line along x, `depth` units deep and no more — or
+   * −Infinity. What a label clears and what a prompt steps past.
+   */
+  nearTopAt(x: number, z: number, r: number, depth = 1.6): number {
+    let top = -Infinity;
+    for (const f of this.feet) {
+      const dz = Math.abs(z - f.z);
+      if (dz > depth + r) continue;
+      const dx = Math.max(0, Math.abs(x - f.x) - f.hw);
+      if (dx > r) continue;
+      const d = Math.hypot(dx, Math.max(0, dz - depth));
+      if (d < r && f.top > top) top = f.top;
     }
     return top;
   }

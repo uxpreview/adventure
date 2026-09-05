@@ -181,6 +181,8 @@ export function renderMap(state: {
   /* names — in the register the walker earned. A name written in ink
      is a place you stood in; a name written in pencil is a place
      somebody told you about and you have taken their word for. */
+  /** Every name's box on the sheet, so the districts' keep off them. */
+  const placed: { l: number; r: number; t: number; b: number }[] = [];
   for (const s of REGION_SPECS) {
     const cx = (s.rect.minX + s.rect.maxX) / 2;
     const cz = (s.rect.minZ + s.rect.maxZ) / 2;
@@ -214,6 +216,7 @@ export function renderMap(state: {
     ctx.globalAlpha = heard ? 0.66 : 1;
     ctx.drawImage(label, X(cx) - lw / 2, Z(cz) - lh / 2, lw, lh);
     ctx.globalAlpha = 1;
+    placed.push({ l: X(cx) - lw / 2, r: X(cx) + lw / 2, t: Z(cz) - lh / 2, b: Z(cz) + lh / 2 });
     /* and a place you have only HEARD of does not get its border drawn
        around it — you know the name, not the shape. One underline, the
        way a hand marks a thing it has been told, clear of the letters'
@@ -228,7 +231,19 @@ export function renderMap(state: {
   /* THE DISTRICTS (Session 16), drawn only inside a land the walker has
      stood in: a dashed pencil edge and a small name, the way a hand
      marks a field on a map it has walked. A land you have only heard
-     of has no districts yet — you know the name, not the ground. */
+     of has no districts yet — you know the name, not the ground.
+
+     AND THE NAMES KEEP OFF EACH OTHER (the local QA pass, 2026-09-04,
+     B3): at portrait scale THE WOOD GATE, THE ORCHARD CLOSE and THE
+     BACK STREETS were written across THE KINGDOM OF BRIM. A district's
+     name is written only where it lands clear of every name already on
+     the sheet, and on a map delivered under 560 points across the
+     district names are not written at all — the dashed edges still say
+     the ground is divided, and the card says the name when you are
+     standing on it. */
+  const smallMap = (state.width ?? W) < 560;
+  const clear = (b: { l: number; r: number; t: number; b: number }) =>
+    !placed.some((o) => b.r + 4 > o.l && b.l - 4 < o.r && b.b + 2 > o.t && b.t - 2 < o.b);
   for (const d of DISTRICTS) {
     if (knowledge.register(d.land, state.discovered) !== 'seen') continue;
     const b = d.rect;
@@ -246,11 +261,18 @@ export function renderMap(state: {
           r, { width: 0.9, alpha: 0.28, color: PENCIL, passes: 1, jitter: 1.2 });
       }
     }
+    if (smallMap) continue;
     const dl = letterCanvas(d.name, { ...S.quiet(7.5 * ink), align: 'center', color: PENCIL, alpha: 0.7, weightScale: 0.85 });
     const dw = dl.width / 2;
     const dh = dl.height / 2;
+    const dx = X((b.minX + b.maxX) / 2) - dw / 2;
+    // at the rect's foot first, then its head, then its middle; else not
+    const tries = [Z(b.maxZ) - dh - 2, Z(b.minZ) + 2, Z((b.minZ + b.maxZ) / 2) - dh / 2];
+    const dy = tries.find((y) => clear({ l: dx, r: dx + dw, t: y, b: y + dh }));
+    if (dy === undefined) continue;
+    placed.push({ l: dx, r: dx + dw, t: dy, b: dy + dh });
     ctx.globalAlpha = 0.72;
-    ctx.drawImage(dl, X((b.minX + b.maxX) / 2) - dw / 2, Z(b.maxZ) - dh - 2, dw, dh);
+    ctx.drawImage(dl, dx, dy, dw, dh);
     ctx.globalAlpha = 1;
   }
 
@@ -276,10 +298,15 @@ export function renderMap(state: {
     S.quiet(10.5 * ink)
   );
   /* and the boast fits the sheet it is written on: at the small-map
-     ink scale a half-size draw is wider than the map itself */
+     ink scale a half-size draw is wider than the map itself — and it
+     sits UNDER the world's frame, centred in the margin below it, so
+     the bigger hand a phone gets never writes across the frame's foot
+     (the local QA pass, B3) */
   const bw = Math.min(boast.width / 2, W - pad * 2);
   const bh = (boast.height / 2) * (bw / (boast.width / 2));
-  ctx.drawImage(boast, W / 2 - bw / 2, H - 22 - bh, bw, bh);
+  const frameFoot = Z(WORLD.maxZ);
+  const by = Math.max(frameFoot + 4, frameFoot + (H - frameFoot - bh) / 2);
+  ctx.drawImage(boast, W / 2 - bw / 2, Math.min(by, H - 4 - bh), bw, bh);
 
   return canvas;
 }

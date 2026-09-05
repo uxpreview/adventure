@@ -126,6 +126,12 @@ const VOICES = [
    * coming down, which is the quietest landing in the game. In the
    * pack unheard like everything else. */
   ['the-roads', ['bicycle-bell', 'paper-land']],
+  /* SESSION 19 — THE NEW CAST, WEST AND NORTH. The Vikings' roar, the
+   * horn on the point that they answer, the portcullis that comes
+   * down a foot, a board set in a rack, the moat at night on the days
+   * it is red, and a stone skipping off the bar. In the pack unheard
+   * like everything else. */
+  ['the-new-cast', ['viking-roar', 'horn', 'portcullis', 'board-knock', 'moat-slop', 'stone-skip']],
 ];
 console.log('');
 for (const [land, names] of VOICES) {

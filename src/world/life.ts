@@ -67,11 +67,16 @@ export class Figure {
 
   constructor(
     private ctx: BuildCtx, readonly def: RoutineDef, readonly kind: FolkKind,
-    private opts: { scale?: number; lift?: number } = {}
+    private opts: { scale?: number; lift?: number;
+      /** A NAMED PERSON'S OWN DRAWINGS (Session 19: Wick, Pye, Wren,
+       *  the surfers) — a map from posture to texture, falling back to
+       *  the shared folk drawing for any posture it does not have. A
+       *  name is three drawings; this is how a name keeps a routine. */
+      maps?: Partial<Record<FolkPose, THREE.Texture>> } = {}
   ) {
     registerRoutine(def);
     const s = opts.scale ?? 1;
-    this.mesh = ctx.standee(folkTexture(kind, def.stops[0].pose as FolkPose), 1.15 * s, 1.9 * s, def.stops[0].x, def.stops[0].z);
+    this.mesh = ctx.standee(this.tex(def.stops[0].pose as FolkPose), 1.15 * s, 1.9 * s, def.stops[0].x, def.stops[0].z);
     this.mat = this.mesh.material as THREE.MeshBasicMaterial;
     this.mat.transparent = true;
     this.mesh.visible = false;
@@ -98,7 +103,7 @@ export class Figure {
     }
     if (pose !== this.shown) {
       this.shown = pose;
-      this.mat.map = folkTexture(this.kind, pose);
+      this.mat.map = this.tex(pose);
     }
     const y = this.ctx.groundY(s.x, s.z) + (this.opts.lift ?? 0);
     this.mesh.position.set(s.x, y, s.z);
@@ -110,6 +115,11 @@ export class Figure {
       (this.prop.material as THREE.MeshBasicMaterial).opacity = s.fade;
     }
     return s;
+  }
+
+  /** The drawing for a posture: the person's own if they have one. */
+  private tex(pose: FolkPose): THREE.Texture {
+    return this.opts.maps?.[pose] ?? folkTexture(this.kind, pose);
   }
 
   report(): LifeReport {

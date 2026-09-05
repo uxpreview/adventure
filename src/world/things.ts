@@ -69,6 +69,14 @@ export type ThingDef = {
    *  size otherwise. Set by the land that draws it. */
   hand?: THREE.Texture;
   handSize?: [number, number];
+  /**
+   * A CARRIABLE THAT SKIMS (Session 19, the bar's stone, `QUESTS` §8):
+   * how many times it will skip off water before it goes in. A throw
+   * that lands on water and has skips left is thrown again from where
+   * it landed, along the same heading, shorter and lower; App decides
+   * what the ground was and calls `skip`. The register's own toy.
+   */
+  skims?: number;
 };
 
 export type Thing = {
@@ -80,8 +88,10 @@ export type Thing = {
   vz: number;
   /** A carriable's state. `gone` is down the well. */
   state: 'ground' | 'held' | 'flying' | 'gone';
-  /** The arc, while flying. */
-  fly?: { x0: number; z0: number; x1: number; z1: number; t: number; dur: number; y0: number; y1: number; h: number };
+  /** The arc, while flying. `heading` and `thrown` are kept for a skim. */
+  fly?: { x0: number; z0: number; x1: number; z1: number; t: number; dur: number; y0: number; y1: number; h: number; heading: number; thrown: boolean };
+  /** Skips taken on this throw; reset when it is picked up. */
+  skips: number;
   /** The land's rect, so the border clamp needs no lookup. */
   rect: Rect;
   /** Set by the land that draws it, so the thing knows where to be
@@ -99,7 +109,17 @@ export type Landing = {
   z: number;
   /** Set by the land's `catcher`, if one caught it (the well). */
   caught?: string;
+  /** Thrown, as against set down — a skim needs a throw. */
+  thrown: boolean;
+  /** The heading it was going when it came down, and how far it flew. */
+  heading: number;
+  dist: number;
 };
+
+/** A SPLASH somebody's land may want to draw a ring for: pushed by App
+ *  when a thing comes down on water, consumed by the land that owns the
+ *  water. Cleared by whoever reads it. */
+export type Splash = { id: string; x: number; z: number; t: number; skip: boolean };
 
 class Things {
   private map = new Map<string, Thing>();
@@ -107,6 +127,8 @@ class Things {
   held: string | null = null;
   /** Landings this frame, for App to make a sound of and clear. */
   landed: Landing[] = [];
+  /** Splashes for the lands to ring; App pushes, the lands take. */
+  splashes: Splash[] = [];
   /** Set when a position changed, so App persists without polling. */
   dirty = false;
   /** Catchers: a place that swallows a thrown thing (the well). Keyed
@@ -120,7 +142,7 @@ class Things {
     const spec = REGION_SPECS.find((s) => s.id === def.land)!;
     const t: Thing = {
       def, x: def.home.x, z: def.home.z, vx: 0, vz: 0,
-      state: 'ground', rect: spec.rect, stranded: false,
+      state: 'ground', rect: spec.rect, stranded: false, skips: 0,
     };
     this.map.set(def.id, t);
     return t;
@@ -226,6 +248,7 @@ class Things {
     const t = this.map.get(id);
     if (!t || t.def.kind !== 'carriable' || t.state !== 'ground' || this.held) return false;
     t.state = 'held';
+    t.skips = 0;
     this.held = id;
     this.dirty = true;
     return true;
@@ -264,7 +287,7 @@ class Things {
         // line, with the little lift a throw gives it first
         dur: Math.max(0.4, d / 9),
         y0, y1: groundAt(x1, z1),
-        h: 0.35,
+        h: 0.35, heading, thrown,
       }
       : {
         x0: px, z0: pz, x1, z1, t: 0,
@@ -273,8 +296,31 @@ class Things {
         dur: Math.max(0.18, d / 8),
         y0, y1: groundAt(x1, z1),
         // the arc's height rises with the throw, capped at a body's height
-        h: Math.min(1.4, 0.25 + d * 0.16),
+        h: Math.min(1.4, 0.25 + d * 0.16), heading, thrown,
       };
+    t.skips = 0;
+    this.dirty = true;
+    return true;
+  }
+
+  /**
+   * A SKIP: the thing has just come down on water with skips to spare,
+   * and it goes on along the same heading — three fifths as far, lower
+   * — from where it touched. App calls this from a landing; the land
+   * draws the ring. False when it has none left, and then it goes in.
+   */
+  skip(id: string, heading: number, lastDist: number, groundAt: (x: number, z: number) => number): boolean {
+    const t = this.map.get(id);
+    if (!t || !t.def.skims || t.state !== 'ground' || t.skips >= t.def.skims) return false;
+    const dist = Math.max(1.2, lastDist * 0.62);
+    const x1 = this.clampX(t, t.x + Math.sin(heading) * dist);
+    const z1 = this.clampZ(t, t.z + Math.cos(heading) * dist);
+    const d = Math.hypot(x1 - t.x, z1 - t.z);
+    if (d < 0.5) return false;
+    t.skips++;
+    t.state = 'flying';
+    const y = groundAt(t.x, t.z);
+    t.fly = { x0: t.x, z0: t.z, x1, z1, t: 0, dur: Math.max(0.12, d / 9), y0: y, y1: groundAt(x1, z1), h: Math.min(0.5, 0.12 + d * 0.06), heading, thrown: true };
     this.dirty = true;
     return true;
   }
@@ -366,7 +412,7 @@ class Things {
           t.x = t.fly.x1;
           t.z = t.fly.z1;
           t.state = 'ground';
-          const landing: Landing = { id: t.def.id, x: t.x, z: t.z };
+          const landing: Landing = { id: t.def.id, x: t.x, z: t.z, thrown: t.fly.thrown, heading: t.fly.heading, dist: Math.hypot(t.fly.x1 - t.fly.x0, t.fly.z1 - t.fly.z0) };
           for (const c of this.catchers) {
             if (Math.hypot(t.x - c.x, t.z - c.z) < c.r) {
               landing.caught = c.id;

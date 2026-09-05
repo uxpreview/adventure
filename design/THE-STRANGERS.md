@@ -281,6 +281,7 @@ One line each. That is the format and it is not a placeholder.
 | E18 | MAPLE COURT | a bicycle is on its side four gardens from home |
 | E19 | GREYLINE CITY | a bin has gone over at the junction and nobody has stopped |
 | E20 | THE CUBICLE MILE | the timetable's corner has lifted; press it back |
+| E21 | LONGSHORE | a board has come off the surfers' rack in the night and is down the beach on the wrack; bring it back and set it down at the rack *(built Session 19: a carry, and the third board on the rack stays)* |
 
 ---
 

@@ -1656,6 +1656,72 @@ export class Audio {
         this.tone(2217 * j, 0.14, 0.55, 0.010);
         break;
       }
+      case 'viking-roar': {
+        /* THE VIKINGS ROAR AT THE SHORE (Session 19): four voices low
+         * and together, a swell that goes up and holds and drops, with
+         * the shields knocked once at the top of it. Threat first — it
+         * is the biggest human sound in the game — and the tenth time
+         * it is four men in a boat. */
+        const j = 0.95 + Math.random() * 0.1;
+        this.surge(0.35, 0.9, 150 * j, 110, 0.05, 0, 'bandpass');
+        this.surge(0.3, 0.95, 220 * j, 140, 0.04, 0.05, 'bandpass');
+        this.surge(0.4, 0.8, 330 * j, 200, 0.022, 0.08, 'bandpass');
+        this.surge(0.3, 1.1, 90 * j, 60, 0.03, 0.0, 'lowpass');
+        this.knock(140 * j, 0.03, 0.42);
+        this.knock(120 * j, 0.024, 0.5);
+        break;
+      }
+      case 'horn': {
+        /* THE HORN ON THE POINT: one long note with the second and
+         * third above it, a breath's flutter on the way in, and it
+         * carries. The longship answers a beat and a half later. */
+        const j = 0.98 + Math.random() * 0.04;
+        this.surge(0.08, 0.25, 900, 300, 0.01, 0, 'bandpass');
+        this.tone(196 * j, 0.05, 1.7, 0.03);
+        this.tone(392 * j, 0.06, 1.5, 0.016);
+        this.tone(588 * j, 0.08, 1.2, 0.007);
+        this.tone(294 * j, 0.1, 1.4, 0.006);
+        break;
+      }
+      case 'portcullis': {
+        /* THE PORTCULLIS COMES DOWN A FOOT AND THINKS BETTER OF IT: the
+         * chain running out in a rattle, the bars biting the groove,
+         * one heavy stop, and the winch taking it back up slowly. */
+        const j = 0.95 + Math.random() * 0.1;
+        for (let i = 0; i < 7; i++) this.knock(700 * j + i * 40, 0.014, i * 0.035);
+        this.surge(0.02, 0.2, 1800 * j, 700, 0.016, 0.05, 'bandpass');
+        this.knock(70 * j, 0.05, 0.28);
+        this.surge(0.05, 0.5, 260 * j, 110, 0.02, 0.28, 'lowpass');
+        for (let i = 0; i < 5; i++) this.knock(420 * j - i * 20, 0.007, 1.3 + i * 0.35);
+        break;
+      }
+      case 'board-knock': {
+        /* A BOARD SET IN THE RACK: a hollow knock, foam on timber, and
+         * the second one settling. */
+        const j = 0.95 + Math.random() * 0.1;
+        this.knock(330 * j, 0.03);
+        this.surge(0.01, 0.16, 500 * j, 220, 0.012, 0, 'lowpass');
+        this.knock(290 * j, 0.016, 0.16);
+        break;
+      }
+      case 'moat-slop': {
+        /* THE MOAT POOL AT NIGHT, on the days it is red: water moving
+         * once, slowly, against the reeds, as if something had turned
+         * over in it. Nothing is ever seen. */
+        const j = 0.9 + Math.random() * 0.2;
+        this.surge(0.4, 1.4, 180 * j, 90, 0.022, 0, 'lowpass');
+        this.surge(0.2, 0.7, 900 * j, 400, 0.008, 0.3, 'bandpass');
+        this.knock(60 * j, 0.012, 0.5);
+        break;
+      }
+      case 'stone-skip': {
+        /* A STONE SKIPPING OFF THE WATER: a plip, lighter and shorter
+         * than the plop it ends in. */
+        const j = 0.9 + Math.random() * 0.2;
+        this.knock(1100 * j, 0.012);
+        this.surge(0.01, 0.08, 2400 * j, 900, 0.008, 0, 'bandpass');
+        break;
+      }
       case 'paper-land': {
         /* A PAPER PLANE COMING DOWN: a breath of air over a fold, and
          * the tick of a nose on the page. The quietest landing in the

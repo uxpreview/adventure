@@ -5,14 +5,19 @@ import { letterEl, S } from '../ui/lettering';
  *  how much air to leave over it. Three and a half units is a signpost,
  *  a stall or a milestone — the thing the label is FOR — and not the
  *  oak forty feet behind it. */
-const LABEL_CLEAR_R = 3.5;
+const LABEL_CLEAR_R = 3.0;
 const LABEL_CLEAR = 0.9;
+/** AND NO HIGHER THAN THIS over the ground, whatever is standing
+ *  there (the local QA pass, 2026-09-04, B3): a name lifted to the top
+ *  of a seventeen-unit keep is a name on the sky. A line-height over
+ *  the drawing, or this, whichever is lower. */
+const LABEL_MAX_RISE = 9;
 /** Air between two pieces of hand-lettering before they read as one. */
 const LABEL_GAP = 6;
 /** How far beside a place its prompt is written: at least this, and
  *  never further than a place is wide. */
 const PROMPT_SIDE = 2.2;
-const PROMPT_SIDE_MAX = 5.5;
+const PROMPT_SIDE_MAX = 4.6;
 
 export type POIDef = {
   x: number;
@@ -230,7 +235,11 @@ export class POIManager {
     this.taken.length = 0;
     for (const c of this.reserved) {
       const r = c.getBoundingClientRect();
-      if (r.width > 0 && r.height > 0 && getComputedStyle(c).opacity !== '0') {
+      /* A card that has just been dealt is counted from the frame it is
+       * dealt, not from the frame its fade has made it visible: the
+       * label was placed under it on the first frame and stayed there
+       * (the local QA pass, 2026-09-04, B3, shot 09). */
+      if (r.width > 0 && r.height > 0 && (c.classList.contains('show') || getComputedStyle(c).opacity !== '0')) {
         this.taken.push({ l: r.left, r: r.right, t: r.top, b: r.bottom });
       }
     }
@@ -256,15 +265,27 @@ export class POIManager {
        * Along the CAMERA'S right rather than due east, because the
        * camera can turn now — the prompt stays beside the thing from
        * every bearing the envelope allows. */
-      const px = active.def.x;
-      const pz = active.def.z;
+      let px = active.def.x;
+      let pz = active.def.z;
+      /* AND BESIDE THE THING IN REACH, WHEN THE THING IS IN THE PICTURE
+       * (the local QA pass, 2026-09-04, B3). A place's reach is up to
+       * thirteen units and the camera looks north, so the thing in
+       * reach is often behind the walker, off the bottom of the frame;
+       * the old clamp then parked its prompt in whichever corner the
+       * projection fell nearest, and SHOUT DOWN THE WELL sat at the
+       * left edge with the well on the right. A thing that is not in
+       * the picture gets its prompt beside the WALKER instead — who is
+       * always in the picture, and is the one reaching for it. */
+      this.v.set(px, this.ground(px, pz) + 0.5, pz).project(this.camera);
+      const thingInFrame = this.v.z < 1 && Math.abs(this.v.x) < 0.98 && Math.abs(this.v.y) < 0.98;
+      if (!thingInFrame) { px = charPos.x; pz = charPos.z; }
       const dx = px - this.camera.position.x;
       const dz = pz - this.camera.position.z;
       const dl = Math.hypot(dx, dz) || 1;
       const rx = -dz / dl;
       const rz = dx / dl;
       const walkerSide = (charPos.x - px) * rx + (charPos.z - pz) * rz;
-      const side = walkerSide > 0.15 ? -1 : 1;
+      const side = !thingInFrame ? 1 : walkerSide > 0.15 ? -1 : 1;
       /* AND IT GOES PAST THE EDGE OF THE THING, not a fixed stride from
        * its middle: a milestone is a unit wide and the market cross is
        * eight, and one number cannot serve both. The skyline knows where
@@ -288,7 +309,7 @@ export class POIManager {
        * nudged the element AFTER clamping and pushed READ THE SIGNPOST
        * off the left edge of the frame, where it read "D THE SIGNPOST". */
       const tall = window.innerWidth / window.innerHeight < 0.8;
-      const nudge = tall ? 0 : side * Math.min(this.promptEl.offsetWidth * 0.5, 56);
+      const nudge = tall ? 0 : side * Math.min(this.promptEl.offsetWidth * 0.5, 40);
       this.place(
         this.promptEl,
         px + rx * side * out,
@@ -307,7 +328,11 @@ export class POIManager {
     for (const { p } of shown) {
       const gx = this.ground(p.def.x, p.def.z);
       const sky = this.skylineAt ? this.skylineAt(p.def.x, p.def.z, LABEL_CLEAR_R) : -Infinity;
-      const over = sky > -Infinity ? sky - gx + LABEL_CLEAR : 0;
+      /* A LINE-HEIGHT OVER THE TOP OF ITS OWN DRAWING, and never more
+       * than `LABEL_MAX_RISE` over the ground: the skyline it asks is
+       * the exact footprint now, so the tallest thing within three
+       * units is the thing it names and not the oak behind it. */
+      const over = sky > -Infinity ? Math.min(LABEL_MAX_RISE, sky - gx + LABEL_CLEAR) : 0;
       const on = this.place(
         p.labelEl!, p.def.x, gx + Math.max(p.def.labelHeight!, over), p.def.z
       );
