@@ -2099,7 +2099,7 @@ export const DESERT_POIS: WorldPOI[] = [
      * hop, and it makes a noise, and you can do it again. Nothing is
      * counted and nothing is explained. Off after dark, when there is
      * nothing there to poke. */
-    x: VISITORS[0].x, z: VISITORS[0].z + 0.6, radius: 3.2,
+    x: VISITORS[0].x, z: VISITORS[0].z + 0.8, radius: 3.8,
     get enabled() { return !isNight(clock.hour); },
     set enabled(_v: boolean) { /* the hour decides */ },
     prompt: 'POKE IT',

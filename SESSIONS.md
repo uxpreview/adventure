@@ -220,6 +220,12 @@ a trolley, a sledge) is this pattern and nothing new.
   Wait for `.loader.gone` before the title veil.
 - **A CHAIR'S REACH IS WHERE A WALKER STOPS.** Two and six tenths is
   inside the chair; a walker stops about two and three quarters out.
+  And the poke's point was a stride off the visitor's foot: a touch's
+  point is the drawing's foot, and its reach is measured from there.
+- **A NOTE A TEST LEAVES OPEN EATS THE NEXT PRESS.** §11's first run
+  opened THE PALE's note where it meant to poke, and the bin's first
+  press closed the note instead of righting the bin. Close what you
+  opened before the next assertion.
 - **A PROMPT'S NEAREST TEST IS DECIDED BY THE POI'S POINT, NOT ITS
   LABEL.** The pavement's point at (137, 196) lost to the junction's
   from the man's own spot; it is at (139, 199.5).

@@ -28,7 +28,7 @@ const SHOTS = [
   /* ---- THE ALIENS IN THE PALE --------------------------------------- */
   ['01-the-pattern-in-the-pan',        268, 76,   { hour: 12 }],
   ['02-the-visitors-by-day',           270, 60,   { hour: 10 }],
-  ['03-poke-it',                       273, 47,   { hour: 10, do: 'poke', wait: 0.2, chrome: true }],
+  ['03-poke-it',                       273, 45.6, { hour: 10, do: 'poke', wait: 0.2, chrome: true }],
   ['04-the-lights-from-the-track',     274, 86,   { hour: 22.5 }],
   ['05-the-lights-over-the-pan',       268, 82,   { hour: 23.2, do: 'standOnPan', wait: 0 }],
   /* ---- THE BARISTA AT THE JUNCTION ------------------------------------ */
@@ -72,7 +72,7 @@ const ONLY = (process.env.ONLY ?? '').split(',').filter(Boolean);
 const browser = await chromium.launch({ executablePath: CHROMIUM });
 
 const DO = {
-  poke: `I.goto(273, 47); I.step(1/60, 30); I.press(); I.step(1/60, 8);`,
+  poke: `I.goto(273, 45.6); I.step(1/60, 30); I.press(); I.step(1/60, 8);`,
   standOnPan: `I.step(1/60, 600);`,
   watchPaws: `I.step(1/60, 240);`,
   pushBin: `const b = I.things.get('the-bin'); I.goto(b.x + 2.8, b.z - 2.2); I.step(1/60, 20); I.press(); I.step(1/60, 10); I.press(); I.step(1/60, 30); I.goto(I.things.get('the-bin').x + 2.6, I.things.get('the-bin').z - 2.4); I.step(1/60, 10); I.press(); I.step(1/60, 40); I.goto(152, 200); I.step(1/60, 20);`,

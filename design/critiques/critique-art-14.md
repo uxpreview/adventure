@@ -133,6 +133,13 @@ twelve behind and a thirty-unit ride outruns it; the frame settles
 four seconds after the roll and rides east down the mile toward THE
 CAR PARK, which is the ride the toy is named for).
 
+`check-verbs` §11 found a third on its first run: **POKE IT was out of
+reach from where the big one stands** — the touch's point was a stride
+south of the drawing's foot and a walker standing at it was offered
+THE PALE's note instead. The point is at its foot and the reach is
+three and eight tenths; the frame (03) has the eye shut and the prompt
+beside it.
+
 **What reads, round two:**
 
 - **The dog turns at the junction** (08b): the barista ahead with a

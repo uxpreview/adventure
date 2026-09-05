@@ -911,13 +911,14 @@ r.east = await page.evaluate(() => {
   settle(1);
   E.visitorsByDay = [0, 1, 2].map((i) => life(`the-visitors-${i}`)).map((v) => v && ({ visible: v.visible, x: +v.x.toFixed(1), z: +v.z.toFixed(1) }));
   E.lightsByDay = [0, 1, 2].map((i) => life(`the-lights-over-the-pan-${i}`)?.visible);
-  at(273, 47.6);
+  at(273, 45.6);
   E.pokePrompt = I.promptText();
   I.press();
   E.blinked = false;
   for (let f = 0; f < 40 && !E.blinked; f++) { I.step(1 / 60, 1); if (life('the-visitors-0')?.pose === 1) E.blinked = true; }
   settle(1);
   E.unblinked = life('the-visitors-0')?.pose === 0;
+  closeNote();
   I.setHour(23, false);
   I.events.resync();
   at(268, 80);
@@ -1084,13 +1085,16 @@ r.east = await page.evaluate(() => {
     I.press();
     I.step(1 / 60, 6);
     I.release();
+    // the ball's furthest from the foot, because the dog brings it back
     let dogToBall = 1e9;
+    let flew = 0;
     for (let f = 0; f < 60 * 8; f++) {
       I.step(1 / 60, 1);
+      flew = Math.max(flew, Math.hypot(b.x - fx, b.z - fz));
       const d = life('the-low-dog');
       if (d) dogToBall = Math.min(dogToBall, Math.hypot(d.x - b.x, d.z - b.z));
     }
-    E.kick = { state: b.state, flew: +Math.hypot(b.x - fx, b.z - fz).toFixed(1), dogToBall: +dogToBall.toFixed(2) };
+    E.kick = { state: b.state, flew: +flew.toFixed(1), dogToBall: +dogToBall.toFixed(2) };
   }
   I.goto(2, 186);
   settle(2);
@@ -1325,7 +1329,7 @@ console.log('\nthe new cast, west and north (Session 19):');
   if (N.deepDay0 === true && N.deepDay1 === false && N.sealsDay0 === true && N.sealsDay1 === false) pass('the deep surfaces on day zero and not day one, and the seals do not haul out the day after'); else fail(`the deep and the seals: deep ${N.deepDay0}/${N.deepDay1}, seals ${N.sealsDay0}/${N.sealsDay1}`);
   if (N.shape.shown && N.shape.gone) pass('the shape in the deep pines is drawn once at night, and is gone'); else fail(`the shape: ${JSON.stringify(N.shape)}`);
   if (N.stonePrompt === 'PICK UP THE STONE' && N.skim.skips >= 1 && N.skim.state === 'ground') pass(`the bar's stone skips: ${N.skim.skips} skip(s) before it went in`); else fail(`the skim: ${N.stonePrompt}, ${JSON.stringify(N.skim)}`);
-  if (N.waits === 3) pass(`three waits answered on this page, and the line wants seven of the eleven built`); else fail(`answered waits: ${N.waits}`);
+  if (N.waits === 2) pass(`two waits answered on this page (Val's answer is a door since Session 20), and the line wants seven of the eleven built`); else fail(`answered waits: ${N.waits}`);
 }
 
 console.log('\nthe new cast, east and south (Session 20):');
