@@ -11,13 +11,20 @@ import {
   windsockTexture, gullTexture, shoreRockTexture,
   regattaBoatTexture, bellBuoyTexture, smallBuoyTexture, mooringPostTexture,
   barRippleDecal, mooredBoatTexture, fishShoalDecal,
+  longshipTexture, hornTexture, surfVanTexture, boardRackTexture, wetsuitLineTexture,
+  surfboardTexture, potBuoyTexture, pyeTexture, pyeBoatTexture, wrenTexture, wrenBoatTexture,
 } from '../textures-coast';
-import { rodTexture, crabTexture, sealTexture, deepBackTexture, hatTexture, fireTexture } from '../textures-life';
+import { rodTexture, crabTexture, sealTexture, deepBackTexture, hatTexture, fireTexture, rippleDecal } from '../textures-life';
+import { fistStoneTexture } from '../textures-common';
 import { Figure, Creature, stops, type StopRow } from '../life';
 import { barriers } from '../barriers';
 import { events } from '../events';
 import { weather } from '../weather';
 import { clock } from '../daylight';
+import { things } from '../things';
+import { knowledge } from '../knowledge';
+import { platform } from '../../engine/Eight15';
+import { rowboat } from '../../engine/Boat';
 import type { BuildCtx, RegionBuilder, WorldPOI } from './index';
 
 /** Fire a named audio event up to the App without a plumbing run. */
@@ -138,6 +145,74 @@ const FIRE_FOLK = [0, 1].map((i) => ({ id: `the-fire-folk-${i}`, land: 'beach' a
  *  second, and it stops at the Common's border like everybody else. */
 const HAT_RUNS = [7.4, 11.4, 15.4];
 HAT_RUNS.forEach((at, i) => events.register({ id: `the-hat-${i}`, land: 'beach', at, hours: 0.1 }));
+
+/* ================================================================== *
+ * THE SURFERS AT THE CUT (Session 19, `THE-FUN-PASS` §10). Board racks,
+ * a van, a wetsuit on a line, and a coast that only has a tide. **They
+ * check the water at first light every day**: out of the van, down to
+ * the water's edge, stand and look at it, back to the van, sit on the
+ * step. And again before dark. The wait, played for laughs, and nobody
+ * explains anything. THE CUT is their district.
+ * ================================================================== */
+const VAN = { x: -213, z: -41 };
+const RACK = { x: -207.5, z: -37 };
+const LINE_POSTS = { x: -219.5, z: -39 };
+const WATER_EDGE_Z = -40;
+function surferDay(id: string, at: number, dx: number, dh: number) {
+  return { id, land: 'beach' as const, pace: 240, stops: stops([
+    [at + dh, VAN.x - 3 + dx, VAN.z + 2.2, 0, -1],
+    [at + dh + 0.14, coastX(WATER_EDGE_Z + dx * 2) + 2.6 + dx * 0.4, WATER_EDGE_Z + dx * 2, 0, -1, 0.22],
+    [at + dh + 0.52, VAN.x - 2 + dx * 1.6, VAN.z + 2.6, 3, 1, 0.5],
+    [at + dh + 1.1, VAN.x - 3 + dx, VAN.z + 2.2, 0, 1, 0.02],
+  ]) };
+}
+const SURFERS = [
+  surferDay('the-surfer-0', 6.05, 0, 0), surferDay('the-surfer-1', 6.05, 2.2, 0.02),
+  surferDay('the-surfer-0-evening', 17.55, 0, 0), surferDay('the-surfer-1-evening', 17.55, 2.2, 0.02),
+];
+/** The van's light comes on at dusk, and the jetty's lamp — Longshore
+ *  at dusk was a blank (the local QA pass, §4 item 4). */
+events.register({ id: 'the-van-light', land: 'beach', at: 19.2, hours: 4.3, place: VAN });
+events.register({ id: 'the-jetty-lamp', land: 'beach', at: 19.0, hours: 10.9, place: { x: -255, z: 51.5 } });
+/** THE ERRAND (`THE-STRANGERS` Part Two, E21): a board has come off the
+ *  rack in the night and is down the beach on the wrack; bring it back
+ *  and set it down at the rack, and it is racked, and there are three,
+ *  and the van's sticker has been added to. A carriable with no home
+ *  worth going back to: the morning leaves it where the tide did. */
+const BOARD_HOME = { x: coastX(16) + 9.5, z: 16 };
+things.register({ id: 'the-board', kind: 'carriable', land: 'beach', home: BOARD_HOME, name: 'THE BOARD' });
+
+/* ================================================================== *
+ * PYE (Session 19, `THE-WAITS` §6). He rows out at the tide, comes
+ * back at the tide, and keeps seven pots that catch nothing much. The
+ * pots are not for catching: they are seven MARKS, and running the
+ * line of them is how a man holds the shape of a day when the only
+ * clock is the water. Two rows a day, off the cove; between them he
+ * is by the boat, at the pots, or sat on her gunwale.
+ * ================================================================== */
+const COVE_BOAT = { x: -222, z: -136 };
+const POT_LINE: [number, number][] = [[-231, -139], [-235, -142.5], [-239, -146], [-242.5, -150], [-245.5, -153.5], [-247, -158], [-247.5, -163]];
+/** The eighth, further out than any of the seven, on a bearing he has
+ *  never rowed. He will not go there. */
+const EIGHTH_POT = { x: -247.6, z: -167.5 };
+const PYE_SHORE = { x: COVE_BOAT.x + 3.6, z: COVE_BOAT.z + 1.8 };
+const PYE_POTS = { x: -216.4, z: -129.2 };
+const PYE_ROWS = [{ at: 6.55, hours: 1.05 }, { at: 18.35, hours: 1.05 }];
+PYE_ROWS.forEach((w, i) => events.register({ id: `pye-rows-${i}`, land: 'beach', ...w, place: { x: -238, z: -148 } }));
+const PYE_DAY = { id: 'pye', land: 'beach' as const, pace: 200, walkPose: 0, stops: stops([
+  [7.7, PYE_SHORE.x, PYE_SHORE.z, 0, -1, 0.3], [8.2, PYE_POTS.x, PYE_POTS.z, 2, 1, 4.2],
+  [12.65, PYE_SHORE.x + 1.2, PYE_SHORE.z, 3, -1, 5.55], [18.3, PYE_SHORE.x, PYE_SHORE.z, 0, -1, 0.02],
+]) };
+/** The day after the pots are hauled: nothing to row out to. He sits. */
+const PYE_HAULED = stops([[7.7, PYE_SHORE.x + 1.2, PYE_SHORE.z, 3, -1, 11.9]]);
+
+/* THE HORN ON THE POINT, and who answers it (Session 19; the Holdfast's
+ * toy, `THE-FUN-PASS` §3 item 3). The point is LONGSHORE's and the
+ * longship is THE WIDE BLUE's, so the horn is blown in one builder and
+ * answered in the other: the touch sets `pending`, the ocean's update
+ * takes it and roars a beat and a half later, and the beach's gulls go
+ * up at the roar. Repeatable, no score, and the answer is the point. */
+const horn = { pending: false, answerAt: -1, liftGulls: false };
 
 export const buildBeach: RegionBuilder = (ctx) => {
   const { r, terrain } = ctx;
@@ -291,7 +366,7 @@ export const buildBeach: RegionBuilder = (ctx) => {
     [-211, 20, -0.3, 6.1, 0],
   ];
   hutSpots.forEach(([x, z, rot, sz, paint], i) =>
-    ctx.standee(beachHutTexture(1260 + i, paint), sz, sz, x, z, { rotY: rot }));
+    ctx.standee(beachHutTexture(1260 + i, paint), sz, sz, x, z, { rotY: rot, solid: true }));
   ctx.decal(stoneWearDecal(1264, true), 12, 9, -205, -11, 0.4, 0.32);
   ctx.standee(benchTexture(1265), 2.8, 1.6, -207, -2, { rotY: -0.4 });
   ctx.standee(lobsterPotTexture(1266), 1.7, 1.4, -197, -22, { rotY: 0.7 });
@@ -371,7 +446,7 @@ export const buildBeach: RegionBuilder = (ctx) => {
   // three stacks, well apart and at three sizes — round 4 had them in a
   // huddle and they read as one grey lozenge with lumps
   const stacks: [number, number, number][] = [[-268, -60, 9.6], [-274, -92, 6.2], [-259, -116, 4.4]];
-  stacks.forEach(([x, z, h], i) => ctx.standee(seaStackTexture(1291 + i), h * 0.85, h, x, z));
+  stacks.forEach(([x, z, h], i) => ctx.standee(seaStackTexture(1291 + i), h * 0.85, h, x, z, { solid: h * 0.3 }));
   /* THE CLIFF'S FOOT, all the way round. A cliff that meets flat sand
    * at a clean line is a cut-out standing on a beach; what a cliff
    * actually does is DROP things, and the skirt of what it has dropped
@@ -516,6 +591,43 @@ export const buildBeach: RegionBuilder = (ctx) => {
   const fireCold = ctx.standee(fireTexture(1372, false), 3.2, 3.2, FIRE.x, FIRE.z);
   const fireFolk = FIRE_FOLK.map((d, i) => new Figure(ctx, d, i ? 1 : 2));
 
+  /* ---- THE SURFERS AT THE CUT (Session 19) -------------------------- */
+  ctx.standee(surfVanTexture(1500), 7.2, 4.5, VAN.x, VAN.z, { rotY: 0.12, solid: true });
+  const rack2 = ctx.standee(boardRackTexture(1501, 2), 3.6, 3.6, RACK.x, RACK.z, { rotY: -0.2, solid: 1.2 });
+  const rack3 = ctx.standee(boardRackTexture(1502, 3), 3.6, 3.6, RACK.x, RACK.z, { rotY: -0.2 });
+  ctx.standee(wetsuitLineTexture(1503), 5.4, 3.2, LINE_POSTS.x, LINE_POSTS.z, { rotY: 0.3 });
+  const vanLight = ctx.standee(lampGlowTexture(1504), 3.4, 3.4, VAN.x + 1.2, VAN.z + 0.4);
+  (vanLight.material as THREE.MeshBasicMaterial).depthWrite = false;
+  vanLight.renderOrder = 3;
+  ctx.hang(vanLight, 1.4);
+  const jettyLamp = ctx.standee(lampGlowTexture(1505), 3.2, 3.2, -255.2, 51.6);
+  (jettyLamp.material as THREE.MeshBasicMaterial).depthWrite = false;
+  jettyLamp.renderOrder = 3;
+  ctx.hang(jettyLamp, 3.2);
+  const surfers = SURFERS.map((d, i) => new Figure(ctx, d, 2, { scale: i % 2 ? 1 : 1.06 }));
+  /* THE HORN, on its stone beside the cairn. */
+  ctx.standee(hornTexture(1508), 1.7, 1.4, -233, -76.4);
+  const boardThing = things.get('the-board')!;
+  boardThing.def.hand = surfboardTexture(1506);
+  boardThing.def.handSize = [1.5, 0.45];
+  const board = ctx.standee(surfboardTexture(1507), 3.2, 0.96, boardThing.x, boardThing.z, { rotY: 0.5 });
+  boardThing.mesh = board;
+  rack3.visible = false;
+
+  /* ---- PYE (Session 19) -------------------------------------------- */
+  const pyeMaps = { 0: pyeTexture(1510, 0), 2: pyeTexture(1511, 2), 3: pyeTexture(1512, 3) };
+  const pye = new Figure(ctx, PYE_DAY, 0, { maps: pyeMaps, scale: 1.02 });
+  const pyeBoat = new Creature(ctx, 'pye-rowing', 'beach', [pyeBoatTexture(1513)], 6.0, 3.0, COVE_BOAT.x, COVE_BOAT.z);
+  pyeBoat.hide();
+  const pots = POT_LINE.map(([x, z], i) => ctx.standee(potBuoyTexture(1520 + i), 1.3, 1.7, x, z));
+  const eighthPot = ctx.standee(potBuoyTexture(1528), 1.3, 1.7, EIGHTH_POT.x, EIGHTH_POT.z);
+  eighthPot.visible = false;
+  // hauled: the seven stacked by the boat, wet
+  const hauled = [[-218.5, -138.5, 0.3], [-217, -136.5, -0.4], [-219.5, -135, 0.8], [-216, -139.5, 0.1]]
+    .map(([x, z, rot], i) => ctx.standee(lobsterPotTexture(1530 + (i % 3)), 1.8, 1.5, x, z, { rotY: rot }));
+  for (const m of hauled) m.visible = false;
+  let pyeDoor: 'none' | 'eighth' | 'hauled' = 'none';
+
   return (dt: number, t: number, px: number, pz: number) => {
     // the windsock is the coast's one instrument: it never stops, and
     // its swing is the same wind the marram is leaning in
@@ -529,6 +641,11 @@ export const buildBeach: RegionBuilder = (ctx) => {
       flockFired = true;
       flockHome += 30 + (Math.sin(flockPuts++ * 12.9898) * 0.5 + 0.5) * 22;
       say('gull-cry');
+    }
+    // and they go up for a roar, wherever the walker is
+    if (horn.liftGulls) {
+      horn.liftGulls = false;
+      if (!flockFired) { flockFired = true; flockHome += 12; say('gull-cry'); }
     }
     if (flockFired && near > 34) flockFired = false;
     const want = flockFired ? 1 : 0;
@@ -590,6 +707,69 @@ export const buildBeach: RegionBuilder = (ctx) => {
       fireLit.visible = lit;
       fireCold.visible = !lit;
       for (const f of fireFolk) f.tick(h, rain);
+    }
+    /* ---- THE SURFERS, THE BOARD, THE LIGHTS (Session 19) ------------- */
+    for (const s of surfers) s.tick(h, rain);
+    vanLight.visible = events.progress('the-van-light') >= 0;
+    jettyLamp.visible = events.progress('the-jetty-lamp') >= 0;
+    {
+      const racked = knowledge.has('fact:the-board-racked');
+      rack2.visible = !racked;
+      rack3.visible = racked;
+      if (!racked && boardThing.state === 'ground'
+        && Math.hypot(boardThing.x - RACK.x, boardThing.z - RACK.z) < 6.2) {
+        /* SET DOWN AT THE RACK, IT IS RACKED. The visible permanent
+         * change is a third board; the van's sticker says the rest. */
+        knowledge.learn('fact:the-board-racked');
+        boardThing.x = RACK.x;
+        boardThing.z = RACK.z;
+        say('board-knock');
+      }
+      const fp = things.flyPos(boardThing);
+      if (racked) board.visible = false;
+      else if (fp) { board.visible = true; board.position.set(fp.x, fp.y, fp.z); }
+      else if (boardThing.state === 'ground') { board.visible = true; board.position.set(boardThing.x, ctx.groundY(boardThing.x, boardThing.z), boardThing.z); }
+      else board.visible = false;
+    }
+
+    /* ---- PYE, AND THE TWO DOORS (Session 19) -------------------------- */
+    {
+      const door = knowledge.has('door:the-pots-hauled') ? 'hauled' : knowledge.has('door:the-eighth-pot') ? 'eighth' : 'none';
+      if (door !== pyeDoor) {
+        pyeDoor = door;
+        // the routine is re-written in place: the day has a new shape
+        if (door === 'hauled') PYE_DAY.stops.splice(0, PYE_DAY.stops.length, ...PYE_HAULED);
+        for (const m of pots) m.visible = door !== 'hauled';
+        for (const m of hauled) m.visible = door === 'hauled';
+        eighthPot.visible = door === 'eighth';
+      }
+      const gone = platform.land === 'beach';
+      pye.tick(h, rain || gone);
+      // the row: out along the line, a pause at each pot, and back
+      let rowing = -1;
+      for (let i = 0; i < PYE_ROWS.length; i++) {
+        const p = events.progress(`pye-rows-${i}`);
+        if (p >= 0) rowing = p;
+      }
+      if (rowing < 0 || door === 'hauled' || gone) pyeBoat.hide();
+      else {
+        const n = POT_LINE.length;
+        const u = rowing < 0.5 ? rowing * 2 : 2 - rowing * 2;   // out, then back
+        const seg = Math.min(n - 1, Math.max(0, u * (n - 1)));
+        const i = Math.floor(seg);
+        const f = seg - i;
+        const [ax, az] = i === 0 ? [COVE_BOAT.x - 2, COVE_BOAT.z - 3] : POT_LINE[i - 1];
+        const [bx, bz] = POT_LINE[Math.min(n - 1, i)];
+        // he dwells at each pot: the last third of every leg is still
+        const k = Math.min(1, f / 0.66);
+        const x = ax + (bx - ax) * k;
+        const z = az + (bz - az) * k;
+        pyeBoat.set(0, x, z, rowing < 0.5 ? -1 : 1, Math.sin(t * 1.1) * 0.08);
+        if (k < 1 && Math.floor(t * 0.9) !== Math.floor((t - dt) * 0.9) && Math.hypot(px - x, pz - z) < 30) say('oar');
+      }
+      // the eighth pot is set the morning after the name comes back: it
+      // is set at arrival, which is how a wait resolves (`THE-WAITS` §0)
+      if (door === 'none' && knowledge.has('name:the-mark') && Math.hypot(px - COVE_BOAT.x, pz - COVE_BOAT.z) < 14 && knowledge.has('door:the-eighth-pot')) { /* the card writes the door */ }
     }
     {
       /* THE HAT: between runs it lies where it stopped, which is the
@@ -662,6 +842,74 @@ export const BEACH_POIS: WorldPOI[] = [
     },
   },
   { x: -232, z: 112, radius: 7, label: 'A BOAT, RESTING' },
+  /* ---- SESSION 19: THE NEW CAST, WEST ------------------------------ */
+  {
+    /* THE VAN. The surfers' place, and the note says what they do,
+     * which is check. */
+    /* Its reach stops short of the rack: a thing in reach beats the
+     * thing in the hand, and a walker setting the board down at the
+     * rack must not be offered the sticker instead (Session 15's
+     * gotcha, learned a third time on the sheet). */
+    x: VAN.x, z: VAN.z + 1, radius: 5, label: 'THE VAN',
+    prompt: 'READ THE STICKER',
+    note: {
+      title: 'the van',
+      body: () => (knowledge.has('fact:the-board-racked')
+        ? 'a van with a roof rack, a sticker on the back door that says the surf report is on the other door, and on the other door it says: flat. three boards now, one of them with sand still on it, which somebody has had to explain. they check the water at first light every day. it is important to check.'
+        : 'a van with a roof rack, a sticker on the back door that says the surf report is on the other door, and on the other door it says: flat. two boards on the rack and a wetsuit on the line, and a coast that only has a tide. they check the water at first light every day. it is important to check.'),
+    },
+  },
+  {
+    /* THE BOARD, where the tide left it: off while it is in the hand or
+     * in the air, and gone from the beach once it is racked. */
+    get x() { return things.get('the-board')!.x; },
+    get z() { return things.get('the-board')!.z; },
+    get enabled() { return things.get('the-board')!.state === 'ground' && !knowledge.has('fact:the-board-racked'); },
+    set enabled(_v: boolean) { /* the registry and the rack decide */ },
+    radius: 2.8,
+    prompt: 'PICK UP THE BOARD',
+    touch: () => { things.pickUp('the-board'); },
+  } as unknown as WorldPOI,
+  {
+    /* THE HORN. Blow it, and they answer, every time, from wherever
+     * they are. Nothing says who put it here. */
+    x: -233, z: -76, radius: 3.2, label: 'THE HORN',
+    prompt: 'BLOW THE HORN',
+    touch: () => {
+      say('horn');
+      horn.pending = true;
+    },
+  },
+  {
+    /* THE POT LINE — where Pye's wait is legible, and where both doors
+     * are (`THE-FUN-PASS` §6, `THE-WAITS` §6). Before you have the
+     * mark's name it is a note; with it, a card with two doors, offered
+     * once. Nothing here says which was right. */
+    x: PYE_POTS.x, z: PYE_POTS.z + 0.5, radius: 5.5, label: 'THE POT LINE',
+    get prompt() {
+      const done = knowledge.has('door:the-eighth-pot') || knowledge.has('door:the-pots-hauled');
+      if (!done && knowledge.has('name:the-mark')) return 'TELL HIM THE MARK\'S NAME';
+      return 'COUNT THE POTS';
+    },
+    get choice() {
+      if (!knowledge.has('name:the-mark')) return undefined;
+      return {
+        body: 'seven pots on a line off the cove, and a man who rows out to them at the tide and back at the tide, and has done for as long as the tide has. you have been out to the mark, which nobody in longshore has. he would like to know what it is called. or the pots could come up. they have never once come up.',
+        options: [
+          { label: 'TELL HIM THE MARK\'S NAME', door: 'door:the-eighth-pot' },
+          { label: 'HAUL THE POTS', door: 'door:the-pots-hauled' },
+        ],
+      };
+    },
+    note: {
+      title: 'the pot line',
+      body: () => {
+        if (knowledge.has('door:the-eighth-pot')) return 'eight pots on a line off the cove, and the eighth is further out than any of the seven, on a bearing nobody here has rowed. he set it the morning after you came back. he has not been out to it and he is not going to, and it has his mark on it.';
+        if (knowledge.has('door:the-pots-hauled')) return 'seven pots stacked by the boat, wet, and nothing on the line. they were empty. he has not said anything about it, and he sits on the gunwale now at the hours he used to row, and the tide comes in and goes out without anywhere to put him.';
+        return 'seven pots on a line off the cove, three or four paces apart, going out. pye rows out to them at the tide and back at the tide. they catch nothing much, and he sets them again anyway, and the tide is the most reliable thing anybody here knows.';
+      },
+    },
+  } as unknown as WorldPOI,
 ];
 
 /* ================================================================== *
@@ -720,8 +968,67 @@ events.register({ id: 'the-seals-haul-out', land: 'ocean', at: 9.5, hours: 7.0, 
  * a back and a fin and the water going white, and gone. It is the one
  * thing in the game that is drawn to be frightening, and it happens
  * whether or not anybody is on the bar to be frightened. */
+/** Which dusks it surfaces at: every third, from the shipped page's own
+ *  (day zero). The day after each, the seals stay in the water. */
+const deepDay = (day: number) => day % 3 === 0;
+const deepYesterday = (day: number) => day % 3 === 1;
 events.register({ id: 'the-deep', land: 'ocean', at: 19.35, hours: 0.1, place: { x: -300, z: -70 },
-  onStart: (px, pz) => { if (Math.hypot(px + 300, pz + 70) < 110) say('deep-surface'); } });
+  onStart: (px, pz) => { if (deepDay(clock.day) && Math.hypot(px + 300, pz + 70) < 110) say('deep-surface'); } });
+
+/* ================================================================== *
+ * THE VIKINGS ON THE HOLDFAST (Session 19, `THE-FUN-PASS` §10). A
+ * longship beached at the foot of the point's seaward face, and a
+ * raiding party that has been waiting for a wind for four hundred
+ * years. **Every day they row out to the mark and compete in the
+ * regatta**, because it is the only thing to do. They roar at the
+ * shore. **They cannot land on it**: the berth is THE WIDE BLUE's and
+ * the sand they roar at is LONGSHORE's, and the border is the rule that
+ * makes them funny. The ship is a thing and the crew is its drawing;
+ * neither has a position outside the ocean's rect by any path here.
+ *
+ * Their day is a pure function of the hour, like everybody's: in from
+ * the offing at first light (the first time you see them from the
+ * promenade they are a longship coming in), beached until the regatta
+ * is called, out to the course and round it, back, and beached again
+ * through the night.
+ * ================================================================== */
+const BERTH = { x: -264, z: -46 };
+const OFFING = { x: -334, z: -96 };
+const SHIP = { rowIn: [6.0, 7.0], out: [11.85, 12.0], race: [12.0, 13.5], back: [13.5, 13.75] };
+events.register({ id: 'the-longship-in', land: 'ocean', at: 6.0, hours: 1.0, place: BERTH });
+events.register({ id: 'the-longship-out', land: 'ocean', at: 11.85, hours: 1.9, place: BERTH });
+
+/* ================================================================== *
+ * WREN (Session 19, `THE-WAITS` §8). Keeps the mark: rows out, rings
+ * the bell, rows back. The bell buoy has been ringing since Session 5
+ * and this is who rings it. The punt is drawn up on the bar's root;
+ * the noon row goes out along the bar's seaward side to the mark, and
+ * Wren is beside the buoy for the race and rows back after it.
+ * ================================================================== */
+const WREN_BOAT = { x: -266.5, z: 72.5 };
+const WREN_SHORE = { x: -263.6, z: 70.4 };
+const WREN_AT_MARK = { x: -304, z: -32 };
+/** The second mark, at the bar's far end, in the water off it. */
+const SECOND_MARK = { x: -266, z: -16 };
+const WREN_ROW = { at: 11.6, hours: 2.3 };
+events.register({ id: 'wren-rows', land: 'ocean', ...WREN_ROW, place: { x: -282, z: 34 } });
+const WREN_EVENING = { at: 18.0, hours: 1.0 };
+events.register({ id: 'wren-rows-evening', land: 'ocean', ...WREN_EVENING, place: SECOND_MARK });
+const WREN_DAY = { id: 'wren', land: 'ocean' as const, pace: 200, walkPose: 0, stops: stops([
+  [8.0, WREN_SHORE.x, WREN_SHORE.z, 2, -1, 3.5], [11.58, WREN_SHORE.x, WREN_SHORE.z, 0, -1, 0.02],
+]) };
+const WREN_AFTERNOON = { id: 'wren-afternoon', land: 'ocean' as const, pace: 200, walkPose: 0, stops: stops([
+  [13.95, WREN_SHORE.x, WREN_SHORE.z, 0, 1, 1.0], [15.0, WREN_SHORE.x + 1.6, WREN_SHORE.z + 0.4, 3, -1, 2.9], [17.95, WREN_SHORE.x, WREN_SHORE.z, 0, -1, 0.02],
+]) };
+/** The fleet finished: nothing to row out for. Wren sits, all day; the
+ *  afternoon routine is given a stop it never reaches. */
+const WREN_FINISHED = stops([[8.0, WREN_SHORE.x + 1.6, WREN_SHORE.z + 0.4, 3, -1, 10]]);
+const WREN_NEVER = stops([[24.5, WREN_SHORE.x, WREN_SHORE.z, 0, 1, 0.01]]);
+
+/** THE BAR'S STONE (`QUESTS` §8: skim a stone off the sandbar). The
+ *  Common's stone has a twin on the bar, and this one skips. */
+const BAR_STONE_HOME = (() => { const p = alongPath(SANDBAR, 0.24); return { x: p.x - p.az * 2, z: p.z + p.ax * 2 }; })();
+things.register({ id: 'bar-stone', kind: 'carriable', land: 'ocean', home: BAR_STONE_HOME, name: 'THE STONE', skims: 3 });
 
 export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
   const { r } = ctx;
@@ -849,24 +1156,210 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
   const coveLight = new Creature(ctx, 'the-cove-light', 'ocean', [lampGlowTexture(1495)], 3.2, 3.2, COVE_LIGHT.x, COVE_LIGHT.z);
   events.register({ id: 'the-cove-light', land: 'ocean', at: 21.0, hours: 7.6 });
 
+  /* ---- THE VIKINGS (Session 19) ------------------------------------- */
+  const longship = new Creature(ctx, 'the-longship', 'ocean',
+    [longshipTexture(1600, 0), longshipTexture(1601, 1), longshipTexture(1602, 2)], 14, 7, BERTH.x, BERTH.z);
+  const ship = { roarT: 0, next: 4 + r() * 6, seen: false };
+  /* Where the ship is at an hour, and what it is doing. Pure. */
+  const shipAt = (h: number): { x: number; z: number; pose: 0 | 1; face: -1 | 1 } => {
+    const lerp = (a: { x: number; z: number }, b: { x: number; z: number }, u: number) =>
+      ({ x: a.x + (b.x - a.x) * u, z: a.z + (b.z - a.z) * u });
+    const start = alongPath(COURSE, 0.9);
+    if (h >= SHIP.rowIn[0] && h < SHIP.rowIn[1]) {
+      const u = (h - SHIP.rowIn[0]) / (SHIP.rowIn[1] - SHIP.rowIn[0]);
+      return { ...lerp(OFFING, BERTH, u * u * (3 - 2 * u)), pose: 1, face: 1 };
+    }
+    if (h >= SHIP.out[0] && h < SHIP.out[1]) {
+      const u = (h - SHIP.out[0]) / (SHIP.out[1] - SHIP.out[0]);
+      return { ...lerp(BERTH, start, u), pose: 1, face: -1 };
+    }
+    if (h >= SHIP.race[0] && h < SHIP.race[1]) {
+      const u = (h - SHIP.race[0]) / (SHIP.race[1] - SHIP.race[0]);
+      const p = alongPath(COURSE, 0.9 + u * 2.6);
+      return { x: p.x, z: p.z, pose: 1, face: p.ax >= 0 ? 1 : -1 };
+    }
+    if (h >= SHIP.back[0] && h < SHIP.back[1]) {
+      const u = (h - SHIP.back[0]) / (SHIP.back[1] - SHIP.back[0]);
+      const end = alongPath(COURSE, 0.9 + 2.6);
+      return { ...lerp({ x: end.x, z: end.z }, BERTH, u), pose: 1, face: 1 };
+    }
+    return { x: BERTH.x, z: BERTH.z, pose: 0, face: 1 };
+  };
+  /* ---- WREN, THE SECOND MARK (Session 19) --------------------------- */
+  const wrenMaps = { 0: wrenTexture(1610, 0), 2: wrenTexture(1611, 2), 3: wrenTexture(1612, 3) };
+  const wren = new Figure(ctx, WREN_DAY, 2, { maps: wrenMaps, scale: 0.98 });
+  const wrenPm = new Figure(ctx, WREN_AFTERNOON, 2, { maps: wrenMaps, scale: 0.98 });
+  const punt = ctx.standee(wrenBoatTexture(1613), 5.6, 3.3, WREN_BOAT.x, WREN_BOAT.z, { rotY: 0.5 });
+  const wrenRowing = new Creature(ctx, 'wren-rowing', 'ocean', [wrenBoatTexture(1614)], 5.6, 3.3, WREN_BOAT.x, WREN_BOAT.z);
+  wrenRowing.hide();
+  const secondMark = ctx.standee(bellBuoyTexture(1615), 2.8, 4.4, SECOND_MARK.x, SECOND_MARK.z);
+  secondMark.visible = false;
+  const secondMarkY = ctx.groundY(SECOND_MARK.x, SECOND_MARK.z);
+  let wrenDoor: 'none' | 'mark' | 'finished' = 'none';
+  /* ---- THE BAR'S STONE, AND ITS RINGS (Session 19) ------------------ */
+  const barStone = things.get('bar-stone')!;
+  barStone.def.hand = fistStoneTexture(1616);
+  const stoneMesh = ctx.standee(fistStoneTexture(1616), 0.5, 0.5, barStone.x, barStone.z);
+  barStone.mesh = stoneMesh;
+  const rings = [0, 1, 2, 3].map((i) => {
+    const m = ctx.decal(rippleDecal(1620 + i), 3, 3, BAR_STONE_HOME.x, BAR_STONE_HOME.z, 0, 0.7);
+    m.visible = false;
+    return { m, at: -1 };
+  });
+  /* THE FLEET, FOR A ROWBOAT (`QUESTS` §8: row into the fleet and
+   * scatter it): a boat with the rowboat inside nine units bears away
+   * — a jump along the course and a swerve off it — and the halyards
+   * run. Reset when it has gone. */
+  const veer = boats.map(() => ({ k: 0, side: 1 as -1 | 1, said: 0 }));
+
   return (dt: number, t: number, px: number, pz: number) => {
     /* THE REGATTA. Boats carry along the course and heel INTO the turn;
      * a standee cannot rotate to a heading, so the flip is the tack and
      * it happens where the course doubles back. From Session 17 the
      * RACE is at noon: three times the speed for an hour and a half,
      * and the heel goes with the wind. */
-    const race = events.progress('the-regatta') >= 0 ? 1 : 0;
+    /* THE FLEET FINISHED (Session 19, Wren's second door): the boats
+     * lie at anchor off the second mark and do not race, ever again. */
+    const finished = knowledge.has('door:the-fleet-finished');
+    const race = !finished && events.progress('the-regatta') >= 0 ? 1 : 0;
     const wind = weather.state.wind;
     const fill = 1 + race * (1.6 + wind * 1.6);
-    for (const b of boats) {
+    boats.forEach((b, i) => {
+      const v = veer[i];
+      if (finished) {
+        const ax = SECOND_MARK.x - 9 - (i % 2) * 8 + Math.sin(i * 2.3) * 3;
+        const az = SECOND_MARK.z + 6 + i * 5;
+        b.m.position.set(ax, ctx.groundY(ax, az) + Math.sin(t * 0.66 + b.ph) * 0.13, az);
+        b.m.rotation.z = Math.sin(t * 0.48 + b.ph) * 0.045;
+        return;
+      }
+      // a rowboat in the fleet: she bears away, and keeps bearing away
+      const near = rowboat.aboard ? Math.hypot(rowboat.x - b.m.position.x, rowboat.z - b.m.position.z) : 1e9;
+      if (near < 9) {
+        if (v.k < 0.05) {
+          const p0 = alongPath(COURSE, b.t);
+          v.side = ((rowboat.x - b.m.position.x) * -p0.az + (rowboat.z - b.m.position.z) * p0.ax) > 0 ? -1 : 1;
+        }
+        v.k = Math.min(1, v.k + dt * 2.2);
+        b.t = (b.t + dt * 0.03) % 1;
+        if (t - v.said > 3.5) { v.said = t; say('halyard'); }
+      } else v.k = Math.max(0, v.k - dt * 0.35);
       b.t = (b.t + dt * b.v * fill) % 1;
       const p = alongPath(COURSE, b.t);
-      const y = ctx.groundY(p.x, p.z);
-      b.m.position.set(p.x, y + Math.sin(t * 0.7 + b.ph) * 0.14, p.z);
+      const px2 = p.x + (-p.az) * v.side * v.k * 7;
+      const pz2 = p.z + p.ax * v.side * v.k * 7;
+      const y = ctx.groundY(px2, pz2);
+      b.m.position.set(px2, y + Math.sin(t * 0.7 + b.ph) * 0.14, pz2);
       // she pitches to the swell and rolls a little as she is steered
-      b.m.rotation.z = Math.sin(t * 0.62 + b.ph) * 0.05 + (p.ax > 0 ? 0.03 : -0.03) * (1 + race * 2.5 + Math.max(0, wind - 0.5) * 3);
+      b.m.rotation.z = Math.sin(t * 0.62 + b.ph) * 0.05 + (p.ax > 0 ? 0.03 : -0.03) * (1 + race * 2.5 + Math.max(0, wind - 0.5) * 3) + v.k * 0.12 * v.side;
       const s = Math.abs(b.m.scale.x);
       b.m.scale.x = p.az > 0 ? -s : s;
+    });
+
+    /* ---- THE VIKINGS (Session 19) ------------------------------------- */
+    {
+      const hh = clock.hour;
+      const at = shipAt(hh);
+      const beached = at.pose === 0;
+      ship.roarT = Math.max(0, ship.roarT - dt);
+      // the horn is answered a beat and a half after it is blown
+      if (horn.pending) { horn.pending = false; horn.answerAt = t + 1.4; }
+      if (horn.answerAt > 0 && t >= horn.answerAt) {
+        horn.answerAt = -1;
+        ship.roarT = 1.6;
+        horn.liftGulls = true;
+        say('viking-roar');
+      }
+      /* THEY ROAR AT THE SHORE: at anybody on the sand within earshot
+       * of the berth, by day, every ten seconds or so — and never at
+       * anybody on the water, because that is a different matter. */
+      const onSand = px > -250 && hh >= 7 && hh < 20;
+      const d = Math.hypot(px - BERTH.x, pz - BERTH.z);
+      if (beached && onSand && d < 46) {
+        ship.next -= dt;
+        if (ship.next <= 0) {
+          ship.next = 9 + Math.abs(Math.sin(t * 3.1)) * 6;
+          ship.roarT = 1.5;
+          say('viking-roar');
+        }
+      } else ship.next = Math.min(ship.next, 3);
+      const pose = beached ? (ship.roarT > 0 ? 2 : 0) : 1;
+      // the ship is a THING: nothing gives it a position off the ocean's page
+      const sx = Math.min(-252.5, at.x);
+      const lurch = ship.roarT > 0 ? Math.sin(t * 22) * 0.03 : 0;
+      longship.set(pose, sx, at.z, at.face, Math.sin(t * 0.6) * (beached ? 0.05 : 0.12));
+      longship.mesh.rotation.z = Math.sin(t * 0.55) * (beached ? 0.012 : 0.035) + lurch;
+    }
+
+    /* ---- WREN, THE SECOND MARK, THE FINISH (Session 19) --------------- */
+    {
+      const door = knowledge.has('door:the-fleet-finished') ? 'finished' : knowledge.has('door:the-second-mark') ? 'mark' : 'none';
+      if (door !== wrenDoor) {
+        wrenDoor = door;
+        secondMark.visible = door !== 'none';
+        if (door === 'finished') {
+          WREN_DAY.stops.splice(0, WREN_DAY.stops.length, ...WREN_FINISHED);
+          WREN_AFTERNOON.stops.splice(0, WREN_AFTERNOON.stops.length, ...WREN_NEVER);
+        }
+      }
+      if (secondMark.visible) {
+        const sw = Math.sin(t * 0.7 + 1.3) + 0.4 * Math.sin(t * 1.5);
+        secondMark.position.y = secondMarkY + sw * 0.24;
+        secondMark.rotation.z = sw * 0.09;
+      }
+      const gone = platform.land === 'ocean';
+      wren.tick(clock.hour, gone);
+      wrenPm.tick(clock.hour, gone);
+      const rowing = events.progress('wren-rows');
+      const evening = door === 'none' || door === 'finished' ? -1 : events.progress('wren-rows-evening');
+      let out: { x: number; z: number; face: -1 | 1 } | null = null;
+      if (rowing >= 0 && door !== 'finished' && !gone) {
+        // out for the first sixth, at the mark for the middle, back for the last
+        const u = rowing < 0.174 ? rowing / 0.174 : rowing < 0.826 ? 1 : 1 - (rowing - 0.826) / 0.174;
+        const k = u * u * (3 - 2 * u);
+        out = { x: WREN_BOAT.x + (WREN_AT_MARK.x - WREN_BOAT.x) * k, z: WREN_BOAT.z + (WREN_AT_MARK.z - WREN_BOAT.z) * k, face: rowing < 0.5 ? -1 : 1 };
+        if (rowing < 0.174 || rowing >= 0.826) {
+          if (Math.floor(t * 0.8) !== Math.floor((t - dt) * 0.8) && Math.hypot(px - out.x, pz - out.z) < 30) say('oar');
+        }
+      } else if (evening >= 0 && !gone) {
+        const u = evening < 0.5 ? evening * 2 : 2 - evening * 2;
+        const k = u * u * (3 - 2 * u);
+        out = { x: WREN_BOAT.x + (SECOND_MARK.x + 4 - WREN_BOAT.x) * k, z: WREN_BOAT.z + (SECOND_MARK.z + 3 - WREN_BOAT.z) * k, face: evening < 0.5 ? -1 : 1 };
+      }
+      if (out) {
+        wrenRowing.set(0, out.x, out.z, out.face, Math.sin(t * 1.2) * 0.08);
+        punt.visible = false;
+      } else {
+        wrenRowing.hide();
+        punt.visible = true;
+      }
+      // Wren rings the bell at noon: the mark nods harder while the punt is beside it
+      if (rowing >= 0.174 && rowing < 0.22) bell.rotation.z += Math.sin(t * 9) * 0.06;
+    }
+
+    /* ---- THE BAR'S STONE (Session 19) --------------------------------- */
+    {
+      const fp = things.flyPos(barStone);
+      if (fp) { stoneMesh.visible = true; stoneMesh.position.set(fp.x, fp.y, fp.z); }
+      else if (barStone.state === 'ground') { stoneMesh.visible = true; stoneMesh.position.set(barStone.x, ctx.groundY(barStone.x, barStone.z), barStone.z); }
+      else stoneMesh.visible = false;
+      // the rings: one per splash the walker's throw made on this water
+      for (let i = things.splashes.length - 1; i >= 0; i--) {
+        const s = things.splashes[i];
+        if (s.id !== 'bar-stone') continue;
+        things.splashes.splice(i, 1);
+        const ring = rings.reduce((a, b) => (a.at < b.at ? a : b));
+        ring.at = t;
+        ring.m.position.set(s.x, ctx.groundY(s.x, s.z) + 0.06, s.z);
+      }
+      for (const ring of rings) {
+        const age = ring.at < 0 ? 9 : t - ring.at;
+        const u = Math.min(1, age / 1.8);
+        ring.m.visible = u < 1;
+        const sc = 0.5 + u * 2.2;
+        ring.m.scale.set(sc, sc, 1);
+        (ring.m.material as THREE.MeshBasicMaterial).opacity = (1 - u) * 0.7;
+      }
     }
 
     /* THE BELL BUOY works the swell: it nods, it rolls, and it rings. */
@@ -901,7 +1394,11 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
     /* ---- THE SEALS, THE THING, THE MOORINGS (Session 17) ------------ */
     const h = clock.hour;
     {
-      const out = events.progress('the-seals-haul-out') >= 0;
+      /* THE DAY AFTER THE DEEP, THE SEALS DO NOT HAUL OUT (Session 19,
+       * `THE-FUN-PASS` §10: a consequence that is not an explanation).
+       * The thing surfaces every third dusk; the morning after it, the
+       * bar is empty of them, and nothing anywhere says why. */
+      const out = events.progress('the-seals-haul-out') >= 0 && !deepYesterday(clock.day);
       let near = 1e9;
       for (const [x, z] of SEALS) near = Math.min(near, Math.hypot(px - x, pz - z));
       sealState.off = Math.max(0, sealState.off - dt);
@@ -920,7 +1417,7 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
       });
     }
     {
-      const k = events.progress('the-deep');
+      const k = deepDay(clock.day) ? events.progress('the-deep') : -1;
       if (k < 0) deep.hide();
       else {
         const e = Math.sin(k * Math.PI);
@@ -986,4 +1483,60 @@ export const OCEAN_POIS: WorldPOI[] = [
       body: 'from the sand you are either on the point or behind it. from here you get the whole face at once: eleven paces of raw cliff going straight down, with one thin line cut across it by somebody who wanted to be up there.',
     },
   },
+  /* ---- SESSION 19: THE NEW CAST, WEST ------------------------------ */
+  {
+    /* THE HOLDFAST's berth, read from the bar's near end or the bight:
+     * the longship is a thing you look at, and the note is the whole of
+     * what anybody will ever tell you about them. */
+    x: BERTH.x + 6, z: BERTH.z + 4, radius: 13, label: 'THE LONGSHIP',
+    prompt: 'COUNT THE SHIELDS',
+    note: {
+      title: 'the longship',
+      body: 'a longship, beached at the foot of the point, with seven shields along her side and four men in her who have been waiting for a wind for four hundred years. every day at noon they row out and go round the mark with the others, because it is the only thing to do. they roar at the sand. they have never once stood on it.',
+    },
+  },
+  {
+    /* WREN'S PUNT — where Wren's wait is legible and where both doors
+     * are (`THE-FUN-PASS` §6, `THE-WAITS` §8). With the bar walked to
+     * its end it is a card with two doors, offered once. */
+    x: WREN_BOAT.x, z: WREN_BOAT.z - 1.5, radius: 6, label: 'THE PUNT',
+    get prompt() {
+      const done = knowledge.has('door:the-second-mark') || knowledge.has('door:the-fleet-finished');
+      if (!done && knowledge.has('route:the-bar')) return 'TELL WREN WHERE THE BAR ENDS';
+      return 'LOOK IN THE PUNT';
+    },
+    get choice() {
+      if (!knowledge.has('route:the-bar')) return undefined;
+      return {
+        body: 'you have walked the bar to its end, which is the one thing out here that is not water, and wren has never asked what is at the end of it. two marks make a line, and a line has an end, and the fleet has been calling this a race since before anybody was counting. wren could set a second mark. or set it, and call the finish.',
+        options: [
+          { label: 'SET THE SECOND MARK', door: 'door:the-second-mark' },
+          { label: 'SET IT, AND CALL THE FINISH', door: 'door:the-fleet-finished' },
+        ],
+      };
+    },
+    note: {
+      title: 'the punt',
+      body: () => {
+        if (knowledge.has('door:the-fleet-finished')) return 'a punt drawn up on the bar with one oar in it, and the fleet at anchor off the far end of the bar by the second mark, which is where the line ended. nobody won. wren sits by the punt at the hours the bell used to go, and the bell does not go, and the fleet is all in one place now, all day, which was the point, and is not the same.';
+        if (knowledge.has('door:the-second-mark')) return 'a punt drawn up on the bar with one oar in it, and a coil of the bell\'s rope, and a tin of the mark\'s paint. there are two marks now. wren rows out to the far one in the evening and rings nothing, because it has no bell, and rows back. the fleet goes round the first one, the way it always has.';
+        return 'a punt drawn up on the bar with one oar in it, a coil of the bell\'s rope, and a tin of the mark\'s paint. somebody rows out to the mark at noon and rings the bell and rows back, and has done for as long as the fleet has gone round it, and everything wren says is said twice, in case.';
+      },
+    },
+  } as unknown as WorldPOI,
+  {
+    /* THE BAR'S STONE, where it lies. */
+    get x() { return things.get('bar-stone')!.x; },
+    get z() { return things.get('bar-stone')!.z; },
+    get enabled() { return things.get('bar-stone')!.state === 'ground'; },
+    set enabled(_v: boolean) { /* the registry decides */ },
+    radius: 2.6,
+    prompt: 'PICK UP THE STONE',
+    touch: () => { things.pickUp('bar-stone'); },
+  } as unknown as WorldPOI,
+  {
+    x: SECOND_MARK.x, z: SECOND_MARK.z, radius: 9, label: 'THE SECOND MARK',
+    get enabled() { return knowledge.has('door:the-second-mark') || knowledge.has('door:the-fleet-finished'); },
+    set enabled(_v: boolean) { /* the door decides */ },
+  } as unknown as WorldPOI,
 ];

@@ -217,9 +217,7 @@ async function shootSide(port, vp) {
   await page.goto(`http://localhost:${port}/?debug`, { waitUntil: 'networkidle' });
   await page.bringToFront();
   await page
-    .waitForFunction(() => document.body.innerText.toLowerCase().includes('set out'), {
-      timeout: 25000,
-    })
+    .waitForSelector('.title-veil:not(.gone)', { timeout: 25000 })
     .catch(() => {});
   const stepped = await page.evaluate(() => typeof window.__inklands.setTime === 'function');
   await page.evaluate(() => {
@@ -419,8 +417,12 @@ const report = (title, rows, thresh) => {
   const clean = rows.filter((w) => w.over === 0).length;
   console.log(`\n${title}`);
   console.log(`  ${clean}/${rows.length} bit-identical, ${bad.length} over ${(thresh * 100).toFixed(3)}%`);
-  for (const w of rows.slice(0, 12)) {
+  // every row over the threshold, and the first twelve under it that
+  // moved at all: a gate that hides its twenty-fifth failure behind a
+  // "37 over" line is a gate you have to run twice (Session 19)
+  for (const [i, w] of rows.entries()) {
     if (w.over === 0) break;
+    if (w.share <= thresh && i >= 12) break;
     console.log(
       `  ${(w.share * 100).toFixed(4).padStart(8)}%  max ${String(w.max).padStart(3)}  ` +
       `${w.vp}/${w.key}${w.box ? `  at ${w.box.join(',')}` : ''}${w.share > thresh ? ' ✗' : ''}`

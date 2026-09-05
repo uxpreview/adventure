@@ -23,7 +23,7 @@ import {
   penwoodPineTexture, pineCropTexture, youngPineTexture, fallenPineTexture,
   needleFloorDecal, tarnSkinDecal, brackTexture, hallowsTexture, oarLeanTexture,
   choppingBlockTexture, stumpTexture, birchTexture, bracketFungusTexture,
-  wornRoundDecal, tarnBoatTexture, goatTexture, type Reg,
+  wornRoundDecal, tarnBoatTexture, goatTexture, pineShapeTexture, type Reg,
 } from '../textures-wood';
 import {
   stubbleDecal, ploughDecal, fallowDecal, standingCornTexture, stookTexture,
@@ -567,14 +567,40 @@ export const buildForest: RegionBuilder = (ctx) => {
    * one pond. */
   const SKIN = [0, 1, 2].map((v) => tarnSkinDecal(2900 + v));
   const SHORE = [0, 1].map((v) => tarnSkinDecal(2910 + v, true));
-  ctx.decal(SKIN[0], 30, 30, TARN.x, TARN.z, 0.2, 0.95);
-  ctx.decal(SKIN[1], 27, 27, TARN.x, TARN.z, 1.7, 0.9);
-  ctx.decal(SKIN[2], 23, 23, TARN.x - 5, TARN.z + 4, 1.1, 0.9);
-  ctx.decal(SKIN[0], 22, 22, TARN.x + 6, TARN.z - 5, 2.3, 0.9);
+  /* THE SKIN LIES ON THE BOWL, NOT ACROSS IT (the local QA pass,
+   * 2026-09-04, B4: *the tarn is a faceted polygon*). A decal is one
+   * flat quad tipped into the surface normal at its centre, and the
+   * tarn is a bowl five units deep and thirty across: a thirty-unit
+   * quad laid flat at the bottom of a bowl goes UNDER the bowl's own
+   * sides, and the terrain's triangles cut it off in straight lines —
+   * the one thing in the frame that read as a mesh. So the water's
+   * drawings are draped: the quad is cut into a grid and every vertex
+   * is put on the page's real surface, a hand's breadth above it. */
+  const drape = (m: THREE.Mesh, w: number, h: number, x: number, z: number, rotY: number) => {
+    const g = new THREE.PlaneGeometry(w, h, 18, 18);
+    g.rotateX(-Math.PI / 2);
+    g.rotateY(rotY);
+    const pos = g.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < pos.count; i++) {
+      pos.setY(i, ctx.groundY(x + pos.getX(i), z + pos.getZ(i)) + 0.07);
+    }
+    pos.needsUpdate = true;
+    g.computeVertexNormals();
+    m.geometry.dispose();
+    m.geometry = g;
+    m.quaternion.identity();
+    m.position.set(x, 0, z);
+    return m;
+  };
+  drape(ctx.decal(SKIN[0], 30, 30, TARN.x, TARN.z, 0.2, 0.95), 30, 30, TARN.x, TARN.z, 0.2);
+  drape(ctx.decal(SKIN[1], 27, 27, TARN.x, TARN.z, 1.7, 0.9), 27, 27, TARN.x, TARN.z, 1.7);
+  drape(ctx.decal(SKIN[2], 23, 23, TARN.x - 5, TARN.z + 4, 1.1, 0.9), 23, 23, TARN.x - 5, TARN.z + 4, 1.1);
+  drape(ctx.decal(SKIN[0], 22, 22, TARN.x + 6, TARN.z - 5, 2.3, 0.9), 22, 22, TARN.x + 6, TARN.z - 5, 2.3);
   for (let i = 0; i < 6; i++) {
     const a = (i / 6) * Math.PI * 2 + 0.4;
-    ctx.decal(SHORE[i % 2], 15, 15,
-      TARN.x + Math.cos(a) * 9.5, TARN.z + Math.sin(a) * 9.5, a, 0.7);
+    const sx = TARN.x + Math.cos(a) * 9.5;
+    const sz = TARN.z + Math.sin(a) * 9.5;
+    drape(ctx.decal(SHORE[i % 2], 15, 15, sx, sz, a, 0.7), 15, 15, sx, sz, a);
   }
   // the boat, drawn up on the near shore where the walker arrives
   ctx.standee(tarnBoatTexture(2920), 7.0, 3.5, 143, -184, { rotY: 0.42 });
@@ -689,6 +715,18 @@ export const buildForest: RegionBuilder = (ctx) => {
   const heron = new Creature(ctx, 'the-heron', 'forest', [heronTexture(3510, 0), heronTexture(3511, 1)], 2.6, 2.6, HERON.x, HERON.z);
   const heronState = { up: 0, away: 0 };
   const deepBats = [0, 1, 2].map((i) => new Creature(ctx, `the-deep-pines-bats-${i}`, 'forest', [batTexture(3520 + i)], 0.9, 0.55, 188, -246));
+  /* THE SHAPE IN THE DEEP PINES (Session 19, `THE-FUN-PASS` §10 THE
+   * MONSTERS; the one thing Session 17 declined). At night, in the deep
+   * pines, after you have been standing among them a while, something
+   * is drawn ONCE at the edge of the frame — to one side of you and
+   * ahead, where the lens's corner is — for most of a second, and it
+   * is not there when you look: walk toward it and it is gone, with a
+   * branch going a long way off. It is drawn by the same law as
+   * everything else, a cutout on the page, and it has no face. It is
+   * never explained and it never comes nearer. */
+  const shape = new Creature(ctx, 'the-pines-shape', 'forest', [pineShapeTexture(3600)], 2.4, 9.8, 188, -246);
+  shape.hide();
+  const shapeState = { inFor: 0, last: -100, shownAt: -1, x: 188, z: -246, side: 1 as -1 | 1 };
 
   /* ---- THE ENCOUNTERS (Session 18, `THE-STRANGERS` C14, C15) -------- */
   /* THE WOODPILE (Session 18): the round's south arc, which
@@ -847,6 +885,30 @@ export const buildForest: RegionBuilder = (ctx) => {
         const s = 0.4 + u * 1.8;
         ripple.scale.set(s, s, 1);
         mat.opacity = (1 - u) * 0.8;
+      }
+    }
+    {
+      const night = events.progress('the-deep-pines-bats') >= 0;
+      const inDeep = px >= 160 && px < 230 && pz >= -280 && pz < -232;
+      const S = shapeState;
+      S.inFor = inDeep && night ? S.inFor + dt : 0;
+      if (S.shownAt < 0 && S.inFor > 9 && t - S.last > 70) {
+        S.side = S.side > 0 ? -1 : 1;
+        S.x = Math.max(163, Math.min(227, px + S.side * 13));
+        S.z = Math.max(-277, Math.min(-235, pz - 15));
+        S.shownAt = t;
+        shape.set(0, S.x, S.z, S.side, 0, 0.82);
+      }
+      if (S.shownAt >= 0) {
+        const age = t - S.shownAt;
+        const toward = Math.hypot(px - S.x, pz - S.z) < 11.5;
+        if (age > 0.9 || toward || !night) {
+          shape.hide();
+          S.shownAt = -1;
+          S.last = t;
+          S.inFor = 0;
+          say('branch-crack');
+        }
       }
     }
     {
@@ -1215,7 +1277,7 @@ export const buildCanyon: RegionBuilder = (ctx) => {
   for (const m of holt) (m.material as THREE.MeshBasicMaterial).transparent = true;
 
   /* ---- THE HOUSE, on the rim, and it is lit at night -------------- */
-  const houseDark = ctx.standee(holtHouseTexture(6230, false), 6.6, 6.0, HOUSE.x, HOUSE.z);
+  const houseDark = ctx.standee(holtHouseTexture(6230, false), 6.6, 6.0, HOUSE.x, HOUSE.z, { solid: true });
   const houseLit = ctx.standee(holtHouseTexture(6231, true), 6.6, 6.0, HOUSE.x, HOUSE.z);
   for (const m of [houseDark, houseLit]) {
     (m.material as THREE.MeshBasicMaterial).transparent = true;
@@ -1685,7 +1747,7 @@ export const buildDesert: RegionBuilder = (ctx) => {
    * oasis, so THE SHOT came back as a close-up of a boarded deck. The
    * catch is a thing you come off the track to look at. */
   ctx.standee(rainApronTexture(7100), 13.4, 8.6, CATCH.x - 10, CATCH.z - 3.4, { rotY: 0.06 });
-  const cisternShut = ctx.standee(cisternTexture(7101, true), 5.4, 4.7, CATCH.x, CATCH.z);
+  const cisternShut = ctx.standee(cisternTexture(7101, true), 5.4, 4.7, CATCH.x, CATCH.z, { solid: true });
   const cisternOpen = ctx.standee(cisternTexture(7102, false), 5.4, 4.7, CATCH.x, CATCH.z);
   for (const m of [cisternShut, cisternOpen]) {
     (m.material as THREE.MeshBasicMaterial).transparent = true;
@@ -2373,7 +2435,7 @@ export const buildDowns: RegionBuilder = (ctx) => {
    * U24 says they have moved a quarter since your first visit, and a
    * drawing with the sails baked into it can never say that.
    * ================================================================ */
-  ctx.standee(millTexture(5600), 10.5, 14.7, MILL.x, MILL.z);
+  ctx.standee(millTexture(5600), 10.5, 14.7, MILL.x, MILL.z, { solid: 3.4 });
   const sails = ctx.standee(millSailsTexture(5601), 15.4, 15.4, MILL.x - 2.4, MILL.z + 0.35);
   // the sails hang on the windshaft, not on the ground: re-seat the
   // quad's pivot at its own centre and hang it at cap height

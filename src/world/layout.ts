@@ -104,7 +104,12 @@ export function regionAt(x: number, z: number): RegionSpec {
  * A saved walk still opens where it was left.
  * ================================================================== */
 export const POSTER = { x: -45, z: 58 };
-export const SPAWN = { x: 24, z: 90 };
+/* ON THE GATE'S ROW (the local QA pass, 2026-09-04, B1). It was
+ * (24, 90), eight units south of the gate at z 82, and a player who
+ * ran due west from the bull — which is what the hint tells them to
+ * do — hit the hedge eight units south of the gap and stood there with
+ * the bull behind them. The run west is now the run through the gate. */
+export const SPAWN = { x: 24, z: 82 };
 
 /* ================================================================== *
  * DISTRICTS — more regions, no more sheet (`THE-FUN-PASS` §2.4, §7).

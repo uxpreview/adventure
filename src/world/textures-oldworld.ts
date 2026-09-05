@@ -1122,6 +1122,47 @@ export function greyweatherKeepTexture(seed: number): THREE.CanvasTexture {
       const y = 108 + r() * 190;
       line(ctx, x, y, x + 13 + r() * 11, y + (r() - 0.5) * 3, r, { width: 1.1, alpha: 0.24, passes: 1 });
     }
+    /* AND THE STONE ITSELF, COURSED (Session 19; the local QA pass
+     * called the keep *a plate*): a course line every fourteen pixels
+     * the width of each mass, broken, and the joints staggered between
+     * them the way a wall is laid, so that stood under it the face is
+     * blocks and not a wash. Quoins at the corners, heavier; a plinth
+     * course at the foot; and the wash itself is not one wash — a
+     * second, darker stain low down where the damp lives. */
+    const courses = (x0: number, x1: number, y0: number, y1: number, lean = 0) => {
+      let row = 0;
+      for (let y = y0 + 8; y < y1 - 6; y += 14 + r() * 3) {
+        const gap = 6 + r() * 12;
+        for (let x = x0 + (row % 2 ? 9 : 2); x < x1 - 6; x += 22 + r() * 16) {
+          const l = Math.min(x1 - x - 2, 14 + r() * 14);
+          if (r() < 0.12) continue;
+          line(ctx, x, y, x + l, y + lean * (l / 60) + (r() - 0.5) * 1.2, r, { width: 0.9, alpha: 0.13 + r() * 0.1, passes: 1 });
+          // a joint, sometimes, at the end of the stone
+          if (r() < 0.55) line(ctx, x + l, y, x + l + (r() - 0.5), y + 12, r, { width: 0.8, alpha: 0.1 + r() * 0.08, passes: 1 });
+          x += gap;
+        }
+        row++;
+      }
+    };
+    courses(208, 432, 100, 300);
+    courses(74, 146, 90, 300);
+    courses(494, 566, 90, 300);
+    for (const [cx0, cx1] of [[8, 96], [544, 632]] as [number, number][]) courses(cx0 + 4, cx1 - 4, 216, 300);
+    // quoins: alternating long and short at the four vertical corners of the mass
+    for (const [qx, dir] of [[206, 1], [434, -1]] as [number, number][]) {
+      for (let y = 104; y < 296; y += 16) {
+        const long = Math.floor(y / 16) % 2 === 0;
+        const w = long ? 16 : 9;
+        poly(ctx, [[qx, y], [qx + dir * w, y], [qx + dir * w, y + 11], [qx, y + 11]], r, { width: 1, alpha: 0.28, passes: 1 });
+      }
+    }
+    // the plinth course, and the damp's own stain low down
+    line(ctx, 200, 292, 440, 290, r, { width: 1.6, alpha: 0.5 });
+    line(ctx, 198, 298, 442, 296, r, { width: 1.2, alpha: 0.3, passes: 1 });
+    fillPoly(ctx, [[200, GROUND], [200, 262], [440, 260], [440, GROUND]], '#8c8f96', 0.16);
+    fillPoly(ctx, [[74, GROUND], [72, 250], [146, 250], [148, GROUND]], '#8c8f96', 0.14);
+    fillPoly(ctx, [[494, GROUND], [492, 250], [566, 250], [568, GROUND]], '#8c8f96', 0.14);
+    hatch(ctx, 204, 270, 232, 36, 0.98, 6, r, { alpha: 0.1 });
     /* damp streaks under the crown */
     for (const sx of [238, 322, 402]) {
       stroke(ctx, [[sx, 108], [sx + 2, 132], [sx - 1, 152]], r,
@@ -1738,5 +1779,197 @@ export function marketBoardTexture(seed: number): THREE.CanvasTexture {
     letteringFit(ctx, 'FROM THE BELL', 34, 110, 156, 18, r, { alpha: 0.72, crooked: 0.6 });
     // and the chalk it was written with, left on the ledge
     line(ctx, 150, 122, 166, 121, r, { width: 3, alpha: 0.5, passes: 1, color: CREAM });
+  });
+}
+
+/* ================================================================== *
+ * THE NEW CAST, NORTH (Session 19): WICK, the fifth banner, the
+ * portcullis that comes down a foot, and the bailey's ground and
+ * furniture, which the local QA pass found to be *flat cards on empty
+ * ground* when stood in.
+ * ================================================================== */
+
+/** WICK. An old man in a long coat with the shoulders gone forward, a
+ *  rolled banner over one of them. Standing with the roll upright
+ *  like a staff; striding under it; resting on the verge with it
+ *  across his knees; carrying it. No face, and nothing abbreviated. */
+export function wickTexture(seed: number, pose: 0 | 1 | 3 | 4 | 5): THREE.CanvasTexture {
+  return makeTexture(96, 160, seed, (ctx, r) => {
+    const cx = 48;
+    const stride = pose === 1 || pose === 5;
+    const rest = pose === 3;
+    const carry = pose === 4 || stride;
+    const hy = rest ? 58 : 36;
+    const hx = cx + (stride ? 3 : 0);
+    // a bald head with a fringe at the back, and the neck forward
+    scribbleCircle(ctx, hx + 2, hy, 12, r, { width: 1.9, alpha: 0.84 }, 1.0);
+    stroke(ctx, [[hx - 10, hy - 2], [hx - 12, hy + 8], [hx - 6, hy + 10]], r, { width: 1.4, alpha: 0.5, passes: 1 });
+    const top = hy + 14;
+    const hem = rest ? 108 : 118;
+    // the coat: shoulders forward, long, a hem that has been let down
+    const coat: [number, number][] = [[cx - 12, top + 2], [cx - 14, top + 14], [cx - 17, hem], [cx + 17, hem], [cx + 14, top + 12], [cx + 10, top]];
+    fillPoly(ctx, coat, TIMBER, 0.3);
+    poly(ctx, coat, r, { width: 2.1, alpha: 0.86 });
+    line(ctx, cx + 1, top + 6, cx, hem - 4, r, { width: 1.1, alpha: 0.4, passes: 1 }, 3);
+    line(ctx, cx - 16, hem - 10, cx + 16, hem - 10, r, { width: 1, alpha: 0.3, passes: 1 });
+    // THE BANNER, rolled: a long red roll with the cream device just showing
+    const roll = (x0: number, y0: number, x1: number, y1: number) => {
+      const dx = x1 - x0;
+      const dy = y1 - y0;
+      const l = Math.hypot(dx, dy) || 1;
+      const nx = (-dy / l) * 5;
+      const ny = (dx / l) * 5;
+      fillPoly(ctx, [[x0 + nx, y0 + ny], [x1 + nx, y1 + ny], [x1 - nx, y1 - ny], [x0 - nx, y0 - ny]], RED, 0.7);
+      stroke(ctx, [[x0 + nx, y0 + ny], [x1 + nx, y1 + ny], [x1 - nx, y1 - ny], [x0 - nx, y0 - ny], [x0 + nx, y0 + ny]], r, { width: 1.6, alpha: 0.84 });
+      line(ctx, x0 + dx * 0.3 + nx * 0.3, y0 + dy * 0.3 + ny * 0.3, x0 + dx * 0.7 - nx * 0.3, y0 + dy * 0.7 - ny * 0.3, r, { width: 1.8, alpha: 0.5, passes: 1, color: CREAM });
+    };
+    if (carry) {
+      roll(cx - 30, top + 22, cx + 34, top - 14);
+      stroke(ctx, [[cx + 10, top + 4], [cx + 20, top + 10], [cx + 16, top + 2]], r, { width: 1.8, alpha: 0.8 });
+      stroke(ctx, [[cx - 12, top + 6], [cx - 20, top + 30], [cx - 14, top + 46]], r, { width: 1.8, alpha: 0.8 });
+    } else if (rest) {
+      roll(cx - 34, hem + 4, cx + 36, hem);
+      stroke(ctx, [[cx - 12, top + 6], [cx - 18, top + 28], [cx - 4, hem - 2]], r, { width: 1.8, alpha: 0.8 });
+      stroke(ctx, [[cx + 10, top + 6], [cx + 18, top + 26], [cx + 8, hem - 2]], r, { width: 1.7, alpha: 0.76 });
+    } else {
+      // standing: the roll upright at his side, held like a staff
+      roll(cx + 26, 148, cx + 24, 24);
+      stroke(ctx, [[cx + 10, top + 6], [cx + 24, top + 18], [cx + 25, top + 8]], r, { width: 1.8, alpha: 0.8 });
+      stroke(ctx, [[cx - 12, top + 6], [cx - 18, top + 30], [cx - 14, top + 46]], r, { width: 1.8, alpha: 0.8 });
+    }
+    // the legs, and a stick's worth of stiffness in them
+    if (rest) {
+      stroke(ctx, [[cx - 8, hem + 2], [cx + 14, hem + 4], [cx + 16, 148]], r, { width: 2.1, alpha: 0.85 });
+      stroke(ctx, [[cx + 4, hem + 2], [cx + 24, hem + 6], [cx + 26, 148]], r, { width: 2, alpha: 0.75 });
+    } else if (stride) {
+      const s = pose === 1 ? 1 : -1;
+      line(ctx, cx - 6, hem, cx - 6 - 12 * s, 148, r, { width: 2.1, alpha: 0.85 });
+      line(ctx, cx + 6, hem, cx + 6 + 10 * s, 148, r, { width: 2.1, alpha: 0.85 });
+    } else {
+      line(ctx, cx - 8, hem, cx - 9, 148, r, { width: 2.1, alpha: 0.85 });
+      line(ctx, cx + 8, hem, cx + 9, 148, r, { width: 2.1, alpha: 0.85 });
+    }
+    line(ctx, cx - 12, 148, cx - 2, 149, r, { width: 1.9, alpha: 0.8, passes: 1 }, 2);
+    line(ctx, cx + 2, 149, cx + 14, 148, r, { width: 1.9, alpha: 0.8, passes: 1 }, 2);
+  });
+}
+
+/** THE FIFTH BANNER: Brim's colours on Greyweather's pole — the same
+ *  red, and the cream bars Marget's stall cloth has. The first time
+ *  two lands are in one frame and neither crossed anything to do it. */
+export function brimBannerTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(96, 256, seed, (ctx, r) => {
+    line(ctx, 30, 248, 31, 18, r, { width: 2.6, alpha: 0.9 });
+    line(ctx, 22, 24, 44, 23, r, { width: 2, alpha: 0.85 });
+    const sway = 10 + r() * 10;
+    const cloth: [number, number][] = [[33, 28], [62, 32], [66 + sway, 84], [58, 120], [70 + sway, 158], [52, 150], [40, 158], [34, 120]];
+    fillPoly(ctx, cloth, RED, 0.75);
+    // Brim's bars: two cream bands across the cloth
+    for (const y of [64, 100]) {
+      fillPoly(ctx, [[34, y], [63 + sway * 0.5, y + 3], [62 + sway * 0.5, y + 13], [34, y + 10]], CREAM, 0.7);
+    }
+    stroke(ctx, [...cloth, cloth[0]], r, { width: 1.6, alpha: 0.85 });
+    for (let i = 0; i < 3; i++) {
+      line(ctx, 64 + sway + (r() - 0.5) * 6, 154 + r() * 4, 70 + sway + r() * 5, 162 + r() * 5, r, { width: 1, alpha: 0.5, passes: 1 }, 2);
+    }
+    stroke(ctx, [[24, 246], [30, 238], [37, 246]], r, { width: 1.6, alpha: 0.7, passes: 1 });
+  });
+}
+
+/** THE PORTCULLIS, as a thing on its own so it can move: a grid of
+ *  bars with pointed feet, hung in the barbican's arch. */
+export function portcullisTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(96, 128, seed, (ctx, r) => {
+    for (let k = 0; k < 5; k++) {
+      const x = 14 + k * 17;
+      line(ctx, x, 4, x + 1, 108, r, { width: 2.6, alpha: 0.86 });
+      stroke(ctx, [[x - 4, 108], [x + 1, 124], [x + 5, 108]], r, { width: 1.8, alpha: 0.8, passes: 1 });
+    }
+    for (let k = 0; k < 4; k++) {
+      line(ctx, 8, 14 + k * 26, 90, 13 + k * 26, r, { width: 2.2, alpha: 0.82 });
+    }
+    hatch(ctx, 10, 10, 78, 96, 0.9, 6, r, { alpha: 0.08 });
+  });
+}
+
+/** A STONE TROUGH, half full, with a green line where the water has
+ *  stood. The bailey's. */
+export function troughTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(128, 56, seed, (ctx, r) => {
+    const box: [number, number][] = [[10, 50], [8, 20], [120, 18], [118, 50]];
+    fillPoly(ctx, box, WASH.castle, 0.5);
+    poly(ctx, box, r, { width: 2.2, alpha: 0.88 });
+    line(ctx, 14, 30, 114, 29, r, { width: 1.4, alpha: 0.5, passes: 1, color: '#7e8c74' });
+    hatch(ctx, 14, 32, 100, 14, 0.02, 4, r, { alpha: 0.14, color: WASH.seaShallow });
+    for (let i = 0; i < 6; i++) {
+      const x = 14 + r() * 100;
+      line(ctx, x, 22 + r() * 24, x + 8 + r() * 8, 24 + r() * 22, r, { width: 1, alpha: 0.22, passes: 1 });
+    }
+  });
+}
+
+/** A STACK OF TIMBER, squared beams with the end grain showing, that
+ *  was going to be something. */
+export function timberStackTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(128, 64, seed, (ctx, r) => {
+    for (let row = 0; row < 3; row++) {
+      const y = 58 - row * 14;
+      const n = 3 - row;
+      for (let k = 0; k < n; k++) {
+        const x = 10 + row * 12 + k * 36 + (r() - 0.5) * 4;
+        fillPoly(ctx, [[x, y], [x, y - 12], [x + 34, y - 13], [x + 34, y]], PLASTER, 0.45);
+        poly(ctx, [[x, y], [x, y - 12], [x + 34, y - 13], [x + 34, y]], r, { width: 1.7, alpha: 0.84 });
+        scribbleCircle(ctx, x + 6, y - 6, 4, r, { width: 1, alpha: 0.5 }, 1.2);
+        line(ctx, x + 12, y - 4, x + 32, y - 5, r, { width: 0.9, alpha: 0.3, passes: 1 });
+      }
+    }
+  });
+}
+
+/** THE BAILEY'S FLOOR: cobbles with the worn tracks the carts left,
+ *  a puddle that never dries, straw where the groom crossed. Denser
+ *  than the plaza's, because the plateau was empty grey ground stood
+ *  in (the local QA pass, §4 item 1). */
+export function baileyYardDecal(seed: number): THREE.CanvasTexture {
+  return makeTexture(512, 512, seed, (ctx, r) => {
+    // the stain of use, and the cobbles everywhere, denser at the edges
+    for (let i = 0; i < 4; i++) {
+      const bx = 256 + (r() - 0.5) * 220;
+      const by = 256 + (r() - 0.5) * 220;
+      const rad = 90 + r() * 90;
+      const g = ctx.createRadialGradient(bx, by, 4, bx, by, rad);
+      g.addColorStop(0, 'rgba(140,138,132,0.16)');
+      g.addColorStop(1, 'rgba(140,138,132,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(bx - rad, by - rad, rad * 2, rad * 2);
+    }
+    ctx.strokeStyle = INK;
+    for (let i = 0; i < 520; i++) {
+      const x = 12 + r() * 488;
+      const y = 12 + r() * 488;
+      const edge = Math.min(x, y, 512 - x, 512 - y) / 256;
+      ctx.globalAlpha = 0.08 + (1 - edge) * 0.14 + r() * 0.06;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(x, y, 3 + r() * 3, Math.PI * (0.85 + r() * 0.3), Math.PI * (1.85 + r() * 0.3));
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    // two cart tracks, curving in from the gate
+    stroke(ctx, [[240, 500], [232, 380], [220, 250], [190, 120]], r, { width: 2, alpha: 0.16, passes: 1, jitter: 3 });
+    stroke(ctx, [[268, 500], [262, 380], [252, 250], [224, 120]], r, { width: 2, alpha: 0.16, passes: 1, jitter: 3 });
+    // the puddle, and the straw
+    const puddle: [number, number][] = [];
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      puddle.push([330 + Math.cos(a) * (36 + r() * 14), 300 + Math.sin(a) * (18 + r() * 8)]);
+    }
+    fillPoly(ctx, puddle, WASH.seaShallow, 0.22);
+    stroke(ctx, [...puddle, puddle[0]], r, { width: 1.2, alpha: 0.3, jitter: 2 });
+    for (let i = 0; i < 40; i++) {
+      const x = 80 + r() * 360;
+      const y = 60 + r() * 400;
+      line(ctx, x, y, x + (r() - 0.5) * 18, y + (r() - 0.5) * 8, r, { width: 1, alpha: 0.18, passes: 1, color: '#b8a468' });
+    }
   });
 }

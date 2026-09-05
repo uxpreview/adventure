@@ -207,6 +207,20 @@ export const ROUTES: Route[] = [
 export const WAIT_ANSWERS: Partial<Record<string, Known>> = {
   /** MARGET: the market never opened because of an argument about an hour. */
   kingdom: 'reason:brim',
+  /** WICK (Session 19): Brim's red came up the avenue, and a fifth
+   *  banner went up. The second door — the king back on his plinth —
+   *  is a door and not an answer: Wick is relieved of duty, and his
+   *  platform is empty for a different reason (`THE-FUN-PASS` §6). */
+  castle: 'reason:the-fifth-banner',
+  /** PYE (Session 19): the mark's name came back from the Wide Blue,
+   *  and an eighth pot went out on a bearing he has never rowed. The
+   *  second door — the pots hauled — takes the shape of his day. */
+  beach: 'door:the-eighth-pot',
+  /** WREN (Session 19): the bar was walked to its end, and a second
+   *  mark went down there. Two marks make a line; the fleet is under no
+   *  obligation to use it. The second door calls the finish, once, and
+   *  the fleet stops racing, and Wren is the reason there was a fleet. */
+  ocean: 'door:the-second-mark',
   /** BRACK: the tarn, and the road that is his circle. */
   forest: 'fact:the-tarn',
   /** HOLT: the river that left is running forty units away. */
@@ -242,12 +256,12 @@ export const WAIT_ANSWERS: Partial<Record<string, Known>> = {
  * platforms DIFFER. Five leaves room for the ending to be the player's
  * rather than the author's.
  *
- * It goes back to seven when the other waits are built — six from
- * Session 16, with NELL's in the source; WICK, PYE and WREN are
- * Session 19's. It is never shown anywhere, to anybody, in any form
- * (QUESTS §7).
+ * It went back to seven in Session 19, when the last three were built:
+ * eleven of the twelve now exist in the source (JOAN's is the one
+ * that resolves by sitting and never puts her on a platform). It is
+ * never shown anywhere, to anybody, in any form (QUESTS §7).
  */
-export const WAITS_FOR_THE_LINE = 6;
+export const WAITS_FOR_THE_LINE = 7;
 
 /* ------------------------------------------------------------------ */
 

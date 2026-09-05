@@ -1144,3 +1144,385 @@ export function fishShoalDecal(seed: number): THREE.CanvasTexture {
     }
   });
 }
+
+/* ================================================================== *
+ * THE NEW CAST, WEST (Session 19, `THE-FUN-PASS` §10): THE VIKINGS on
+ * the Holdfast and THE SURFERS at the Cut; PYE's pot line and WREN's
+ * punt; and the horn. Every rule above still holds — the horizontal,
+ * the peeling paint, the flat waterline — and none of these people has
+ * a face.
+ * ================================================================== */
+
+/**
+ * THE LONGSHIP. Long, low, and all sheer: a hull that rises to a curl
+ * at either end, a row of round shields along the gunwale, one mast,
+ * and four people who have been waiting for a wind for four hundred
+ * years. Three states — beached with the sail furled, under oars with
+ * the sail set, and ROARING, which is the same four people with their
+ * arms up. Cut off flat at the waterline like everything afloat here.
+ */
+export function longshipTexture(seed: number, pose: 0 | 1 | 2): THREE.CanvasTexture {
+  return makeTexture(384, 192, seed, (ctx, r) => {
+    const wl = 150;
+    const gun = 112;
+    // the hull: stern post (left) and stem (right), each curling
+    const sheer: [number, number][] = [[22, 66], [34, gun + 4], [110, gun + 10], [200, gun + 12], [290, gun + 8], [346, gun - 2], [364, 44]];
+    const keel: [number, number][] = [[364, 44], [352, wl], [40, wl], [22, 66]];
+    fillPoly(ctx, [...sheer, ...keel.slice(1)], HULL, 0.42);
+    stroke(ctx, sheer, r, { width: 2.8, alpha: 0.92 });
+    line(ctx, 40, wl, 352, wl, r, { width: 2.8, alpha: 0.9 });
+    stroke(ctx, [[22, 66], [40, wl]], r, { width: 2.6, alpha: 0.9 });
+    stroke(ctx, [[364, 44], [352, wl]], r, { width: 2.6, alpha: 0.9 });
+    // the curls: a stern hook and a stem that turns over on itself
+    stroke(ctx, [[22, 66], [12, 50], [20, 36], [34, 40]], r, { width: 2.4, alpha: 0.88 });
+    stroke(ctx, [[364, 44], [372, 26], [360, 12], [344, 20], [350, 34]], r, { width: 2.6, alpha: 0.9 });
+    // the strakes, clinker: three long lines the length of her
+    for (let i = 0; i < 3; i++) {
+      stroke(ctx, [[40 + i * 4, gun + 14 + i * 9], [200, gun + 20 + i * 9], [348 - i * 4, gun + 10 + i * 9]], r,
+        { width: 1.2, alpha: 0.3, passes: 1 });
+    }
+    // the shields along the gunwale: round, bossed, three paints
+    const paints = [RED, CREAM, TAR, RED, SALT_BLUE, CREAM, RED];
+    for (let k = 0; k < 7; k++) {
+      const sx = 78 + k * 36;
+      const sy = gun + 2 + Math.sin(k * 1.7) * 1.5;
+      ctx.save();
+      ctx.globalAlpha = 0.7;
+      ctx.fillStyle = paints[k];
+      ctx.beginPath();
+      ctx.arc(sx, sy, 13, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      scribbleCircle(ctx, sx, sy, 13, r, { width: 1.8, alpha: 0.85 }, 1.1);
+      scribbleCircle(ctx, sx, sy, 3, r, { width: 1.2, alpha: 0.7 });
+    }
+    // the mast and yard
+    const mx = 196;
+    line(ctx, mx, gun + 8, mx + 1, 14, r, { width: 3, alpha: 0.92 });
+    const yardY = pose === 1 ? 30 : 42;
+    line(ctx, mx - 74, yardY + 2, mx + 74, yardY - 2, r, { width: 2.2, alpha: 0.88 });
+    if (pose === 1) {
+      // the sail set: a square of cream with the red stripes a longship
+      // is drawn with in every book, bellied to the right
+      const sail: [number, number][] = [[mx - 70, yardY + 2], [mx + 70, yardY - 2], [mx + 78, 96], [mx - 62, 100]];
+      fillPoly(ctx, sail, CREAM, 0.86);
+      for (let k = 0; k < 4; k++) {
+        const x0 = mx - 56 + k * 34;
+        fillPoly(ctx, [[x0, yardY + 1], [x0 + 14, yardY], [x0 + 18, 98], [x0 + 3, 99]], RED, 0.55);
+      }
+      stroke(ctx, [...sail, sail[0]], r, { width: 2.2, alpha: 0.88 });
+    } else {
+      // furled: a bundle on the yard, lashed at three places
+      fillPoly(ctx, [[mx - 72, yardY - 5], [mx + 72, yardY - 9], [mx + 74, yardY + 7], [mx - 70, yardY + 9]], CREAM, 0.7);
+      stroke(ctx, [[mx - 72, yardY - 5], [mx + 72, yardY - 9], [mx + 74, yardY + 7], [mx - 70, yardY + 9], [mx - 72, yardY - 5]], r, { width: 1.6, alpha: 0.8 });
+      for (const lx of [mx - 40, mx, mx + 40]) line(ctx, lx, yardY - 8, lx + 1, yardY + 9, r, { width: 1.2, alpha: 0.6, passes: 1 }, 2);
+    }
+    // the oars: out and biting under oars, shipped along the rail otherwise
+    for (let k = 0; k < 6; k++) {
+      const ox = 92 + k * 40;
+      if (pose === 1) line(ctx, ox, gun + 6, ox - 22, wl + 12, r, { width: 2, alpha: 0.8 });
+      else line(ctx, ox - 16, gun + 2, ox + 20, gun - 1, r, { width: 1.6, alpha: 0.5, passes: 1 });
+    }
+    // THE CREW. Four, no faces: a head, a shoulder line, and arms that
+    // are down at the oars, or up
+    for (const cx of [104, 150, 244, 290]) {
+      const bent = pose === 1;
+      const hy = bent ? gun - 8 : gun - 20;
+      scribbleCircle(ctx, cx + (bent ? 8 : 0), hy, 8, r, { width: 1.8, alpha: 0.85 }, 1.05);
+      // a helmet is a cap with a nasal; a line across and one down
+      line(ctx, cx - 8 + (bent ? 8 : 0), hy - 6, cx + 9 + (bent ? 8 : 0), hy - 7, r, { width: 1.6, alpha: 0.8, passes: 1 });
+      stroke(ctx, [[cx - 12, hy + 8], [cx, hy + 6], [cx + 12, hy + 8], [cx + 10, gun + 2], [cx - 10, gun + 2]], r, { width: 1.8, alpha: 0.82 });
+      if (pose === 2) {
+        // arms up, and the thing in the hand is an axe: a haft and a wedge
+        line(ctx, cx - 10, hy + 8, cx - 22, hy - 24, r, { width: 1.8, alpha: 0.82 });
+        line(ctx, cx + 10, hy + 8, cx + 20, hy - 22, r, { width: 1.8, alpha: 0.82 });
+        fillPoly(ctx, [[cx + 18, hy - 26], [cx + 30, hy - 30], [cx + 26, hy - 16]], INK, 0.55);
+      } else if (bent) {
+        stroke(ctx, [[cx - 8, hy + 10], [cx - 4, hy + 20], [cx - 14, gun + 4]], r, { width: 1.6, alpha: 0.8 });
+      } else {
+        line(ctx, cx - 10, hy + 8, cx - 14, gun + 2, r, { width: 1.6, alpha: 0.78 });
+        line(ctx, cx + 10, hy + 8, cx + 14, gun + 2, r, { width: 1.6, alpha: 0.78 });
+      }
+    }
+    // a pennant at the masthead: the only thing on her that has ever moved
+    fillPoly(ctx, [[mx + 1, 14], [mx + 30, 22], [mx + 1, 28]], RED, 0.8);
+    // THE WATERLINE: reflection hatch, a wake under oars, and nothing below
+    hatch(ctx, 44, wl + 2, 304, 16, 0.02, 4, r, { alpha: 0.15 });
+    if (pose === 1) {
+      line(ctx, 332, wl + 2, 372, wl + 5, r, { width: 2, alpha: 0.4, passes: 1 }, 3);
+      line(ctx, 316, wl + 8, 360, wl + 10, r, { width: 1.4, alpha: 0.22, passes: 1 }, 3);
+    }
+  });
+}
+
+/** THE HORN, on the point: a curved horn on a stone, the mouthpiece
+ *  towards you. Somebody put it there and nobody has said who. */
+export function hornTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(96, 80, seed, (ctx, r) => {
+    // the stone it sits on
+    const stone: [number, number][] = [[14, 74], [10, 58], [30, 48], [64, 46], [86, 56], [84, 74]];
+    fillPoly(ctx, stone, BLEACH, 0.5);
+    poly(ctx, stone, r, { width: 1.8, alpha: 0.8, jitter: 1.4 });
+    // the horn: a crescent, wide at the bell, with a band
+    const horn: [number, number][] = [[18, 50], [30, 26], [52, 14], [74, 18], [82, 34], [76, 32], [58, 24], [40, 32], [30, 48]];
+    fillPoly(ctx, horn, CREAM, 0.7);
+    poly(ctx, horn, r, { width: 2, alpha: 0.88 });
+    scribbleCircle(ctx, 80, 30, 6, r, { width: 1.6, alpha: 0.8 }, 1.1);
+    line(ctx, 48, 16, 46, 30, r, { width: 1.4, alpha: 0.55, passes: 1 });
+    line(ctx, 60, 16, 58, 26, r, { width: 1.4, alpha: 0.55, passes: 1 });
+    hatch(ctx, 24, 30, 24, 18, 0.9, 4, r, { alpha: 0.14 });
+  });
+}
+
+/** THE VAN. Boxy, side on, a roof rack with a board on it, two windows
+ *  and a sticker on the back door. The paint has been at the salt as
+ *  long as the huts' has. */
+export function surfVanTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(256, 160, seed, (ctx, r) => {
+    const g = 146;
+    const body: [number, number][] = [[24, g - 10], [24, 62], [40, 44], [214, 44], [232, 60], [236, g - 10]];
+    peeledPoly(ctx, body, r, SALT_MINT, 0.62, 0.6);
+    poly(ctx, body, r, { width: 2.6, alpha: 0.9 });
+    // the belt line, and the panel behind the cab
+    line(ctx, 26, 100, 234, 99, r, { width: 1.4, alpha: 0.5, passes: 1 });
+    line(ctx, 96, 46, 97, g - 12, r, { width: 1.6, alpha: 0.6, passes: 1 });
+    // windows: the cab's and one behind
+    for (const [wx, ww] of [[44, 44], [108, 52]] as [number, number][]) {
+      fillPoly(ctx, [[wx, 54], [wx + ww, 54], [wx + ww, 90], [wx, 90]], SALT_BLUE, 0.35);
+      poly(ctx, [[wx, 54], [wx + ww, 54], [wx + ww, 90], [wx, 90]], r, { width: 1.8, alpha: 0.8 });
+    }
+    // the wheels
+    for (const wx of [72, 190]) {
+      ctx.save();
+      ctx.globalAlpha = 0.6;
+      ctx.fillStyle = TAR;
+      ctx.beginPath();
+      ctx.arc(wx, g - 6, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      scribbleCircle(ctx, wx, g - 6, 15, r, { width: 2.2, alpha: 0.88 }, 1.1);
+      scribbleCircle(ctx, wx, g - 6, 5, r, { width: 1.4, alpha: 0.7 });
+    }
+    // the roof rack, and a board lying on it
+    line(ctx, 48, 42, 52, 30, r, { width: 2, alpha: 0.8 });
+    line(ctx, 200, 42, 204, 30, r, { width: 2, alpha: 0.8 });
+    line(ctx, 44, 31, 210, 29, r, { width: 2, alpha: 0.82 });
+    const board: [number, number][] = [[30, 26], [60, 18], [140, 16], [220, 20], [236, 27], [220, 30], [140, 31], [60, 30]];
+    fillPoly(ctx, board, CREAM, 0.8);
+    poly(ctx, board, r, { width: 1.8, alpha: 0.85 });
+    // the sticker on the back door, and what it says is a shape
+    poly(ctx, [[204, 106], [226, 106], [226, 122], [204, 122]], r, { width: 1.2, alpha: 0.7 });
+    line(ctx, 208, 112, 222, 113, r, { width: 1, alpha: 0.4, passes: 1 });
+    line(ctx, 208, 117, 218, 118, r, { width: 1, alpha: 0.4, passes: 1 });
+    // sand up the sills
+    hatch(ctx, 28, g - 22, 200, 12, 0.02, 4, r, { alpha: 0.14 });
+  });
+}
+
+/** THE BOARD RACK: an A-frame with boards leant in it. Two, or three
+ *  once the errand is run. */
+export function boardRackTexture(seed: number, boards: 2 | 3): THREE.CanvasTexture {
+  return makeTexture(128, 128, seed, (ctx, r) => {
+    line(ctx, 18, 122, 42, 24, r, { width: 2.4, alpha: 0.88 });
+    line(ctx, 66, 122, 42, 24, r, { width: 2.4, alpha: 0.88 });
+    line(ctx, 10, 96, 118, 92, r, { width: 2.2, alpha: 0.86 });
+    line(ctx, 20, 58, 96, 56, r, { width: 2, alpha: 0.8 });
+    const paints = [CREAM, SALT_BLUE, SALT_ROSE];
+    for (let k = 0; k < boards; k++) {
+      const bx = 62 + k * 20;
+      const pts: [number, number][] = [[bx, 122], [bx + 7, 60], [bx + 12, 22], [bx + 18, 60], [bx + 20, 122]];
+      fillPoly(ctx, pts, paints[k], 0.72);
+      stroke(ctx, pts, r, { width: 1.8, alpha: 0.85 });
+      line(ctx, bx + 10, 118, bx + 12, 28, r, { width: 1, alpha: 0.4, passes: 1 });
+    }
+  });
+}
+
+/** THE WETSUIT ON THE LINE: two posts, a line with a sag in it, and a
+ *  suit hung by the shoulders with its arms out, hollow — nobody in it. */
+export function wetsuitLineTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(192, 112, seed, (ctx, r) => {
+    line(ctx, 16, 108, 18, 22, r, { width: 2.4, alpha: 0.88 });
+    line(ctx, 176, 108, 174, 20, r, { width: 2.4, alpha: 0.88 });
+    stroke(ctx, [[18, 24], [96, 34], [174, 22]], r, { width: 1.4, alpha: 0.8 });
+    const suit: [number, number][] = [[62, 36], [76, 32], [96, 34], [116, 32], [130, 36], [140, 52], [126, 56], [118, 48], [116, 80], [110, 104], [100, 104], [97, 76], [93, 104], [82, 104], [78, 80], [76, 48], [66, 56], [52, 52]];
+    fillPoly(ctx, suit, TAR, 0.6);
+    poly(ctx, suit, r, { width: 2, alpha: 0.86 });
+    // the zip, and two pegs
+    line(ctx, 96, 36, 97, 74, r, { width: 1.2, alpha: 0.5, passes: 1, color: CREAM });
+    for (const px of [70, 124]) line(ctx, px, 30, px + 1, 40, r, { width: 2.2, alpha: 0.7, passes: 1 });
+    hatch(ctx, 80, 40, 30, 30, 1.1, 5, r, { alpha: 0.1, color: CREAM });
+  });
+}
+
+/** A BOARD ON ITS OWN, lying where the tide left it, and in the hand. */
+export function surfboardTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(160, 48, seed, (ctx, r) => {
+    const pts: [number, number][] = [[8, 26], [40, 12], [90, 8], [140, 14], [154, 24], [140, 34], [90, 40], [40, 36]];
+    fillPoly(ctx, pts, SALT_ROSE, 0.7);
+    poly(ctx, pts, r, { width: 2, alpha: 0.88 });
+    line(ctx, 14, 25, 150, 24, r, { width: 1, alpha: 0.45, passes: 1 });
+    // a little sand on it
+    hatch(ctx, 50, 14, 40, 20, 0.02, 3, r, { alpha: 0.12 });
+  });
+}
+
+/** A POT BUOY: a float the size of a head with a stick and a rag on
+ *  it, cut off at its own waterline. Seven of them are a day. */
+export function potBuoyTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(48, 64, seed, (ctx, r) => {
+    const wl = 46;
+    fillPoly(ctx, [[12, wl], [10, 34], [18, 26], [30, 26], [38, 34], [36, wl]], CREAM, 0.7);
+    stroke(ctx, [[12, wl], [10, 34], [18, 26], [30, 26], [38, 34], [36, wl]], r, { width: 1.8, alpha: 0.86 });
+    line(ctx, 24, 26, 25, 6, r, { width: 1.6, alpha: 0.8 });
+    fillPoly(ctx, [[25, 6], [40, 10], [25, 15]], RED, 0.7);
+    line(ctx, 12, wl, 36, wl, r, { width: 1.8, alpha: 0.85 });
+    hatch(ctx, 10, wl + 2, 28, 10, 0.02, 3, r, { alpha: 0.16 });
+  });
+}
+
+/** PYE. Oilskin to the knee, a sou'wester, boots. No face. Standing,
+ *  bent to a pot, or sat on the boat's gunwale. */
+export function pyeTexture(seed: number, pose: 0 | 2 | 3): THREE.CanvasTexture {
+  return makeTexture(96, 160, seed, (ctx, r) => {
+    const cx = 48;
+    const bend = pose === 2;
+    const sit = pose === 3;
+    const hx = bend ? cx + 16 : cx;
+    const hy = bend ? 60 : sit ? 56 : 32;
+    scribbleCircle(ctx, hx, hy, 12, r, { width: 1.9, alpha: 0.84 }, 1.05);
+    // the sou'wester: a brim that is long at the back
+    stroke(ctx, [[hx - 18, hy - 6], [hx - 10, hy - 16], [hx + 10, hy - 17], [hx + 24, hy - 2]], r, { width: 2, alpha: 0.85 });
+    const top = hy + 14;
+    const hem = sit ? 110 : bend ? 118 : 112;
+    let coat: [number, number][];
+    if (bend) coat = [[cx - 12, hem], [cx - 8, 88], [hx - 8, hy + 12], [hx + 10, hy + 14], [cx + 16, 92], [cx + 18, hem]];
+    else coat = [[cx - 13, top], [cx - 20, hem], [cx + 20, hem], [cx + 13, top]];
+    fillPoly(ctx, coat, TAR, 0.42);
+    poly(ctx, coat, r, { width: 2.1, alpha: 0.86 });
+    line(ctx, cx + (bend ? 4 : 0), top + 4, cx + (bend ? 6 : 0), hem - 6, r, { width: 1.1, alpha: 0.3, passes: 1, color: CREAM });
+    if (bend) {
+      stroke(ctx, [[hx - 6, hy + 16], [hx, hy + 44], [hx + 6, 126]], r, { width: 1.8, alpha: 0.8 });
+      stroke(ctx, [[hx + 8, hy + 16], [hx + 16, hy + 42], [hx + 14, 124]], r, { width: 1.7, alpha: 0.76 });
+    } else if (sit) {
+      stroke(ctx, [[cx - 11, top + 4], [cx - 6, top + 30], [cx + 14, top + 30]], r, { width: 1.8, alpha: 0.8 });
+    } else {
+      // arms folded, which is how a man waits for a tide
+      stroke(ctx, [[cx - 13, top + 4], [cx - 20, top + 24], [cx + 12, top + 28]], r, { width: 1.8, alpha: 0.8 });
+      stroke(ctx, [[cx + 13, top + 4], [cx + 20, top + 22], [cx - 10, top + 30]], r, { width: 1.7, alpha: 0.76 });
+    }
+    // boots
+    if (sit) {
+      stroke(ctx, [[cx - 6, hem + 4], [cx + 16, hem + 6], [cx + 18, 148]], r, { width: 2.4, alpha: 0.85 });
+      stroke(ctx, [[cx + 6, hem + 4], [cx + 26, hem + 8], [cx + 28, 148]], r, { width: 2.2, alpha: 0.75 });
+    } else {
+      line(ctx, cx - 10, hem, cx - 11, 148, r, { width: 2.6, alpha: 0.85 });
+      line(ctx, cx + 10, hem, cx + 11, 148, r, { width: 2.6, alpha: 0.85 });
+    }
+    line(ctx, cx - 14, 148, cx - 2, 149, r, { width: 2.2, alpha: 0.8, passes: 1 }, 2);
+    line(ctx, cx + 2, 149, cx + 16, 148, r, { width: 2.2, alpha: 0.8, passes: 1 }, 2);
+  });
+}
+
+/** PYE IN HIS BOAT, rowing the line: the cove's boat side on with a
+ *  bent back in it and both oars biting. Cut off at the waterline. */
+export function pyeBoatTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(192, 96, seed, (ctx, r) => {
+    const wl = 78;
+    const sheer: [number, number][] = [[14, 52], [40, 44], [96, 40], [150, 44], [178, 54]];
+    fillPoly(ctx, [...sheer, [170, wl], [22, wl]], HULL, 0.4);
+    stroke(ctx, sheer, r, { width: 2.4, alpha: 0.9 });
+    stroke(ctx, [[14, 52], [22, wl]], r, { width: 2.2, alpha: 0.88 });
+    stroke(ctx, [[178, 54], [170, wl]], r, { width: 2.2, alpha: 0.88 });
+    line(ctx, 22, wl, 170, wl, r, { width: 2.4, alpha: 0.9 });
+    stroke(ctx, [[26, 60], [96, 54], [166, 62]], r, { width: 1.1, alpha: 0.3, passes: 1 });
+    // the man: sou'wester, a back bent over the oars
+    scribbleCircle(ctx, 84, 22, 9, r, { width: 1.8, alpha: 0.84 }, 1.05);
+    stroke(ctx, [[70, 20], [78, 10], [92, 9], [104, 20]], r, { width: 1.8, alpha: 0.82 });
+    fillPoly(ctx, [[72, 30], [66, 44], [108, 44], [100, 30]], TAR, 0.45);
+    poly(ctx, [[72, 30], [66, 44], [108, 44], [100, 30]], r, { width: 1.9, alpha: 0.84 });
+    // the oars: out either side, one nearer, one further
+    line(ctx, 104, 36, 150, 66, r, { width: 2, alpha: 0.82 });
+    line(ctx, 100, 34, 52, 60, r, { width: 1.6, alpha: 0.5 });
+    // a pot in the stern
+    poly(ctx, [[130, 44], [132, 30], [154, 30], [156, 44]], r, { width: 1.4, alpha: 0.7 });
+    hatch(ctx, 132, 32, 22, 12, 0.6, 3, r, { alpha: 0.2 });
+    hatch(ctx, 24, wl + 2, 144, 14, 0.02, 4, r, { alpha: 0.15 });
+    line(ctx, 160, wl + 1, 186, wl + 3, r, { width: 1.8, alpha: 0.35, passes: 1 }, 3);
+  });
+}
+
+/** WREN. Thin, in a long jersey with a knitted cap, a coil of rope over
+ *  one shoulder. Standing, or bent to the punt. No face. */
+export function wrenTexture(seed: number, pose: 0 | 2 | 3): THREE.CanvasTexture {
+  return makeTexture(96, 160, seed, (ctx, r) => {
+    const cx = 48;
+    const bend = pose === 2;
+    const sit = pose === 3;
+    const hx = bend ? cx + 16 : cx;
+    const hy = bend ? 60 : sit ? 56 : 30;
+    scribbleCircle(ctx, hx, hy, 11, r, { width: 1.9, alpha: 0.84 }, 1.0);
+    // the cap: tall, and it leans
+    poly(ctx, [[hx - 10, hy - 6], [hx - 6, hy - 24], [hx + 8, hy - 26], [hx + 11, hy - 6]], r, { width: 1.8, alpha: 0.82 });
+    const top = hy + 12;
+    const hem = sit ? 108 : 110;
+    let body: [number, number][];
+    if (bend) body = [[cx - 9, hem], [cx - 5, 88], [hx - 7, hy + 10], [hx + 8, hy + 12], [cx + 12, 92], [cx + 13, hem]];
+    else body = [[cx - 10, top], [cx - 12, hem], [cx + 12, hem], [cx + 10, top]];
+    fillPoly(ctx, body, SALT_BLUE, 0.3);
+    poly(ctx, body, r, { width: 2, alpha: 0.86 });
+    // the jersey's ribs: three short horizontals
+    for (let k = 0; k < 3; k++) line(ctx, cx - 8 + (bend ? 4 : 0), top + 14 + k * 8, cx + 8 + (bend ? 4 : 0), top + 15 + k * 8, r, { width: 1, alpha: 0.3, passes: 1 });
+    // the rope over the shoulder: a coil
+    if (!bend) {
+      for (let k = 0; k < 3; k++) {
+        stroke(ctx, [[cx + 6, top + 2 + k * 3], [cx + 20, top + 14 + k * 4], [cx + 8, top + 30 + k * 3]], r, { width: 1.3, alpha: 0.6, passes: 1, jitter: 1 });
+      }
+    }
+    if (bend) {
+      stroke(ctx, [[hx - 5, hy + 14], [hx - 2, hy + 40], [hx + 4, 124]], r, { width: 1.7, alpha: 0.8 });
+      stroke(ctx, [[hx + 8, hy + 14], [hx + 14, hy + 40], [hx + 12, 122]], r, { width: 1.6, alpha: 0.76 });
+    } else if (sit) {
+      stroke(ctx, [[cx - 9, top + 4], [cx - 6, top + 28], [cx + 12, top + 30]], r, { width: 1.7, alpha: 0.8 });
+    } else {
+      stroke(ctx, [[cx - 10, top + 4], [cx - 18, top + 30], [cx - 16, top + 46]], r, { width: 1.7, alpha: 0.8 });
+    }
+    if (sit) {
+      stroke(ctx, [[cx - 5, hem + 2], [cx + 14, hem + 4], [cx + 16, 148]], r, { width: 2.1, alpha: 0.85 });
+      stroke(ctx, [[cx + 5, hem + 2], [cx + 24, hem + 6], [cx + 26, 148]], r, { width: 2, alpha: 0.75 });
+    } else {
+      line(ctx, cx - 7, hem, cx - 8, 148, r, { width: 2.2, alpha: 0.85 });
+      line(ctx, cx + 7, hem, cx + 8, 148, r, { width: 2.2, alpha: 0.85 });
+    }
+    line(ctx, cx - 12, 148, cx - 1, 149, r, { width: 2, alpha: 0.8, passes: 1 }, 2);
+    line(ctx, cx + 1, 149, cx + 13, 148, r, { width: 2, alpha: 0.8, passes: 1 }, 2);
+  });
+}
+
+/** WREN'S PUNT, under way: a flat, narrow boat with a figure standing
+ *  in the stern sculling one oar over the transom — a silhouette
+ *  nobody else on this coast makes. */
+export function wrenBoatTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(192, 112, seed, (ctx, r) => {
+    const wl = 92;
+    const sheer: [number, number][] = [[10, 74], [30, 66], [100, 62], [170, 66], [184, 74]];
+    fillPoly(ctx, [...sheer, [178, wl], [16, wl]], HULL, 0.36);
+    stroke(ctx, sheer, r, { width: 2.2, alpha: 0.9 });
+    stroke(ctx, [[10, 74], [16, wl]], r, { width: 2, alpha: 0.86 });
+    stroke(ctx, [[184, 74], [178, wl]], r, { width: 2, alpha: 0.86 });
+    line(ctx, 16, wl, 178, wl, r, { width: 2.2, alpha: 0.9 });
+    // the figure, standing, the cap leaning, the oar over the stern
+    const fx = 48;
+    scribbleCircle(ctx, fx, 22, 9, r, { width: 1.8, alpha: 0.84 }, 1.0);
+    poly(ctx, [[fx - 8, 17], [fx - 5, 2], [fx + 7, 1], [fx + 9, 17]], r, { width: 1.6, alpha: 0.8 });
+    fillPoly(ctx, [[fx - 9, 32], [fx - 11, 66], [fx + 11, 66], [fx + 9, 32]], SALT_BLUE, 0.3);
+    poly(ctx, [[fx - 9, 32], [fx - 11, 66], [fx + 11, 66], [fx + 9, 32]], r, { width: 1.9, alpha: 0.86 });
+    line(ctx, fx + 8, 36, fx + 30, 48, r, { width: 1.7, alpha: 0.8 });
+    line(ctx, fx + 30, 48, 12, 100, r, { width: 2, alpha: 0.82 });
+    // the bell's clapper rope coiled amidships, and the mark's paint tin
+    scribbleCircle(ctx, 120, 62, 7, r, { width: 1.4, alpha: 0.6 }, 1.2);
+    poly(ctx, [[142, 64], [143, 52], [156, 52], [157, 64]], r, { width: 1.4, alpha: 0.7 });
+    hatch(ctx, 18, wl + 2, 160, 12, 0.02, 4, r, { alpha: 0.15 });
+    line(ctx, 168, wl + 1, 190, wl + 3, r, { width: 1.6, alpha: 0.32, passes: 1 }, 3);
+  });
+}

@@ -21,6 +21,7 @@ import {
   type RegionSpec, type District,
 } from '../world/layout';
 import { barriers } from '../world/barriers';
+import { moatRed } from '../world/regions/civic';
 import { clock as dayClock, LAMP_POOL, LAMP_EDGE } from '../world/daylight';
 import { tearX } from '../world/elevation';
 import { earshotAt, voice, SURF_REACH } from '../world/earshot';
@@ -170,7 +171,9 @@ export class App {
     this.poi.groundAt = (x, z) => this.terrain.heightAt(x, z);
     // and how tall the page is there, so a name clears the thing it
     // names rather than printing across it (Session 9)
-    this.poi.skylineAt = (x, z, r) => this.world.skylineAt(x, z, r);
+    // — the drawing actually standing there, not the grid's disc of it
+    // (the local QA pass, 2026-09-04, B3: a name climbed a neighbour)
+    this.poi.skylineAt = (x, z, r) => this.world.nearTopAt(x, z, r);
     // and the chrome is in the picture too: a name may not be lettered
     // through the map button or across a region card
     this.poi.reserved = this.ui.chrome;
@@ -537,6 +540,8 @@ export class App {
         company: { goat: common.goat, dog: downsDog },
         barriers,
         districtAt,
+        /* THE MOAT'S RED DAYS (Session 19), for `check-verbs`. */
+        moatRed,
         /* THE ROADS AND WHAT IS IN EARSHOT (Session 18), for
          * `tools/check-roads.mjs`: the road web to walk, the placed
          * voices to ask, and the skyline to project. */
@@ -726,8 +731,15 @@ export class App {
       } else wake();
     }
     this.started = true;
-    this.region = regionAt(this.char.pos.x, this.char.pos.z);
-    this.district = districtAt(this.char.pos.x, this.char.pos.z);
+    /* THE WAKE CARD NAMES WHERE YOU WAKE, not where the poster stood
+     * (the local QA pass, B4): the blink's cut has not happened yet on
+     * this frame, so the walker is still at the poster — the
+     * crossroads — and the card read *the crossroads* sixty-six units
+     * east of it. A fresh page reads the spawn. */
+    const wx = fresh ? SPAWN.x : this.char.pos.x;
+    const wz = fresh ? SPAWN.z : this.char.pos.z;
+    this.region = regionAt(wx, wz);
+    this.district = districtAt(wx, wz);
     /* THE MOOD BEFORE THE CONTEXT, and the order matters from Session 8.
      * `setMood` with no context yet just records which land this is;
      * `init` then builds THAT land's room. The other way round, a save
@@ -903,6 +915,11 @@ export class App {
     if (this.save.data.taughtRun || !this.started || this.char.frozen) return;
     // the harness drives with `hold`; a player does not
     if (this.input.hold !== null) return;
+    /* NOT ON A MOUNT (the local QA pass, 2026-09-04, B4): six seconds
+     * on a bicycle is six seconds of not walking, and *hold shift to
+     * run* printed on a rider is a hint about a thing they are not
+     * doing. The boat and the train are the same. */
+    if (this.bicycle.aboard || this.boat.aboard || this.train.aboard) { this.walkHeld = 0; return; }
     if (this.input.run > 0.15) {
       // they found it on their own. Nothing is printed, ever.
       this.save.data.taughtRun = true;
@@ -1102,7 +1119,7 @@ export class App {
         const px = x + Math.cos(a) * rad;
         const pz = z + Math.sin(a) * rad;
         if (this.terrain.waterAt(px, pz) > 0.3) continue;
-        if (this.terrain.blockedAt(px, pz)) continue;
+        if (this.terrain.blockedAt(px, pz) || barriers.blocks(px, pz)) continue;
         return [px, pz];
       }
     }
@@ -1120,7 +1137,7 @@ export class App {
         const px = x + Math.cos(a) * rad;
         const pz = z + Math.sin(a) * rad;
         if (this.terrain.waterAt(px, pz) > 0.3) continue;
-        if (this.terrain.blockedAt(px, pz)) continue;
+        if (this.terrain.blockedAt(px, pz) || barriers.blocks(px, pz)) continue;
         return [px, pz];
       }
     }
@@ -1695,9 +1712,14 @@ export class App {
 
     // and then stands on whatever the page does there — or sits a foot
     // down in the boat, which is where a person in a boat is
+    /* ON THE SADDLE, NOT OVER IT (the local QA pass, B4): the rider
+     * was lifted a fifth of a unit and their feet hung at saddle
+     * height. The figure sits a quarter of a unit DOWN instead, so the
+     * frame — drawn half a unit nearer the lens — covers the legs from
+     * the pedals up, the way the rowboat's gunwale does. */
     this.char.setGround(
       this.terrain.heightAt(this.char.pos.x, this.char.pos.z) - (this.boat.aboard ? 0.34 : 0)
-        + (this.bicycle.aboard ? 0.22 : 0)
+        - (this.bicycle.aboard ? 0.26 : 0)
         + (this.seat?.sit?.lift ?? 0) + this.seatDy,
       this.boat.aboard ? [0, 1, 0] : this.terrain.normalAt(this.char.pos.x, this.char.pos.z)
     );
@@ -1782,7 +1804,13 @@ export class App {
       } else if (t?.def.glide) {
         this.audio.event('paper-land');
       } else if (water > 0.12) {
-        this.audio.event('stone-plop');
+        /* A STONE THAT SKIMS (Session 19): on water, thrown, with skips
+         * left, it goes on — a lighter note and a ring — and the last
+         * one is the plop. The land draws the rings off `splashes`. */
+        const skipped = !!t && l.thrown && things.skip(l.id, l.heading, Math.max(l.dist, 3.5), (x, z) => this.terrain.heightAt(x, z));
+        this.audio.event(skipped ? 'stone-skip' : 'stone-plop');
+        things.splashes.push({ id: l.id, x: l.x, z: l.z, t: this.elapsed, skip: skipped });
+        if (skipped) continue;
       } else {
         this.audio.event('stone-land');
       }
@@ -1800,7 +1828,8 @@ export class App {
 
     this.prints.update(dt);
     this.terrain.update(dt);
-    this.world.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.region.id, weather.windK);
+    this.world.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.region.id, weather.windK,
+      this.camera.position.x, this.camera.position.z);
 
     const here = regionAt(this.char.pos.x, this.char.pos.z);
     if (here.id !== this.region.id) this.crossInto(here);

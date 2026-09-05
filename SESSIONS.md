@@ -1,5 +1,244 @@
 # SESSIONS — the handoff log
 
+## Session 19 — 2026-09-04 — the new cast, west and north
+
+*The first local QA pass came first, all five of its jobs, before a
+Viking was drawn: the gate trap, collision for every building in the
+world, the writing put next to what it names, the tooling that waited
+fifteen silent seconds, and the small ones. Then `THE-FUN-PASS` §14:
+the Vikings on the Holdfast, the surfers at the Cut, the three
+monsters, WICK, PYE and WREN drawn and on routines with waits that
+are cards with two doors, three toys, Greyweather re-drawn, and an art
+gate on the re-opened lands (`design/critiques/critique-art-13.md`).
+**The play gate was handed over and not run**
+(`design/play-sheets/session-19.md`). Sessions 16, 17 and 18's sheets
+had not come back when this session started.*
+
+### THE ONE THING TO KNOW
+
+**Every building in the world has a footprint now, and it cost the
+roads nothing — but only because the footprints are clipped off the
+road centrelines and one of them is exempt.** The QA pass found that
+nothing but three fences and a gull had collision, and the fix is one
+option on `ctx.standee`: `solid: true | number | { hw, gap, keep }`
+writes a `barriers.ts` segment the width of the drawing's foot (or the
+number, or a foot with a gap in it for a gate arch), and
+`World.nearFade` dims to a fifth anything the lens gets within four and
+a half of. One hundred and forty-seven footprints, a hundred and fifty barriers with the fences and the gull. The first run of the
+tool that sweeps them found four across roads — a fountain, a terrace,
+the mill, a tower — because the roads were laid through the lands after
+the buildings were placed and nobody ever had to walk round anything.
+So `onRoadLine()` clips every footprint into the runs of it that are
+off a road's band (`width × 0.5 + 0.9`), and a footprint that would be
+clipped to nothing can say `keep: true`, which the king's-road fountain
+does: it stands in the road on purpose (Session 3 put it there to be
+walked round) and it is the one barrier the sweep exempts, by id. **If
+a later session lays a road through a house, the house loses the strip
+under the road and the sweep stays green**, which is the right failure
+but a quiet one. `check-verbs` §2 counts the solids and sweeps every
+road at a walk.
+
+**And section 10 of `check-verbs` runs on a fresh page, because
+sections 1–9 learn everything.** The cast's assertions are about doors
+not yet taken and waits not yet answered; by section 9 the page had
+been handed every fact in the game. `page.reload()` before the cast
+is the cheapest fix and the only one that tests what a player sees.
+
+### WHAT SHIPPED
+
+- **The QA pass** (`design/critiques/qa-local-1.md`, in its order).
+  **B1**: `SPAWN` is (24, 82), the gate's own row, and the bull's home
+  is (33, 70); the bull charges at the walker's SHOULDER on the frame's
+  side (`BULL_SHOULDER`), so on both rigs the frame sees the charge and
+  a due-west run at the hint's word reaches the gate before it shuts.
+  `check-verbs` §1 runs that run, with the camera's projection, and
+  asserts the bull in frame. **B2**: `solid` on every standee that is a
+  building, wall, tower, gate, keep, house, hut, well, mill, cistern,
+  van, trough or stack; `nearFade`. **B3**: `POI.ts` writes the label
+  a line-height over the skyline top of its thing
+  (`LABEL_CLEAR_R` 3, `LABEL_MAX_RISE` 9) and anchors the prompt beside
+  the walker when the thing is out of frame and beside the thing when
+  it is in; the region card has a paper halo (`style.css`); the map
+  places district names in boxes and drops them on a phone or on a
+  collision. **Tooling**: `shoot-lib` waits on `.title-veil:not(.gone)`
+  (twenty-two waits, across every shoot script); README leads the run
+  section with `npx playwright install chromium` and `PW_CHROMIUM`.
+  **B4**: no run hint on a mount, the rider sits on the saddle
+  (ground −0.26), the wake card falls back, the tarn's skin decals are
+  draped on its bowl (`drape()` in `wilds.ts`).
+- **GREYWEATHER RE-DRAWN** before a Viking: the keep has courses,
+  quoins, a plinth course and a damp stain; the bailey has a yard
+  decal, wear at the keep's foot, a trough, a timber stack and two
+  crates, all solid. The stone, the ground and the furniture, in that
+  order, as the brief said.
+- **THE VIKINGS** (`coast.ts`, ocean half). `longshipTexture` ×3,
+  `shipAt(h)` pure: in from the offing six to seven, beached at the
+  berth (−264, −46), out at a quarter to twelve, **round the mark with
+  the fleet noon to half past one**, back by a quarter to two.
+  Registered `the-longship-in/-out`. Beached, with the walker on the
+  sand, seven till eight at night, they roar every nine to fifteen
+  seconds; **nobody lands** — eastmost x under −252, asserted through
+  the day. **THE HORN** on the point (a drawing on a stone beside the
+  cairn): BLOW THE HORN, and a beat and a half later they answer from
+  wherever they are and the gulls lift. A toy.
+- **THE SURFERS** (`coast.ts`, beach half): a van (solid), a rack, a
+  wetsuit on a line on the shelf under the point; two people out of
+  the van at 6.05 and 17.55 to the water's edge, a look at the sea,
+  back to the step. Never in. The van's window lights at 19.2, the
+  jetty lamp at seven. **THE ERRAND**: `the-board` on the wrack by the
+  boardwalk, a carriable; within six and two tenths of the rack it is
+  racked (`fact:the-board-racked`, `board-knock`). The van's note is
+  the sticker, reach five.
+- **THE MONSTERS.** The moat is red two days in nine (`moatRed(day)`,
+  days 1 and 2), and after dark within twenty-six something moves in
+  it and the reeds shiver. The-deep surfaces every third dusk and
+  **the seals do not haul out the morning after**. In the deep pines
+  after dark, stand still nine seconds and a shape is drawn at the
+  frame's edge thirteen units off, for nine tenths of a second, never
+  within eleven and a half, never twice in seventy seconds, with a
+  branch cracking. Not one of them has a note that says what it was.
+- **WICK, PYE, WREN** drawn (`wickTexture` ×5, `pyeTexture` ×3,
+  `wrenTexture` ×3, two boats) and on routines (`WICK_MORNING/EVENING`,
+  `PYE_DAY`, `WREN_DAY/AFTERNOON`, `Figure` takes a `maps` table per
+  pose). **C12 built**: Wick resting on the verge at 5.55 with the
+  banner across his knees. **Three waits, each a card with two doors**
+  on Nell's pattern (getters on the POI): the fifth banner in Brim's
+  red, learned from the square's cloth (`fact:brim-red`,
+  `reason:the-fifth-banner`), a bare pole when the king is back and
+  Wick `RELIEVED`; the eighth pot or the pots hauled
+  (`door:the-eighth-pot` / `door:the-pots-hauled`, on `name:the-mark`);
+  the second mark or the fleet finished (`door:the-second-mark` /
+  `door:the-fleet-finished`, on `route:the-bar`). `WAIT_ANSWERS` has
+  the castle, the beach and the ocean; `WAITS_FOR_THE_LINE` is seven.
+- **TOYS**: RATTLE THE PORTCULLIS (drops, holds, back up by itself,
+  braziers gutter); `bar-stone` on the crest that skips three times
+  off the bar (`things.skip`, `Splash` rings, `stone-skip`) and is
+  back by morning; the rowboat in the fleet (`rowboat` in `Boat.ts`,
+  the nearest racer bears away, its halyard rattles).
+- **Sound**: `viking-roar`, `horn`, `portcullis`, `board-knock`,
+  `moat-slop`, `stone-skip` in `Audio.ts`; `earshot.ts` rows for the
+  roar (Holdfast, r 46, 7–20) and the two oars. `render-wavs` carries
+  them under `the-new-cast`.
+- **Tools**: `check-verbs` §1 (the due-west run), §2 (the solids and
+  the road sweep), §10 (the cast, on a fresh page: the longship's
+  eastmost x, the roar sampled per frame, the horn answered within
+  four seconds, the surfer out at 6.25, the board's errand, Pye's
+  card and a door answering the wait, Wren's card and a door that is
+  not an answer, no row after the fleet finished, the fifth banner and
+  the castle answered, Wick's resting pose at 5.85, the portcullis's
+  drop, the moat's days, the deep's and the seals' days, the shape
+  shown and gone, a stone skipping, `answeredWaits() === 3`);
+  `shoot-session19` (34 framings, both rigs, a DO table that roars,
+  blows, racks, opens cards, rattles, waits for the shape, skims and
+  rows into the fleet); `qa-play-local-2` and `shoot-session16` moved
+  to the new spawn; `diff-sheets` lists every failing row; `check-
+  verbs`' fresh page waits on `load` and the title, not `networkidle`
+  (a begun page never goes idle inside thirty seconds).
+
+### THE GATES, AND WHAT MOVED
+
+- **Build green.** `check-terrain`, `check-fields` (90 figures driven
+  through their hours), `check-roads` (both rigs, noon), `check-audio`,
+  `check-sightline`, `check-lures`, `check-camera` (both rigs),
+  `check-verbs` (every section, §10 on a fresh page). All pass on the
+  pushed head.
+- **Art gate**: `critique-art-13`, two rounds. Round one's six
+  (the board racked into the van's note, a horn that was a prompt over
+  nothing, the fifth banner behind the tower, Wren's punt afloat, the
+  keep a wash, the roar never in a frame) fixed and re-shot; round two
+  passes with **Greyweather, Longshore and the Wide Blue re-earned**
+  and Brim held. The standing note is the named figures at the dusk
+  grade on a phone, which is the camera's and Session 20's.
+
+- **What moved, by `diff-sheets` against `origin/main` (c259f94), 92
+  framings, bearing pinned, twelve game seconds of settle.** 42 of 92
+  bit-identical; 46 moved at all; **37 over the 0.15% threshold**,
+  which is the most any session has moved and is what re-drawing a
+  land and giving every building a footprint costs. Every frame that
+  moved has this session in it. The reporter now lists every failing
+  row, not the first twelve, and `SAVE=1` kept both sides and a mask
+  of every one:
+  - **`street-shot@12` and `@19.6` on the phone, 96.2% and 89.4%** —
+    the biggest move in the project's history and **it is the QA pass
+    working.** On the portrait rig the camera at the street shot's
+    spot stands inside Brim's south gate drawing, and the protected
+    frame was photographed through it: a brown wash over the whole
+    picture, which is B2's *the camera goes inside them* exactly. The
+    gate now fades to a fifth when the lens is within four and a half
+    of its foot, and the frame is the street. The desktop rig stands
+    further from the gate and its frame moved by eight pixels.
+  - **`bailey`, `curtain-wall`, `barbican` at both hours, both rigs —
+    15.4% to 0.7%** (bailey 15.4/11.3 portrait, 11.1/8.0 desktop;
+    curtain-wall 10.2/8.1 portrait, 6.1/4.8 desktop; barbican 2.6/1.7
+    portrait, 1.1/0.7 desktop). The keep's masonry, the yard, the
+    trough, the stack, the crates, the well, the portcullis in the
+    arch and the fifth banner's pole on the ridge. Greyweather was the
+    scope and the critique re-earns it.
+  - **`tide-line` 1.3/1.2 portrait, 0.7/1.0 desktop** — the van, the
+    rack and the wetsuit on the shelf, and the board on the wrack in
+    the foreground. **`boardwalk` 0.17–0.38** — the same shelf from
+    the south, and at dusk the jetty lamp lit.
+  - **`sandbar@12` 0.8 desktop** — Wren in her punt beside the bell at
+    noon; **`@19.6` 0.5** — the longship beached on the Holdfast at
+    the frame's right edge.
+  - **`avenue-foot` 0.66/0.44 portrait, 0.31/0.22 desktop** — the
+    portcullis in the far gate's arch and the yard's furniture on the
+    ridge. **`square-mid` and `square-wide`** moved by a few dozen
+    pixels at the road's vanishing point for the same reason, under
+    the threshold.
+  - **`the-point` 0.41/0.39 desktop, 0.25/0.22 portrait; `THE-SHOT-cut`
+    0.37/0.32 desktop** — the horn on its stone beside the cairn.
+  - **`crossroads` and `well`, 0.25 and 0.24 at both hours, desktop,
+    writing only** — the page is bit-identical; the label moved up a
+    line-height (B3), which is what the frame was told to do.
+  - Every other framing — the Common's five but those two, the
+    Penwood's, the Downs', the Flats', the canyon's, Greyline's, the
+    court's — is bit-identical, page and writing.
+
+### DECLINED, IN WRITING
+
+- **A face for any monster.** `THE-FUN-PASS` §2: never seen whole,
+  never explained. The shape in the pines is a trunk-shaped thing for
+  under a second; the moat is a sound and a shiver; the-deep is a day
+  the seals stay away.
+- **A Viking on the sand.** The berth is the Wide Blue's and the sand
+  is Longshore's; the whole joke is that they cannot land, and the
+  ending depends on it. The longship's x is clamped and asserted.
+- **A score for the horn, the stone or the portcullis.** Toys. The
+  stone counts its own skips in sound and nowhere else.
+- **Brim's belfry.** The brief opened it only if the bell was touched;
+  it was not. The square's note gained a sentence about the red cloth
+  because Wick's wait needed a colour to be learned somewhere.
+- **A tint or a wash for the red days.** The moat is red; the sky is
+  not. Two days in nine on `clock.day` and the note reads the day.
+
+### Gotchas (new; everything from Sessions 1–18 still applies)
+
+- **A LAND'S ASSERTIONS ABOUT DOORS NEED A PAGE THAT HAS NOT LEARNED
+  THEM.** `check-verbs` §10 reloads. Any later section that asserts an
+  unanswered wait does the same.
+- **A FOOTPRINT ACROSS A ROAD IS CLIPPED, NOT REFUSED.** `onRoadLine`
+  takes the strip under the road out of the footprint silently. A
+  building that should stand in the road says `keep: true` and is
+  exempted from the sweep by id.
+- **THE FOOTPRINT RUN LOOP MUST CLOSE ITS LAST RUN.** The first pass
+  registered fifty-three of a hundred and forty-seven because the loop
+  never pushed the run it was in when the foot ended.
+- **A PROMPT'S REACH MAY NOT COVER ANOTHER THING'S GOAL** — the well
+  (15), the plane (18), and now the rack: the van's reach of eight
+  covered it, and carrying the board there opened the sticker.
+- **A STANDEE ON WATER IS A THING AFLOAT.** Wren's punt at the bar's
+  shoulder was under the sea. Read the height field before placing a
+  thing that is meant to be drawn up.
+- **A ROUTINE'S STOP LIST MAY NOT BE EMPTIED.** `routineAt` on an
+  empty list throws; a routine that never leaves has one stop at an
+  hour that never comes (`WREN_NEVER`, 24.5).
+- **A SOUND SHORTER THAN THE SHUTTER IS SAMPLED PER FRAME.** The roar
+  and the horn's answer are asserted by polling `life.drawn` each
+  frame for twenty-two seconds, not by one read after a wait.
+- **`diff-sheets` REBUILDS `dist` AND OWNS 4191/4192.** Run it alone:
+  a check tool started on 4173 mid-run tests two builds.
+
 ## 2026-09-04 — the first local QA pass, after Session 18 merged (no code)
 
 *The shipped build played on the owner's Mac for the first time: headed

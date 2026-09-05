@@ -47,7 +47,7 @@ await page.goto(url, { waitUntil: 'networkidle' });
 await page.evaluate(() => localStorage.clear());
 await page.reload({ waitUntil: 'networkidle' });
 await page
-  .waitForFunction(() => document.body.innerText.toLowerCase().includes('set out'), { timeout: 15000 })
+  .waitForSelector('.title-veil:not(.gone)', { timeout: 15000 })
   .catch(() => {});
 await page.evaluate(() => window.__inklands.begin());
 await page.waitForTimeout(2200);

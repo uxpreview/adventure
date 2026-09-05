@@ -909,3 +909,41 @@ export function goatTexture(seed: number, pose: 0 | 1 | 2 | 3): THREE.CanvasText
     line(ctx, 34, 44, 26, 34, r, { width: 1.7, alpha: 0.75, passes: 1 }, 2);
   });
 }
+
+/**
+ * THE SHAPE IN THE DEEP PINES (Session 19, `THE-FUN-PASS` §10 THE
+ * MONSTERS). Drawn once, at the edge of the frame, at night, and not
+ * there when you look. It is a stain the height of two men and the
+ * width of a trunk, with a lean the pines around it do not have, and
+ * a ragged edge where a trunk's is straight. No face. No head. It is
+ * drawn by the same law as everything else — a cutout on the page —
+ * and it is the only cutout in the wood that is not a tree.
+ */
+export function pineShapeTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(64, 256, seed, (ctx, r) => {
+    const pts: [number, number][] = [];
+    const n = 26;
+    for (let i = 0; i <= n; i++) {
+      const u = i / n;
+      const y = 250 - u * 236;
+      const lean = u * 14;
+      const w = 7 + Math.sin(u * Math.PI) * 9 + (r() - 0.5) * 6;
+      pts.push([30 + lean - w, y]);
+    }
+    for (let i = n; i >= 0; i--) {
+      const u = i / n;
+      const y = 250 - u * 236;
+      const lean = u * 14;
+      const w = 7 + Math.sin(u * Math.PI) * 9 + (r() - 0.5) * 6;
+      pts.push([30 + lean + w, y]);
+    }
+    fillPoly(ctx, pts, INK, 0.72);
+    stroke(ctx, [...pts, pts[0]], r, { width: 1.4, alpha: 0.5, jitter: 2.2 });
+    // the inside is darker again, in the middle, like a thing with a middle
+    for (let i = 0; i < 14; i++) {
+      const y = 40 + r() * 190;
+      const lean = ((250 - y) / 236) * 14;
+      line(ctx, 30 + lean - 4, y, 30 + lean + 4, y + (r() - 0.5) * 6, r, { width: 2.4, alpha: 0.35, passes: 1 });
+    }
+  });
+}

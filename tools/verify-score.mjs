@@ -34,8 +34,7 @@ page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
 await page.addInitScript(() => localStorage.clear());
 await page.goto(URL, { waitUntil: 'networkidle' });
 await page.bringToFront();
-await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('set out'),
-  { timeout: 20000 }).catch(() => {});
+await page.waitForSelector('.title-veil:not(.gone)', { timeout: 20000 }).catch(() => {});
 await page.evaluate(() => window.__inklands.begin());
 await page.waitForTimeout(1500);
 

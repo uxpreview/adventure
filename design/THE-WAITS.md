@@ -664,9 +664,9 @@ the player is the only one who ever gets to.
 | wait | needs built | session |
 |---|---|---|
 | BRIM | **shipped** — Marget, the routine, the belfry fact, the market called | **7** ✓ |
-| GREYWEATHER | Wick + the loft; the moat pool re-read; a fifth banner | 9–12 (all its places exist) |
-| LONGSHORE | Pye + seven pots + the chain; an eighth pot | 9–12 (all its places exist) |
-| WIDE BLUE | Wren + the second mark | 9–12 (all its places exist) |
+| GREYWEATHER | **shipped** — Wick on the avenue at dawn and dusk, the fifth banner on `fact:brim-red`; the second door (the king back) relieves him | **19** ✓ |
+| LONGSHORE | **shipped** — Pye, the pot line, two rows a day at the tide; the eighth pot on `name:the-mark`, or the pots hauled | **19** ✓ |
+| WIDE BLUE | **shipped** — Wren and the punt, the noon row to ring the bell; the second mark on `route:the-bar`, or the finish called | **19** ✓ |
 | THE COMMON | Nell straightening; the cart loaded and turned | inhabitants pass |
 | PENWOOD | **shipped** — Brack, the two postures, and the road that is his circle | **10** ✓ |
 | HARROW DOWNS | **shipped** — Joan, her day, the picnic, and the sitting | **10** ✓ |

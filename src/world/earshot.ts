@@ -75,9 +75,17 @@ export const VOICES: Voice[] = [
   { land: 'castle', id: 'banner-snap', x: -45, z: -200, r: 40 },
   { land: 'castle', id: 'rook-caw', x: -45, z: -234, r: 30 },
   /* THE WIDE BLUE: the mark's bell, from the bar; the halyards off the
-   * moorings. */
+   * moorings; and (Session 19) THE VIKINGS on the Holdfast, who roar at
+   * the sand from their berth by day, and Wren's oars on the way to
+   * the mark and back at noon. */
   { land: 'ocean', id: 'bell-buoy', x: -308, z: -36, r: 62 },
   { land: 'ocean', id: 'halyard', x: -262, z: 92, r: 36 },
+  { land: 'ocean', id: 'viking-roar', x: -264, z: -46, r: 46, from: 7, to: 20 },
+  { land: 'ocean', id: 'oar', x: -282, z: 34, r: 30, from: 11.6, to: 13.9 },
+  /* LONGSHORE (Session 19): Pye rowing the pot line off the cove at
+   * the tide, twice a day. */
+  { land: 'beach', id: 'oar', x: -238, z: -148, r: 30, from: 6.55, to: 7.6 },
+  { land: 'beach', id: 'oar', x: -238, z: -148, r: 30, from: 18.35, to: 19.4 },
   /* THE DOWNS: the mill's creak; the drove; the herd. */
   { land: 'downs', id: 'mill-creak', x: 150, z: -8, r: 42 },
   { land: 'downs', id: 'sheep', x: 100, z: 76, r: 34 },

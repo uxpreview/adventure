@@ -25,12 +25,12 @@ import { CHROMIUM } from './pw.mjs';
 
 const SHOTS = [
   /* ---- THE BULL ------------------------------------------------------ */
-  ['01-wake-in-the-long-grass',   24, 90,   { chrome: true, wait: 0.3 }],
-  ['02-the-bull-is-looking',      24, 90,   { do: 'watch', wait: 0 }],
-  ['03-the-charge',               24, 90,   { do: 'charge', wait: 0, chrome: true }],
+  ['01-wake-in-the-long-grass',   24, 82,   { chrome: true, wait: 0.3 }],
+  ['02-the-bull-is-looking',      24, 82,   { do: 'watch', wait: 0 }],
+  ['03-the-charge',               24, 82,   { do: 'charge', wait: 0, chrome: true }],
   ['04-the-gate-shuts',           -17, 84,  { do: 'throughTheGate', wait: 0 }],
   ['05-the-bull-at-the-hedge',    -17, 86,  { do: 'atTheFence', wait: 0 }],
-  ['06-balked-in-your-face',      24, 90,   { fresh: true, do: 'standStill', wait: 0 }],
+  ['06-balked-in-your-face',      24, 82,   { fresh: true, do: 'standStill', wait: 0 }],
   /* ---- THE GOAT ------------------------------------------------------ */
   ['07-the-goat-falls-in',        -24, 62, { fresh: true, do: 'goatFollows', wait: 0 }],
   ['08-the-goat-at-the-brim-gate', -45, -18, { do: 'goatNorth', wait: 0 }],
@@ -72,7 +72,7 @@ const browser = await chromium.launch({ executablePath: CHROMIUM });
 const DO = {
   watch: `I.step(1/60, 40);`,
   charge: `I.step(1/60, 70); I.drive(-1, -0.22, 1); I.step(1/60, 120); I.release();`,
-  throughTheGate: `I.goto(24, 90); I.step(1/60, 70); I.drive(-1, -0.22, 1); I.step(1/60, 400); I.release(); I.step(1/60, 10);`,
+  throughTheGate: `I.goto(24, 82); I.step(1/60, 70); I.drive(-1, 0, 1); I.step(1/60, 400); I.release(); I.step(1/60, 10);`,
   atTheFence: `I.step(1/60, 60);`,
   standStill: `I.step(1/60, 200);`,
   goatFollows: `I.goto(-24, 62); I.step(1/60, 30); I.drive(-1, -0.4, 0); I.step(1/60, 150); I.release(); I.step(1/60, 30);`,
@@ -104,7 +104,7 @@ for (const vp of VIEWPORTS) {
     await page.goto(URL, { waitUntil: 'networkidle' });
     await page.bringToFront();
     await page
-      .waitForFunction(() => document.body.innerText.toLowerCase().includes('set out'), { timeout: 25000 })
+      .waitForSelector('.title-veil:not(.gone)', { timeout: 25000 })
       .catch(() => {});
     await page.evaluate(() => {
       const I = window.__inklands;

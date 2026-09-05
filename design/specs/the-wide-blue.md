@@ -194,3 +194,48 @@ right for the emptiest. The regatta's course is six lerps a frame.
 `Audio.surge()` and `Audio.glide()`, shared with LONGSHORE. No new
 placement or field primitives: the bar is ground like any other ground,
 because `elevation.ts` says so.
+
+## Session 19 addendum — the Vikings, Wren and the stone (2026-09-04)
+
+- **THE LONGSHIP ON THE HOLDFAST** (`THE-FUN-PASS` §2's first stranger).
+  `longshipTexture` in three poses (beached, rowing, roaring), a
+  `Creature` fourteen wide. Her day is `shipAt(h)`, pure: rows in from
+  the offing (−334, −96) from six to seven and beaches at the berth
+  (−264, −46); out at a quarter to twelve; **in the regatta from noon
+  to half past one**, round the mark with the fleet under a striped
+  sail; back on the Holdfast by a quarter to two. Registered as
+  `the-longship-in` / `-out` on `events.ts`, so the map and the tool
+  know where she is.
+- **THEY ROAR AND CANNOT LAND.** Beached, with the walker on the sand
+  east of x −250 and within forty-six of the berth, seven until eight
+  at night, they roar every nine to fifteen seconds (`viking-roar`,
+  an `earshot.ts` row on the Holdfast, r 46). A threat the first time
+  and a joke by the third: the berth is this land's and the sand is
+  LONGSHORE's, and `check-verbs` §10 asserts her eastmost x stays
+  under −252 through the whole day. Nothing says so in the world.
+  Blow the horn on the point and they answer, from wherever they are.
+- **WREN** (`THE-WAITS` §6), drawn (`wrenTexture`, `wrenBoatTexture`).
+  Her punt is drawn up at the bar's root on sand, not in the water;
+  she mends beside it in the morning, **rows out to the mark at 11.6**
+  (`wren-rows`, `oar` row at (−282, 34)) and sits by the bell through
+  the race, and rows out again at six. **The wait, with two doors**,
+  on `route:the-bar`: THE PUNT is a card. *A second mark* —
+  `door:the-second-mark` — puts a buoy at (−266, −16), inside the bar's
+  arm, and she rows to that one, and the fleet's course turns at it.
+  *The fleet finished* — `door:the-fleet-finished` — and there is no
+  race: the four boats lie at anchor by the second mark and Wren's
+  afternoon row is a stop at 24.5 that never comes (`WREN_NEVER`).
+  Either answers the wait.
+- **THE FLEET MINDS ITS OWN RACE.** Row the rowboat into the regatta
+  (`rowboat` in `Boat.ts` is read by the land): the nearest racer
+  within nine bears away and its halyard rattles. Nothing collides
+  and nothing stops.
+- **THE STONE.** `bar-stone` is a carriable on the crest (`skims: 3`).
+  Thrown at the water at a run it skips — `things.skip`, each hop
+  sixty-two hundredths of the last — three times and in
+  (`stone-skip`; rings from `things.splashes`). The morning puts it
+  back on the crest.
+- **THE THING UNDER THE WIDE BLUE.** The-deep surfaces every third
+  dusk (`day % 3 === 0`) and on no other; **the morning after, the
+  seals do not haul out on the bar**, and nothing says why. It is
+  never in frame whole and it has no note.

@@ -50,7 +50,7 @@ for (const vp of VIEWPORTS.filter((v) => !process.env.VIEWPORT || v.name === pro
   await page.goto(url, { waitUntil: 'networkidle' });
   await page.bringToFront();
   await page
-    .waitForFunction(() => document.body.innerText.toLowerCase().includes('set out'), { timeout: 15000 })
+    .waitForSelector('.title-veil:not(.gone)', { timeout: 15000 })
     .catch(() => {});
   await page.evaluate(() => window.__inklands.begin());
   await page.waitForTimeout(2600);

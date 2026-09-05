@@ -104,9 +104,7 @@ export async function shoot({ out, framings, url, map = false, hour, extra, bear
     await page.screenshot({ path: `${dir}/00a-loader.png` });
 
     await page
-      .waitForFunction(() => document.body.innerText.toLowerCase().includes('set out'), {
-        timeout: 15000,
-      })
+      .waitForSelector('.title-veil:not(.gone)', { timeout: 15000 })
       .catch(() => {});
     await page.waitForTimeout(900);
     await page.screenshot({ path: `${dir}/00b-title.png` });

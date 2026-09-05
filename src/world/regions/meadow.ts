@@ -129,11 +129,20 @@ const FENCE_Z = 64.5;
 const HEDGE_X = -12;
 const GATE = { x: HEDGE_X, z: 82 };
 const STILE = { x: 12.6, z: 63.8 };
-/** In frame from the spawn on both rigs: nine units east and ten north
- *  of where you wake, on the edge of portrait's frame and well inside
- *  desktop's. The gate is due west, so the run is away from it and it
- *  comes at you from your right and stays there. */
-const BULL_HOME = { x: 33, z: 80 };
+/** In frame from the spawn on both rigs: nine units east and twelve
+ *  north of where you wake (the spawn is on the gate's row now), on
+ *  the edge of portrait's frame and well inside desktop's. The gate is due west, so the run is away from it
+ *  and it comes at you from your right — and from the NORTH of your
+ *  row, since the local QA pass (2026-09-04, B1): the camera looks
+ *  north and its bottom edge is three units behind the walker, so a
+ *  bull that came in dead east stayed off the bottom of the desktop
+ *  frame for the whole run. It starts further north, and it charges
+ *  the walker's north shoulder (below), so the chase crosses the
+ *  picture instead of happening under it. */
+const BULL_HOME = { x: 33, z: 70 };
+/** How far off the walker the bull runs at: it aims a stride and a
+ *  half to the side of you that is in the frame, never at you. */
+const BULL_SHOULDER = 2.4;
 
 /* THE FENCE IS A RULE FOR THE WALKER, since Session 16 (`barriers.ts`).
  * One segment the length of the drawn run, a stile you can always get
@@ -403,7 +412,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
 
   /* ---- THE OLD WELL ----------------------------------------------- */
   ctx.decal(wornGroundDecal(410), 9, 8, WELL.x, WELL.z, 1.2, 0.6);
-  ctx.standee(commonWellTexture(411), 4.4, 5.5, WELL.x - 1, WELL.z - 1);
+  ctx.standee(commonWellTexture(411), 4.4, 5.5, WELL.x - 1, WELL.z - 1, { solid: 1.4 });
   /* THE ROPE AND THE BUCKET (Session 15), the visible half of the
    * well's answer. Hung from the windlass — 95 of 240 down the well's
    * canvas, which is 3.32 units up on a 5.5-unit standee — a hair
@@ -426,9 +435,10 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   for (const m of [bucketMat, ropeMat]) m.transparent = true;
 
   /* ---- THE ARGUING OAKS ------------------------------------------- */
-  ctx.standee(commonOakTexture(420, 0), 11.5, 12.9, OAKS.x - 6, OAKS.z - 3);
-  ctx.standee(commonOakTexture(421, 1), 10.2, 11.5, OAKS.x + 8, OAKS.z + 3.5);
-  ctx.standee(commonOakTexture(422, 2), 10.8, 12.2, OAKS.x - 1, OAKS.z + 10);
+  // a trunk under a canopy: the footprint is the trunk (B2)
+  ctx.standee(commonOakTexture(420, 0), 11.5, 12.9, OAKS.x - 6, OAKS.z - 3, { solid: 0.9 });
+  ctx.standee(commonOakTexture(421, 1), 10.2, 11.5, OAKS.x + 8, OAKS.z + 3.5, { solid: 0.9 });
+  ctx.standee(commonOakTexture(422, 2), 10.8, 12.2, OAKS.x - 1, OAKS.z + 10, { solid: 0.9 });
   ctx.decal(leafLitterDecal(423), 9, 5.5, OAKS.x - 3, OAKS.z + 2, 0.4, 0.7);
   ctx.decal(leafLitterDecal(424), 7, 4.5, OAKS.x + 5, OAKS.z + 6, 1.7, 0.6);
   ctx.decal(wornGroundDecal(425), 6, 5, OAKS.x + 7.5, OAKS.z + 1.5, 0.2, 0.5);
@@ -658,7 +668,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
     for (let i = 0; i < 26; i++) {
       const a = gr() * Math.PI * 2;
       const d = 1.6 + Math.pow(gr(), 0.7) * 6.5;
-      pts.push([24 + Math.cos(a) * d, 90 + Math.sin(a) * d * 0.7]);
+      pts.push([24 + Math.cos(a) * d, 82 + Math.sin(a) * d * 0.7]);
     }
     const f = ctx.field(tallGrassTexture(1602), pts.length,
       { w: 1.9, h: 1.9, wind: { amp: 0.11, freq: 0.95 } });
@@ -739,11 +749,28 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       }
     } else if (B.state === 'charge') {
       const speed = 8.4;
-      const ux = (px - B.x) / Math.max(1e-3, bd);
-      const uz = (pz - B.z) / Math.max(1e-3, bd);
+      /* IT RUNS AT YOUR SHOULDER, NOT AT YOU — and at the shoulder the
+       * camera can see. The line of approach is walker-minus-bull; the
+       * bull aims a stride and a half off that line on the NORTH side
+       * (the frame's top is north, its bottom is under the walker's
+       * feet), or on the east side when it is coming straight up the
+       * page. So a bull chasing a walker who runs west is beside them
+       * in the picture the whole way, on both rigs, and it still never
+       * touches them: the nearest it ever stands is the shoulder. */
+      const ax = (px - B.x) / Math.max(1e-3, bd);
+      const az = (pz - B.z) / Math.max(1e-3, bd);
+      let sx = -az;
+      let sz = ax;
+      if (sz > 0) { sx = -sx; sz = -sz; }
+      if (Math.abs(sz) < 0.3 && sx < 0) { sx = -sx; sz = -sz; }
+      const tx = px + sx * BULL_SHOULDER;
+      const tz = pz + sz * BULL_SHOULDER;
+      const td = Math.hypot(tx - B.x, tz - B.z);
+      const ux = (tx - B.x) / Math.max(1e-3, td);
+      const uz = (tz - B.z) / Math.max(1e-3, td);
       B.face = ux < 0 ? -1 : 1;
       /* IT NEVER TOUCHES YOU: it will not step inside two strides. */
-      const step = Math.min(speed * dt, Math.max(0, bd - 2.3));
+      const step = Math.min(speed * dt, Math.max(0, td), Math.max(0, bd - 2.3));
       const [nx, nz] = clampField(B.x + ux * step, B.z + uz * step);
       const moved = Math.hypot(nx - B.x, nz - B.z);
       B.stride += moved;
@@ -754,7 +781,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
          * it stops dead, and says so. */
         B.state = 'fence'; B.t = 0;
         say('bull-snort');
-      } else if (bd <= 2.35) {
+      } else if (bd <= 2.35 || td < 0.35) {
         B.state = 'balk'; B.t = 0; B.balks++;
         say('bull-snort');
       } else if (!walkerIn && bd > 14) {
@@ -810,15 +837,22 @@ export const buildMeadow: RegionBuilder = (ctx) => {
     const nearRoad = Math.hypot(px - NELL.x, pz - NELL.z) < 15 && px < HEDGE_X;
     const coming = B.state === 'charge' || (B.state === 'fence' && B.t < 2.5);
     const through = px < HEDGE_X - 0.6;
-    const elsewhere = Math.abs(pz - GATE.z) > 6;
+    /* ELSEWHERE means OUT OF THE FIELD by another way: over the stile
+     * (north of the long fence), or already west of the hedge. It used
+     * to mean *more than six units off the gate's row*, and the spawn
+     * row is eight units off it — so a walker who did exactly what the
+     * hint said and ran due west from the bull had the gate shut in
+     * their face at x = −9.4, still inside the field (the local QA
+     * pass, 2026-09-04, B1). A walker who is still in the field is
+     * heading for the gate by definition, and the slam waits for them. */
+    const elsewhere = pz < FENCE_Z + 0.5 || px < HEDGE_X;
     const toHedge = B.x - HEDGE_X;
     if (!common.gate.shut && coming && toHedge > 0
       && ((through && toHedge < 16) || (elsewhere && toHedge < 5))) {
       /* THE SLAM: once you are through and it is coming — never in your
-       * face — or, if you went over the stile or are being chased along
-       * the fence, when it is all but at the rails. Never with anybody
-       * standing in the gap: a gate shut on the walker would leave them
-       * inside a rule with no way out. */
+       * face — or, if you went over the stile, when it is all but at
+       * the rails. Never with anybody standing in the gap: a gate shut
+       * on the walker would leave them inside a rule with no way out. */
       const inGap = Math.abs(pz - GATE.z) < gateGap.r + 0.6 && Math.abs(px - HEDGE_X) < 2.2;
       if (!inGap) {
         common.gate.shut = true;

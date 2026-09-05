@@ -216,3 +216,42 @@ everything on the height field, and `lieOnGround` already lays the deck
 decals along the ledge and the dune. The only shared need is with THE
 WIDE BLUE: both lands want `Audio.surge()` and `Audio.glide()`, which
 are instruments, not scores.
+
+## Session 19 addendum — the surfers, the horn and Pye (2026-09-04)
+
+- **THE SURFERS AT THE CUT** (`THE-FUN-PASS` §2's second stranger; C
+  in `THE-STRANGERS`). On the shelf of sand under the point: **a van**
+  (`surfVanTexture`, solid), **a rack** with boards in it, **a wetsuit
+  on a line**, and two people (`surferDay` on `events.ts`, 6.05 and
+  17.55) who come out of the van, walk to the water's edge, stand and
+  look at the sea, walk back and sit on the step. They never go in.
+  At 19.2 the van's side window lights; at seven the jetty lamp at
+  the promenade's end lights too (`the-van-light`, `the-jetty-lamp`
+  events), the coast's first lit interior after dark.
+- **THE ERRAND.** `the-board` is a carriable (`things.ts`) lying on the
+  wrack by the boardwalk. Carried within six and two tenths of the
+  rack it is racked: `fact:the-board-racked`, `board-knock`, and the
+  board stands in the rack from then on. The van's note (THE VAN,
+  reach five — **not eight**: the rack is five from the van and a
+  prompt may not cover another thing's goal) is the sticker. No
+  reward but the rack.
+- **THE HORN** on the point beside the cairn (`hornTexture`, a standee
+  at (−233, −76.4)). BLOW THE HORN: `horn`, and a beat and a half later
+  **the Vikings answer from wherever they are** — beached, rowing, or
+  round the mark — with `viking-roar`, and the gulls lift off the
+  point. A toy: no count, no end.
+- **PYE** (`THE-WAITS` §5), drawn (`pyeTexture`: standing, rowing,
+  bent at the pots) with his boat (`pyeBoatTexture`). `PYE_DAY`: rows
+  the seven-pot line out of Shelter Cove at 6.55 and again at 18.35,
+  pausing at each buoy (`oar`, an `earshot.ts` row); mends at the
+  pots on the sand between; sits on the gunwale in the afternoon.
+  **The wait, with two doors**, opened by `name:the-mark` (the bell
+  buoy's note): COUNT THE POTS becomes a card. *Tell him the mark's
+  name* — `door:the-eighth-pot` — and there is an eighth pot at
+  (−247.6, −167.5), further out than he ever rowed, and he rows to it.
+  *Haul the pots* — `door:the-pots-hauled` — and the line is empty,
+  the pots are stacked on the sand and his day has no row in it
+  (`PYE_HAULED`). Either answers the wait for the 8:15. Nothing says
+  which was right.
+- **Sound**: `horn`, `board-knock`, `viking-roar` (its place is the
+  Holdfast's, `earshot.ts`), `oar` at the cove.

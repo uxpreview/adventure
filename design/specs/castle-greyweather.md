@@ -246,3 +246,51 @@ said READ THE PLINTH.
 
 **Shot:** `tools/shoot-session15.mjs` frames 10–19, both doors, both
 viewports, the restored avenue at dusk.
+
+## Session 19 addendum — Wick, the stone, the portcullis and the red (2026-09-04)
+
+The land was flat cards on empty ground until this session, and the
+QA pass said so. What changed, and where it lives (`civic.ts`, castle
+half; `textures-oldworld.ts`):
+
+- **THE STONE.** `greyweatherKeepTexture` has courses, quoins, a plinth
+  course and a damp stain at the foot. The bailey has a yard drawn on
+  it (`baileyYardDecal` ×3, wear and scree at the keep's foot) and
+  furniture that refuses a foot: a trough, a timber stack, two crates.
+  Every wall, tower, gate and the keep is `solid` (Session 19's
+  barrier pass, `regions/index.ts`), with the gate arch left as a gap.
+- **WICK** (`THE-WAITS` §1), drawn at last (`wickTexture`, five poses:
+  standing, carrying a rolled banner, resting with it across his
+  knees, reaching at a pole, bent at the pool). His morning is
+  `WICK_MORNING` on `events.ts`: out of his door in the outer bailey
+  at 5.3 with the week's banner rolled, **resting on the avenue's
+  verge at 5.55** (C12, the encounter Session 18 deferred), at the
+  bottom pole by a quarter past six, down to the moat pool with the
+  old cloth by ten to seven, home by half past eight. `WICK_EVENING`
+  is the same walk the other way at half past five. Both are pure
+  functions of the hour.
+- **THE WAIT, with two doors.** Wick's wait is *has anybody a colour
+  that is not the king's*. Read the square in Brim (the near stall's
+  red cloth is `fact:brim-red` now) and come within eighteen of the
+  avenue's bend with it: `reason:the-fifth-banner` is learned, and
+  **a fifth banner in Brim's red stands on a pole of its own at
+  (−68.5, −200)**, west of the gate where the avenue's last bend looks
+  straight at it. It is the first time two lands are in one frame and
+  neither crossed anything. If the king is put back
+  (`door:the-king-restored`, Session 15) the fifth pole stands bare
+  with the rest, and Wick's routine is `WICK_RELIEVED_AM/PM`: the
+  same doors, no banner, no pole, no pool — a man with nothing to
+  carry, which is what *relieved* draws.
+- **THE PORTCULLIS** is the castle's toy (`portcullisTexture`, a
+  standee in the gate arch). RATTLE THE PORTCULLIS drops it over
+  three tenths of a second, holds it down, and it goes back up on its
+  own by five seconds; the braziers gutter while it is down. No score.
+- **THE MOAT IS RED TWO DAYS IN NINE** (`moatRed(day)`: days 1 and 2
+  of every nine off `clock.day`), the `dyeStain` pool at the ridge's
+  west foot. After dark on a red day, within twenty-six of the pool,
+  something moves in the water (`moat-slop`, every eleven to eighteen
+  seconds) and the reeds shiver. The note reads the day. **Nothing
+  says why**, and nothing ever will (`THE-FUN-PASS` §2).
+- **Sound**: `portcullis`, `moat-slop` in `Audio.ts`; the moat's is an
+  `earshot.ts` row by law. The avenue's `banner-snap` still stops when
+  the banners come down.

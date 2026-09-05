@@ -42,6 +42,7 @@ import {
   toppledStatueTexture, gnarledHawthornTexture, farPinesTexture, rookTexture,
   screeDecal, margetStallTexture, margetTexture, marketBoardTexture,
   standingKingTexture, barePoleTexture, dyeStainDecal, townRowShutTexture,
+  wickTexture, brimBannerTexture, portcullisTexture, troughTexture, timberStackTexture, baileyYardDecal,
 } from '../textures-oldworld';
 import {
   handcartTexture, childTexture, catTexture, batTexture, lanternGlowTexture,
@@ -220,13 +221,13 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     if (segW < 4) { wx += segW; continue; }
     const segH = 5.0 + r() * 0.9;
     ctx.standee(brimWallTexture(800 + si), segW + 1.2, segH, wx + segW / 2,
-      -13 + (r() - 0.5) * 1.6);
+      -13 + (r() - 0.5) * 1.6, { solid: true });
     wx += segW;
     si++;
   }
   [-116, -76, -16, 24].forEach((tx, i) =>
-    ctx.standee(wallTowerTexture(880 + i), 6.4, 8.2, tx + (r() - 0.5) * 3, -11.6));
-  const southGate = ctx.standee(brimGateTexture(810), 13, 13, -45, -12.5);
+    ctx.standee(wallTowerTexture(880 + i), 6.4, 8.2, tx + (r() - 0.5) * 3, -11.6, { solid: true }));
+  const southGate = ctx.standee(brimGateTexture(810), 13, 13, -45, -12.5, { solid: { gap: 3.2 } });
   const pennantL = ctx.standee(gatePennantTexture(811), 1.5, 3, -49.1, -13.2);
   const pennantR = ctx.standee(gatePennantTexture(812), 1.5, 3, -40.9, -13.0);
   ctx.hang(pennantL, 10.3);
@@ -247,7 +248,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     [-6, -108, 26, 0.14], [22, -114, 24, -0.1],
   ];
   terraces.forEach(([x, z, w, rot], i) =>
-    ctx.standee(townRowTexture(1400 + i), w, w * (288 / 512), x, z, { rotY: rot }));
+    ctx.standee(townRowTexture(1400 + i), w, w * (288 / 512), x, z, { rotY: rot, solid: true }));
   /* THE WINDOWS COME ON. One run of panes per terrace, hung a hair in
    * front of the row it belongs to and lit by the same clock as the
    * lamps. Never all of them: a street where every window is lit is a
@@ -300,8 +301,12 @@ export const buildKingdom: RegionBuilder = (ctx) => {
 
   /* -- BRIM SQUARE --------------------------------------------------- */
   ctx.decal(cobblePlazaDecal(1450), 32, 32, -45, -81, 0.2, 0.85);
-  ctx.standee(brimFountainTexture(1452), 7, 7, -45, -81);
-  ctx.standee(marketCrossTexture(1453), 3.4, 5.95, -35, -71);
+  /* THE FOUNTAIN STANDS ON THE KING'S ROAD, and stops you (B2): the
+   * road was drawn through the square before the square had a
+   * fountain, and a fountain you walk through is the worse of the two
+   * faults. You go round it, the way a road round a square does. */
+  ctx.standee(brimFountainTexture(1452), 7, 7, -45, -81, { solid: { hw: 2.4, keep: true } });
+  ctx.standee(marketCrossTexture(1453), 3.4, 5.95, -35, -71, { solid: 0.9 });
   const stalls: [number, number, 0 | 1 | 2, number][] = [
     [-57, -90, 0, 0.5], [-59, -77, 1, 0.85], [-55, -67, 2, 1.05],
     [-33, -91, 1, -0.45], [-31, -70, 2, -0.75],
@@ -368,7 +373,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   for (const b of bunting) ctx.hang(b, 1.75);
 
   /* -- THE BELFRY YARD (open to the south — the camera needs in) ----- */
-  ctx.standee(brimBelfryTexture(1480), 6.5, 13, -66, -44);
+  ctx.standee(brimBelfryTexture(1480), 6.5, 13, -66, -44, { solid: true });
   ctx.decal(stoneWearDecal(1481, true), 9, 7, -66, -38, 0.7, 0.6);
   ctx.standee(benchTexture(1482), 3.2, 1.6, -61, -40, { rotY: -0.3 });
   ctx.decal(stoneWearDecal(1483, true), 7, 5, -58, -34, 1.4, 0.45);
@@ -413,13 +418,13 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     if (wz + segW > -22) segW = -22 - wz;
     if (segW < 4) { wz += segW; continue; }
     ctx.standee(brimWallTexture(1520 + ei), segW + 1.2, 5 + r() * 0.8,
-      56 + (r() - 0.5) * 1.4, wz + segW / 2, { rotY: Math.PI / 2 });
+      56 + (r() - 0.5) * 1.4, wz + segW / 2, { rotY: Math.PI / 2, solid: true });
     wz += segW;
     ei++;
   }
-  ctx.standee(wallTowerTexture(1540), 6.2, 8, 57, -140 + (r() - 0.5) * 3, { rotY: Math.PI / 2 });
-  ctx.standee(wallTowerTexture(1541), 6.2, 8, 56.5, -58 + (r() - 0.5) * 3, { rotY: Math.PI / 2 });
-  ctx.standee(woodGateTexture(1542), 12, 12, 56, -110, { rotY: Math.PI / 2 });
+  ctx.standee(wallTowerTexture(1540), 6.2, 8, 57, -140 + (r() - 0.5) * 3, { rotY: Math.PI / 2, solid: true });
+  ctx.standee(wallTowerTexture(1541), 6.2, 8, 56.5, -58 + (r() - 0.5) * 3, { rotY: Math.PI / 2, solid: true });
+  ctx.standee(woodGateTexture(1542), 12, 12, 56, -110, { rotY: Math.PI / 2, solid: { gap: 3.2 } });
 
   /* -- the north wall: the town closed toward the castle ------------- *
    * Collected, because since Session 4 the camera RETREATS when the
@@ -438,13 +443,13 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     if (wx + segW > 56) segW = 56 - wx;
     if (segW < 4) { wx += segW; continue; }
     northRun.push(ctx.standee(brimWallTexture(1550 + ni), segW + 1.2, 4.8 + r() * 0.8, wx + segW / 2,
-      -157 + (r() - 0.5) * 1.4));
+      -157 + (r() - 0.5) * 1.4, { solid: true }));
     wx += segW;
     ni++;
   }
-  northRun.push(ctx.standee(wallTowerTexture(1570), 6.2, 8, -100 + (r() - 0.5) * 3, -155.6));
-  northRun.push(ctx.standee(wallTowerTexture(1571), 6.2, 8, -6 + (r() - 0.5) * 3, -155.8));
-  const northGate = ctx.standee(brimGateTexture(1572), 11.5, 11.5, -45, -156.5);
+  northRun.push(ctx.standee(wallTowerTexture(1570), 6.2, 8, -100 + (r() - 0.5) * 3, -155.6, { solid: true }));
+  northRun.push(ctx.standee(wallTowerTexture(1571), 6.2, 8, -6 + (r() - 0.5) * 3, -155.8, { solid: true }));
+  const northGate = ctx.standee(brimGateTexture(1572), 11.5, 11.5, -45, -156.5, { solid: { gap: 3.0 } });
   ctx.decal(wheelRutsDecal(1573), 11, 5.5, -45, -148, Math.PI / 2, 0.6);
 
   /* -- folk and the four gate banners -------------------------------- */
@@ -745,7 +750,10 @@ export const KINGDOM_POIS: WorldPOI[] = [
     prompt: 'LISTEN TO THE FOUNTAIN',
     note: {
       title: 'brim square',
-      body: 'the fountain has run since before the walls did. the stalls are set out, the bunting is up, and there is nothing on any of the counters, because market day here has been next week for a long time.',
+      body: 'the fountain has run since before the walls did. the stalls are set out, the bunting is up, and there is nothing on any of the counters, because market day here has been next week for a long time. the cloth on the near stall is a red that has been red for longer than the walls, and it is the same red as somewhere else.',
+      /* MARGET'S CLOTH IS BRIM'S RED (`THE-WAITS` §1, Session 19): the
+       * fact Wick's wait turns on, carried out of this square. */
+      learns: ['fact:brim-red'],
     },
   },
   {
@@ -795,6 +803,49 @@ export const KINGDOM_POIS: WorldPOI[] = [
  * parliament of rooks, and the keep — the tallest drawing on the
  * sheet — stands at the end of it with its door shut.
  * ================================================================== */
+
+/* ================================================================== *
+ * WICK (Session 19, `THE-WAITS` §1). He changes the banners on the
+ * avenue, every day, alone. Nobody has told him the king is not coming
+ * back; he knows. There have never been any spares: four banners,
+ * washed and re-dyed and re-hung, the red gone through pink and back
+ * more times than anybody has counted. He is not keeping a vigil and
+ * he is not grieving. He is on duty, and nobody has ever come to
+ * relieve him.
+ *
+ * His first routine is `THE-STRANGERS` C12, *Wick, halfway up the
+ * avenue, resting, at dawn*, which Session 18 deferred to him: out of
+ * the keep before first light with a rolled banner over his shoulder,
+ * a rest on the verge halfway up, the pole at the avenue's foot, the
+ * pool to dye, and back. And again in the evening, the other side.
+ *
+ * RELIEVED OF DUTY (the second door, `door:the-king-restored`): he has
+ * nothing to do. He sits at the plinth's foot at the hours he used to
+ * change the banners, and his platform at the end is empty for a
+ * different reason.
+ * ================================================================== */
+const WICK_DOOR = { x: -45, z: -245.5 };
+const WICK_REST = { x: -37.5, z: -184 };
+const WICK_POLE_W = { x: -52.5, z: -173 };
+const WICK_POLE_E = { x: -38.6, z: -196.5 };
+const WICK_POOL = { x: -94.5, z: -209.5 };
+const WICK_PLINTH = { x: -59, z: -225.5 };
+const WICK_MORNING = { id: 'wick', land: 'castle' as const, pace: 190, walkPose: 4, stops: stops([
+  [5.3, WICK_DOOR.x, WICK_DOOR.z, 4, 1], [5.55, WICK_REST.x, WICK_REST.z, 3, -1, 0.5],
+  [6.25, WICK_POLE_W.x, WICK_POLE_W.z, 0, 1, 0.3], [6.9, WICK_POOL.x, WICK_POOL.z, 2, -1, 1.1],
+  [8.3, WICK_DOOR.x, WICK_DOOR.z, 4, 1, 0.02],
+]) };
+const WICK_EVENING = { id: 'wick-evening', land: 'castle' as const, pace: 190, walkPose: 4, stops: stops([
+  [17.4, WICK_DOOR.x, WICK_DOOR.z, 4, -1], [17.7, WICK_POLE_E.x, WICK_POLE_E.z, 0, -1, 0.3],
+  [18.2, WICK_REST.x, WICK_REST.z, 3, 1, 0.4], [18.9, WICK_DOOR.x, WICK_DOOR.z, 4, 1, 0.02],
+]) };
+const WICK_RELIEVED_AM = stops([[6.0, WICK_DOOR.x, WICK_DOOR.z, 0, 1], [6.3, WICK_PLINTH.x, WICK_PLINTH.z, 3, 1, 3.0], [9.5, WICK_DOOR.x, WICK_DOOR.z, 0, -1, 0.02]]);
+const WICK_RELIEVED_PM = stops([[17.4, WICK_DOOR.x, WICK_DOOR.z, 0, 1], [17.7, WICK_PLINTH.x, WICK_PLINTH.z, 3, 1, 1.2], [19.1, WICK_DOOR.x, WICK_DOOR.z, 0, -1, 0.02]]);
+/** THE MOAT POOL GOES RED FOR TWO DAYS IN EVERY NINE (`THE-FUN-PASS`
+ *  §10 THE MONSTERS): Wick's dye, or not. A pure function of the day. */
+export const moatRed = (day: number) => day % 9 === 1 || day % 9 === 2;
+/** The portcullis, for the touch at the gate. */
+const portcullis = { at: -1e9 as number };
 
 export const buildCastle: RegionBuilder = (ctx) => {
   const { r } = ctx;
@@ -871,7 +922,7 @@ export const buildCastle: RegionBuilder = (ctx) => {
     if (segW < 4) { wx += segW; continue; }
     const cx = wx + segW / 2;
     const wz = lipZ(cx, 11.8) - 1.4;
-    wallRun.push(ctx.standee(ridgeWallTexture(948 + si), segW + 1.2, 6.4 + r() * 0.9, cx, wz));
+    wallRun.push(ctx.standee(ridgeWallTexture(948 + si), segW + 1.2, 6.4 + r() * 0.9, cx, wz, { solid: true }));
     wallFeet.push([cx, wz]);
     wx += segW;
     si++;
@@ -887,14 +938,23 @@ export const buildCastle: RegionBuilder = (ctx) => {
     }
   });
   // drum towers pinch the gate: the wall's two ends are the gatehouse
-  const towerL = ctx.standee(wallTowerTexture(960), 5.6, 8.4, gapL - 1.5, lipZ(gapL - 1.5, 11.8) - 2.2);
-  const towerR = ctx.standee(wallTowerTexture(961), 5.6, 8.4, gapR + 1.5, lipZ(gapR + 1.5, 11.8) - 2.2);
+  const towerL = ctx.standee(wallTowerTexture(960), 5.6, 8.4, gapL - 1.5, lipZ(gapL - 1.5, 11.8) - 2.2, { solid: true });
+  const towerR = ctx.standee(wallTowerTexture(961), 5.6, 8.4, gapR + 1.5, lipZ(gapR + 1.5, 11.8) - 2.2, { solid: true });
   wallRun.push(towerL, towerR);
 
   /* -- THE BARBICAN: low on the ramp, so the ridge can rise behind it *
    * Its height is not the point and never was — it is the FIRST of the
    * approach's three beats, and the ridge does the rest. */
-  const gate = ctx.standee(greyweatherGateTexture(970), 9.5, 9.5, -45, -192);
+  const gate = ctx.standee(greyweatherGateTexture(970), 9.5, 9.5, -45, -192, { solid: { gap: 2.6 } });
+  /* THE PORTCULLIS THAT COMES DOWN A FOOT (Session 19; the castle's
+   * toy, `QUESTS` §8): a grid hung in the arch, raised; rattle it and
+   * it drops a stride and stops, and the winch takes it back up over
+   * a few seconds, and the braziers gutter. Repeatable, no score. */
+  const portcullisMesh = ctx.standee(portcullisTexture(1015), 3.3, 4.4, -45, -191.4);
+  const portcullisY = ctx.groundY(-45, -191.4) + 3.1;
+  portcullisMesh.position.y = portcullisY;
+  (portcullisMesh.material as THREE.MeshBasicMaterial).depthWrite = false;
+  portcullisMesh.renderOrder = 2;
   /* TWO BRAZIERS AT THE GATE, and they are the castle's only lit
    * things. Wick changes the banners on the avenue every day and
    * nobody has told him the king is not coming back (STORY §7) — so
@@ -908,7 +968,24 @@ export const buildCastle: RegionBuilder = (ctx) => {
   });
 
   /* -- THE KEEP: on the plateau, where the high seat belongs --------- */
-  const keep = ctx.standee(greyweatherKeepTexture(980), 34, 17, -45, -250);
+  const keep = ctx.standee(greyweatherKeepTexture(980), 34, 17, -45, -250, { solid: true });
+  /* THE KEEP STANDS ON SOMETHING (Session 19, the local QA pass §4:
+   * *flat cards on empty ground*). Its foot is drawn: worn stone the
+   * width of it, scree in the angles, and the bailey's own floor —
+   * cobbles with cart tracks, a puddle, straw — laid over the whole
+   * plateau instead of two plates in the middle of it. */
+  ctx.decal(stoneWearDecal(1020), 34, 9, -45, -248.6, 0.02, 0.5);
+  ctx.decal(screeDecal(1021), 11, 5.5, -63, -248.4, 0.3, 0.5);
+  ctx.decal(screeDecal(1022), 10, 5, -27, -248.2, -0.4, 0.5);
+  ctx.decal(baileyYardDecal(1023), 62, 46, -45, -233, 0.03, 0.72);
+  ctx.decal(baileyYardDecal(1024), 40, 30, -60, -246, 0.9, 0.6);
+  ctx.decal(baileyYardDecal(1025), 38, 30, -26, -244, 2.1, 0.55);
+  // and the furniture of a yard that is used: a trough, timber that
+  // was going to be something, more of the stone nobody built with
+  ctx.standee(troughTexture(1026), 3.6, 1.6, -35, -236.5, { rotY: 0.3, solid: 1.6 });
+  ctx.standee(timberStackTexture(1027), 4.4, 2.2, -62.5, -243.5, { rotY: -0.2, solid: 2.0 });
+  ctx.standee(crateBarrelTexture(1028), 3.2, 2.3, -27.5, -244.5, { rotY: 0.6, solid: 1.4 });
+  ctx.standee(crateBarrelTexture(1029), 2.8, 2.0, -64, -218.5, { rotY: -0.7, solid: 1.2 });
   /* THE KEEP'S TWO BANNERS, and the poles they come down to. Session
    * 15: every banner in the land has a bare pole under it, because the
    * second door at this castle takes the banners down (`THE-FUN-PASS`
@@ -924,7 +1001,7 @@ export const buildCastle: RegionBuilder = (ctx) => {
   ];
   // the bailey's furniture: the castle well, and stone that never
   // got built into anything
-  ctx.standee(wellTexture(983), 3.4, 4.3, -32, -228);
+  ctx.standee(wellTexture(983), 3.4, 4.3, -32, -228, { solid: 1.2 });
 
   /* -- THE BANNER AVENUE: pairs tightening up the climb --------------- */
   const avenue: [number, number][] = [];
@@ -953,6 +1030,15 @@ export const buildCastle: RegionBuilder = (ctx) => {
     pts.forEach(([x, z], i) => bare.set(i, x, z, scales[i], 0, false));
     avenuePoles.push(bare);
   }
+  /* THE FIFTH BANNER (Session 19, `THE-WAITS` §1): Brim's colours on a
+   * pole of its own at the avenue's head, up the morning after Brim's
+   * red comes up the avenue — and down, like every other, if the king
+   * is put back. The first time two lands are in one frame and neither
+   * crossed anything to do it. */
+  const fifthBanner = ctx.standee(brimBannerTexture(1030), 2.3, 6.1, -68.5, -200);
+  const fifthPole = ctx.standee(barePoleTexture(1031), 2.3, 6.1, -68.5, -200);
+  fifthBanner.visible = false;
+  fifthPole.visible = false;
   // fallen merlon stones at the verge, and the approach's wear
   const rocks = ctx.field(boulderTexture(920), 15, { w: 2.6, h: 1.8 });
   [[-56, -175], [-33, -186], [-59, -190], [-30, -172], [-62, -226], [-24, -238], [-70, -182], [12, -220],
@@ -988,8 +1074,10 @@ export const buildCastle: RegionBuilder = (ctx) => {
     [-108, -212, 1], [-104, -221, 0.85], [-96, -222, 1.05], [-92, -214, 0.8],
     [-106, -207, 0.9], [-95, -208, 0.7], [-110, -218, 0.9], [-99, -224, 0.75],
   ];
+  const reeds: THREE.Mesh[] = [];
   reedSpots.forEach(([x, z, s], i) =>
-    ctx.standee(reedsTexture(992 + (i % 2)), 3.4 * s, 3.4 * s, x, z));
+    reeds.push(ctx.standee(reedsTexture(992 + (i % 2)), 3.4 * s, 3.4 * s, x, z)));
+  const moat = { next: 14, shiver: 0 };
   ctx.standee(gnarledHawthornTexture(994), 9, 9, -90, -206);
   /* THIS WEEK'S RED. The moat pool is Wick's dye vat (`THE-WAITS` §1,
    * U5), and the water carries the last banner he re-dyed. It clears
@@ -1000,6 +1088,14 @@ export const buildCastle: RegionBuilder = (ctx) => {
    * a sixty-pixel sliver. Seven units west and six north, and smaller,
    * it is in the pool's own middle and in no protected frame. */
   const dye = ctx.decal(dyeStainDecal(1013), 12, 9, -108, -221, 0.4, 0.7);
+  /* AND THE RED THAT IS NOT WICK'S (Session 19, `THE-FUN-PASS` §10 THE
+   * MONSTERS): two days in every nine the whole pool goes red, from
+   * the reeds out, whether or not anybody has dyed anything, and at
+   * night on those days the water moves once against the reeds as if
+   * something had turned over in it. It clears on the third morning.
+   * Nothing says what it is. */
+  const redPool = ctx.decal(dyeStainDecal(1032), 22, 16, -100, -215, 1.1, 0.78);
+  redPool.visible = false;
 
   /* -- the far layer: pale pines along the plateau's northern rim ---- */
   ctx.standee(farPinesTexture(995), 52, 13, -78, -272);
@@ -1065,6 +1161,11 @@ export const buildCastle: RegionBuilder = (ctx) => {
       [at + i * 0.01, -45 + (i ? 1.4 : -1.2), -166, 0, 1], [at + 0.12, -45 + (i ? 1.6 : -1.4), -193.5 + i * 0.6, 0, 1, 0.25],
       [at + 0.5, -45 + (i ? 1.4 : -1.2), -166, 0, -1, 0.02],
     ]) }, i ? 0 : 1)));
+  /* WICK (Session 19). His own drawings, on a routine, twice a day. */
+  const wickMaps = { 0: wickTexture(1040, 0), 1: wickTexture(1041, 1), 5: wickTexture(1042, 5), 3: wickTexture(1043, 3), 4: wickTexture(1044, 4) };
+  const wick = new Figure(ctx, WICK_MORNING, 0, { maps: wickMaps, scale: 1.0 });
+  const wickPm = new Figure(ctx, WICK_EVENING, 0, { maps: wickMaps, scale: 1.0 });
+  let wickRelieved = false;
   /* THE BATS over the moat pool at dusk, and THE ROOKS THAT CROSS
    * (`rooks.ts`): three that roost on the keep and spend the day on a
    * scarecrow in another land. Drawn here while they are nearer here. */
@@ -1097,6 +1198,59 @@ export const buildCastle: RegionBuilder = (ctx) => {
       dye.visible = !restored;
       // the parliament has nowhere to sit: it joins the loop for good
       if (restored) for (const p of perched) p.up = true;
+    }
+    /* THE FIFTH BANNER GOES UP (Session 19): you came up the avenue
+     * holding Brim's red, and the wait resolves the way every wait
+     * does — nothing asks, nothing confirms. Down again with the rest
+     * if the king is put back. */
+    if (!restored && !knowledge.has('reason:the-fifth-banner') && knowledge.has('fact:brim-red')
+      && Math.hypot(px + 45, pz + 186) < 18) {
+      knowledge.learn('reason:the-fifth-banner');
+    }
+    const fifth = knowledge.has('reason:the-fifth-banner');
+    fifthBanner.visible = fifth && !restored;
+    fifthPole.visible = fifth && restored;
+    if (restored !== wickRelieved) {
+      wickRelieved = restored;
+      // relieved of duty: the day is re-written in place
+      if (restored) {
+        WICK_MORNING.stops.splice(0, WICK_MORNING.stops.length, ...WICK_RELIEVED_AM);
+        WICK_EVENING.stops.splice(0, WICK_EVENING.stops.length, ...WICK_RELIEVED_PM);
+      }
+    }
+    {
+      const gone = platform.land === 'castle';
+      wick.tick(h, gone);
+      wickPm.tick(h, gone);
+    }
+    /* THE PORTCULLIS: down a stride in a third of a second, held, and
+     * winched back over four. The braziers gutter while it is down. */
+    {
+      if (portcullis.at === -2) portcullis.at = t;
+      const age = t - portcullis.at;
+      let drop = 0;
+      if (age < 0.3) drop = age / 0.3;
+      else if (age < 1.2) drop = 1;
+      else if (age < 5.2) drop = 1 - (age - 1.2) / 4;
+      portcullisMesh.position.y = portcullisY - drop * 1.3;
+      if (drop > 0.99 && age < 1.2) portcullisMesh.rotation.z = Math.sin(t * 40) * 0.006;
+      else portcullisMesh.rotation.z = 0;
+      if (age > 0 && age < 1.8) lightUp(braziers, clock.lamp * (0.55 + 0.45 * Math.abs(Math.sin(t * 17))));
+    }
+    /* THE MOAT'S RED DAYS. */
+    {
+      const red = moatRed(clock.day);
+      redPool.visible = red;
+      const night = h >= 20.5 || h < 5;
+      const near = Math.hypot(px + 100, pz + 215);
+      moat.shiver = Math.max(0, moat.shiver - dt);
+      if (red && night && near < 26) {
+        moat.next -= dt;
+        if (moat.next <= 0) { moat.next = 11 + Math.abs(Math.sin(t * 2.7)) * 7; moat.shiver = 0.7; say('moat-slop'); }
+      } else moat.next = Math.min(moat.next, 6);
+      for (let i = 0; i < reeds.length; i++) {
+        reeds[i].rotation.z = moat.shiver > 0 ? Math.sin(t * 26 + i) * 0.035 * moat.shiver : 0;
+      }
     }
 
     // the barbican's arch fade; the curtain wall lets go once the walker
@@ -1182,7 +1336,19 @@ export const CASTLE_POIS: WorldPOI[] = [
     },
   },
   {
-    x: -45, z: -192, radius: 8, label: 'THE GATEHOUSE',
+    /* THE PORTCULLIS, in reach in the arch itself; the gatehouse's note
+     * is three units up the ramp so the nearer thing wins there. */
+    x: -45, z: -190.6, radius: 2.8,
+    prompt: 'RATTLE THE PORTCULLIS',
+    touch: () => {
+      // due, not yet timed: the builder's clock is `t`, and the POI has
+      // no clock (the well's pattern, Session 15)
+      portcullis.at = -2;
+      say('portcullis');
+    },
+  },
+  {
+    x: -45, z: -195.5, radius: 8, label: 'THE GATEHOUSE',
     prompt: 'READ THE PROCLAMATION',
     note: {
       title: 'the proclamation',
@@ -1233,7 +1399,9 @@ export const CASTLE_POIS: WorldPOI[] = [
     x: -100, z: -215, radius: 8, label: 'THE MOAT POOL',
     note: {
       title: 'the moat pool',
-      body: 'the moat was started, got as far as one satisfying pool, and was left. the castle has decided it counts.',
+      body: () => (moatRed(clock.day)
+        ? 'the moat was started, got as far as one satisfying pool, and was left. the castle has decided it counts. the water is red today. it was not yesterday. nobody has said anything.'
+        : 'the moat was started, got as far as one satisfying pool, and was left. the castle has decided it counts.'),
     },
   },
 ];
@@ -1351,7 +1519,7 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
     const p = PLOTS[i];
     const w = p.kind === 1 ? 9.6 : 8.8;
     const h = p.kind === 1 ? 5.4 : p.kind === 2 ? 7.0 : 6.6;
-    ctx.standee(HOUSE[p.kind], w, h, p.x, p.z, { rotY: p.rot });
+    ctx.standee(HOUSE[p.kind], w, h, p.x, p.z, { rotY: p.rot, solid: true });
     if (p.lit) {
       const m = ctx.standee(HOUSE_LIT[p.kind], w, h, p.x, p.z, { rotY: p.rot, opacity: 0 });
       (m.material as THREE.MeshBasicMaterial).transparent = true;
@@ -1389,7 +1557,7 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
    * she is not holding a light for the people who left, she is holding
    * the street's line.
    * ================================================================ */
-  ctx.standee(valHouseTexture(8100), 10.6, 8.6, VAL.x, VAL.z);
+  ctx.standee(valHouseTexture(8100), 10.6, 8.6, VAL.x, VAL.z, { solid: true });
   const porch = ctx.standee(valPorchLitTexture(8101), 10.6, 8.6, VAL.x, VAL.z, { opacity: 0 });
   (porch.material as THREE.MeshBasicMaterial).transparent = true;
   ctx.decal(LAWN[0], 13, 10, VAL.x - 1, VAL.z + 7.5, 0, 0.5);
@@ -1476,7 +1644,7 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
    * units from a man on the other side of a line neither of them can
    * cross, and **nothing in this game ever says so.**
    * ================================================================ */
-  ctx.standee(HOUSE[2], 8.8, 7.0, JUNE_GATE.x, JUNE_GATE.z - 5.5, { rotY: -0.06 });
+  ctx.standee(HOUSE[2], 8.8, 7.0, JUNE_GATE.x, JUNE_GATE.z - 5.5, { rotY: -0.06, solid: true });
   ctx.decal(LAWN[1], 12, 10, JUNE_GATE.x, JUNE_GATE.z - 2, 0, 0.32);
   ctx.standee(latchGateTexture(8300), 4.6, 2.5, JUNE_GATE.x, JUNE_GATE.z + 0.5);
   const june = [0, 1].map((p) =>
@@ -1921,7 +2089,7 @@ export const buildCity: RegionBuilder = (ctx) => {
     const b = BLOCKS[i];
     if (terrain.waterAt(b.x, b.z) > 0.04) continue;
     const h = b.w * (TOWER_H[b.t] / 192);
-    ctx.standee(TOWER[b.t], b.w, h, b.x, b.z, { rotY: b.rot ?? 0 });
+    ctx.standee(TOWER[b.t], b.w, h, b.x, b.z, { rotY: b.rot ?? 0, solid: true });
     if (b.lit) {
       const m = ctx.standee(TOWER_LIT[b.t], b.w, h, b.x, b.z, { rotY: b.rot ?? 0, opacity: 0 });
       (m.material as THREE.MeshBasicMaterial).transparent = true;
@@ -2478,7 +2646,7 @@ export const buildOffice: RegionBuilder = (ctx) => {
   const lits: THREE.Mesh[] = [];
   for (let i = 0; i < BLOCKS.length; i++) {
     const b = BLOCKS[i];
-    ctx.standee(BLOCK[b.t], b.w, BLOCK_H, b.x, b.z, { rotY: b.rot ?? 0 });
+    ctx.standee(BLOCK[b.t], b.w, BLOCK_H, b.x, b.z, { rotY: b.rot ?? 0, solid: true });
     if (b.lit) {
       const m = ctx.standee(BLOCK_LIT[b.t], b.w, BLOCK_H, b.x, b.z, { rotY: b.rot ?? 0, opacity: 0 });
       (m.material as THREE.MeshBasicMaterial).transparent = true;
@@ -2679,8 +2847,8 @@ export const buildOffice: RegionBuilder = (ctx) => {
    *
    * **Nothing in this land stands between z = 214 and z = 234**, which
    * is the corridor the lens occupies from anywhere on the road. */
-  ctx.standee(backOfHouseTexture(7600, 0), 13, 8.1, 250, 237);
-  ctx.standee(backOfHouseTexture(7601, 1), 13, 8.1, 270, 242, { rotY: -0.04 });
+  ctx.standee(backOfHouseTexture(7600, 0), 13, 8.1, 250, 237, { solid: true });
+  ctx.standee(backOfHouseTexture(7601, 1), 13, 8.1, 270, 242, { rotY: -0.04, solid: true });
   /* three wheelie bins out, which is what is always out */
   for (const [bx, bz, rot] of [
     [258, 239.6, 0.1], [259.7, 240.1, -0.06], [261.9, 240.5, 0.14],

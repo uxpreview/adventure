@@ -409,7 +409,10 @@ is not one:
 | L1 | THE COMMON | **the well answers a shout**, on a delay that is too long — and it answers a stone thrown down it, later still. U7 said *once*; a local rule is repeatable, and this supersedes it | **Session 15** |
 | L2 | THE COMMON | **the hay cart can be pushed.** It rolls, it slows, it stops at the border of the Common, and it stays where you left it in every later save. The first thing the walker ever moved | **Session 15** |
 | L3 | BRIM | the bell rung early, and the town reacting | 17 / 19 |
-| L4 | THE WIDE BLUE | skimming a stone off the sandbar | 19 |
+| L4 | THE WIDE BLUE | **skimming a stone off the sandbar.** The Common's stone has a twin on the bar's crest; thrown at a run it skips three times off the water, a ring at each, and goes in, and the morning puts it back | **Session 19** |
+| L13 | LONGSHORE / THE WIDE BLUE | **the horn on the point.** Blow it, and the longship answers from wherever it is, a beat and a half later, and the gulls go up. Every time | **Session 19** |
+| L14 | GREYWEATHER | **the portcullis comes down a foot** when rattled, and thinks better of it, and the braziers gutter while it is down | **Session 19** |
+| L15 | THE WIDE BLUE | **row into the fleet and scatter it**: a boat with the rowboat inside nine units bears away and the halyards run | **Session 19** |
 | L5 | THE COMMON | the swing on the leaning oak — a sit, and the oaks' argument going by | (the sit ships Session 15; the argument is 16's) |
 | L6 | SPLITROCK | the echo that comes back wrong | 19 |
 | L7 | GREYWEATHER | sitting on the toppled king — while he is toppled | 15 (the sit exists; the king is a seat in 19) |

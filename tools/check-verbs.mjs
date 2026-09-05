@@ -45,10 +45,10 @@ page.on('pageerror', (e) => console.log('  PAGE EXCEPTION:', e.message));
 await page.goto(URL, { waitUntil: 'networkidle' });
 await page.bringToFront();
 await page
-  .waitForFunction(() => document.body.innerText.toLowerCase().includes('set out'), { timeout: 25000 })
+  .waitForSelector('.title-veil:not(.gone)', { timeout: 25000 })
   .catch(() => {});
 
-const r = await page.evaluate(() => {
+let r = await page.evaluate(() => {
   const I = window.__inklands;
   I.setHour(12, false);
   I.begin();
@@ -231,15 +231,16 @@ const r = await page.evaluate(() => {
     C.reset();
     I.setHour(12, false);
     I.save.data.taughtRun = false;
-    I.goto(24, 90);
+    I.goto(24, 82);
     I.setTime(0);
     I.step(1 / 60, 6);
     const o = { wake: { bull: C.bull.state, gate: C.gate.shut, taughtRun: I.save.data.taughtRun } };
     settle(1.6);
     o.afterStanding = C.bull.state;
     o.taughtByTheBull = I.save.data.taughtRun;
-    // run for the gate, the way a player who saw it would
-    I.drive(-1, -0.22, 1);
+    // run for the gate, the way a player who saw it would — which,
+    // since the spawn moved onto the gate's row, is due west
+    I.drive(-1, 0, 1);
     let nearest = 1e9;
     let touched = false;
     let slamAt = -1;
@@ -256,6 +257,61 @@ const r = await page.evaluate(() => {
     o.bullAtFence = { state: C.bull.state, x: +C.bull.x.toFixed(2), hedgeX: -12 };
     o.nell = C.nell.pose;
     o.hint = document.querySelector('.hint')?.classList.contains('show') ?? false;
+    /* THE DUE-WEST RUN (the local QA pass, 2026-09-04, B1). The hint
+     * says *hold shift to run* and the bull is east, so a player runs
+     * due west, along the spawn's own row, eight units off the gate's.
+     * The gate must not shut with them still in the field, and the
+     * bull must be IN THE PICTURE while it chases — projected through
+     * the shipping camera on this rig, not assumed. */
+    {
+      C.reset();
+      I.setHour(12, false);
+      I.goto(24, 82);
+      I.setTime(0);
+      I.step(1 / 60, 6);
+      settle(1.6);
+      I.drive(-1, 0, 1);
+      const project = (x, y, z) => {
+        const cam = I.cam;
+        cam.updateMatrixWorld();
+        const a = cam.matrixWorldInverse.elements;
+        const b = cam.projectionMatrix.elements;
+        const mul = (m, v) => [
+          m[0] * v[0] + m[4] * v[1] + m[8] * v[2] + m[12] * v[3],
+          m[1] * v[0] + m[5] * v[1] + m[9] * v[2] + m[13] * v[3],
+          m[2] * v[0] + m[6] * v[1] + m[10] * v[2] + m[14] * v[3],
+          m[3] * v[0] + m[7] * v[1] + m[11] * v[2] + m[15] * v[3],
+        ];
+        const c = mul(b, mul(a, [x, y, z, 1]));
+        return { x: c[0] / c[3], y: c[1] / c[3], z: c[2] / c[3] };
+      };
+      let shutInField = false;
+      let shutAt = -1;
+      let chasing = 0;
+      let seen = 0;
+      let nearestW = 1e9;
+      for (let f = 0; f < 480; f++) {
+        I.step(1 / 60, 1);
+        if (C.gate.shut && shutAt < 0) {
+          shutAt = f / 60;
+          if (I.char.pos.x > -12) shutInField = true;
+        }
+        nearestW = Math.min(nearestW, Math.hypot(I.char.pos.x - C.bull.x, I.char.pos.z - C.bull.z));
+        if (C.bull.state === 'charge' || C.bull.state === 'balk') {
+          chasing++;
+          const p = project(C.bull.x, I.terrain.heightAt(C.bull.x, C.bull.z) + 1.2, C.bull.z);
+          if (p.z < 1 && Math.abs(p.x) < 1 && Math.abs(p.y) < 1) seen++;
+        }
+      }
+      I.release();
+      settle(1.5);
+      o.dueWest = {
+        shutInField, shutAt: +shutAt.toFixed(2), walkerX: +I.char.pos.x.toFixed(1), walkerZ: +I.char.pos.z.toFixed(1),
+        bull: { state: C.bull.state, x: +C.bull.x.toFixed(1) }, nearest: +nearestW.toFixed(2),
+        inFrame: chasing ? +(seen / chasing).toFixed(2) : 0, chasingFrames: chasing,
+        stuck: I.barriers.blocks(I.char.pos.x, I.char.pos.z),
+      };
+    }
     // the fence refuses the walker everywhere but the stile now
     I.goto(20, 62);
     settle(0.2);
@@ -353,7 +409,7 @@ const r = await page.evaluate(() => {
     I.goto(-40, 100);
     settle(3);
     L.bullNight = { state: C.bull.state, on: I.events.progress('the-bull-lies-down') };
-    I.goto(26, 86);
+    I.goto(30, 74);   // inside twelve units of where it lies (33, 70)
     settle(0.5);
     L.bullWoken = C.bull.state;
     I.goto(-40, 100);
@@ -587,6 +643,40 @@ const r = await page.evaluate(() => {
       funeralNoon: I.earshot(150, 60, 12).map((h) => h.id),
       funeralThree: I.earshot(150, 60, 15.3).map((h) => h.id),
     };
+    // A DRAWING IS A BARRIER (the local QA pass, 2026-09-04, B2): the
+    // buildings refuse a foot, and no barrier stands across a road or on
+    // a place the walker is put
+    {
+      const B = I.barriers.all;
+      R.solids = { n: I.world.solidCount, barriers: B.length };
+      const onRoad = [];
+      for (const road of I.layout.ROADS) {
+        for (let i = 0; i < road.pts.length - 1; i++) {
+          const [ax, az] = road.pts[i];
+          const [bx, bz] = road.pts[i + 1];
+          const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 0.6));
+          for (let k = 0; k <= n; k++) {
+            const x = ax + (bx - ax) * (k / n);
+            const z = az + (bz - az) * (k / n);
+            if (I.barriers.blocks(x, z) && !B.some((b) => b.id.endsWith(':keep') && Math.hypot(x - (b.x0 + b.x1) / 2, z - (b.z0 + b.z1) / 2) < 6)) { onRoad.push([+x.toFixed(1), +z.toFixed(1)]); break; }
+          }
+        }
+      }
+      R.solids.onRoad = onRoad;
+      const spots = [[24, 82], [-45, 58], [-60, 149], [-206, 205.5]];
+      R.solids.onSpots = spots.filter(([x, z]) => I.barriers.blocks(x, z));
+      // the walls refuse: driven north into Brim's town wall off the road, and into the keep
+      // driven at a drawing, the walker stops, and the next stride is a barrier
+      const into = (x, z, mx, mz, frames) => {
+        at(x, z); I.drive(mx, mz, 0); I.step(1 / 60, frames); I.release();
+        const px = I.char.pos.x, pz = I.char.pos.z;
+        return { moved: +Math.hypot(px - x, pz - z).toFixed(1), free: +(frames / 60 * 4.1).toFixed(1), wall: I.barriers.blocks(px + mx * 1.0, pz + mz * 1.0) };
+      };
+      R.solids.brimWall = into(-30, -8, 0, -1, 300);
+      R.solids.keep = into(-45, -244, 0, -1, 200);
+      R.solids.house = into(-70, 160, 0, -1, 200);   // the house at (−70, 152)
+      R.solids.gateway = into(-45, -6, 0, -1, 300);
+    }
     // THE ENCOUNTERS are registered
     const rids = new Set(I.life.routines.map((r) => r.id));
     const eids = new Set(I.events.all.map((e) => e.id));
@@ -596,7 +686,197 @@ const r = await page.evaluate(() => {
     };
     out.roads = R;
   }
+
   return out;
+});
+
+/* ---- 10. THE NEW CAST, WEST AND NORTH (Session 19), ON A FRESH PAGE ---- *
+ * Section 9 learns every wait's answer and section 6 takes the king's
+ * door, and both are knowledge for the rest of the page; the cast's
+ * doors have to be taken by a walker who has not. */
+// 'load', not 'networkidle': a page that has been begun and driven for
+// nine sections keeps the sandbox busy enough that idle never comes
+// inside the default thirty seconds, and the title veil is the signal
+// that matters anyway.
+await page.reload({ waitUntil: 'load', timeout: 120000 });
+await page.waitForSelector('.title-veil:not(.gone)', { timeout: 60000 }).catch(() => {});
+r.cast = await page.evaluate(() => {
+  const I = window.__inklands;
+  I.setHour(12, false);
+  I.begin();
+  I.setBearing(true);
+  const at = (x, z) => { I.goto(x, z); I.setTime(0); I.step(1 / 60, 120); };
+  const settle = (secs) => I.step(1 / 60, Math.round(secs * 60));
+  /* NOBODY CROSSES A BORDER BUT THE WALKER, and the Vikings are the joke
+   * about it: the longship's position is sampled at every hour of its
+   * day and never once east of the ocean's edge. The horn is answered.
+   * The board is racked. The three waits have two doors each and the
+   * doors are knowledge. The portcullis drops. The moat is red on the
+   * days it is red and not on the others; the deep keeps its days and
+   * the seals keep theirs; the shape is drawn and gone; the stone skips. */
+  {
+    const N = {};
+    const life = (id) => I.life.drawn().find((d) => d.id === id);
+    // the longship, all day: a thing on the ocean's page
+    let eastmost = -1e9;
+    let seenRowing = false;
+    let seenBeached = false;
+    at(-240, -20);
+    for (let hh = 0; hh < 24; hh += 0.25) {
+      I.setHour(hh, false);
+      I.events.resync();
+      settle(0.2);
+      const s = life('the-longship');
+      if (!s) continue;
+      eastmost = Math.max(eastmost, s.x);
+      if (s.pose === 1) seenRowing = true;
+      if (s.pose === 0) seenBeached = true;
+    }
+    N.longship = { eastmost: +eastmost.toFixed(1), border: -250, seenRowing, seenBeached };
+    // it roars at the sand, and not at the water
+    I.setHour(10, false);
+    I.events.resync();
+    at(-244, -24);
+    N.roared = false;
+    for (let f = 0; f < 60 * 22 && !N.roared; f++) { I.step(1 / 60, 1); if (life('the-longship')?.pose === 2) N.roared = true; }
+    // the horn is answered a beat and a half later
+    I.setHour(15, false);
+    at(-233, -73.5);
+    settle(0.5);
+    N.hornPrompt = I.promptText();
+    I.press();
+    N.horn = { answered: false, at: -1 };
+    for (let f = 0; f < 60 * 4; f++) { I.step(1 / 60, 1); if (life('the-longship')?.pose === 2) { N.horn.answered = true; N.horn.at = +(f / 60).toFixed(2); break; } }
+    // the surfers keep their hours
+    const rids = new Set(I.life.routines.map((r) => r.id));
+    N.surfers = ['the-surfer-0', 'the-surfer-1', 'the-surfer-0-evening', 'pye', 'wren', 'wren-afternoon', 'wick', 'wick-evening'].filter((id) => !rids.has(id));
+    I.setHour(6.25, false);
+    I.events.resync();
+    at(-228, -26);
+    settle(1);
+    N.surferOut = life('the-surfer-0');
+    I.setHour(12, false);
+    I.events.resync();
+    // the board: picked up on the wrack, set down at the rack, racked
+    const board = I.things.get('the-board');
+    at(board.x, board.z + 1.6);
+    settle(0.5);
+    N.boardPrompt = I.promptText();
+    I.press();
+    settle(0.3);
+    N.boardHeld = I.holding();
+    at(-209.5, -33);
+    settle(0.3);
+    N.boardPutPrompt = I.promptText();
+    I.press();
+    settle(2.5);
+    N.boardRacked = { racked: I.knowledge.has('fact:the-board-racked'), held: I.holding(), x: +board.x.toFixed(1), z: +board.z.toFixed(1) };
+    // Pye: a note without the name, a card with it, and door one answers
+    at(-216.4, -128.2);
+    settle(0.5);
+    N.pyeBefore = { prompt: I.promptText(), card: (() => { I.press(); I.step(1 / 60, 5); const c = I.choiceOpen(); if (document.querySelector('.note-veil.show')) { I.press(); I.step(1 / 60, 5); } return c; })() };
+    I.learn('name:the-mark');
+    settle(0.3);
+    N.pyePrompt = I.promptText();
+    I.press();
+    I.step(1 / 60, 5);
+    N.pyeCard = { open: I.choiceOpen(), doors: [...document.querySelectorAll('.choice-btn')].map((b) => b.getAttribute('aria-label')) };
+    I.choose(0);
+    settle(1.5);
+    N.pyeDoor = { eighth: I.knowledge.has('door:the-eighth-pot'), hauled: I.knowledge.has('door:the-pots-hauled'), answered: I.knowledge.answered('beach') };
+    // Wren: the bar's route opens the card; door two finishes the fleet
+    I.learn('route:the-bar');
+    at(-266.5, 71);
+    settle(0.5);
+    N.wrenPrompt = I.promptText();
+    I.press();
+    I.step(1 / 60, 5);
+    N.wrenCard = { open: I.choiceOpen(), doors: [...document.querySelectorAll('.choice-btn')].map((b) => b.getAttribute('aria-label')) };
+    I.choose(1);
+    settle(1.5);
+    N.wrenDoor = { second: I.knowledge.has('door:the-second-mark'), finished: I.knowledge.has('door:the-fleet-finished'), answered: I.knowledge.answered('ocean') };
+    I.setHour(12.5, false);
+    I.events.resync();
+    at(-262, 2);
+    settle(2);
+    N.fleetStill = (() => { const a = I.life.drawn().find((d) => d.id === 'wren-rowing'); return { wrenRowing: a?.visible ?? null }; })();
+    // Wick: the fifth banner goes up for Brim's red on the avenue
+    I.setHour(12, false);
+    I.events.resync();
+    at(-45, -186);
+    settle(0.5);
+    N.fifthBefore = I.knowledge.has('reason:the-fifth-banner');
+    I.learn('fact:brim-red');
+    settle(0.5);
+    N.fifth = { after: I.knowledge.has('reason:the-fifth-banner'), answered: I.knowledge.answered('castle') };
+    I.setHour(5.85, false);
+    I.events.resync();
+    settle(1);
+    N.wickResting = life('wick');
+    I.setHour(12, false);
+    I.events.resync();
+    // the portcullis: a touch, and it is lower a third of a second later
+    at(-45, -189.5);
+    settle(0.5);
+    N.portcullisPrompt = I.promptText();
+    const pcY = () => I.scene.children.flatMap((g) => g.children ?? []).find((m) => m.geometry?.parameters?.width === 3.3 && m.geometry?.parameters?.height === 4.4)?.position.y ?? null;
+    const y0 = pcY();
+    I.press();
+    settle(0.5);
+    N.portcullis = { y0, y1: pcY() };
+    // the moat is red on day one and not on day zero; the deep and the seals keep their days
+    I.setDay(0);
+    I.setHour(12, false);
+    N.moat = { day0: I.moatRed?.(0) ?? null, day1: I.moatRed?.(1) ?? null, day3: I.moatRed?.(3) ?? null };
+    at(-286, 34);
+    settle(1);
+    N.sealsDay0 = life('the-seals-0')?.visible ?? null;
+    I.setDay(1);
+    settle(1);
+    N.sealsDay1 = life('the-seals-0')?.visible ?? null;
+    I.setDay(0);
+    I.setHour(19.4, false);
+    I.events.resync();
+    settle(0.5);
+    N.deepDay0 = life('the-deep')?.visible ?? null;
+    I.setDay(1);
+    settle(0.5);
+    N.deepDay1 = life('the-deep')?.visible ?? null;
+    I.setDay(0);
+    // the shape: drawn once, after a while, at night, and gone
+    I.setHour(23, false);
+    I.events.resync();
+    at(190, -250);
+    I.setTime(500);
+    let shown = false;
+    let gone = false;
+    for (let f = 0; f < 60 * 16; f++) {
+      I.step(1 / 60, 1);
+      const sh = life('the-pines-shape');
+      if (sh?.visible) shown = true;
+      if (shown && sh && !sh.visible) { gone = true; break; }
+    }
+    N.shape = { shown, gone };
+    I.setHour(12, false);
+    I.events.resync();
+    // the stone skips off the bar
+    const stone = I.things.get('bar-stone');
+    at(stone.x, stone.z + 1.6);
+    settle(0.5);
+    N.stonePrompt = I.promptText();
+    I.press();
+    settle(0.3);
+    at(-282, 48);
+    I.drive(-1, 0, 1);
+    settle(0.7);
+    I.press();
+    settle(0.1);
+    I.release();
+    settle(4);
+    N.skim = { skips: stone.skips, state: stone.state, water: I.terrain.waterAt(stone.x, stone.z) > 0.12 };
+    N.waits = I.knowledge.answeredWaits();
+    return N;
+  }
 });
 
 console.log('\nthe walk does not get worse:');
@@ -673,6 +953,15 @@ console.log('\nthe first hour:');
   if (!o.chase.touched && o.chase.nearest > 1.5) pass(`it never touches you: nearest ${o.chase.nearest} units`); else fail(`THE BULL TOUCHED THE WALKER: nearest ${o.chase.nearest}`);
   if (o.chase.slamAt > 0 && o.chase.slamAt < 9) pass(`Nell shuts the gate at ${o.chase.slamAt}s, and the walker is through (x ${o.chase.walker.x})`); else fail(`the gate: slam at ${o.chase.slamAt}, walker at x ${o.chase.walker.x}`);
   if (o.chase.walker.x < -12) pass('the walker is west of the hedge'); else fail(`the walker never got through: x ${o.chase.walker.x}`);
+  {
+    const w = o.dueWest;
+    if (!w.shutInField && w.walkerX < -12 && !w.stuck) pass(`RUN DUE WEST, as the hint says: the gate shuts at ${w.shutAt}s with the walker already through (x ${w.walkerX}, z ${w.walkerZ})`);
+    else fail(`THE DUE-WEST RUN IS TRAPPED: gate shut in the field ${w.shutInField} at ${w.shutAt}s, walker at (${w.walkerX}, ${w.walkerZ}), stuck ${w.stuck}`);
+    if (w.nearest > 1.5) pass(`and the bull never touches them on that run either: nearest ${w.nearest}`); else fail(`the bull touched the due-west runner: ${w.nearest}`);
+    if (w.inFrame >= 0.7) pass(`and the charge is IN THE PICTURE on this rig for ${Math.round(w.inFrame * 100)}% of its ${w.chasingFrames} frames`);
+    else fail(`the charge is off the frame: in the picture for only ${Math.round(w.inFrame * 100)}% of ${w.chasingFrames} frames`);
+    if (w.bull.x > -12 && w.bull.x < -6) pass(`and it stops at the hedge: x ${w.bull.x} (${w.bull.state})`); else fail(`after the due-west run the bull is at x ${w.bull.x} (${w.bull.state})`);
+  }
   if (o.bullAtFence.x > -12 && o.bullAtFence.x < -8 && (o.bullAtFence.state === 'fence' || o.bullAtFence.state === 'balk' || o.bullAtFence.state === 'home')) {
     pass(`and the bull stops at the hedge: x ${o.bullAtFence.x} against the hedge at −12 (${o.bullAtFence.state})`);
   } else fail(`the bull at the hedge: x ${o.bullAtFence.x}, ${o.bullAtFence.state}`);
@@ -757,6 +1046,45 @@ console.log('\nthe roads (Session 18):');
     pass('earshot is a pure function of place and hour: the well at the well and not at the crossroads, Brack\'s silence, the funeral\'s at three and not at noon');
   } else fail(`earshot: ${JSON.stringify(R.earshot)}`);
   if (!R.encounters.routines.length && !R.encounters.events.length) pass('every encounter is a routine or an event on the clock'); else fail(`encounters missing: ${JSON.stringify(R.encounters)}`);
+  {
+    const S = R.solids;
+    if (S.n > 40 && S.barriers > S.n) pass(`A DRAWING IS A BARRIER: ${S.n} standees registered their footprints (${S.barriers} barriers in all)`); else fail(`solids: ${JSON.stringify(S)}`);
+    if (!S.onRoad.length && !S.onSpots.length) pass('and none of them stands across a road (but the fountain, which the king\'s road was drawn through and which you go round), the spawn, the crossroads, the bicycle or the boat');
+    else fail(`A BARRIER STANDS WHERE THE WALKER GOES: roads ${JSON.stringify(S.onRoad)} spots ${JSON.stringify(S.onSpots)}`);
+    const held = (o) => o.wall && o.moved < o.free * 0.9;
+    if (held(S.brimWall) && held(S.keep) && held(S.house)) pass(`the walls refuse a foot: driven at them off-road the walker stops at Brim's wall (${S.brimWall.moved} of ${S.brimWall.free} u), the keep (${S.keep.moved} u), a house in Maple Court (${S.house.moved} u), with a barrier the next stride on`);
+    else fail(`THE WALKER WALKS THROUGH DRAWINGS: ${JSON.stringify({ wall: S.brimWall, keep: S.keep, house: S.house })}`);
+    if (S.gateway.moved > 12) pass(`and the south gate's arch lets the king's road through: ${S.gateway.moved} u`); else fail(`THE SOUTH GATE IS SHUT: ${S.gateway.moved} u north from the road at z −6`);
+  }
+}
+
+console.log('\nthe new cast, west and north (Session 19):');
+{
+  const N = r.cast;
+  if (N.longship.eastmost < N.longship.border - 2 && N.longship.seenRowing && N.longship.seenBeached) pass(`THE LONGSHIP NEVER LANDS: sampled every quarter hour, its eastmost is x ${N.longship.eastmost} against the sand at ${N.longship.border}; it rows and it is beached`);
+  else fail(`the longship: ${JSON.stringify(N.longship)}`);
+  if (N.roared) pass('and it roars at the sand'); else fail('the longship did not roar at a walker on the sand');
+  if (N.hornPrompt === 'BLOW THE HORN' && N.horn.answered) pass(`the horn says ${N.hornPrompt}, and the longship answers it ${N.horn.at}s later`);
+  else fail(`the horn: ${N.hornPrompt}, ${JSON.stringify(N.horn)}`);
+  if (!N.surfers.length) pass('the surfers, Pye, Wren and Wick are routines on the clock'); else fail(`routines missing: ${N.surfers.join(', ')}`);
+  if (N.surferOut && N.surferOut.visible) pass('and at first light a surfer is out of the van'); else fail(`the surfer at 6.25: ${JSON.stringify(N.surferOut)}`);
+  if (N.boardPrompt === 'PICK UP THE BOARD' && N.boardHeld === 'the-board' && /THE BOARD$/.test(N.boardPutPrompt ?? '') && N.boardRacked.racked && N.boardRacked.held === null) {
+    pass(`the errand: the board is picked up on the wrack, set down at the rack (${N.boardPutPrompt}), and racked (${N.boardRacked.x}, ${N.boardRacked.z})`);
+  } else fail(`the board: ${N.boardPrompt}, held ${N.boardHeld}, put ${N.boardPutPrompt}, ${JSON.stringify(N.boardRacked)}`);
+  if (N.pyeBefore.prompt === 'COUNT THE POTS' && !N.pyeBefore.card) pass(`without the mark's name the pot line is a note: ${N.pyeBefore.prompt}`); else fail(`Pye before: ${JSON.stringify(N.pyeBefore)}`);
+  if (N.pyePrompt === "TELL HIM THE MARK'S NAME" && N.pyeCard.open && N.pyeCard.doors.length === 2) pass(`with it, a card with two doors: ${N.pyeCard.doors.join(' / ')}`); else fail(`Pye's card: ${N.pyePrompt}, ${JSON.stringify(N.pyeCard)}`);
+  if (N.pyeDoor.eighth && !N.pyeDoor.hauled && N.pyeDoor.answered) pass('door one writes door:the-eighth-pot and answers LONGSHORE\'s wait'); else fail(`Pye's door: ${JSON.stringify(N.pyeDoor)}`);
+  if (N.wrenPrompt === 'TELL WREN WHERE THE BAR ENDS' && N.wrenCard.open && N.wrenCard.doors.length === 2) pass(`with the bar walked, Wren's punt is a card with two doors: ${N.wrenCard.doors.join(' / ')}`); else fail(`Wren's card: ${N.wrenPrompt}, ${JSON.stringify(N.wrenCard)}`);
+  if (N.wrenDoor.finished && !N.wrenDoor.second && !N.wrenDoor.answered) pass('door two writes door:the-fleet-finished, which is a door and not an answer'); else fail(`Wren's door: ${JSON.stringify(N.wrenDoor)}`);
+  if (N.fleetStill.wrenRowing === false) pass('and with the fleet finished Wren does not row out at noon'); else fail(`after the finish: ${JSON.stringify(N.fleetStill)}`);
+  if (!N.fifthBefore && N.fifth.after && N.fifth.answered) pass('Brim\'s red on the avenue writes reason:the-fifth-banner and answers GREYWEATHER\'s wait'); else fail(`the fifth banner: before ${N.fifthBefore}, ${JSON.stringify(N.fifth)}`);
+  if (N.wickResting && N.wickResting.visible && N.wickResting.pose === 3) pass(`Wick is halfway up the avenue at dawn, resting (pose ${N.wickResting.pose})`); else fail(`Wick at 5.85: ${JSON.stringify(N.wickResting)}`);
+  if (N.portcullisPrompt === 'RATTLE THE PORTCULLIS' && N.portcullis.y0 !== null && N.portcullis.y1 < N.portcullis.y0 - 0.8) pass(`the portcullis comes down a foot: ${N.portcullis.y0.toFixed(2)} → ${N.portcullis.y1.toFixed(2)}`); else fail(`the portcullis: ${N.portcullisPrompt}, ${JSON.stringify(N.portcullis)}`);
+  if (N.moat.day0 === false && N.moat.day1 === true && N.moat.day3 === false) pass('the moat is red on day one and not on days zero or three'); else fail(`the moat: ${JSON.stringify(N.moat)}`);
+  if (N.deepDay0 === true && N.deepDay1 === false && N.sealsDay0 === true && N.sealsDay1 === false) pass('the deep surfaces on day zero and not day one, and the seals do not haul out the day after'); else fail(`the deep and the seals: deep ${N.deepDay0}/${N.deepDay1}, seals ${N.sealsDay0}/${N.sealsDay1}`);
+  if (N.shape.shown && N.shape.gone) pass('the shape in the deep pines is drawn once at night, and is gone'); else fail(`the shape: ${JSON.stringify(N.shape)}`);
+  if (N.stonePrompt === 'PICK UP THE STONE' && N.skim.skips >= 1 && N.skim.state === 'ground') pass(`the bar's stone skips: ${N.skim.skips} skip(s) before it went in`); else fail(`the skim: ${N.stonePrompt}, ${JSON.stringify(N.skim)}`);
+  if (N.waits === 3) pass(`three waits answered on this page, and the line wants seven of the eleven built`); else fail(`answered waits: ${N.waits}`);
 }
 
 await browser.close();

@@ -104,7 +104,7 @@ for (const vp of VIEWPORTS) {
   await page.goto(URL, { waitUntil: 'networkidle' });
   await page.bringToFront();
   await page
-    .waitForFunction(() => document.body.innerText.toLowerCase().includes('set out'), { timeout: 25000 })
+    .waitForSelector('.title-veil:not(.gone)', { timeout: 25000 })
     .catch(() => {});
   await page.evaluate(() => window.__inklands.begin());
   await page.waitForTimeout(1200);

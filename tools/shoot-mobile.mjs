@@ -82,9 +82,7 @@ for (const vp of RIGS.filter((r) => !ONLY || r.name === ONLY)) {
   await page.waitForTimeout(1100);
   await page.screenshot({ path: `${dir}/01-loader.png` });
   await page
-    .waitForFunction(() => document.body.innerText.toLowerCase().includes('set out'), {
-      timeout: 15000,
-    })
+    .waitForSelector('.title-veil:not(.gone)', { timeout: 15000 })
     .catch(() => {});
   await page.waitForTimeout(900);
   await page.screenshot({ path: `${dir}/02-title.png` });
