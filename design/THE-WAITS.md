@@ -154,6 +154,24 @@ never happened, is finally up for one that did.
 **Never says:** which hand was right. That anything was wrong. That the
 market was ever cancelled — because it never was.
 
+**THE SECOND DOOR, SESSION 21** (`THE-FUN-PASS` §6). Stand in the
+belfry yard while the lamps come on and one hand agrees with them;
+that is the fact, and with it the belfry is a card with three doors:
+LET THE BELL RING THE LAMPS' HOUR (`door:the-bell-rings-it` — the
+bell rings, the market is called, Marget opens; the wait as designed),
+SET THE CLOCK TO EIGHT (`door:the-clock-set-to-eight` — the lamps'
+hand; the market is called and the board chalked and **Marget's stall
+never opens**, at every hour, in every save: she lays the cloth at
+dawn and folds it at dusk at an hour nobody else keeps), or SET THE
+CLOCK TO ELEVEN (`door:the-clock-set-to-eleven` — her hand; she opens,
+and **the lamplighter goes by the clock and is three hours early every
+night** for the rest of time: the lamps lit at four in the afternoon,
+out at a quarter to three, and the square dark till dawn). Both hands
+drawn together on the tower under either of the last two. Walking to
+the cross holding the hour still calls the market the way it has
+since Session 7. One person in Brim is permanently wrong, and it is
+Marget or it is the lamplighter, and nothing says which was right.
+
 ---
 
 ### 3. MAPLE COURT — **VAL** *(authored end to end, Session 13)*
@@ -261,6 +279,21 @@ madness or readiness.
 **Never says:** where the river went. That it is not coming. That
 anybody else has one.
 
+**THE SECOND DOOR, SESSION 21** (`THE-FUN-PASS` §6). Holding the
+route, the trestles are a card: TELL HIM ABOUT THE RIVER
+(`door:the-boat-righted`, and this is the answer the 8:15 reads now —
+the boat comes off the trestles on the door, not on the route) or
+TELL HIM THE SEA HAS NO BOTTOM (`door:the-sea-has-no-bottom`). The sea
+is the thing at the end of the river you rowed, and it is what
+`THE-STRANGERS` S5 was written to find out and has never been built to
+find out; the card offers it off the route because the walker has been
+to the salt. Told, **he stops oiling**: the stain is gone off the hull
+and the dust settles along her, **the marks weather** on the wall
+(the same face, the chalk in broken runs at a third of the pressure,
+the ticks first to go), and he is up on the rim by the house all day
+and does not straighten for anybody. Holt, who was ready, loses.
+Nothing says which was right.
+
 *Built, Session 11 (`design/specs/splitrock-canyon.md`). The marks are
 four chalk strokes on a wall face at the head of the channel plus a
 fifth chalked on the rock ABOVE the lip, and their heights are the boat,
@@ -309,6 +342,21 @@ not say whether that is despair or nerve.
 
 **Never says:** that it will not rain. That he carries the water. That
 anybody has noticed.
+
+**THE SECOND DOOR, SESSION 21** (`THE-FUN-PASS` §6). Come to the catch
+holding the fold and it is a card: TAKE THE LID OFF
+(`door:the-lid-off`, the answer the 8:15 reads now; the lid comes off
+on the door and not on the fold) or FILL IT YOURSELF, FROM THE OASIS
+(`door:the-cistern-yours`). The second is **a carry, and the can is
+the thing**: the can at the catch end of the track is yours once the
+door is taken — PICK UP THE CAN, forty units down to the water, FILL
+THE CAN on the south bank, forty units back up, and EMPTY IT IN at the
+tank, in daylight only, because he carries at night and you do not.
+That writes `fact:the-cistern-filled`, and from that night **he stops
+carrying** (the night walk is over; he stands at the tank), **the
+track grows over** (`grownTrackDecal` on the same forty wear points),
+the lid stays on, and the can is his again. Amos, whose forty units
+were the point, loses. Nothing says which was right.
 
 *Built, Session 11 (`design/specs/the-bleach-flats.md`). The forty units
 are real and they are UPHILL both ways: `elevation.ts` gained THE PAN,
@@ -402,6 +450,24 @@ Penwood in forty years.
 
 **Never says:** what was in the tarn. That there was nothing. That the
 road is his.
+
+**THE SECOND DOOR, SESSION 21** (`THE-FUN-PASS` §6). The tarn's reach is
+twenty-six units — OUTSIDE the twenty that earn the fact by arriving —
+so both doors are in front of a walker before either is taken: STAND
+AT THE WATER (`door:the-water-stood`, which earns `fact:the-tarn` where
+you stand, and Brack turns) or TAKE THE OAR OUT OF THE BOAT
+(`door:the-oar-taken`). Taken, the boat is drawn with three thwarts and
+nothing across them, the oar is a thing leaning on the hull, and a
+walker who went in for the boat and not the water **does not earn the
+fact by being inside the twenty**. Carry it forty paces to the lean
+and STAND IT WITH THE OTHERS: `fact:the-twelfth-oar`, the oar is gone
+for good, and Hallows' lean has twelve, and the twelfth is the only
+one that is right, and nothing points at it. Brack does not turn — an
+oar walked out of that water, which is the first thing that ever has,
+and he now has a reason. Walking in without pressing anything still
+earns the fact the way it has since Session 10, and the card is not
+offered afterwards. The boat on the water, and Brack, lose. Nothing
+says which was right.
 
 ---
 
@@ -548,6 +614,17 @@ Anything at all, really. The Downs are not a talkative land.
 *The story's counterweight and its conscience. Every other wait in this
 document is answered by the player carrying something across a border.
 This one is answered by the player stopping.*
+
+**THE SECOND DOOR, SESSION 21** (`THE-FUN-PASS` §6). The table is a
+card first: SIT DOWN (`door:the-seat-taken`, and the card seats you the
+moment it is taken — a door that IS sitting down is one press, not
+two) or CLEAR THE SECOND SETTING AWAY (`door:the-setting-cleared`).
+Cleared, **it is not laid again**: one plate, at every hour, in every
+save, and the second is in the basket where you put it. The seat is
+still a seat, and sitting at a table laid for one keeps nothing —
+`fact:the-place-kept` is not learned, and Joan's platform is as empty
+as it always was. It is the one choice with no loser but the player,
+and nothing says which was right.
 
 ---
 
@@ -703,8 +780,8 @@ the player is the only one who ever gets to.
 | THE COMMON | Nell straightening; the cart loaded and turned | inhabitants pass |
 | PENWOOD | **shipped** — Brack, the two postures, and the road that is his circle | **10** ✓ |
 | HARROW DOWNS | **shipped** — Joan, her day, the picnic, and the sitting | **10** ✓ |
-| SPLITROCK | Holt; the marks; the boat off its trestles | 10 (with the land) |
-| BLEACH FLATS | Amos; the catch; the lid | 10 (with the land) |
+| SPLITROCK | Holt; the marks; the boat off its trestles — on a card from **21**, or the sea told and the marks weathered | 10 (with the land) |
+| BLEACH FLATS | Amos; the catch; the lid — on a card from **21**, or the cistern filled by hand and the track grown over | 10 (with the land) |
 | MAPLE COURT | Val; the porch light; the hedge cut back | 11 (with the land) |
 | GREYLINE CITY | the man; the worn paths; the bench | 11 (with the land) |
 | CUBICLE MILE | Dennis; the timetable; the shelter light | 11 (with the land) |

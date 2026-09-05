@@ -138,6 +138,11 @@ const VOICES = [
    * sticky note coming off glass; a visitor poked, and the hum under
    * the lights over the pan. In the pack unheard like everything else. */
   ['the-new-cast-east', ['yap', 'ball-kick', 'order-call', 'bin-roll', 'bin-knock', 'chair-roll', 'sticky-peel', 'alien-blink', 'pale-hum']],
+  /* SESSION 21 — THE SECOND DOOR. A clock set by hand and the bell
+   * answering; a can filled at the oasis and emptied into the tank; an
+   * oar stood with eleven others; a plate cleared away. In the pack
+   * unheard like everything else. */
+  ['the-second-door', ['clock-set', 'can-fill', 'can-pour', 'oar-set', 'plate-clear']],
 ];
 console.log('');
 for (const [land, names] of VOICES) {

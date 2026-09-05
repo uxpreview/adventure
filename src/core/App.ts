@@ -14,7 +14,7 @@ import { renderMap } from '../ui/map';
 import { PAPER_HEX, INK_HEX } from '../engine/palette';
 import { Boat } from '../engine/Boat';
 import { Bicycle, BICYCLE_HOME } from '../engine/Bicycle';
-import { Eight15 } from '../engine/Eight15';
+import { Eight15, onPlatform } from '../engine/Eight15';
 import {
   SPAWN, POSTER, regionAt, districtAt, coastX, barDist, roadCarryAt, rowableAt, BOAT_HOME,
   LINE_STOPS, LINE_STOP_S, LINE_LENGTH,
@@ -457,6 +457,11 @@ export class App {
         /** The twelve waits' answers, so a test can qualify a walker for
          *  the 8:15 without playing fifteen hours (Session 18). */
         waitAnswers: WAIT_ANSWERS,
+        /** And what the 8:15 would find on a land's platform, and
+         *  whether it would come at all, for a test that drives the
+         *  doors (Session 21). */
+        onPlatform,
+        qualified: () => Eight15.qualified(),
         takeOars: () => this.toggleBoat(),
         /** Get out, wherever you are. The shoot harness needs this
          *  because `toggleBoat` correctly refuses mid-river. */
@@ -798,7 +803,7 @@ export class App {
         const c = def.choice;
         this.audio.note();
         this.ui.openChoice(
-          def.note?.title ?? (def.label ?? '').toLowerCase(), c.body,
+          def.note?.title ?? c.title ?? (def.label ?? '').toLowerCase(), c.body,
           c.options.map((o) => o.label),
           (i) => {
             /* THE DOOR IS A PIECE OF KNOWLEDGE and nothing else: one id,
@@ -807,6 +812,12 @@ export class App {
             knowledge.learn(c.options[i].door);
             for (const id of c.learns ?? []) knowledge.learn(id);
             this.save.readNote(def.label ?? '');
+            /* A DOOR THAT IS SITTING DOWN (Session 21): the Downs'
+             * first door is the sit itself, and a card that said SIT
+             * DOWN and then asked for a second press would be a card
+             * in the way. The seat is read AFTER the door is written,
+             * because the seat reads the door. */
+            if (c.options[i].sits) this.sitDown(def);
           }
         );
         return;

@@ -72,15 +72,15 @@ const FLATS_DRIVEN = [
  * only way to photograph one is to photograph both states of it.     */
 const WAITS = [
   ['40-holt-BEFORE',          305, -224, 12.0, []],
-  ['41-holt-AFTER',           305, -224, 12.0, ['route:the-river']],
+  ['41-holt-AFTER',           305, -224, 12.0, ['route:the-river', 'door:the-boat-righted']],
   ['42-holt-dusk-BEFORE',     305, -224, 19.6, []],
-  ['43-holt-dusk-AFTER',      305, -224, 19.6, ['route:the-river']],
+  ['43-holt-dusk-AFTER',      305, -224, 19.6, ['route:the-river', 'door:the-boat-righted']],
   ['44-holt-night',           305, -224, 22.4, []],
   ['45-the-marks',            304, -240, 12.0, []],
   ['50-cistern-BEFORE',       302, 106, 12.0, []],
-  ['51-cistern-AFTER',        302, 106, 12.0, ['fact:the-fold']],
+  ['51-cistern-AFTER',        302, 106, 12.0, ['fact:the-fold', 'door:the-lid-off']],
   ['52-cistern-dusk-BEFORE',  302, 106, 19.6, []],
-  ['53-cistern-dusk-AFTER',   302, 106, 19.6, ['fact:the-fold']],
+  ['53-cistern-dusk-AFTER',   302, 106, 19.6, ['fact:the-fold', 'door:the-lid-off']],
   ['54-amos-on-the-track',    303, 86, 0.2, []],
 ];
 

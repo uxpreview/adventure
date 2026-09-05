@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {
-  railcarSideTexture, railcarFrontTexture, platformFigureTexture,
+  railcarSideTexture, railcarFrontTexture, platformFigureTexture, platformThingTexture,
 } from '../world/textures-office';
 import { LINE_STOPS, LINE_STOP_S, LINE_LENGTH, lineAt } from '../world/layout';
 import { knowledge, WAITS_FOR_THE_LINE } from '../world/knowledge';
@@ -115,6 +115,69 @@ const CARRIES: Record<string, number> = {
 type Phase = 'away' | 'running' | 'dwelling' | 'ended';
 
 /**
+ * WHAT IS ON A PLATFORM, and it is the doors that say (Session 21,
+ * `THE-FUN-PASS` §6's last rule: *which platforms have somebody on
+ * them, what is visible through the windows, and who is in the
+ * carriage, are consequences of doors and not of completion*).
+ *
+ * Until this session `waiting()` asked one question — is this land's
+ * wait answered — and a second door that was not the answer simply
+ * left the platform empty, which was right by accident. Now it reads
+ * the card. Per land, in `THE-FUN-PASS` §6's *who loses* column:
+ *
+ *   `empties`   a door that takes the person OFF the platform even if
+ *               the wait is answered: Wick relieved of duty has nothing
+ *               to leave for; Dennis with the board wiped has no line;
+ *               Marget with the clock set to the lamps' hand never
+ *               opened, so she is at her stall at her own hour.
+ *   `leaves`    a door that puts SOMETHING ELSE there instead, and it
+ *               is a thing the door itself produced: the two cans Amos
+ *               stopped carrying, and the seven pots Pye hauled. They
+ *               stand where the person would have, the doors open on
+ *               them, and the train goes on.
+ *
+ * Nothing here says which was right. The windows show; they do not
+ * judge. And THE HARROW DOWNS is not in this table because nothing
+ * about Joan's platform was ever anybody's to decide.
+ */
+type Left = 'cans' | 'pots';
+const PLATFORM_DOORS: Record<string, { empties?: string[]; leaves?: [string, Left] }> = {
+  castle: { empties: ['door:the-king-restored'] },
+  kingdom: { empties: ['door:the-clock-set-to-eight'] },
+  forest: { empties: ['door:the-oar-taken'] },
+  canyon: { empties: ['door:the-sea-has-no-bottom'] },
+  desert: { leaves: ['fact:the-cistern-filled', 'cans'] },
+  beach: { leaves: ['door:the-pots-hauled', 'pots'] },
+  meadow: { empties: ['door:the-cart-pushed'] },
+  ocean: { empties: ['door:the-fleet-finished'] },
+  neighborhood: { empties: ['door:the-light-off'] },
+  city: { empties: ['door:the-walked-round'] },
+  office: { empties: ['door:the-board-wiped'] },
+};
+
+/** Who, or what, the 8:15 finds on a land's platform the morning it
+ *  comes: a person, a thing a door left, or nobody. Read by the train
+ *  and by `tools/check-verbs.mjs`, and shown to no player as a word. */
+export function onPlatform(land: string): 'person' | Left | null {
+  if (land === 'downs') return null;
+  const d = PLATFORM_DOORS[land];
+  if (d?.leaves && knowledge.has(d.leaves[0])) return d.leaves[1];
+  if (d?.empties?.some((id) => knowledge.has(id))) return null;
+  return knowledge.answered(land) ? 'person' : null;
+}
+
+/** What the ending left on a platform, for good: written by the train
+ *  as it pulls away from a stop with a thing on it, so a door taken the
+ *  week after cannot put a can on a platform the train never stopped
+ *  for. `fact:left-at-<land>-<thing>`, and the prefix is read back by
+ *  nobody but this file. */
+export function leftAt(land: string): Left | null {
+  if (knowledge.has(`fact:left-at-${land}-cans`)) return 'cans';
+  if (knowledge.has(`fact:left-at-${land}-pots`)) return 'pots';
+  return null;
+}
+
+/**
  * WHO IS ON A PLATFORM RIGHT NOW, for the lands to read.
  *
  * Module scope and one instance, the same shape as `daylight.ts`'s
@@ -175,6 +238,15 @@ export class Eight15 {
   private cache = new Map<string, THREE.Texture>();
   private figure: THREE.Mesh;
   private figTex: THREE.Texture[] = [];
+  /** THE THING ON THE PLATFORM, when a door left one (Session 21). */
+  private thing: THREE.Mesh;
+  private thingTex: Record<Left, THREE.Texture>;
+  /** And what stays on the platforms after the ending has run: one
+   *  standee per stop, drawn where the thing stood, for good. */
+  private residue: THREE.Mesh[] = [];
+  /** What the residue was last drawn from, so a fact that lands from
+   *  anywhere — the train, a save, the harness — re-places it once. */
+  private residueSig = '';
   private dwellLeft = 0;
   /** The clock hour last frame, so the 8:15 is a CROSSING and not a
    *  window — a paused harness clock must not fire it twice. */
@@ -226,6 +298,43 @@ export class Eight15 {
       side: THREE.DoubleSide,
     }));
     this.group.add(this.figure);
+
+    /* WHAT A DOOR LEFT THERE INSTEAD (Session 21): the cans, the pots.
+     * Same rules as the figure — one at a time, on the near side, there
+     * while the doors are open. */
+    this.thingTex = {
+      cans: platformThingTexture(7930, 'cans'),
+      pots: platformThingTexture(7931, 'pots'),
+    };
+    const tgeo = new THREE.PlaneGeometry(1.5, 1.32);
+    tgeo.translate(0, 0.66, 0);
+    this.thing = new THREE.Mesh(tgeo, new THREE.MeshBasicMaterial({
+      map: this.thingTex.cans,
+      transparent: true,
+      alphaTest: 0.1,
+      side: THREE.DoubleSide,
+    }));
+    this.thing.visible = false;
+    this.group.add(this.thing);
+
+    /* AND WHAT STAYS. Twelve standees, one per stop, in world space
+     * rather than in the train's group, because they are not the
+     * train's: they are the platforms', and the platforms stay as the
+     * doors left them the morning after (`THE-LINE` §5's smaller
+     * permanence, Session 21). Placed on the first frame the ground is
+     * known, shown when the fact says so. */
+    for (let i = 0; i < LINE_STOPS.length; i++) {
+      const g = new THREE.PlaneGeometry(1.5, 1.32);
+      g.translate(0, 0.66, 0);
+      const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({
+        map: this.thingTex.cans,
+        transparent: true,
+        alphaTest: 0.1,
+        side: THREE.DoubleSide,
+      }));
+      m.visible = false;
+      this.residue.push(m);
+    }
 
     /* Drawn AFTER the walker so the near side of the carriage hides the
      * legs of whoever is sitting in it — the rowboat's trick, and the
@@ -284,26 +393,41 @@ export class Eight15 {
    * eight. Nobody ever sees it go back up, and nobody in this world
    * would think that strange.
    */
-  /** Whether this walker has done the two things (§4.1). */
+  /** Whether this walker has done the two things (§4.1) — and from
+   *  Session 21 the second is waits DECIDED, either door, because the
+   *  ending reads the doors and cannot read a door it never comes for. */
   static qualified(): boolean {
     return knowledge.has('route:the-line') &&
-      knowledge.answeredWaits() >= WAITS_FOR_THE_LINE;
+      knowledge.decidedWaits() >= WAITS_FOR_THE_LINE;
   }
 
-  /** Somebody is standing at stop `i` — unless it is the Downs. */
-  private waiting(i: number): boolean {
+  /** The platforms the residue stands on, for the harness: which stops
+   *  keep a thing the ending left. */
+  get residueAt(): (Left | null)[] {
+    return LINE_STOPS.map((st) => leftAt(st.land));
+  }
+
+  /** Who, or what, is at stop `i` this morning — unless it is the
+   *  Downs, or the ending has already run. */
+  private at(i: number): 'person' | Left | null {
     const st = LINE_STOPS[i];
     /* IV.4. **JOAN HARROW IS NOT ON THE PLATFORM.** She is in the
      * field, working, because her harvest came in and she never needed
      * a train. It is the only wait in the world that was ever answered,
      * and she is the only person who does not have to leave to get what
      * she was waiting for. Nothing anywhere says why. */
-    if (st.land === 'downs') return false;
+    if (st.land === 'downs') return null;
     /* AFTER THE ENDING, NOBODY IS WAITING: they went, or they did not,
      * once. The daily train stops at every platform for the same
      * thirteen seconds and takes nobody, which is what a timetable is. */
-    if (!this.ending) return false;
-    return knowledge.answered(st.land);
+    if (!this.ending) return null;
+    /* AND THE DOORS SAY WHO (Session 21). */
+    return onPlatform(st.land);
+  }
+
+  /** Somebody is standing at stop `i`. */
+  private waiting(i: number): boolean {
+    return this.at(i) === 'person';
   }
 
   /**
@@ -332,10 +456,34 @@ export class Eight15 {
       // the ending, once; the daily transit every morning after it
       this.ending = !knowledge.has('fact:the-8-15-ran');
     }
+    /* WHAT THE ENDING LEFT ON THE PLATFORMS, drawn whether or not the
+     * train is anywhere: the residue is the platforms' and not the
+     * train's, and it is there at noon on a day the train is asleep in
+     * the car park. Placed once the ground is known, then only when a
+     * new fact lands. */
+    const sig = LINE_STOPS.map((st) => leftAt(st.land) ?? '-').join(',');
+    if (sig !== this.residueSig) {
+      this.residueSig = sig;
+      for (let i = 0; i < LINE_STOPS.length; i++) {
+        const m = this.residue[i];
+        const left = leftAt(LINE_STOPS[i].land);
+        m.visible = !!left;
+        if (!left) continue;
+        (m.material as THREE.MeshBasicMaterial).map = this.thingTex[left];
+        (m.material as THREE.MeshBasicMaterial).needsUpdate = true;
+        const p = lineAt(LINE_STOP_S[i]);
+        const dx = Math.abs(p.tz) > 0.7 ? 4.4 : 0;
+        const dz = Math.abs(p.tz) > 0.7 ? 0 : 5.2;
+        m.position.set(p.x + dx, groundAt(p.x + dx, p.z + dz), p.z + dz);
+        if (!m.parent) this.group.parent?.add(m);
+      }
+    }
+
     if (this.phase === 'away') {
       // nowhere, and nothing in the world knows it is coming
       this.group.visible = false;
       this.figure.visible = false;
+      this.thing.visible = false;
       platform.land = null;
       return;
     }
@@ -347,6 +495,7 @@ export class Eight15 {
       this.place(groundAt, false);
       this.group.visible = true;
       this.figure.visible = false;
+      this.thing.visible = false;
       platform.land = null;
       return;
     }
@@ -379,6 +528,16 @@ export class Eight15 {
          * player answered, and at the others the doors stand open the
          * same time and it goes on. */
         if (this.waiting(this.stop)) this.carrying++;
+        /* A THING A DOOR LEFT stays where it stood, and the train
+         * writes that down as it pulls away — the one record of the
+         * ending anywhere, and it is a fact about a platform, not a
+         * score (Session 21). */
+        {
+          const left = this.at(this.stop);
+          if (left && left !== 'person') {
+            knowledge.learn(`fact:left-at-${LINE_STOPS[this.stop].land}-${left}`);
+          }
+        }
         this.stop++;
         this.phase = 'running';
       }
@@ -397,14 +556,19 @@ export class Eight15 {
     this.place(groundAt, doorsOpen);
     this.group.visible = true;
 
-    /* WHOEVER IS WAITING, and they are only ever there while it is. */
-    const showFigure = doorsOpen && this.waiting(this.stop);
+    /* WHOEVER IS WAITING, and they are only ever there while it is —
+     * or WHATEVER a door left there instead (Session 21). */
+    const here = doorsOpen ? this.at(this.stop) : null;
+    const showFigure = here === 'person';
+    const showThing = here !== null && here !== 'person';
     this.figure.visible = showFigure;
+    this.thing.visible = showThing;
     platform.land = showFigure ? LINE_STOPS[this.stop].land : null;
-    if (showFigure) {
+    if (showFigure || showThing) {
       const land = LINE_STOPS[this.stop].land;
-      const tex = this.figTex[(CARRIES[land] ?? 5) % 6];
-      const mat = this.figure.material as THREE.MeshBasicMaterial;
+      const tex = showFigure ? this.figTex[(CARRIES[land] ?? 5) % 6] : this.thingTex[here as Left];
+      const mesh = showFigure ? this.figure : this.thing;
+      const mat = mesh.material as THREE.MeshBasicMaterial;
       if (mat.map !== tex) {
         mat.map = tex;
         mat.needsUpdate = true;
@@ -426,7 +590,7 @@ export class Eight15 {
       const dx = Math.abs(p.tz) > 0.7 ? 4.4 : 0;
       const dz = Math.abs(p.tz) > 0.7 ? 0 : 5.2;
       const gy = this.group.position.y;
-      this.figure.position.set(dx, groundAt(p.x + dx, p.z + dz) - gy, dz);
+      mesh.position.set(dx, groundAt(p.x + dx, p.z + dz) - gy, dz);
     }
     void px;
     void pz;
@@ -499,6 +663,14 @@ export class Eight15 {
     this.side.geometry.dispose();
     this.front.geometry.dispose();
     this.figure.geometry.dispose();
+    this.thing.geometry.dispose();
+    (this.thing.material as THREE.Material).dispose();
+    for (const m of this.residue) {
+      m.geometry.dispose();
+      (m.material as THREE.Material).dispose();
+      m.parent?.remove(m);
+    }
+    for (const t of Object.values(this.thingTex)) t.dispose();
     for (const t of this.cache.values()) t.dispose();
     for (const t of this.figTex) t.dispose();
     this.sideMat.dispose();

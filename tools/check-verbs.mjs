@@ -1123,6 +1123,234 @@ r.east = await page.evaluate(() => {
   return E;
 });
 
+/* ================================================================== *
+ * 12. THE SECOND DOOR (Session 21). Two fresh pages. On the first,
+ * every one of the five remaining waits is a card with both doors in
+ * front of the walker, and the SECOND door is taken at each: the clock
+ * set to eleven, the sea told to Holt, the cistern filled by hand (a
+ * carry — the can picked up, filled at the water, emptied in at the
+ * tank), the oar taken out of the boat and stood with Hallows' eleven,
+ * the second setting cleared. Then the 8:15 reads them: nobody on
+ * Splitrock's or the Penwood's platform, the cans on the Flats', the
+ * pots on Longshore's, Marget on Brim's; a walker who chose the other
+ * way at seven gates still qualifies; and the morning after the run,
+ * the cans and the pots are still on their platforms. On the second
+ * page the FIRST doors, so that each is still the wait as designed.
+ * ================================================================== */
+await page.reload({ waitUntil: 'load', timeout: 120000 });
+await page.waitForSelector('.title-veil:not(.gone)', { timeout: 60000 }).catch(() => {});
+r.doors2 = await page.evaluate(() => {
+  const I = window.__inklands;
+  I.setHour(12, false);
+  I.begin();
+  I.setBearing(true);
+  const at = (x, z) => { I.goto(x, z); I.setTime(0); I.step(1 / 60, 120); };
+  const settle = (secs) => I.step(1 / 60, Math.round(secs * 60));
+  const closeNote = () => { if (document.querySelector('.note-veil.show')) { I.press(); I.step(1 / 60, 5); } };
+  const card = () => ({ open: I.choiceOpen(), doors: [...document.querySelectorAll('.choice-btn')].map((b) => b.getAttribute('aria-label')) });
+  const D = {};
+
+  // ---- MARGET: the belfry is a note without the hour, a card with it
+  at(-63, -37);
+  settle(0.5);
+  D.belfryBefore = I.promptText();
+  I.press(); I.step(1 / 60, 5);
+  D.belfryNoCard = !I.choiceOpen();
+  closeNote();
+  I.learn('fact:brim-hour');
+  settle(0.3);
+  D.belfryPrompt = I.promptText();
+  I.press(); I.step(1 / 60, 5);
+  D.belfryCard = card();
+  I.choose(2);
+  settle(1.5);
+  D.marget = { eleven: I.knowledge.has('door:the-clock-set-to-eleven'), eight: I.knowledge.has('door:the-clock-set-to-eight'), bell: I.knowledge.has('door:the-bell-rings-it'), reason: I.knowledge.has('reason:brim'), answered: I.knowledge.answered('kingdom'), decided: I.knowledge.decided('kingdom'), platform: I.onPlatform('kingdom'), promptAfter: I.promptText() };
+
+  // ---- HOLT: the trestles, a note without the route, a card with it
+  at(300, -227);
+  settle(0.5);
+  D.trestlesBefore = I.promptText();
+  I.press(); I.step(1 / 60, 5);
+  D.trestlesNoCard = !I.choiceOpen();
+  closeNote();
+  I.learn('route:the-river');
+  settle(0.3);
+  D.trestlesPrompt = I.promptText();
+  I.press(); I.step(1 / 60, 5);
+  D.trestlesCard = card();
+  I.choose(1);
+  settle(1.5);
+  D.holt = { told: I.knowledge.has('door:the-sea-has-no-bottom'), righted: I.knowledge.has('door:the-boat-righted'), answered: I.knowledge.answered('canyon'), decided: I.knowledge.decided('canyon'), platform: I.onPlatform('canyon'), promptAfter: I.promptText() };
+
+  // ---- AMOS: the catch is a card with the fold; door two is a carry
+  I.learn('fact:the-fold');
+  at(302, 101);
+  settle(0.5);
+  D.catchPrompt = I.promptText();
+  I.press(); I.step(1 / 60, 5);
+  D.catchCard = card();
+  I.choose(1);
+  settle(1.5);
+  D.amosDoor = { yours: I.knowledge.has('door:the-cistern-yours'), lidOff: I.knowledge.has('door:the-lid-off'), filled: I.knowledge.has('fact:the-cistern-filled') };
+  const can = I.things.get('the-can');
+  at(can.x, can.z + 1.6);
+  settle(0.5);
+  D.canPrompt = I.promptText();
+  I.press();
+  settle(0.3);
+  D.canHeld = I.holding();
+  at(305, 66.5);
+  settle(0.5);
+  D.fillPrompt = I.promptText();
+  I.press();
+  settle(0.3);
+  at(302, 100.2);
+  settle(0.5);
+  D.pourPrompt = I.promptText();
+  I.press();
+  settle(0.5);
+  D.amos = { filled: I.knowledge.has('fact:the-cistern-filled'), held: I.holding(), canState: can.state, answered: I.knowledge.answered('desert'), decided: I.knowledge.decided('desert'), platform: I.onPlatform('desert') };
+  // and at night with the tank filled, no prompt to pour: the hour decides
+  I.setHour(23, false);
+  I.events.resync();
+  at(can.x, can.z + 1.6);
+  settle(0.3);
+  D.canAfter = I.promptText();
+  I.setHour(12, false);
+  I.events.resync();
+
+  // ---- BRACK: the tarn is a card outside the twenty; door two is a carry
+  at(150, -171);
+  settle(0.5);
+  D.tarnPrompt = I.promptText();
+  I.press(); I.step(1 / 60, 5);
+  D.tarnCard = card();
+  I.choose(1);
+  settle(1.5);
+  D.brackDoor = { oar: I.knowledge.has('door:the-oar-taken'), stood: I.knowledge.has('door:the-water-stood'), tarn: I.knowledge.has('fact:the-tarn') };
+  at(147, -181);   // inside the twenty, which would have earned the fact
+  settle(1.5);
+  D.brackInside = { tarn: I.knowledge.has('fact:the-tarn'), d: +Math.hypot(I.char.pos.x - 150, I.char.pos.z + 195).toFixed(1) };
+  const oar = I.things.get('the-oar');
+  at(oar.x - 1.2, oar.z + 1.4);
+  settle(0.5);
+  D.oarPrompt = I.promptText();
+  I.press();
+  settle(0.3);
+  D.oarHeld = I.holding();
+  at(99.5, -153.5);
+  settle(0.5);
+  D.hallowsPrompt = I.promptText();
+  I.press();
+  settle(0.5);
+  D.brack = { twelfth: I.knowledge.has('fact:the-twelfth-oar'), held: I.holding(), oarState: oar.state, tarn: I.knowledge.has('fact:the-tarn'), answered: I.knowledge.answered('forest'), decided: I.knowledge.decided('forest'), platform: I.onPlatform('forest') };
+
+  // ---- JOAN: the table is a card; door two clears the setting, and sitting keeps nothing
+  at(140, 13.5);
+  settle(0.5);
+  D.tablePrompt = I.promptText();
+  I.press(); I.step(1 / 60, 5);
+  D.tableCard = card();
+  I.choose(1);
+  settle(1.0);
+  D.joanDoor = { cleared: I.knowledge.has('door:the-setting-cleared'), seated: I.seated(), promptAfter: I.promptText() };
+  I.press();
+  settle(0.5);
+  D.joan = { seated: I.seated(), kept: I.knowledge.has('fact:the-place-kept'), answered: I.knowledge.answered('downs'), decided: I.knowledge.decided('downs'), platform: I.onPlatform('downs') };
+  I.standUp();
+  settle(0.3);
+
+  // ---- THE 8:15 READS THE DOORS. Seven decided the other way, and it comes.
+  I.learn('door:the-pots-hauled');
+  I.learn('door:the-cart-pushed');
+  D.decided = { n: I.knowledge.decidedWaits(), answered: I.knowledge.answeredWaits(), qualifiedWithoutLine: I.qualified() };
+  I.learn('route:the-line');
+  D.qualified = I.qualified();
+  D.platforms = { beach: I.onPlatform('beach'), meadow: I.onPlatform('meadow'), castle: I.onPlatform('castle'), office: I.onPlatform('office') };
+  // the train at the Flats' stop: the cans on the platform and nobody
+  I.hideTrain();
+  at(40, 214);
+  I.warpTrain(9, 0);
+  settle(1);
+  D.trainAtFlats = { thing: I.train.thing.visible, figure: I.train.figure.visible, map: I.train.thing.material.map === I.train.thingTex.cans, platformLand: I.platform ? I.platform.land : null };
+  I.hideTrain();
+  at(-45, 42);
+  I.warpTrain(5, 0);
+  settle(1);
+  D.trainAtLongshore = { thing: I.train.thing.visible, figure: I.train.figure.visible, map: I.train.thing.material.map === I.train.thingTex.pots };
+  I.hideTrain();
+  at(-45, -105);
+  I.warpTrain(2, 0);
+  settle(1);
+  D.trainAtBrim = { thing: I.train.thing.visible, figure: I.train.figure.visible };
+  I.hideTrain();
+  at(-45, -60);
+  I.warpTrain(3, 0);
+  settle(1);
+  D.trainAtSplitrock = { thing: I.train.thing.visible, figure: I.train.figure.visible };
+  // and the run itself, the whole length of the world, from the gate
+  I.hideTrain();
+  at(-45, 42);
+  I.runTheLine();
+  I.step(1 / 60, 60 * 200);
+  D.run = { phase: I.train.phase, ran: I.knowledge.has('fact:the-8-15-ran'), leftCans: I.knowledge.has('fact:left-at-desert-cans'), leftPots: I.knowledge.has('fact:left-at-beach-pots'), leftElse: I.knowledge.first('fact:left-at-') , residue: I.train.residueAt, carrying: I.train.carrying };
+  settle(1);
+  D.residueDrawn = I.train.residue.map((m) => m.visible);
+  return D;
+});
+
+await page.reload({ waitUntil: 'load', timeout: 120000 });
+await page.waitForSelector('.title-veil:not(.gone)', { timeout: 60000 }).catch(() => {});
+r.doors1 = await page.evaluate(() => {
+  const I = window.__inklands;
+  I.setHour(12, false);
+  I.begin();
+  I.setBearing(true);
+  const at = (x, z) => { I.goto(x, z); I.setTime(0); I.step(1 / 60, 120); };
+  const settle = (secs) => I.step(1 / 60, Math.round(secs * 60));
+  const D = {};
+  // the bell rings it, and Marget opens
+  I.learn('fact:brim-hour');
+  at(-63, -37);
+  settle(0.5);
+  I.press(); I.step(1 / 60, 5);
+  I.choose(0);
+  settle(1.5);
+  D.marget = { bell: I.knowledge.has('door:the-bell-rings-it'), reason: I.knowledge.has('reason:brim'), answered: I.knowledge.answered('kingdom'), platform: I.onPlatform('kingdom') };
+  // the river told, and the boat righted
+  I.learn('route:the-river');
+  at(300, -227);
+  settle(0.5);
+  I.press(); I.step(1 / 60, 5);
+  I.choose(0);
+  settle(1.5);
+  D.holt = { righted: I.knowledge.has('door:the-boat-righted'), answered: I.knowledge.answered('canyon'), platform: I.onPlatform('canyon') };
+  // the lid off
+  I.learn('fact:the-fold');
+  at(302, 101);
+  settle(0.5);
+  I.press(); I.step(1 / 60, 5);
+  I.choose(0);
+  settle(1.5);
+  D.amos = { lidOff: I.knowledge.has('door:the-lid-off'), canPrompt: (() => { const c = I.things.get('the-can'); at(c.x, c.z + 1.6); settle(0.3); return I.promptText(); })(), answered: I.knowledge.answered('desert'), platform: I.onPlatform('desert') };
+  // the water stood at, and Brack turns
+  at(150, -171);
+  settle(0.5);
+  I.press(); I.step(1 / 60, 5);
+  I.choose(0);
+  settle(1.5);
+  D.brack = { stood: I.knowledge.has('door:the-water-stood'), tarn: I.knowledge.has('fact:the-tarn'), answered: I.knowledge.answered('forest'), platform: I.onPlatform('forest') };
+  // sit down, and the card seats you
+  at(140, 13.5);
+  settle(0.5);
+  I.press(); I.step(1 / 60, 5);
+  I.choose(0);
+  settle(1.0);
+  D.joan = { seated: I.seated(), kept: I.knowledge.has('fact:the-place-kept'), answered: I.knowledge.answered('downs'), cardAgain: (() => { I.standUp(); settle(0.3); I.press(); I.step(1 / 60, 5); const c = I.choiceOpen(); if (I.seated()) I.standUp(); return c; })() };
+  // and a walker who walked in without pressing anything still earns the tarn
+  return D;
+});
+
 
 console.log('\nthe walk does not get worse:');
 if (r.wellPrompt === 'SHOUT DOWN THE WELL') pass(`the well says ${r.wellPrompt}`); else fail(`the well says "${r.wellPrompt}"`);
@@ -1357,6 +1585,38 @@ console.log('\nthe new cast, east and south (Session 20):');
   if (E.dogEdge && E.dogEdge.x >= E.dogEdge.edge && E.dogEdge.x < E.dogEdge.edge + 4 && E.dogEdge.walkerX < E.dogEdge.edge - 6 && E.dogEdge.pose === 3) pass(`THE LOW DOG STOPS AT THE GREEN'S EDGE: x ${E.dogEdge.x} against ${E.dogEdge.edge} with the walker at ${E.dogEdge.walkerX}, sat`); else fail(`the dog at the edge: ${JSON.stringify(E.dogEdge)}`);
   if (E.chairsPrompt === 'TELL HER WHAT YOU SAW' && E.chairsCard.open && E.chairsCard.doors.length === 2) pass(`with the castle's name the three chairs are a card with two doors: ${E.chairsCard.doors.join(' / ')}`); else fail(`the chairs: ${E.chairsPrompt}, ${JSON.stringify(E.chairsCard)}`);
   if (E.lightOff.door && E.lightOff.day && !E.lightOff.answered && E.valAnswer === 'door:the-gap-cut' && E.gapAnswers) pass(`door two writes door:the-light-off and the day (${E.lightOff.day}), and is a door and not an answer; door one answers MAPLE COURT's wait`); else fail(`Val's doors: ${JSON.stringify(E.lightOff)}, answer ${E.valAnswer}, gap ${E.gapAnswers}`);
+}
+
+console.log('\nthe second door (Session 21):');
+{
+  const D = r.doors2;
+  if (D.belfryBefore === 'WAIT FOR THE BELL' && D.belfryNoCard && D.belfryPrompt === 'SETTLE THE HOUR' && D.belfryCard.open && D.belfryCard.doors.length === 3) pass(`the belfry is a note without the hour and a card with it, three doors: ${D.belfryCard.doors.join(' / ')}`); else fail(`the belfry: ${D.belfryBefore} / ${D.belfryNoCard} / ${D.belfryPrompt} / ${JSON.stringify(D.belfryCard)}`);
+  if (D.marget.eleven && !D.marget.eight && !D.marget.bell && D.marget.reason && D.marget.answered && D.marget.decided && D.marget.platform === 'person' && D.marget.promptAfter === 'WAIT FOR THE BELL') pass('the clock set to eleven: the market is called, Marget opens, and she is on her platform'); else fail(`Marget's door: ${JSON.stringify(D.marget)}`);
+  if (D.trestlesBefore === 'LOOK AT THE MARKS' && D.trestlesNoCard && D.trestlesPrompt === 'TELL HIM WHAT YOU ROWED' && D.trestlesCard.open && D.trestlesCard.doors.length === 2) pass(`the trestles are a note without the route and a card with it: ${D.trestlesCard.doors.join(' / ')}`); else fail(`the trestles: ${D.trestlesBefore} / ${D.trestlesNoCard} / ${D.trestlesPrompt} / ${JSON.stringify(D.trestlesCard)}`);
+  if (D.holt.told && !D.holt.righted && !D.holt.answered && D.holt.decided && D.holt.platform === null && D.holt.promptAfter === 'LOOK AT THE MARKS') pass('the sea told to Holt is a door and not an answer, decided, and nobody is on his platform'); else fail(`Holt's door: ${JSON.stringify(D.holt)}`);
+  if (D.catchPrompt === 'TELL HIM ABOUT THE FOLD' && D.catchCard.open && D.catchCard.doors.length === 2 && D.amosDoor.yours && !D.amosDoor.lidOff && !D.amosDoor.filled) pass(`the catch is a card with the fold: ${D.catchCard.doors.join(' / ')}; door two writes the door and nothing yet`); else fail(`the catch: ${D.catchPrompt}, ${JSON.stringify(D.catchCard)}, ${JSON.stringify(D.amosDoor)}`);
+  if (D.canPrompt === 'PICK UP THE CAN' && D.canHeld === 'the-can' && D.fillPrompt === 'FILL THE CAN' && D.pourPrompt === 'EMPTY IT IN') pass('the can is picked up, filled at the water, and emptied in at the tank'); else fail(`the carry: ${D.canPrompt} / ${D.canHeld} / ${D.fillPrompt} / ${D.pourPrompt}`);
+  if (D.amos.filled && D.amos.held === null && D.amos.canState === 'ground' && !D.amos.answered && D.amos.decided && D.amos.platform === 'cans') pass('the cistern is filled by hand: the fact is written, the can is on the ground, the wait is decided and not answered, and THE CANS ARE ON THE FLATS\' PLATFORM instead of him'); else fail(`Amos's door: ${JSON.stringify(D.amos)}`);
+  if (D.canAfter !== 'PICK UP THE CAN') pass(`with the tank filled the can is his again (${D.canAfter})`); else fail(`the can is still yours after the pour: ${D.canAfter}`);
+  if (D.tarnPrompt === 'GO DOWN TO THE WATER' && D.tarnCard.open && D.tarnCard.doors.length === 2 && D.brackDoor.oar && !D.brackDoor.stood && !D.brackDoor.tarn) pass(`the tarn is a card outside the twenty: ${D.tarnCard.doors.join(' / ')}; the oar door writes no fact`); else fail(`the tarn: ${D.tarnPrompt}, ${JSON.stringify(D.tarnCard)}, ${JSON.stringify(D.brackDoor)}`);
+  if (!D.brackInside.tarn && D.brackInside.d < 20) pass(`inside the twenty (${D.brackInside.d}) with the oar door taken, the fact is NOT earned by arriving`); else fail(`inside the twenty: ${JSON.stringify(D.brackInside)}`);
+  if (D.oarPrompt === 'PICK UP THE OAR' && D.oarHeld === 'the-oar' && D.hallowsPrompt === 'STAND IT WITH THE OTHERS') pass('the oar is picked up at the boat and stood with Hallows\' eleven'); else fail(`the oar: ${D.oarPrompt} / ${D.oarHeld} / ${D.hallowsPrompt}`);
+  if (D.brack.twelfth && D.brack.held === null && D.brack.oarState === 'gone' && !D.brack.tarn && !D.brack.answered && D.brack.decided && D.brack.platform === null) pass('the twelfth oar is right, the oar is gone for good, Brack has not turned, and nobody is on his platform'); else fail(`Brack's door: ${JSON.stringify(D.brack)}`);
+  if (D.tablePrompt === 'SIT DOWN, OR CLEAR IT' && D.tableCard.open && D.tableCard.doors.length === 2 && D.joanDoor.cleared && !D.joanDoor.seated && D.joanDoor.promptAfter === 'SIT DOWN') pass(`the table is a card: ${D.tableCard.doors.join(' / ')}; cleared, the seat is still a seat`); else fail(`the table: ${D.tablePrompt}, ${JSON.stringify(D.tableCard)}, ${JSON.stringify(D.joanDoor)}`);
+  if (D.joan.seated && !D.joan.kept && !D.joan.answered && D.joan.decided && D.joan.platform === null) pass('sitting at a table laid for one keeps nothing; decided, not answered; the Downs\' platform is empty as it always was'); else fail(`Joan's door: ${JSON.stringify(D.joan)}`);
+  if (D.decided.n >= 7 && D.decided.answered < 7 && !D.decided.qualifiedWithoutLine && D.qualified) pass(`seven decided the other way (${D.decided.n} decided, ${D.decided.answered} answered): with the line walked THE 8:15 COMES`); else fail(`qualifying on decided waits: ${JSON.stringify(D.decided)}, qualified ${D.qualified}`);
+  if (D.platforms.beach === 'pots' && D.platforms.meadow === null && D.platforms.castle === null && D.platforms.office === null) pass('the pots on Longshore\'s platform, nobody on the Common\'s'); else fail(`platforms: ${JSON.stringify(D.platforms)}`);
+  if (D.trainAtFlats.thing && !D.trainAtFlats.figure && D.trainAtFlats.map) pass('at the Flats\' stop the doors open on two cans and nobody'); else fail(`the train at the Flats: ${JSON.stringify(D.trainAtFlats)}`);
+  if (D.trainAtLongshore.thing && !D.trainAtLongshore.figure && D.trainAtLongshore.map) pass('at Longshore\'s stop, seven pots'); else fail(`the train at Longshore: ${JSON.stringify(D.trainAtLongshore)}`);
+  if (D.trainAtBrim.figure && !D.trainAtBrim.thing && !D.trainAtSplitrock.figure && !D.trainAtSplitrock.thing) pass('Marget on Brim\'s platform; nobody and nothing on Splitrock\'s'); else fail(`Brim ${JSON.stringify(D.trainAtBrim)}, Splitrock ${JSON.stringify(D.trainAtSplitrock)}`);
+  if (D.run.phase === 'ended' && D.run.ran && D.run.leftCans && D.run.leftPots && D.run.residue[9] === 'cans' && D.run.residue[5] === 'pots' && D.run.residue.filter(Boolean).length === 2) pass(`the run from the gate to the car park leaves the cans and the pots on their platforms and nothing else (carrying ${D.run.carrying})`); else fail(`the run: ${JSON.stringify(D.run)}`);
+  if (D.residueDrawn[9] && D.residueDrawn[5] && D.residueDrawn.filter(Boolean).length === 2) pass('and the morning after, both are drawn where they stood'); else fail(`residue drawn: ${JSON.stringify(D.residueDrawn)}`);
+  const F = r.doors1;
+  if (F.marget.bell && F.marget.reason && F.marget.answered && F.marget.platform === 'person') pass('door one at the belfry: the bell rings it, the market is called, Marget is on her platform'); else fail(`Marget's first door: ${JSON.stringify(F.marget)}`);
+  if (F.holt.righted && F.holt.answered && F.holt.platform === 'person') pass('door one at the trestles rights the boat and answers SPLITROCK'); else fail(`Holt's first door: ${JSON.stringify(F.holt)}`);
+  if (F.amos.lidOff && F.amos.answered && F.amos.platform === 'person' && F.amos.canPrompt !== 'PICK UP THE CAN') pass('door one at the catch takes the lid off, answers THE FLATS, and the can stays his'); else fail(`Amos's first door: ${JSON.stringify(F.amos)}`);
+  if (F.brack.stood && F.brack.tarn && F.brack.answered && F.brack.platform === 'person') pass('door one at the tarn earns the fact and Brack turns'); else fail(`Brack's first door: ${JSON.stringify(F.brack)}`);
+  if (F.joan.seated && F.joan.kept && F.joan.answered && !F.joan.cardAgain) pass('door one at the table seats the walker on the card, keeps the place, and the card is never offered again'); else fail(`Joan's first door: ${JSON.stringify(F.joan)}`);
 }
 
 await browser.close();
