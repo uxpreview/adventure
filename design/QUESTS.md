@@ -416,9 +416,11 @@ is not one:
 | L5 | THE COMMON | the swing on the leaning oak — a sit, and the oaks' argument going by | (the sit ships Session 15; the argument is 16's) |
 | L6 | SPLITROCK | the echo that comes back wrong | 19 |
 | L7 | GREYWEATHER | sitting on the toppled king — while he is toppled | 15 (the sit exists; the king is a seat in 19) |
-| L8 | THE CUBICLE MILE | riding the office chair down the mile | 20 |
-| L9 | GREYLINE CITY | pushing the wheelie bin into the junction | 20 |
-| L10 | MAPLE COURT | the bicycle's bell; kicking a ball on the green | 18 / 20 |
+| L8 | THE CUBICLE MILE | **riding the office chair down the mile.** Sit on it and it rolls the way you were facing, on castors, with you on it, and stops where the floor lets it — a block, the shelter, the atrium's doors, the mile's edge. It stays where it stopped. Sit again | **Session 20** |
+| L9 | GREYLINE CITY | **pushing the wheelie bin into the junction.** It has gone over (E19); right it, and then it rolls; into the crossing and the pigeons go up and the box ticks for it, which is the most the city has ever done for a bin | **Session 20** |
+| L10 | MAPLE COURT | the bicycle's bell (18); **kicking a ball on the green** (20): a throw at a run is a kick, the ball rolls on, and the low dog goes after it and noses it back to your feet, and does not stop doing that | **Session 18 / 20** |
+| L16 | THE BLEACH FLATS | **POKE IT.** The big one in the pattern blinks, the two small ones hop, and it makes a noise, and you can do it again. By day only; after dark there is nothing there to poke | **Session 20** |
+| L17 | THE CUBICLE MILE | **peel a sticky off the shelter's glass.** It comes down and lies on the apron; the sprint puts the wall back in the morning | **Session 20** |
 | L11 | THE HARROW DOWNS | the sheep scatter and close up — and now they go somewhere at dawn | 15 (the drove moves on the clock) |
 | L12 | LONGSHORE | honking the 8:15 | 21 |
 

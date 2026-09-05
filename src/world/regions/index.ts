@@ -115,6 +115,11 @@ export type WorldPOI = import('../../engine/POI').POIDef & {
      *  rides it. `t` is the world's elapsed seconds, the same clock the
      *  land swings the seat on. */
     follow?: (t: number) => { dx: number; dy: number; rot: number };
+    /** A SEAT THAT DOES SOMETHING WHEN IT IS SAT ON (Session 20, the
+     *  office chair): fired once, with where the walker came from and
+     *  the way they were facing, so a chair on castors can take a
+     *  shove along the walker's own heading. */
+    onSit?: (px: number, pz: number, heading: number) => void;
   };
   /** A CHOICE CARD (`THE-FUN-PASS` §2.2, §6): two or three doors, both
    *  visible before either is taken, each writing one `door:` id into

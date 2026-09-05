@@ -661,6 +661,9 @@ export class App {
           btns[i]?.click();
         },
         choiceOpen: () => this.ui.choiceOpen,
+        /** Close an open card without choosing, for a shoot list that
+         *  opened one for the picture (Session 20). */
+        closeChoice: () => this.ui.closeChoice(),
         /** Open the longest card in the game, for the chrome sheet. */
         openChoice: (title: string, body: string, options: string[]) =>
           this.ui.openChoice(title, body, options, () => {}),
@@ -849,6 +852,7 @@ export class App {
     this.char.setSitting(true);
     this.seat = def;
     for (const id of def.sit.learns ?? []) knowledge.learn(id);
+    def.sit.onSit?.(sx, sz, this.char.heading);
   }
 
   private standUp() {

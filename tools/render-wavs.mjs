@@ -132,6 +132,12 @@ const VOICES = [
    * it is red, and a stone skipping off the bar. In the pack unheard
    * like everything else. */
   ['the-new-cast', ['viking-roar', 'horn', 'portcullis', 'board-knock', 'moat-slop', 'stone-skip']],
+  /* SESSION 20 — THE NEW CAST, EAST AND SOUTH. The low dog's yap and
+   * a ball kicked on the green; the barista calling a name; a wheelie
+   * bin rolling and a bin that will not; the office chair's castors; a
+   * sticky note coming off glass; a visitor poked, and the hum under
+   * the lights over the pan. In the pack unheard like everything else. */
+  ['the-new-cast-east', ['yap', 'ball-kick', 'order-call', 'bin-roll', 'bin-knock', 'chair-roll', 'sticky-peel', 'alien-blink', 'pale-hum']],
 ];
 console.log('');
 for (const [land, names] of VOICES) {

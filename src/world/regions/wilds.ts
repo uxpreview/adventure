@@ -38,6 +38,7 @@ import {
   cowTexture, dogTexture, sawTexture, rippleDecal,
 } from '../textures-life';
 import { rookTexture } from '../textures-oldworld';
+import { alienTexture, eyeGlowTexture, scorchDecal } from '../textures-cast';
 import { Figure, Creature, stops } from '../life';
 import { Follower } from '../company';
 import { weather } from '../weather';
@@ -1559,6 +1560,33 @@ registerRoutine(AMOS_NIGHT);
 events.register({ id: 'the-pale-kite', land: 'desert', at: 11.0, hours: 4.0, place: { x: 268, z: 52 } });
 events.register({ id: 'the-snake-crosses', land: 'desert', at: 19.7, hours: 0.08, place: { x: 304, z: 82 } });
 
+/* ================================================================== *
+ * THE ALIENS IN THE PALE (Session 20, `THE-FUN-PASS` §10). Something
+ * landed in the flattest ground in the world and burned ruled patterns
+ * into it. By day three of them stand in the pattern, grinning, and
+ * turn to look at anybody who comes across the pan: absurd. After dark
+ * the bodies are gone and there are three lights over the pan, drifting,
+ * that come toward a walker and never nearer than twelve units:
+ * frightening. **They are stuck too** — nothing of theirs has a
+ * position outside the Flats by any path here, and by night the lights
+ * keep to the pan. **Nothing anywhere says what they are.** The
+ * drawing is the owner's own one-eyed thing, as drawn, boots and all.
+ * ================================================================== */
+const PALE = { x: 268, z: 52 };
+const VISITORS: { x: number; z: number; h: number }[] = [
+  { x: 273, z: 43, h: 3.4 }, { x: 264.5, z: 60, h: 2.3 }, { x: 277, z: 61, h: 1.9 },
+];
+const NIGHT_FROM = 20.5;
+const NIGHT_TO = 5.2;
+/** How near a light will ever come to the walker. The shape in the
+ *  pines keeps eleven and a half; these keep twelve. */
+const LIGHT_KEEP = 12;
+const isNight = (h: number) => h >= NIGHT_FROM || h < NIGHT_TO;
+events.register({ id: 'the-lights-over-the-pan', land: 'desert', at: NIGHT_FROM, hours: 24 - NIGHT_FROM + NIGHT_TO, place: PALE });
+/** The poke, read by the builder's update: set by the touch, spent by
+ *  the frame. */
+const poke = { at: -9 };
+
 export const buildDesert: RegionBuilder = (ctx) => {
   const { r, terrain } = ctx;
 
@@ -1627,6 +1655,10 @@ export const buildDesert: RegionBuilder = (ctx) => {
     const posts: [number, number][] = [[258, 34], [262, 46], [266, 58], [270, 70]];
     const pf = ctx.field(fencePostTexture(7031), posts.length, { w: 1.0, h: 2.8 });
     posts.forEach(([x, z], i) => pf.set(i, x, z, 0.86 + r() * 0.24, 0, i % 2 === 0));
+    /* THE PATTERN (Session 20): burned into the pan, ruled, across the
+     * line of the posts and under two of them. The only ruled marks in
+     * the land besides the catch's apron, and the apron was made here. */
+    ctx.decal(scorchDecal(7032), 36, 36, PALE.x + 2, PALE.z, 0.32, 0.86);
   }
 
   /* THE SCRUB — the only plant that lives out here, and there is one of
@@ -1833,6 +1865,23 @@ export const buildDesert: RegionBuilder = (ctx) => {
   const mirage = [0, 1, 2].map((i) => ctx.standee(PALM[i], 8.4, 10.8, MIRAGE.x - 5 + i * 5, MIRAGE.z + (i % 2) * 2.5, { opacity: 0 }));
   for (const m of mirage) (m.material as THREE.MeshBasicMaterial).transparent = true;
 
+  /* ---- THE VISITORS (Session 20) ------------------------------------ */
+  const visitors = VISITORS.map((v, i) =>
+    new Creature(ctx, `the-visitors-${i}`, 'desert', [0, 1, 2].map((p) => alienTexture(7170 + i * 3 + p, p as 0 | 1 | 2)), v.h * 0.6, v.h, v.x, v.z));
+  const lights = VISITORS.map((v, i) =>
+    new Creature(ctx, `the-lights-over-the-pan-${i}`, 'desert', [eyeGlowTexture(7180 + i)], 1.6 + i * 0.2, 1.6 + i * 0.2, v.x, v.z));
+  for (const l of lights) {
+    (l.mesh.material as THREE.MeshBasicMaterial).depthWrite = false;
+    l.mesh.renderOrder = 3;
+    l.hide();
+  }
+  /* Where the lights are: they drift on their own slow sines about the
+   * pan, and lean toward a walker who is within forty-five, and the
+   * clamp keeps them twelve off and inside the pale. State, because a
+   * thing that comes toward you has to remember where it was. */
+  const lightAt = VISITORS.map((v) => ({ x: v.x, z: v.z, ph: v.x * 0.37 }));
+  const pale = { hum: 6, blink: 0, hop: 0 };
+
   return (dt: number, t: number, px: number, pz: number) => {
     const h = clock.hour;
 
@@ -1963,6 +2012,62 @@ export const buildDesert: RegionBuilder = (ctx) => {
       const k = noon ? Math.max(0, Math.min(1, (d - 26) / 24)) * 0.55 : 0;
       for (const m of mirage) { m.visible = k > 0.02; (m.material as THREE.MeshBasicMaterial).opacity = k; }
     }
+
+    /* ---- THE VISITORS, BY DAY AND BY NIGHT (Session 20) -------------- */
+    {
+      const night = isNight(h);
+      pale.blink = Math.max(0, pale.blink - dt);
+      pale.hop = Math.max(0, pale.hop - dt);
+      if (poke.at > 0) { poke.at = -9; pale.blink = 0.55; pale.hop = 0.42; say('alien-blink'); }
+      const dPale = Math.hypot(px - PALE.x, pz - PALE.z);
+      for (let i = 0; i < VISITORS.length; i++) {
+        const v = VISITORS[i];
+        if (night) { visitors[i].hide(); continue; }
+        /* By day they stand in the pattern and shuffle, and turn to
+         * face whoever is on the pan. The big one blinks when it is
+         * poked; the small two hop. */
+        const near = Math.hypot(px - v.x, pz - v.z) < 22;
+        const face: -1 | 1 = near ? (px < v.x ? -1 : 1) : (Math.sin(t * 0.09 + i) > 0 ? 1 : -1);
+        const hop = i > 0 && pale.hop > 0 ? Math.sin((0.42 - pale.hop) / 0.42 * Math.PI) * 0.7 : 0;
+        const pose = i === 0 && pale.blink > 0 ? 1 : 0;
+        visitors[i].set(pose, v.x + Math.sin(t * 0.7 + i * 2) * 0.12, v.z, face, hop + Math.abs(Math.sin(t * 1.6 + i)) * 0.05);
+      }
+      /* THE LIGHTS OVER THE PAN. Three eyes at height, drifting, and
+       * they come toward you and never arrive. Clamped to the pale and
+       * to the Flats: nothing of theirs leaves. */
+      for (let i = 0; i < lights.length; i++) {
+        if (!night) { lights[i].hide(); continue; }
+        const L = lightAt[i];
+        const v = VISITORS[i];
+        let tx = v.x + Math.sin(t * 0.11 + L.ph) * 14;
+        let tz = v.z + Math.cos(t * 0.083 + L.ph * 1.7) * 9;
+        if (dPale < 45) {
+          // toward the walker, to a distance, and no nearer
+          const ax = px - L.x;
+          const az = pz - L.z;
+          const ad = Math.hypot(ax, az) || 1;
+          tx = px - (ax / ad) * (LIGHT_KEEP + 3 + i * 2);
+          tz = pz - (az / ad) * (LIGHT_KEEP + 3 + i * 2);
+        }
+        const k = 1 - Math.exp(-dt * 0.45);
+        L.x += (tx - L.x) * k;
+        L.z += (tz - L.z) * k;
+        // never inside twelve of the walker, whatever the drift did
+        const dx = L.x - px;
+        const dz = L.z - pz;
+        const dd = Math.hypot(dx, dz);
+        if (dd < LIGHT_KEEP) { L.x = px + (dx / (dd || 1)) * LIGHT_KEEP; L.z = pz + (dz / (dd || 1)) * LIGHT_KEEP; }
+        // and never off the pale, which is inside the Flats
+        L.x = Math.max(242, Math.min(294, L.x));
+        L.z = Math.max(28, Math.min(76, L.z));
+        const flick = 0.55 + Math.sin(t * 2.3 + i * 1.9) * 0.18 + Math.sin(t * 7.1 + i) * 0.07;
+        lights[i].set(0, L.x, L.z, 1, 5.5 + i * 1.3 + Math.sin(t * 0.5 + i) * 0.8, flick);
+      }
+      if (night && dPale < 40) {
+        pale.hum -= dt;
+        if (pale.hum < 0) { pale.hum = 8 + Math.abs(Math.sin(t * 1.3)) * 5; say('pale-hum'); }
+      } else pale.hum = Math.min(pale.hum, 2);
+    }
   };
 };
 
@@ -1976,12 +2081,30 @@ export const DESERT_POIS: WorldPOI[] = [
     },
   },
   {
+    /* THE PALE, and from Session 20 the pattern in it and what stands
+     * in the pattern. The note reads the hour: by day there are three
+     * of them, at night there are lights, and it does not say what
+     * either is, because nothing anywhere does. */
     x: 268, z: 52, radius: 13, label: 'THE PALE',
+    prompt: 'LOOK AT THE GROUND',
     note: {
       title: 'the pale',
-      body: 'the flattest ground on the sheet, cracked into plates you could lift. four fence posts stand in a line across it with no wire between them, and whatever was worth keeping in or out has been gone a long while.',
+      body: () => (isNight(clock.hour)
+        ? 'the flattest ground on the sheet, and something has burned a pattern into it, ruled straight, which nothing out here has ever been. four fence posts stand across it with no wire between them. it is dark. there are lights over the pan, three of them, at about the height of a roof, and they are not the stars and they are not still. nobody in the flats has said anything about any of it.'
+        : 'the flattest ground on the sheet, and something has burned a pattern into it, ruled straight, which nothing out here has ever been. four fence posts stand across it with no wire between them. three of them are standing in the pattern this morning, one big and two small, and they seem pleased about it. they do not go anywhere either. nobody in the flats has said anything about any of it.'),
     },
   },
+  {
+    /* THE VISITORS' TOY: poke the big one. It blinks, the small two
+     * hop, and it makes a noise, and you can do it again. Nothing is
+     * counted and nothing is explained. Off after dark, when there is
+     * nothing there to poke. */
+    x: VISITORS[0].x, z: VISITORS[0].z + 0.6, radius: 3.2,
+    get enabled() { return !isNight(clock.hour); },
+    set enabled(_v: boolean) { /* the hour decides */ },
+    prompt: 'POKE IT',
+    touch: () => { poke.at = 1; },
+  } as unknown as WorldPOI,
   {
     x: 305, z: 55, radius: 13, label: 'THE OASIS',
     prompt: 'DRINK',

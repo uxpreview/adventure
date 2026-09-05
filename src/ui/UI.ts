@@ -21,6 +21,11 @@ export class UI {
   joyEl: HTMLElement;
 
   noteOpen = false;
+  /** WHETHER A CARD IS UP, for a land to read (Session 20): the man at
+   *  the junction's four seconds do not count while the walker is
+   *  reading, because a walker reading is not a walker deciding. The
+   *  same shape as `platform` and `happening`, and for the same reason. */
+  static chrome = { open: false };
   mapOpen = false;
   /** A choice card has the screen. Frozen like a note; see below. */
   choiceOpen = false;
@@ -356,11 +361,13 @@ export class UI {
     this.note.classList.add('show');
     this.letterNote();
     this.noteOpen = true;
+    UI.chrome.open = true;
   }
 
   closeNote() {
     this.note.classList.remove('show');
     this.noteOpen = false;
+    UI.chrome.open = this.choiceOpen;
     this.noteText = null;
   }
 
@@ -381,6 +388,7 @@ export class UI {
     this.choice.classList.add('show');
     this.letterChoice();
     this.choiceOpen = true;
+    UI.chrome.open = true;
   }
 
   private letterChoice() {
@@ -421,6 +429,7 @@ export class UI {
   closeChoice() {
     this.choice.classList.remove('show');
     this.choiceOpen = false;
+    UI.chrome.open = this.noteOpen;
     this.choiceText = null;
     this.choicePick = null;
   }

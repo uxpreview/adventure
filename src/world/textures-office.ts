@@ -571,7 +571,7 @@ export function shelterLitTexture(seed: number): THREE.CanvasTexture {
  * listened to the whole list.
  */
 export function timetableTexture(
-  seed: number, rows: string[][], wiped: number
+  seed: number, rows: string[][], wiped: number, clean = false
 ): THREE.CanvasTexture {
   return makeTexture(224, 288, seed, (ctx, r) => {
     // the case: a glazed frame on two legs, and the frame stops short
@@ -592,7 +592,7 @@ export function timetableTexture(
      * the whole board came back as a grey smear. */
     for (let i = 0; i < rows.length; i++) {
       const y = 52 + i * 14.6;
-      const dim = i === wiped ? 0.88 : 0.5 + r() * 0.08;
+      const dim = i === wiped || clean ? 0.88 : 0.5 + r() * 0.08;
       legibleCaps(ctx, rows[i][0], 28, y, 8.2, r, { alpha: dim, width: 1.25 });
       legibleCaps(ctx, rows[i][1], 154, y, 8.2, r, { alpha: dim, width: 1.25 });
     }
@@ -601,6 +601,9 @@ export function timetableTexture(
      * wiped. It is drawn LAST and it is drawn as a stain, so the type
      * under it is there and is simply older — which is what makes one
      * clean line legible from across a car park. */
+    /* WIPED CLEAN BY THE WALKER (Session 20, the second door): no
+     * stain anywhere, and the one clean line is one of twelve. */
+    if (clean) return;
     for (let i = 0; i < rows.length; i++) {
       if (i === wiped) continue;
       stain(ctx, 112, 58 + i * 14.6, 74, '#8b8b80', 0.07);

@@ -203,6 +203,17 @@ is the edge of the frame in portrait, whose horizontal field of view is
 twenty-six degrees. **A sightline beat is a POSITION problem before it
 is an art problem.** The gap is cut on `name:castle` and stays cut.
 
+**THE SECOND DOOR, SESSION 20** (`THE-FUN-PASS` §6). The cut is a
+door now: come to the three chairs holding the castle's name and it
+is a card — CUT THE GAP (`door:the-gap-cut`, and this is the answer
+the 8:15 reads) or TURN HER LIGHT OFF (`door:the-light-off`). Her
+porch goes dark at once, and the street goes dark one house at a time
+over the days after it: the day the door was taken is written into
+the knowledge as a fact with the day in it, and the number of dark
+houses is `clock.day` minus that, so it is right on arrival whether or
+not anybody was there for any of them. Val was holding the street's
+line. Nothing says which was right.
+
 ---
 
 ## WAITS & WEATHER
@@ -585,6 +596,19 @@ afterwards, with the wear exactly where it was and him sitting twenty
 units further off. The wear itself is a drawing (`wornPathsDecal`) and
 the only note anywhere near it is about a paving slab.
 
+**THE SECOND DOOR, SESSION 20.** Read the pavement and it is a card:
+STAND WITH HIM (`door:the-stood-with`; the four seconds resolve it the
+way they did) or WALK ROUND, LIKE EVERYONE (`door:the-walked-round`).
+With the second taken the four seconds no longer count, and after the
+third pass — in past seven units and out past thirteen, without
+stopping — the stone gains one more lane, nearer him than either of
+the two the city wore, and it is yours (`fact:your-lane`,
+`yourLaneDecal`). He is still standing. The four seconds do not count
+while a note or a card is up, because a walker reading is not a walker
+deciding. Standing still by him for four seconds without ever reading
+the pavement still answers the wait, the way it has since Session 13;
+the card is the way to see both doors before either is taken.
+
 ---
 
 ### 12. THE CUBICLE MILE — **DENNIS**
@@ -629,6 +653,15 @@ The prompt for this session said copy it. It is copied.*
 
 **Never says:** that the times are survey times. That the twelve are
 places. That the light means anything. That anything is coming.
+
+**THE SECOND DOOR, SESSION 20.** With the line walked, the board close
+up is a card: WIPE THE BOARD (`door:the-board-wiped`) or PRESS THE
+CORNER BACK (`door:the-corner-pressed`, which is E20's errand as a
+door). Wiped, every line is clean and the one line he had learned is
+one of twelve, and Dennis does not go to the board at eight any more.
+Pressed, the corner stays down and the grime stays where it is. The
+light at dusk is door one and is unchanged. *Board the train, or watch
+it go* is Session 21's, with the 8:15 reading the doors.
 
 ---
 

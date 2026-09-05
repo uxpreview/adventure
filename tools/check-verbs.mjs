@@ -879,6 +879,247 @@ r.cast = await page.evaluate(() => {
   }
 });
 
+/* ================================================================== *
+ * 11. THE NEW CAST, EAST AND SOUTH (Session 20). On a fresh page, like
+ * the cast before it: the visitors never leave the pan and the lights
+ * never come inside twelve; the poke is answered; the barista and the
+ * dog keep their hours; the bin is righted and rolled and the pigeons
+ * go up for it; the pavement is a card with two doors and the second
+ * one wears a lane; the studio's three are on the clock and a sticky
+ * comes off the glass; the square flock scatters and one of them does
+ * not; the chair rolls the way you were facing with you on it and
+ * refuses the atrium; the board is a card with two doors; the low dog
+ * comes to the ball and stops at the green's edge; Val's wait is a card
+ * and only one of its doors answers it.
+ * ================================================================== */
+await page.reload({ waitUntil: 'load', timeout: 120000 });
+await page.waitForSelector('.title-veil:not(.gone)', { timeout: 60000 }).catch(() => {});
+r.east = await page.evaluate(() => {
+  const I = window.__inklands;
+  I.setHour(12, false);
+  I.begin();
+  I.setBearing(true);
+  const at = (x, z) => { I.goto(x, z); I.setTime(0); I.step(1 / 60, 120); };
+  const settle = (secs) => I.step(1 / 60, Math.round(secs * 60));
+  const life = (id) => I.life.drawn().find((d) => d.id === id);
+  const closeNote = () => { if (document.querySelector('.note-veil.show')) { I.press(); I.step(1 / 60, 5); } };
+  const E = {};
+  /* THE VISITORS */
+  I.setHour(10, false);
+  I.events.resync();
+  at(268, 72);
+  settle(1);
+  E.visitorsByDay = [0, 1, 2].map((i) => life(`the-visitors-${i}`)).map((v) => v && ({ visible: v.visible, x: +v.x.toFixed(1), z: +v.z.toFixed(1) }));
+  E.lightsByDay = [0, 1, 2].map((i) => life(`the-lights-over-the-pan-${i}`)?.visible);
+  at(273, 47.6);
+  E.pokePrompt = I.promptText();
+  I.press();
+  E.blinked = false;
+  for (let f = 0; f < 40 && !E.blinked; f++) { I.step(1 / 60, 1); if (life('the-visitors-0')?.pose === 1) E.blinked = true; }
+  settle(1);
+  E.unblinked = life('the-visitors-0')?.pose === 0;
+  I.setHour(23, false);
+  I.events.resync();
+  at(268, 80);
+  settle(1);
+  E.visitorsAtNight = [0, 1, 2].map((i) => life(`the-visitors-${i}`)?.visible);
+  E.lightsAtNight = [0, 1, 2].map((i) => life(`the-lights-over-the-pan-${i}`)?.visible);
+  I.goto(268, 62);
+  let nearestLight = 1e9;
+  let offPan = false;
+  for (let f = 0; f < 60 * 12; f++) {
+    I.step(1 / 60, 1);
+    for (let i = 0; i < 3; i++) {
+      const l = life(`the-lights-over-the-pan-${i}`);
+      if (!l || !l.visible) continue;
+      nearestLight = Math.min(nearestLight, Math.hypot(l.x - 268, l.z - 62));
+      if (l.x < 240 || l.x > 296 || l.z < 26 || l.z > 78) offPan = true;
+    }
+  }
+  E.lights = { nearest: +nearestLight.toFixed(2), keep: 12, offPan };
+  /* THE BARISTA, THE DOG, THE CUPS */
+  E.routines = ['the-barista', 'the-barista-dog', 'the-sprint-lead', 'the-sprint-researcher', 'the-sprint-maker'].filter((id) => !I.events.all.some((e) => e.id === id));
+  E.orders = [0, 5, 11].map((i) => I.events.all.some((e) => e.id === `the-order-${i}`));
+  I.setHour(12.2, false);
+  I.events.resync();
+  at(142, 221);
+  settle(1);
+  E.baristaAtNoon = (() => { const b = life('the-barista'); return b && { visible: b.visible, d: +Math.hypot(b.x - 142, b.z - 216).toFixed(1) }; })();
+  E.cartPrompt = I.promptText();
+  E.dogAtNoon = (() => { const d = life('the-barista-dog'); return d && { visible: d.visible, pose: d.pose, d: +Math.hypot(d.x - 139, d.z - 216.7).toFixed(1) }; })();
+  I.setHour(6.86, false);
+  I.events.resync();
+  at(146, 196);
+  settle(0.5);
+  E.dogWalkingIn = (() => { const d = life('the-barista-dog'); return d && { visible: d.visible, pose: d.pose, z: +d.z.toFixed(1) }; })();
+  I.setHour(12, false);
+  I.events.resync();
+  /* THE BIN */
+  {
+    const b = I.things.get('the-bin');
+    const x0 = b.x;
+    const z0 = b.z;
+    at(b.x + 2.4, b.z - 2.4);
+    E.binPromptBefore = I.promptText();
+    I.press();
+    settle(0.3);
+    E.binPromptAfter = I.promptText();
+    for (let k = 0; k < 4; k++) {
+      I.goto(b.x + 2.4, b.z - 2.4);
+      I.step(1 / 60, 10);
+      I.press();
+      settle(2.0);
+    }
+    let pigeonsUp = false;
+    for (let f = 0; f < 60 && !pigeonsUp; f++) { I.step(1 / 60, 1); if (life('the-city-pigeons-0')?.pose === 1) pigeonsUp = true; }
+    E.bin = { moved: +Math.hypot(b.x - x0, b.z - z0).toFixed(1), toJunction: +Math.hypot(b.x - 148, b.z - 203).toFixed(1), pigeonsUp };
+  }
+  /* THE PAVEMENT'S TWO DOORS */
+  at(134, 204);
+  E.pavementPromptBefore = I.promptText();
+  I.press();
+  settle(0.2);
+  E.pavementNote = !!document.querySelector('.note-veil.show');
+  closeNote();
+  settle(0.2);
+  E.pavementPrompt = I.promptText();
+  I.press();
+  settle(0.2);
+  E.pavementCard = { open: I.choiceOpen(), doors: [...document.querySelectorAll('.choice-btn')].map((b) => b.getAttribute('aria-label')) };
+  I.choose(1);
+  settle(0.5);
+  E.walkedRound = I.knowledge.has('door:the-walked-round');
+  for (let k = 0; k < 3; k++) {
+    I.goto(150, 199); I.step(1 / 60, 6);
+    I.goto(143.2, 200.2); I.step(1 / 60, 6);
+    I.goto(162, 199); I.step(1 / 60, 6);
+  }
+  settle(0.5);
+  E.yourLane = I.knowledge.has('fact:your-lane');
+  E.manStillStanding = !I.knowledge.has('fact:the-man-at-the-junction');
+  /* THE STUDIO */
+  I.setHour(8.1, false);
+  I.events.resync();
+  at(252, 212);
+  settle(1);
+  E.intercept = (() => { const f = life('the-sprint-researcher'); return f && { visible: f.visible, d: +Math.hypot(f.x - 251.6, f.z - 202.6).toFixed(1) }; })();
+  I.setHour(16.2, false);
+  I.events.resync();
+  at(250, 203);
+  settle(0.5);
+  E.peelPrompt = I.promptText();
+  I.press();
+  settle(0.5);
+  E.peelAgain = I.promptText();
+  /* THE SQUARE FLOCK */
+  I.setHour(12, false);
+  I.events.resync();
+  at(304, 172);
+  settle(1);
+  const flockHome = [0, 1, 2, 3, 4, 5].map((i) => { const s = life(`the-square-flock-${i}`); return s && { x: s.x, z: s.z, visible: s.visible }; });
+  E.flockVisible = flockHome.every((s) => s && s.visible);
+  E.flockInOverflow = flockHome.every((s) => s && s.x > 284 && s.x < 332 && s.z > 134 && s.z < 164);
+  I.goto(307, 158);
+  settle(0.2);
+  I.goto(307, 153.5);
+  settle(1.5);
+  const s3 = life('the-square-flock-3');
+  const s4 = life('the-square-flock-4');
+  E.flockScatter = { moved: +Math.hypot(s3.x - flockHome[3].x, s3.z - flockHome[3].z).toFixed(2), longhornMoved: +Math.hypot(s4.x - flockHome[4].x, s4.z - flockHome[4].z).toFixed(2) };
+  I.goto(304, 176);
+  settle(20);
+  const s3b = life('the-square-flock-3');
+  E.flockBack = +Math.hypot(s3b.x - flockHome[3].x, s3b.z - flockHome[3].z).toFixed(2);
+  /* THE CHAIR */
+  {
+    const c = I.things.get('office-chair');
+    const z0 = c.z;
+    at(c.x, c.z + 2.8);
+    I.drive(0, -1, 0);
+    I.step(1 / 60, 8);
+    I.release();
+    I.step(1 / 60, 10);
+    E.chairPrompt = I.promptText();
+    I.press();
+    settle(0.2);
+    E.chairSeated = I.seated();
+    settle(3.0);
+    const w = I.char.pos;
+    E.chair = { rolled: +(z0 - c.z).toFixed(1), rideDz: +Math.abs(w.z - c.z).toFixed(2), rideDx: +Math.abs(w.x - c.x).toFixed(2), z: +c.z.toFixed(1), atriumZ: 174.5 };
+    I.standUp();
+    settle(0.2);
+  }
+  /* THE BOARD'S TWO DOORS */
+  at(256.5, 203);
+  E.boardPromptBefore = I.promptText();
+  I.learn('route:the-line');
+  I.step(1 / 60, 5);
+  E.boardPrompt = I.promptText();
+  I.press();
+  settle(0.2);
+  E.boardCard = { open: I.choiceOpen(), doors: [...document.querySelectorAll('.choice-btn')].map((b) => b.getAttribute('aria-label')) };
+  I.choose(0);
+  settle(0.3);
+  E.boardWiped = I.knowledge.has('door:the-board-wiped');
+  E.boardPromptAfter = I.promptText();
+  /* THE LOW DOG AND THE BALL */
+  I.setHour(12, false);
+  I.events.resync();
+  at(2, 190);
+  settle(4);
+  const dog0 = life('the-low-dog');
+  E.dogOnGreen = dog0 && { visible: dog0.visible, d: +Math.hypot(dog0.x - 2, dog0.z - 190).toFixed(1) };
+  {
+    const b = I.things.get('the-ball');
+    I.goto(b.x, b.z + 1.6);
+    I.step(1 / 60, 20);
+    E.ballPrompt = I.promptText();
+    I.press();
+    settle(0.2);
+    E.ballHeld = I.holding();
+    const fx = b.x;
+    const fz = b.z;
+    I.drive(0, -1, 1);
+    I.step(1 / 60, 40);
+    I.press();
+    I.step(1 / 60, 6);
+    I.release();
+    let dogToBall = 1e9;
+    for (let f = 0; f < 60 * 8; f++) {
+      I.step(1 / 60, 1);
+      const d = life('the-low-dog');
+      if (d) dogToBall = Math.min(dogToBall, Math.hypot(d.x - b.x, d.z - b.z));
+    }
+    E.kick = { state: b.state, flew: +Math.hypot(b.x - fx, b.z - fz).toFixed(1), dogToBall: +dogToBall.toFixed(2) };
+  }
+  I.goto(2, 186);
+  settle(2);
+  I.drive(-1, 0, 1);
+  I.step(1 / 60, 60 * 6);
+  I.release();
+  settle(2);
+  {
+    const d = life('the-low-dog');
+    const w = I.char.pos;
+    E.dogEdge = d && { x: +d.x.toFixed(1), edge: -16, pose: d.pose, walkerX: +w.x.toFixed(1) };
+  }
+  /* VAL'S CARD */
+  I.learn('name:castle');
+  at(-61, 143);
+  E.chairsPrompt = I.promptText();
+  I.press();
+  settle(0.2);
+  E.chairsCard = { open: I.choiceOpen(), doors: [...document.querySelectorAll('.choice-btn')].map((b) => b.getAttribute('aria-label')) };
+  I.choose(1);
+  settle(0.5);
+  E.lightOff = { door: I.knowledge.has('door:the-light-off'), day: I.knowledge.first('fact:the-light-went-off-on-day-'), answered: I.knowledge.answered('neighborhood') };
+  E.valAnswer = I.waitAnswers.neighborhood;
+  I.learn('door:the-gap-cut');
+  E.gapAnswers = I.knowledge.answered('neighborhood');
+  return E;
+});
+
+
 console.log('\nthe walk does not get worse:');
 if (r.wellPrompt === 'SHOUT DOWN THE WELL') pass(`the well says ${r.wellPrompt}`); else fail(`the well says "${r.wellPrompt}"`);
 if (r.signPrompt === 'READ THE SIGNPOST') pass(`the signpost still says ${r.signPrompt}`); else fail(`the signpost says "${r.signPrompt}"`);
@@ -1085,6 +1326,33 @@ console.log('\nthe new cast, west and north (Session 19):');
   if (N.shape.shown && N.shape.gone) pass('the shape in the deep pines is drawn once at night, and is gone'); else fail(`the shape: ${JSON.stringify(N.shape)}`);
   if (N.stonePrompt === 'PICK UP THE STONE' && N.skim.skips >= 1 && N.skim.state === 'ground') pass(`the bar's stone skips: ${N.skim.skips} skip(s) before it went in`); else fail(`the skim: ${N.stonePrompt}, ${JSON.stringify(N.skim)}`);
   if (N.waits === 3) pass(`three waits answered on this page, and the line wants seven of the eleven built`); else fail(`answered waits: ${N.waits}`);
+}
+
+console.log('\nthe new cast, east and south (Session 20):');
+{
+  const E = r.east;
+  if (E.visitorsByDay.every((v) => v && v.visible && v.x > 240 && v.x < 296 && v.z > 26 && v.z < 78) && E.lightsByDay.every((v) => v === false)) pass(`three visitors stand in the pale by day, and no lights`); else fail(`the visitors by day: ${JSON.stringify(E.visitorsByDay)} lights ${JSON.stringify(E.lightsByDay)}`);
+  if (E.pokePrompt === 'POKE IT' && E.blinked && E.unblinked) pass('POKE IT: the big one blinks, and stops'); else fail(`the poke: ${E.pokePrompt}, blinked ${E.blinked}, unblinked ${E.unblinked}`);
+  if (E.visitorsAtNight.every((v) => v === false) && E.lightsAtNight.every((v) => v === true)) pass('at night the bodies are gone and there are three lights over the pan'); else fail(`at night: visitors ${JSON.stringify(E.visitorsAtNight)} lights ${JSON.stringify(E.lightsAtNight)}`);
+  if (E.lights.nearest >= E.lights.keep - 0.05 && !E.lights.offPan) pass(`THE LIGHTS NEVER COME INSIDE TWELVE (nearest ${E.lights.nearest}) and never leave the pale`); else fail(`the lights: ${JSON.stringify(E.lights)}`);
+  if (!E.routines.length && E.orders.every(Boolean)) pass('the barista, the dog and the studio\'s three are routines on the clock, and the orders are events on the hour'); else fail(`routines missing ${E.routines.join(', ')}, orders ${JSON.stringify(E.orders)}`);
+  if (E.baristaAtNoon && E.baristaAtNoon.visible && E.baristaAtNoon.d < 4 && E.cartPrompt === 'READ THE CUPS') pass(`at noon the barista is behind the cart (${E.baristaAtNoon.d} off) and the cart says ${E.cartPrompt}`); else fail(`the barista at noon: ${JSON.stringify(E.baristaAtNoon)}, ${E.cartPrompt}`);
+  if (E.dogAtNoon && E.dogAtNoon.visible && E.dogAtNoon.pose === 0 && E.dogAtNoon.d < 1.5) pass('and the dog sits beside it in its bow tie, still'); else fail(`the dog at noon: ${JSON.stringify(E.dogAtNoon)}`);
+  if (E.dogWalkingIn && E.dogWalkingIn.visible && E.dogWalkingIn.pose > 0 && E.dogWalkingIn.z > 160 && E.dogWalkingIn.z < 216) pass(`at 6.86 the dog is walking in from the north end (z ${E.dogWalkingIn.z}, pose ${E.dogWalkingIn.pose})`); else fail(`the dog walking in: ${JSON.stringify(E.dogWalkingIn)}`);
+  if (E.binPromptBefore === 'RIGHT THE BIN' && E.binPromptAfter === 'PUSH THE BIN' && E.bin.moved > 6 && E.bin.pigeonsUp) pass(`the bin is righted, rolled ${E.bin.moved} units toward the junction (${E.bin.toJunction} off it), and the pigeons went up for it`); else fail(`the bin: ${E.binPromptBefore} / ${E.binPromptAfter}, ${JSON.stringify(E.bin)}`);
+  if (E.pavementPromptBefore === 'LOOK DOWN' && E.pavementNote && E.pavementPrompt === 'STAND, OR WALK ROUND' && E.pavementCard.open && E.pavementCard.doors.length === 2) pass(`the pavement is a note, then a card with two doors: ${E.pavementCard.doors.join(' / ')}`); else fail(`the pavement: ${E.pavementPromptBefore}, note ${E.pavementNote}, ${E.pavementPrompt}, ${JSON.stringify(E.pavementCard)}`);
+  if (E.walkedRound && E.yourLane && E.manStillStanding) pass('door two: three passes wear your lane, and he is still standing'); else fail(`walked round: ${E.walkedRound}, lane ${E.yourLane}, standing ${E.manStillStanding}`);
+  if (E.intercept && E.intercept.visible && E.intercept.d < 2) pass(`at eight the researcher is at the stop with a clipboard (${E.intercept.d} off the mark)`); else fail(`the intercept: ${JSON.stringify(E.intercept)}`);
+  if (E.peelPrompt === 'PEEL ONE OFF' && E.peelAgain === 'PEEL ONE OFF') pass('PEEL ONE OFF, and again'); else fail(`the stickies: ${E.peelPrompt} then ${E.peelAgain}`);
+  if (E.flockVisible && E.flockInOverflow) pass('six square sheep, one to a bay, all in the overflow'); else fail(`the flock: visible ${E.flockVisible}, in the overflow ${E.flockInOverflow}`);
+  if (E.flockScatter.moved > 1.5 && E.flockScatter.longhornMoved < 0.3 && E.flockBack < 1.2) pass(`a walker scatters one ${E.flockScatter.moved} units and the long-horned one does not move (${E.flockScatter.longhornMoved}); it re-parks (${E.flockBack} off) when you have gone`); else fail(`the scatter: ${JSON.stringify(E.flockScatter)}, back ${E.flockBack}`);
+  if (E.chairPrompt === 'SIT ON THE CHAIR' && E.chairSeated && E.chair.rolled > 5 && E.chair.rideDz < 0.6 && E.chair.rideDx < 0.6 && E.chair.z > E.chair.atriumZ) pass(`the chair rolls ${E.chair.rolled} units the way you were facing with you on it, and stops short of the atrium (z ${E.chair.z})`); else fail(`the chair: ${E.chairPrompt}, seated ${E.chairSeated}, ${JSON.stringify(E.chair)}`);
+  if (E.boardPromptBefore === 'LOOK AT THE BOARD' && E.boardPrompt === 'WIPE IT, OR PRESS THE CORNER' && E.boardCard.open && E.boardCard.doors.length === 2 && E.boardWiped && E.boardPromptAfter === 'LOOK AT THE BOARD') pass(`the board is a card with two doors once the line is walked: ${E.boardCard.doors.join(' / ')}`); else fail(`the board: ${E.boardPromptBefore} / ${E.boardPrompt} / ${E.boardPromptAfter}, ${JSON.stringify(E.boardCard)}, wiped ${E.boardWiped}`);
+  if (E.dogOnGreen && E.dogOnGreen.visible && E.dogOnGreen.d < 4.5) pass(`the low dog comes to a walker on the green (${E.dogOnGreen.d} off)`); else fail(`the low dog: ${JSON.stringify(E.dogOnGreen)}`);
+  if (E.ballPrompt === 'PICK UP THE BALL' && E.ballHeld === 'the-ball' && E.kick.state === 'ground' && E.kick.flew > 5 && E.kick.dogToBall < 2.5) pass(`the ball is kicked ${E.kick.flew} units and the dog goes after it (within ${E.kick.dogToBall})`); else fail(`the ball: ${E.ballPrompt}, held ${E.ballHeld}, ${JSON.stringify(E.kick)}`);
+  if (E.dogEdge && E.dogEdge.x >= E.dogEdge.edge && E.dogEdge.x < E.dogEdge.edge + 4 && E.dogEdge.walkerX < E.dogEdge.edge - 6 && E.dogEdge.pose === 3) pass(`THE LOW DOG STOPS AT THE GREEN'S EDGE: x ${E.dogEdge.x} against ${E.dogEdge.edge} with the walker at ${E.dogEdge.walkerX}, sat`); else fail(`the dog at the edge: ${JSON.stringify(E.dogEdge)}`);
+  if (E.chairsPrompt === 'TELL HER WHAT YOU SAW' && E.chairsCard.open && E.chairsCard.doors.length === 2) pass(`with the castle's name the three chairs are a card with two doors: ${E.chairsCard.doors.join(' / ')}`); else fail(`the chairs: ${E.chairsPrompt}, ${JSON.stringify(E.chairsCard)}`);
+  if (E.lightOff.door && E.lightOff.day && !E.lightOff.answered && E.valAnswer === 'door:the-gap-cut' && E.gapAnswers) pass(`door two writes door:the-light-off and the day (${E.lightOff.day}), and is a door and not an answer; door one answers MAPLE COURT's wait`); else fail(`Val's doors: ${JSON.stringify(E.lightOff)}, answer ${E.valAnswer}, gap ${E.gapAnswers}`);
 }
 
 await browser.close();

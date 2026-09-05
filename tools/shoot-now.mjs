@@ -31,7 +31,7 @@ const SHOTS = [
   ['03-maple-the-bridge',          -45, 196],
   ['04-maple-the-green',             2, 192],
   ['05-maple-the-chairs',          -61, 142, { hour: 12 }],
-  ['06-maple-the-chairs-open',     -61, 142, { hour: 12, learn: ['name:castle'] }],
+  ['06-maple-the-chairs-open',     -61, 142, { hour: 12, learn: ['name:castle', 'door:the-gap-cut'] }],
   ['07-maple-the-court',           -78, 158],
   ['08-maple-THE-SHOT-porch-dusk', -78, 144, { hour: 19.8 }],
   ['09-maple-junes-gate',           50, 203, { hour: 19.8 }],

@@ -48,7 +48,19 @@ import {
   handcartTexture, childTexture, catTexture, batTexture, lanternGlowTexture,
   pigeonFlyTexture, ratTexture, magpieTexture, foxTexture, wheelTexture,
 } from '../textures-life';
-import { Figure, Creature, stops } from '../life';
+import {
+  dachshundTexture, ballTexture, bowtieDogTexture, pawTexture, coffeeCartTexture, cupRowTexture,
+  baristaTexture, wheelieBinTexture, yourLaneDecal, squareSheepTexture, designerTexture,
+  personaBoardTexture, journeyMapTexture, stickyGlassTexture, stickyNoteDecal, officeChairTexture,
+  liftedCornerTexture, sprintSignTexture,
+} from '../textures-cast';
+import { things } from '../things';
+import { barriers } from '../barriers';
+import { Footprints } from '../../engine/Footprints';
+import { INK_HEX } from '../../engine/palette';
+import { routineAt } from '../events';
+import { UI } from '../../ui/UI';
+import { Figure, Creature, stops, type StopRow } from '../life';
 import { events, routineAt as routineState, registerRoutine, type RoutineDef } from '../events';
 import { weather } from '../weather';
 import { rookAt } from '../rooks';
@@ -1463,8 +1475,24 @@ const HEDGE_Z = 126;
 const JUNE_GATE = { x: 50, z: 191 };
 const JUNE_FENCE = { x: 55.5, z: 197.2 };
 
+/* ================================================================== *
+ * THE LOW DOG AND THE BALL (Session 20, `THE-FUN-PASS` §3 items 1 and
+ * 3; `QUESTS` §8 L10). The owner's dachshund, on the green, from seven
+ * until eight at night. THE GREEN is its land: it falls in beside a
+ * walker who comes onto the grass and stops dead at the green's edge,
+ * which is a line and not a border — the co-walker rule at the scale
+ * of a lawn. And THE BALL: a carriable that ROLLS when it comes down,
+ * so a throw at a run is a kick; the dog goes after it and noses it
+ * back toward you, and does not stop doing that. A toy, and nothing
+ * counts.
+ * ================================================================== */
+const GREEN_AT = { x: 2, z: 178 };
+const GREEN_RECT = { minX: -16, maxX: 24, minZ: 160, maxZ: 198 };
+things.register({ id: 'the-ball', kind: 'carriable', land: 'neighborhood', home: { x: -1, z: 182 }, name: 'THE BALL', rolls: 7 });
+events.register({ id: 'the-low-dog', land: 'neighborhood', at: 7.0, hours: 13.0, place: GREEN_AT });
+
 export const buildNeighborhood: RegionBuilder = (ctx) => {
-  const { r } = ctx;
+  const { r, terrain } = ctx;
 
   /* ---- the shared drawings, made ONCE (Session 10's costing) ------- */
   const HOUSE = [0, 1, 2].map((v) => courtHouseTexture(8000 + v, v as 0 | 1 | 2));
@@ -1815,6 +1843,17 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
   (carLights.material as THREE.MeshBasicMaterial).transparent = true;
   (carLights.material as THREE.MeshBasicMaterial).opacity = 0.85;
 
+  /* ---- THE LOW DOG AND THE BALL (Session 20) ------------------------ */
+  const ballThing = things.get('the-ball')!;
+  ballThing.def.hand = ballTexture(8850);
+  ballThing.def.handSize = [0.5, 0.5];
+  ballThing.def.refuse = (x, z) => barriers.blocks(x, z) || terrain.blockedAt(x, z) || terrain.waterAt(x, z) > 0.12;
+  const ball = ctx.standee(ballTexture(8851), 0.62, 0.62, ballThing.x, ballThing.z);
+  ballThing.mesh = ball;
+  const lowDog = new Creature(ctx, 'the-low-dog', 'neighborhood', [0, 1, 2, 3].map((p) => dachshundTexture(8860 + p, p as 0 | 1 | 2 | 3)), 2.5, 1.25, GREEN_AT.x + 3, GREEN_AT.z + 4);
+  const low = { x: GREEN_AT.x + 3, z: GREEN_AT.z + 4, face: -1 as -1 | 1, pose: 0, bark: 3, noticed: false, ballWas: 'ground' as string };
+  const inGreen = (x: number, z: number) => x >= GREEN_RECT.minX && x < GREEN_RECT.maxX && z >= GREEN_RECT.minZ && z < GREEN_RECT.maxZ;
+
   /* ================================================================ */
   let sprinkler = 6;
   let dog = 21;
@@ -1834,14 +1873,31 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
       Math.min(1, (6.6 - h) / 1.8)
     );
     const k = Math.max(0, Math.min(1, dusk));
-    lightUp(lits, k);
-    (porch.material as THREE.MeshBasicMaterial).opacity = 0.3 + k * 0.7;
-    porch.visible = true;
+    /* THE SECOND DOOR (Session 20, `THE-FUN-PASS` §6): her light is
+     * off, and THE STREET GOES DARK ONE HOUSE AT A TIME over the days
+     * after it. The day the door was taken is written into the
+     * knowledge once, as a readable fact, and from then on how many
+     * houses are dark is a pure function of the day — so a walker who
+     * comes back on the fourth day finds four dark, whether or not they
+     * were here for any of them. Val was holding the street's line. */
+    const off = knowledge.has('door:the-light-off');
+    let dark = 0;
+    if (off) {
+      const first = knowledge.first('fact:the-light-went-off-on-day-');
+      if (!first) knowledge.learn(`fact:the-light-went-off-on-day-${clock.day}`);
+      const day0 = first ? parseInt(first.slice('fact:the-light-went-off-on-day-'.length), 10) : clock.day;
+      dark = Math.max(0, Math.min(lits.length, clock.day - day0));
+    }
+    for (let i = 0; i < lits.length; i++) lightUp([lits[i]], i >= lits.length - dark ? 0 : k);
+    (porch.material as THREE.MeshBasicMaterial).opacity = off ? 0 : 0.3 + k * 0.7;
+    porch.visible = !off;
 
     /* THE GAP IS CUT BACK OPEN, and it stays cut. You have stood under
-     * Greyweather; the hedge at the bottom of this garden has a notch
-     * in it now, and through the notch there is a ridge. */
-    const seen = knowledge.has('name:castle');
+     * Greyweather and said so at the three chairs (from Session 20 the
+     * cut is a door, taken on a card with the castle's name); the hedge
+     * at the bottom of this garden has a notch in it now, and through
+     * the notch there is a ridge. */
+    const seen = knowledge.has('door:the-gap-cut');
     hedgeShut.visible = !seen;
     hedgeCut.visible = seen;
 
@@ -1932,6 +1988,66 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
       say('cat-mew');
     }
     fenceCat.set(fenceCatState.awake > 0 ? 1 : 0, VAL.x - 5.8, VAL.z + 8.5, px < VAL.x - 5.8 ? -1 : 1, 1.05);
+
+    /* ---- THE LOW DOG AND THE BALL (Session 20) ---------------------- */
+    {
+      // the ball: in the hand, in the air, or on the grass, rolling
+      if (ballThing.state === 'flying' && low.ballWas === 'held') say('ball-kick');
+      low.ballWas = ballThing.state;
+      const fp = things.flyPos(ballThing);
+      if (fp) { ball.visible = true; ball.position.set(fp.x, fp.y + 0.3, fp.z); }
+      else if (ballThing.state === 'ground') {
+        ball.visible = true;
+        ball.position.set(ballThing.x, ctx.groundY(ballThing.x, ballThing.z) + 0.3, ballThing.z);
+        ball.rotation.z -= Math.hypot(ballThing.vx, ballThing.vz) * dt * 2.2 * (ballThing.vx < 0 ? -1 : 1);
+      } else ball.visible = false;
+
+      const out = events.progress('the-low-dog') >= 0 && !rain;
+      if (!out) lowDog.hide();
+      else {
+        const walkerIn = inGreen(px, pz);
+        const dW = Math.hypot(px - low.x, pz - low.z);
+        if (!low.noticed && walkerIn && dW < 12) { low.noticed = true; say('yap'); }
+        if (!walkerIn && dW > 30) low.noticed = false;
+        /* What it wants: the ball, if the ball is loose on the green and
+         * not at your feet; otherwise you, at a stride and a half. */
+        const ballLoose = low.noticed && ballThing.state === 'ground' && inGreen(ballThing.x, ballThing.z)
+          && Math.hypot(ballThing.x - px, ballThing.z - pz) > 3.5;
+        let tx = low.x;
+        let tz = low.z;
+        let want = 0;
+        if (ballLoose) { tx = ballThing.x; tz = ballThing.z; want = 0.8; }
+        else if (low.noticed) { tx = px; tz = pz; want = 2.4; }   // and toward a walker who has left, as far as the edge
+        const d = Math.hypot(tx - low.x, tz - low.z);
+        if (d > want + 0.3) {
+          const speed = ballLoose || d > want * 3 ? 6.4 : 3.2;
+          low.pose = speed > 5 ? 2 : 1;
+          const step = Math.min(d - want, speed * dt);
+          let nx = Math.max(GREEN_RECT.minX + 1, Math.min(GREEN_RECT.maxX - 1, low.x + ((tx - low.x) / d) * step));
+          let nz = Math.max(GREEN_RECT.minZ + 1, Math.min(GREEN_RECT.maxZ - 1, low.z + ((tz - low.z) / d) * step));
+          if (terrain.blockedAt(nx, low.z) || barriers.blocks(nx, low.z)) nx = low.x;
+          if (terrain.blockedAt(low.x, nz) || barriers.blocks(low.x, nz)) nz = low.z;
+          const held = Math.hypot(nx - low.x, nz - low.z) < step * 0.35 && d > want + 1;
+          if (Math.abs(nx - low.x) > 1e-4) low.face = nx > low.x ? 1 : -1;
+          low.x = nx;
+          low.z = nz;
+          /* THE GREEN'S EDGE: held by the clamp with you beyond it, it
+           * sits and looks after you. A line that is not a border. */
+          if (held) { low.pose = 3; low.face = px < low.x ? -1 : 1; }
+        } else {
+          low.pose = walkerIn ? 0 : 3;
+          low.face = px < low.x ? -1 : 1;
+          if (ballLoose) {
+            // it noses the ball back toward you, and keeps doing that
+            const hd = Math.atan2(px - ballThing.x, pz - ballThing.z);
+            if (things.roll('the-ball', hd, 5.5) === 'moved') { say('yap'); low.pose = 1; }
+          }
+        }
+        low.bark -= dt;
+        if (low.pose === 2 && low.bark < 0) { low.bark = 4 + (_t % 3); say('yap'); }
+        lowDog.set(low.pose, low.x, low.z, low.face);
+      }
+    }
   };
 };
 
@@ -1952,17 +2068,52 @@ export const NEIGHBORHOOD_POIS: WorldPOI[] = [
     prompt: 'LOOK UP THE STREET',
     note: {
       title: 'maple court',
-      body: 'eleven houses round a circle you can walk all the way around. one porch light on, at four in the afternoon, and it has not been off in a long time. the bins go out on the right day.',
+      body: () => (knowledge.has('door:the-light-off')
+        ? 'eleven houses round a circle you can walk all the way around. the porch light at the head of it is off. the others are going off too, one a day, and nobody on this road would be so rude as to say so. the bins still go out on the right day.'
+        : 'eleven houses round a circle you can walk all the way around. one porch light on, at four in the afternoon, and it has not been off in a long time. the bins go out on the right day.'),
     },
   },
   {
+    /* THE THREE CHAIRS — and from Session 20, where VAL's wait is a card
+     * with two doors (`THE-FUN-PASS` §6, `THE-WAITS` §3). Come back
+     * holding the castle's name and it is a choice: the gap is cut, or
+     * her light goes off. Nothing here says which was right. */
     x: -61, z: 139, radius: 8, label: 'THE THREE CHAIRS',
-    prompt: 'LOOK AT THE HEDGE',
+    get prompt() {
+      const done = knowledge.has('door:the-gap-cut') || knowledge.has('door:the-light-off');
+      if (!done && knowledge.has('name:castle')) return 'TELL HER WHAT YOU SAW';
+      return 'LOOK AT THE HEDGE';
+    },
+    get choice() {
+      if (!knowledge.has('name:castle')) return undefined;
+      return {
+        body: 'three chairs facing a hedge, and you have stood under greyweather, which is what the hedge is in the way of. val keeps the hedge, and the porch light, and the street. the hedge could be cut back to the gap that was in it. or the light could go off, which is the other thing she has been holding.',
+        options: [
+          { label: 'CUT THE GAP', door: 'door:the-gap-cut' },
+          { label: 'TURN HER LIGHT OFF', door: 'door:the-light-off' },
+        ],
+      };
+    },
     note: {
       title: 'the three chairs',
-      body: 'facing a hedge. somebody set them out at this angle on purpose, and somebody has gone on cutting the hedge ever since, and both of those are true.',
+      body: () => {
+        if (knowledge.has('door:the-gap-cut')) return 'facing a gap in a hedge, and through the gap, on a clear day, a ridge with a castle on it, which is what every child on this road grew up looking at. somebody set the chairs out at this angle on purpose. it turns out they were right.';
+        if (knowledge.has('door:the-light-off')) return 'facing a hedge. the porch light at the head of the court is off. it is the first time it has been off in a long time, and the street has noticed, one house at a time.';
+        return 'facing a hedge. somebody set them out at this angle on purpose, and somebody has gone on cutting the hedge ever since, and both of those are true.';
+      },
     },
-  },
+  } as unknown as WorldPOI,
+  {
+    /* THE BALL, wherever it is. Off while it is in the hand or in the
+     * air. A throw at a run is a kick, and the dog is the reason. */
+    get x() { return things.get('the-ball')!.x; },
+    get z() { return things.get('the-ball')!.z; },
+    get enabled() { return things.get('the-ball')!.state === 'ground'; },
+    set enabled(_v: boolean) { /* the registry decides */ },
+    radius: 2.4,
+    prompt: 'PICK UP THE BALL',
+    touch: () => { things.pickUp('the-ball'); },
+  } as unknown as WorldPOI,
   {
     x: 50, z: 193, radius: 7, label: 'THE GATE ON THE LATCH',
     prompt: 'LOOK AT THE LATCH',
@@ -2024,6 +2175,60 @@ const ASK_SECONDS = 4;
  *  anything. */
 let lastX = 0;
 let lastZ = 0;
+
+/* ================================================================== *
+ * THE BARISTA AT THE JUNCTION (Session 20, `THE-FUN-PASS` §10). A
+ * coffee cart on the south-west corner, and a person behind it who
+ * calls out a name on the hour, from seven until six, for an order
+ * nobody collects — and sets the cup on the counter with the name on
+ * it, and the cups stand there all day, and at six they go in the bin.
+ * **A second list of names in the world.** Eleven of them are people
+ * who cannot come and get a coffee, because every one of them is on
+ * the other side of a line; the eleventh cup has nothing written on
+ * it. Comedy, then something else, and nothing here says so.
+ *
+ * THE BARISTA is the only person in the city who stands still on
+ * purpose. THE DOG sits beside the cart in a bow tie all day, still on
+ * purpose too, and walks in and out with the barista, and leaves paw
+ * prints on the pavement — the only prints in Greyline that are not
+ * yours. Both drawings are the owner's.
+ * ================================================================== */
+const CART = { x: 142, z: 216 };
+const CART_DOOR = { x: 150, z: 160 };
+/** The names, in the order the cups go down. The eleventh is blank. */
+const ORDERS: (string | null)[] = ['WICK', 'MARGET', 'VAL', 'HOLT', 'AMOS', 'PYE', 'BRACK', 'WREN', 'NELL', 'JOAN', null, 'DENNIS'];
+const OPEN = 7.0;
+const CLOSE = 18.6;
+/** How many cups are on the counter at an hour. Pure. */
+const cupsAt = (h: number) => (h < OPEN || h >= CLOSE ? 0 : Math.min(ORDERS.length, Math.floor(h - OPEN) + 1));
+/** In by mill lane and across the junction, out the same way: the
+ *  straight line from the door passes behind the shop row. */
+const CART_TURN = { x: 149.5, z: 206.5 };
+const BARISTA_STOPS: StopRow[] = [[6.7, CART_DOOR.x, CART_DOOR.z, 0, -1], [6.95, CART_TURN.x, CART_TURN.z, 0, -1]];
+for (let i = 0; i < ORDERS.length; i++) {
+  // on the hour, a name is called: the drawing with the hand up; then
+  // the counter is wiped until the next
+  BARISTA_STOPS.push([OPEN + i, CART.x + 2.9, CART.z + 0.5, 0, -1, 0.1]);
+  BARISTA_STOPS.push([OPEN + i + 0.1, CART.x + 2.9, CART.z + 0.5, 2, -1, 0.9]);
+}
+BARISTA_STOPS.push([CLOSE, CART.x + 2.9, CART.z + 0.5, 0, -1, 0.05]);
+BARISTA_STOPS.push([CLOSE + 0.12, CART_TURN.x, CART_TURN.z, 0, 1]);
+BARISTA_STOPS.push([CLOSE + 0.32, CART_DOOR.x, CART_DOOR.z, 0, 1, 0.02]);
+const BARISTA = { id: 'the-barista', land: 'city' as const, pace: 300, walkPose: 0, stops: stops(BARISTA_STOPS) };
+const BARISTA_DOG: RoutineDef = { id: 'the-barista-dog', land: 'city', pace: 300, stops: stops([
+  [6.72, CART_DOOR.x - 1.2, CART_DOOR.z + 0.6, 0, -1], [6.96, CART_TURN.x + 1.2, CART_TURN.z + 0.6, 0, -1],
+  [OPEN + 0.02, CART.x - 3.0, CART.z + 0.7, 0, 1, CLOSE - OPEN + 0.03],
+  [CLOSE + 0.14, CART_TURN.x + 1.2, CART_TURN.z + 0.6, 0, 1], [CLOSE + 0.34, CART_DOOR.x - 1.2, CART_DOOR.z + 0.6, 0, 1, 0.02],
+]) };
+registerRoutine(BARISTA_DOG);
+for (let i = 0; i < ORDERS.length; i++) {
+  events.register({ id: `the-order-${i}`, land: 'city', at: OPEN + i, hours: 0.06, place: CART,
+    onStart: (px, pz) => { if (Math.hypot(px - CART.x, pz - CART.z) < 34) say('order-call'); } });
+}
+/** THE WHEELIE BIN (`QUESTS` §8 L9, `THE-STRANGERS` E19): a bin at the
+ *  junction that has gone over, and nobody has stopped. Righted the
+ *  first time it is touched, and from then on it rolls. */
+things.register({ id: 'the-bin', kind: 'pushable', land: 'city', home: { x: 152.5, z: 190.5 }, name: 'THE BIN', shove: 7 });
 
 export const buildCity: RegionBuilder = (ctx) => {
   const { r, terrain } = ctx;
@@ -2309,6 +2514,36 @@ export const buildCity: RegionBuilder = (ctx) => {
   const ratState = { gone: 0 };
   events.register({ id: 'the-hollow-rat', land: 'city', at: 21.0, hours: 7.5, place: { x: HOLLOW_X, z: 209 } });
 
+  /* ---- THE BARISTA, THE DOG, THE CUPS, THE BIN (Session 20) ---------- */
+  ctx.standee(coffeeCartTexture(9700), 4.2, 3.85, CART.x, CART.z, { rotY: 0.06, solid: 1.6 });
+  const cupRows = ORDERS.map((_, n) => cupRowTexture(9710 + n, ORDERS.slice(0, n + 1)));
+  const cups = ctx.standee(cupRows[0], 3.6, 0.56, CART.x - 0.1, CART.z + 0.28);
+  (cups.material as THREE.MeshBasicMaterial).transparent = true;
+  ctx.hang(cups, 1.95);
+  cups.visible = false;
+  let cupsShown = 0;
+  const barista = new Figure(ctx, BARISTA, 2, { maps: { 0: baristaTexture(9730, 0), 2: baristaTexture(9731, 2) }, scale: 1.04 });
+  const baristaDog = new Creature(ctx, 'the-barista-dog', 'city', [0, 1, 2].map((p) => bowtieDogTexture(9740 + p, p as 0 | 1 | 2)), 1.5, 1.5, CART.x - 3, CART.z + 0.7);
+  /* THE PAW PRINTS: the dog's own trail, on the footprint shader with
+   * the owner's paw for a stamp. Long-lived, because a pavement keeps
+   * what is walked into it; the walker's fade in ninety seconds. */
+  const paws = new Footprints({ color: INK_HEX, fade: 900, capacity: 260, size: 0.24, map: pawTexture() });
+  ctx.group.add(paws.mesh);
+  const paw = { x: 0, z: 0, since: 0, moving: false };
+  const binThing = things.get('the-bin')!;
+  binThing.def.refuse = (x, z) => barriers.blocks(x, z) || terrain.waterAt(x, z) > 0.04;
+  const bin = ctx.standee(wheelieBinTexture(9750), 1.5, 2.0, binThing.x, binThing.z, { rotY: 0.2 });
+  binThing.mesh = bin;
+  let binOver = !knowledge.has('fact:the-bin-righted');
+  const binState = { say: 0 };
+  /* THE SECOND DOOR (`THE-FUN-PASS` §6): walk past him. After the third
+   * pass the wear on the pavement gains one more lane, and it is yours.
+   * The lane is a drawing laid over the paths the city made, closer to
+   * him than either, and it is there in every later save. */
+  const yourLane = ctx.decal(yourLaneDecal(9760), 30, 30, MAN.x, MAN.z, 0, 0.95);
+  yourLane.visible = false;
+  const passes = { n: 0, inside: false, stoodThisPass: false };
+
   /* ================================================================ */
   let stood = 0;
   let tick = 3;
@@ -2318,6 +2553,53 @@ export const buildCity: RegionBuilder = (ctx) => {
     const dusk = Math.max(0, Math.min(1,
       Math.max((h - 16.8) / 2.4, (7.2 - h) / 2)));
     lightUp(towerLits, dusk);
+    const rainNow = weather.state.rain > 0.5;
+
+    /* ---- THE BARISTA, THE DOG, THE CUPS, THE BIN (Session 20) -------- */
+    {
+      barista.tick(h, rainNow);
+      // the cups on the counter: one more on every hour, and the row
+      // is a pure function of the hour, so it is right on arrival
+      const n = rainNow ? 0 : cupsAt(h);
+      if (n !== cupsShown) {
+        cupsShown = n;
+        if (n > 0) (cups.material as THREE.MeshBasicMaterial).map = cupRows[n - 1];
+        cups.visible = n > 0;
+      }
+      // the dog, on its own routine, and where it walks it leaves paws
+      const ds = routineAt(BARISTA_DOG, h);
+      if (!ds.present || rainNow) baristaDog.hide();
+      else {
+        const pose = ds.moving ? (Math.floor((h * 100) / 0.34) % 2 === 0 ? 1 : 2) : 0;
+        baristaDog.set(pose, ds.x, ds.z, ds.face, 0, ds.fade);
+        if (ds.moving) {
+          const d = Math.hypot(ds.x - paw.x, ds.z - paw.z);
+          if (!paw.moving) { paw.x = ds.x; paw.z = ds.z; paw.moving = true; }
+          else if (d > 0.5) {
+            const heading = Math.atan2(ds.x - paw.x, ds.z - paw.z);
+            paws.stamp(new THREE.Vector3(ds.x, ctx.groundY(ds.x, ds.z), ds.z), heading, 0.03, undefined, 0.42, 0);
+            paw.x = ds.x;
+            paw.z = ds.z;
+          }
+        } else paw.moving = false;
+      }
+      paws.update(dt);
+      // the bin: over on its side where the city left it, until it is
+      // touched; then upright, and rolling, and it stays where it stops
+      if (binOver && knowledge.has('fact:the-bin-righted')) binOver = false;
+      const sp = Math.hypot(binThing.vx, binThing.vz);
+      bin.position.set(binThing.x, ctx.groundY(binThing.x, binThing.z), binThing.z);
+      bin.rotation.z = binOver ? 1.25 : Math.min(0.28, sp * 0.06) * (binThing.vx < 0 ? -1 : 1) + Math.sin(t * 9) * Math.min(0.04, sp * 0.01);
+      if (binOver) bin.position.y += 0.1;
+      binState.say = Math.max(0, binState.say - dt);
+      if (sp > 0.6 && binState.say <= 0) { binState.say = 0.7; say('bin-roll'); }
+      /* PUSHED INTO THE JUNCTION: the pigeons go up and the crossing
+       * ticks for it, which is the most anything in this city has ever
+       * done for a bin. */
+      if (sp > 0.6 && Math.hypot(binThing.x - JUNCTION.x, binThing.z - JUNCTION.z) < 7 && flock.up <= 0) {
+        flock.up = 12; flock.t = 0; say('pigeons-lift'); say('crossing-tick');
+      }
+    }
 
     /* ---- THE UNNAMED, THE RUSH, THE FLOCK (Session 17) --------------- */
     const rain = weather.state.rain > 0.5;
@@ -2378,12 +2660,14 @@ export const buildCity: RegionBuilder = (ctx) => {
      * forty units away in another land a woman is at a fence.
      * ================================================================ */
     const told = knowledge.has('fact:the-man-at-the-junction');
-    if (!told) {
+    const walkedRound = knowledge.has('door:the-walked-round');
+    if (!told && !walkedRound) {
       const d = Math.hypot(px - MAN.x, pz - MAN.z);
       const moved = Math.hypot(px - lastX, pz - lastZ);
       lastX = px;
       lastZ = pz;
-      if (d < 9 && moved < 0.02) {
+      // a walker reading is not a walker deciding: the card does not count
+      if (d < 9 && moved < 0.02 && !UI.chrome.open) {
         stood += dt;
         if (stood > ASK_SECONDS) {
           knowledge.learn('fact:the-man-at-the-junction');
@@ -2393,6 +2677,20 @@ export const buildCity: RegionBuilder = (ctx) => {
         stood = 0;
       }
     }
+    /* THE SECOND DOOR, WALKED (Session 20): with the door taken, every
+     * time you go past him without stopping is a pass, and the third
+     * pass wears your lane into the stone. Counted here and written
+     * once, as a fact, so the lane is in every later save. */
+    if (walkedRound && !told) {
+      const d = Math.hypot(px - MAN.x, pz - MAN.z);
+      if (!passes.inside && d < 7) { passes.inside = true; }
+      else if (passes.inside && d > 13) {
+        passes.inside = false;
+        passes.n++;
+        if (passes.n >= 3 && !knowledge.has('fact:your-lane')) { knowledge.learn('fact:your-lane'); say('heels'); }
+      }
+    }
+    yourLane.visible = knowledge.has('fact:your-lane');
     const manBoarding = platform.land === 'city';
     man[0].visible = !told && !manBoarding;
     man[1].visible = told && !manBoarding;
@@ -2441,14 +2739,69 @@ export const CITY_POIS: WorldPOI[] = [
     /* The label is west of the man, not over him. He has no name and
      * nothing in this game will ever give him one — but the stone he
      * stands on is a place, and the wear in it is what the label is
-     * for. */
-    x: 137, z: 196, radius: 8, label: 'THE PAVEMENT', labelHeight: 3.2,
-    prompt: 'LOOK DOWN',
+     * for. From Session 20 it is also where both doors are
+     * (`THE-FUN-PASS` §6): read the stone, and it is a card — stand
+     * with him, or walk round like everyone. The stand still resolves
+     * the way it did in Session 13; the walk round is three passes and
+     * a lane of your own. Nothing says which was right. */
+    x: 139, z: 199.5, radius: 8, label: 'THE PAVEMENT', labelHeight: 3.2,
+    get prompt() {
+      const done = knowledge.has('door:the-stood-with') || knowledge.has('door:the-walked-round') || knowledge.has('fact:the-man-at-the-junction');
+      if (!done && knowledge.has('fact:the-pavement')) return 'STAND, OR WALK ROUND';
+      return 'LOOK DOWN';
+    },
+    get choice() {
+      if (!knowledge.has('fact:the-pavement') || knowledge.has('fact:the-man-at-the-junction')) return undefined;
+      return {
+        body: 'a man standing on the one patch of stone nobody walks on, and the two lanes worn round him by everybody who did not stop. it costs four seconds to stand here with him. it costs nothing at all to go round, and the stone will take your lane like it took theirs.',
+        options: [
+          { label: 'STAND WITH HIM', door: 'door:the-stood-with' },
+          { label: 'WALK ROUND, LIKE EVERYONE', door: 'door:the-walked-round' },
+        ],
+      };
+    },
     note: {
       title: 'the pavement',
-      body: 'the stone is worn pale in two long curves, and between them there is a patch the size of a person where it is not worn at all. it takes a very long time to do this to a paving slab.',
+      body: () => {
+        if (knowledge.has('fact:your-lane')) return 'the stone is worn pale in three long curves now, and the third is nearer him than the other two, and it is yours. he is still standing there. it did not take a very long time at all.';
+        if (knowledge.has('door:the-walked-round')) return 'the stone is worn pale in two long curves, and between them there is a patch the size of a person where it is not worn at all. you have gone round him like everybody. the stone is keeping count, which is what stone does.';
+        return 'the stone is worn pale in two long curves, and between them there is a patch the size of a person where it is not worn at all. it takes a very long time to do this to a paving slab. you could stand here with him. everybody else went round.';
+      },
+      learns: ['fact:the-pavement'],
+    },
+  } as unknown as WorldPOI,
+  /* ---- SESSION 20: THE NEW CAST, EAST ------------------------------ */
+  {
+    /* THE CART, and the cups with the names on them: the note is the
+     * second list, read. It reads the hour, because the row does. */
+    x: CART.x, z: CART.z + 1.2, radius: 5.2, label: 'THE CART',
+    prompt: 'READ THE CUPS',
+    note: {
+      title: 'the cart',
+      body: () => {
+        const n = cupsAt(clock.hour);
+        if (n === 0) return 'a coffee cart on the corner with a striped canopy and a machine with a lever, and nobody at it. the counter has been wiped. somebody has stood behind this all day calling out names, and every name is still on a cup in the bin behind it.';
+        const names = ORDERS.slice(0, n).map((o) => (o ? o.toLowerCase() : 'nothing'));
+        const list = names.length === 1 ? names[0] : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+        return `a coffee cart on the corner, and a person behind it who calls a name out on the hour and sets a cup down on the counter with the name written on it. ${n === 1 ? 'one cup' : n + ' cups'} so far: ${list}. nobody has come for any of them. the only person in this city who stands still on purpose, and the dog beside the cart is the second.`;
+      },
     },
   },
+  {
+    /* THE BIN, wherever it is: righted the first time, and then rolled.
+     * Push it into the junction and the city does the most it has ever
+     * done for a bin. Nothing counts. */
+    get x() { return things.get('the-bin')!.x; },
+    get z() { return things.get('the-bin')!.z; },
+    radius: 3.6,
+    get prompt() { return knowledge.has('fact:the-bin-righted') ? 'PUSH THE BIN' : 'RIGHT THE BIN'; },
+    touch: (px: number, pz: number) => {
+      if (!knowledge.has('fact:the-bin-righted')) { knowledge.learn('fact:the-bin-righted'); say('bin-knock'); return; }
+      const r = things.push('the-bin', px, pz);
+      if (r === 'moved') say('bin-roll');
+      else if (r === 'refused') say('bin-knock');
+    },
+  } as unknown as WorldPOI,
   {
     x: 120, z: 204, radius: 9, label: 'MAIN STREET',
     prompt: 'LOOK UP',
@@ -2601,6 +2954,58 @@ export const SURVEY_SCHEDULE: [string, string][] = [
  * that one of them is old.
  */
 const OLD_NAME = 'GRAWEDER';
+
+/* ================================================================== *
+ * THE DESIGN STUDIO IN THE ATRIUM (Session 20, `THE-FUN-PASS` §10). A
+ * UX research sprint on the timetable: a persona pinned up on an easel
+ * called DENNIS, a journey map of a journey nobody has taken, a table
+ * with a laptop on it, and three people with lanyards. One of them
+ * goes out to the stop at eight with a clipboard and stands beside
+ * Dennis while he reads the board — the intercept — and through the
+ * day the shelter's glass fills with sticky notes. It is week two of
+ * a two-week sprint, and has been for some time. Deadpan, and
+ * accurate, because it is the owner's field. THE ATRIUM is their
+ * district. Nobody explains anything.
+ * ================================================================== */
+const STUDIO = { persona: { x: 286, z: 176.5 }, map: { x: 289.6, z: 177.6 }, table: { x: 288, z: 180.2 } };
+const STUDIO_DOOR = { x: 283, z: 172.8 };
+const LEAD = { id: 'the-sprint-lead', land: 'office' as const, pace: 260, stops: stops([
+  [8.3, STUDIO_DOOR.x + 1.4, STUDIO_DOOR.z, 0, 1], [8.36, STUDIO.table.x, STUDIO.table.z + 0.6, 2, 1, 3.6],
+  [12.02, STUDIO_DOOR.x + 1.4, STUDIO_DOOR.z, 0, -1, 0.01], [13.1, STUDIO_DOOR.x + 1.4, STUDIO_DOOR.z, 0, 1],
+  [13.16, STUDIO.map.x + 1.6, STUDIO.map.z + 0.9, 0, -1, 4.1], [17.32, STUDIO_DOOR.x + 1.4, STUDIO_DOOR.z, 0, -1, 0.01],
+]) };
+const RESEARCHER = { id: 'the-sprint-researcher', land: 'office' as const, pace: 300, stops: stops([
+  [7.86, STUDIO_DOOR.x, STUDIO_DOOR.z, 0, -1], [7.98, 251.6, 202.6, 0, 1, 0.45],
+  [8.5, 249.6, 200.9, 0, 1, 0.42], [9.0, STUDIO.table.x - 1.8, STUDIO.table.z + 0.5, 0, 1, 2.98],
+  [12.02, STUDIO_DOOR.x, STUDIO_DOOR.z, 0, -1, 0.01], [13.12, STUDIO_DOOR.x, STUDIO_DOOR.z, 0, 1],
+  [13.18, STUDIO.persona.x + 1.7, STUDIO.persona.z + 1.0, 0, -1, 4.0], [17.3, STUDIO_DOOR.x, STUDIO_DOOR.z, 0, -1, 0.01],
+]) };
+const MAKER = { id: 'the-sprint-maker', land: 'office' as const, pace: 260, walkPose: 4, stops: stops([
+  [8.5, STUDIO_DOOR.x - 1.2, STUDIO_DOOR.z, 4, 1], [8.58, STUDIO.map.x + 1.6, STUDIO.map.z + 1.0, 4, -1, 0.1],
+  [8.68, STUDIO.map.x + 1.6, STUDIO.map.z + 1.0, 0, -1, 3.1], [11.85, STUDIO_DOOR.x - 1.2, STUDIO_DOOR.z, 0, -1, 0.01],
+  [14.0, STUDIO_DOOR.x - 1.2, STUDIO_DOOR.z, 0, 1], [14.16, 252.6, 200.9, 0, -1, 0.3],
+  [14.7, STUDIO.table.x + 1.4, STUDIO.table.z + 0.6, 2, -1, 2.4], [17.14, STUDIO_DOOR.x - 1.2, STUDIO_DOOR.z, 0, -1, 0.01],
+]) };
+/** How many stickies are on the glass at an hour: none first thing,
+ *  the wall by five, and the wall stays up until the morning. Pure. */
+const stickiesAt = (h: number) => (h < 5 ? 24 : h < 8.5 ? 0 : Math.min(24, Math.round(((h - 8.5) / 8.5) * 24)));
+events.register({ id: 'the-sprint', land: 'office', at: 8.3, hours: 9.0, place: STUDIO.table });
+/** THE OFFICE CHAIR (`QUESTS` §8 L8): sit on it and it rolls the way
+ *  you were facing, down the mile, on castors, and stops where the
+ *  floor lets it; a mount for one push. Stays where it stopped. */
+things.register({ id: 'office-chair', kind: 'pushable', land: 'office', home: { x: 291, z: 208.6 }, name: 'THE CHAIR', shove: 9 });
+/* THE SQUARE FLOCK (Session 20): the owner's sheep, six of them, one
+ * to a bay in the overflow — a car park set out for people who were
+ * coming, with sheep parked in it. They scatter square off a walker
+ * and re-park. The one with the long horns does not move for anybody.
+ * The second thing that has ever happened in the overflow. */
+const FLOCK_BAYS: { x: number; z: number; kind: 0 | 1 | 2 }[] = [
+  { x: 287.5, z: 147, kind: 0 }, { x: 292.5, z: 158.5, kind: 0 }, { x: 298.5, z: 143, kind: 1 },
+  { x: 307, z: 152.5, kind: 0 }, { x: 315.5, z: 140.5, kind: 2 }, { x: 322.5, z: 156, kind: 0 },
+];
+const OVERFLOW = { minX: 285, maxX: 331, minZ: 135, maxZ: 163 };
+/** The studio's toy, reached from the POI list: set by the builder. */
+const office = { peel: () => {} };
 
 export const buildOffice: RegionBuilder = (ctx) => {
   const { r } = ctx;
@@ -3015,6 +3420,58 @@ export const buildOffice: RegionBuilder = (ctx) => {
   events.register({ id: 'the-mile-lights', land: 'office', at: 17.4, hours: 2.2, place: STOP });
   events.register({ id: 'the-mile-dark', land: 'office', at: 4.8, hours: 1.8, place: STOP });
 
+  /* ---- THE DESIGN STUDIO (Session 20) --------------------------------- */
+  ctx.standee(personaBoardTexture(7900), 2.3, 2.9, STUDIO.persona.x, STUDIO.persona.z, { rotY: 0.18, solid: 0.6 });
+  ctx.standee(journeyMapTexture(7901), 3.5, 2.15, STUDIO.map.x, STUDIO.map.z, { rotY: -0.1, solid: 1.0 });
+  ctx.standee(sprintSignTexture(7902, 'SPRINT 2 - WEEK 2'), 2.4, 0.45, STUDIO.map.x - 0.2, STUDIO.map.z - 0.2);
+  // the table is a bench with a laptop on it, in this land's ruled hand
+  ctx.standee(hardBenchTexture(7903), 3.4, 1.0, STUDIO.table.x, STUDIO.table.z, { rotY: 0.05, solid: 1.2 });
+  const stickyLevels = [0, 4, 8, 12, 16, 20, 24].map((n, i) => stickyGlassTexture(7910 + i, n));
+  const glass = ctx.standee(stickyLevels[0], 6.8, 4.8, STOP.x, STOP.z + 0.06);
+  (glass.material as THREE.MeshBasicMaterial).transparent = true;
+  glass.visible = false;
+  let glassLevel = -1;
+  const peeled = { n: 0, at: -9, x: 0, z: 0 };
+  office.peel = () => {
+    if (stickiesAt(clock.hour) - peeled.n <= 0) return;
+    peeled.n++;
+    peeled.at = 1;
+    peeled.x = STOP.x - 2.6 + Math.sin(peeled.n * 12.9) * 1.6;
+    peeled.z = STOP.z + 2.0 + Math.abs(Math.cos(peeled.n * 7.7)) * 1.4;
+    say('sticky-peel');
+  };
+  const onGround = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+    const m = ctx.decal(stickyNoteDecal(7920 + i), 0.5, 0.5, STOP.x, STOP.z + 2, i * 0.7, 0.9);
+    m.visible = false;
+    return m;
+  });
+  const lead = new Figure(ctx, LEAD, 2, { maps: { 0: designerTexture(7930, 0), 2: designerTexture(7931, 2), 4: designerTexture(7932, 4) } });
+  const researcher = new Figure(ctx, RESEARCHER, 0, { maps: { 0: designerTexture(7933, 0), 2: designerTexture(7934, 2), 4: designerTexture(7935, 4) }, scale: 0.98 });
+  const maker = new Figure(ctx, MAKER, 1, { maps: { 0: designerTexture(7936, 0), 2: designerTexture(7937, 2), 4: designerTexture(7938, 4) }, scale: 1.02 });
+  /* THE CORNER OF THE BOARD, lifted (E20), and the board wiped clean
+   * (the second door): two more states of the one drawing. */
+  const boardClean = ctx.standee(timetableTexture(7212, schedule, -1, true), 2.3, 2.96, BOARD.x, BOARD.z);
+  (boardClean.material as THREE.MeshBasicMaterial).transparent = true;
+  boardClean.visible = false;
+  const corner = ctx.standee(liftedCornerTexture(7213), 0.42, 0.42, BOARD.x + 0.72, BOARD.z + 0.04);
+  ctx.hang(corner, 0.62);
+
+  /* ---- THE CHAIR (Session 20) ---------------------------------------- */
+  const chairThing = things.get('office-chair')!;
+  chairThing.def.refuse = (x, z) => barriers.blocks(x, z)
+    || (Math.abs(x - ATRIUM.x) < 8 && z < ATRIUM.z + 4.5)     // not through the doors
+    || Math.hypot(x - STOP.x, z - STOP.z) < 5.5               // not into the shelter
+    || x < 233 || z < 133 || z > 277;
+  const chair = ctx.standee(officeChairTexture(7940), 1.5, 2.0, chairThing.x, chairThing.z, { rotY: 0.15 });
+  chairThing.mesh = chair;
+  const chairState = { say: 0 };
+
+  /* ---- THE SQUARE FLOCK (Session 20) --------------------------------- */
+  const flockDrawn = FLOCK_BAYS.map((b, i) =>
+    new Creature(ctx, `the-square-flock-${i}`, 'office', [0, 1].map((p) => squareSheepTexture(7950 + i * 2 + p, b.kind, p as 0 | 1)), 2.9, 2.55, b.x, b.z));
+  const flockState = FLOCK_BAYS.map((b) => ({ hx: b.x, hz: b.z, face: 1 as -1 | 1 }));
+  const flockSay = { scatter: 0, bleat: 9 };
+
   /* ================================================================ */
   let plant = 9;
   let carDoor = 26;
@@ -3055,14 +3512,23 @@ export const buildOffice: RegionBuilder = (ctx) => {
     /* THE BOARD. One line wiped clean of a century of grime, and nobody
      * in the Cubicle Mile notices (`THE-STRANGERS` S8). */
     const heard = knowledge.has('fact:the-old-name');
-    board[0].visible = !heard;
-    board[1].visible = heard;
+    /* THE SECOND DOOR (Session 20, `THE-FUN-PASS` §6): the board wiped
+     * clean by you, all twelve lines, and the one line he had learned
+     * is one of twelve. Or the corner pressed back, and the grime left. */
+    const wiped = knowledge.has('door:the-board-wiped');
+    board[0].visible = !heard && !wiped;
+    board[1].visible = heard && !wiped;
+    boardClean.visible = wiped;
+    corner.visible = !knowledge.has('door:the-corner-pressed');
 
     /* DENNIS'S DAY. Under the shelter, facing north, from before it is
      * light until well after it is dark; and once, at about eight, at
      * the board, reading a list he knows by heart. He is not in shot in
      * the small hours and there is nothing to say about that. */
-    const pose = h > 7.85 && h < 8.45 ? 1 : h > 5.6 && h < 21.6 ? 0 : -1;
+    /* With the board wiped he does not go to it at eight: there is
+     * nothing on it he has not already got by heart, and nothing on it
+     * that is older than the rest. */
+    const pose = h > 7.85 && h < 8.45 && !wiped ? 1 : h > 5.6 && h < 21.6 ? 0 : -1;
     for (let p = 0; p < 2; p++) {
       dennis[p].visible = p === pose && platform.land !== 'office';
     }
@@ -3139,6 +3605,71 @@ export const buildOffice: RegionBuilder = (ctx) => {
       }
     }
 
+    /* ---- THE DESIGN STUDIO (Session 20) ------------------------------ */
+    {
+      lead.tick(h, rain);
+      researcher.tick(h, rain);
+      maker.tick(h, rain);
+      // the glass: the sprint's wall, less what has been peeled off it
+      const n = Math.max(0, stickiesAt(h) - peeled.n);
+      const level = Math.round(n / 4);
+      if (level !== glassLevel) {
+        glassLevel = level;
+        (glass.material as THREE.MeshBasicMaterial).map = stickyLevels[level];
+        glass.visible = level > 0;
+      }
+      if (h >= 5 && h < 8.5) peeled.n = 0;   // the morning puts the wall back
+      // a peeled one comes down and lies on the apron
+      if (peeled.at > 0) {
+        const m = onGround[(peeled.n - 1) % onGround.length];
+        m.visible = true;
+        m.position.set(peeled.x, ctx.groundY(peeled.x, peeled.z) + 0.02, peeled.z);
+        peeled.at = -9;
+      }
+    }
+    /* ---- THE CHAIR (Session 20) ------------------------------------- */
+    {
+      const sp = Math.hypot(chairThing.vx, chairThing.vz);
+      chair.position.set(chairThing.x, ctx.groundY(chairThing.x, chairThing.z), chairThing.z);
+      chair.rotation.y = 0.15 + Math.sin(t * 0.4) * 0.02 + (sp > 0.5 ? Math.sin(t * 6) * 0.06 : 0);
+      chairState.say = Math.max(0, chairState.say - dt);
+      if (sp > 0.6 && chairState.say <= 0 && Math.hypot(px - chairThing.x, pz - chairThing.z) < 30) { chairState.say = 0.55; say('chair-roll'); }
+    }
+    /* ---- THE SQUARE FLOCK (Session 20) ------------------------------- */
+    {
+      flockSay.scatter = Math.max(0, flockSay.scatter - dt);
+      let scattered = false;
+      let nearest = 1e9;
+      for (let i = 0; i < FLOCK_BAYS.length; i++) {
+        const b = FLOCK_BAYS[i];
+        const s = flockState[i];
+        const d = Math.hypot(s.hx - px, s.hz - pz);
+        nearest = Math.min(nearest, d);
+        let tx = b.x;
+        let tz = b.z;
+        if (b.kind !== 2 && d < 8) {
+          // square off the walker, as far as the bay allows, and never a flee
+          const push = (1 - d / 8) * 6;
+          const ux = (s.hx - px) / (d || 1);
+          const uz = (s.hz - pz) / (d || 1);
+          tx = Math.max(OVERFLOW.minX, Math.min(OVERFLOW.maxX, b.x + ux * push));
+          tz = Math.max(OVERFLOW.minZ, Math.min(OVERFLOW.maxZ, b.z + uz * push));
+          if (flockSay.scatter <= 0) scattered = true;
+        }
+        const k = 1 - Math.exp(-dt * (d < 8 ? 3.4 : 0.8));
+        s.hx += (tx - s.hx) * k;
+        s.hz += (tz - s.hz) * k;
+        const moving = Math.hypot(tx - s.hx, tz - s.hz) > 0.3;
+        if (moving && Math.abs(tx - s.hx) > 0.05) s.face = tx > s.hx ? 1 : -1;
+        // drawn facing left; a sheep looking at you has its head up
+        const up = b.kind !== 2 && d < 14 && !moving;
+        flockDrawn[i].set(up ? 1 : 0, s.hx, s.hz, s.face === 1 ? -1 : 1);
+      }
+      if (scattered) { flockSay.scatter = 10; say('sheep'); }
+      flockSay.bleat -= dt;
+      if (flockSay.bleat < 0) { flockSay.bleat = 12 + Math.abs(Math.sin(t * 2.7)) * 10; if (nearest < 22) say('sheep'); }
+    }
+
     /* THE VOICES. Four, and all four are the same joke told four ways:
      * a building that promises nothing will change. */
     const inside = px > 232 && pz > 132 && pz < 268;
@@ -3207,9 +3738,81 @@ export const OFFICE_POIS: WorldPOI[] = [
     prompt: 'LOOK AT THE BAYS',
     note: {
       title: 'the overflow',
-      body: 'a second car park, set out for the people who were coming. the kerbs are in, the drainage is in, and half of it was never painted. the weeds in the joints are the only thing that has happened here in thirty years.',
+      body: 'a second car park, set out for the people who were coming. the kerbs are in, the drainage is in, and half of it was never painted. the weeds in the joints were the only thing that had happened here in thirty years, and then six sheep, one to a bay. they are square. nobody has asked whose they are.',
     },
   },
+  /* ---- SESSION 20: THE NEW CAST, EAST ------------------------------ */
+  {
+    /* THE SPRINT: the persona, the map, the table. The note says what
+     * they are, which is accurate, and not what it means. */
+    x: STUDIO.map.x - 1, z: STUDIO.map.z + 2.2, radius: 4.6, label: 'THE SPRINT',
+    prompt: 'READ THE PERSONA',
+    note: {
+      title: 'the sprint',
+      body: 'a board on an easel with a name on it, dennis, and a circle where a photograph would go, and three headings: goals, frustrations, needs. under the quote it says it says 8:15. beside it a journey map in four rows and twelve stages, with a line for how it feels that goes down at the fourth stage and stays down. three people with lanyards. it is week two of a two-week sprint, and has been for some time.',
+    },
+  },
+  {
+    /* THE STICKIES ON THE GLASS: peel one off, and it comes down on
+     * the apron and lies there, and the wall is back in the morning.
+     * A touch, repeatable, and nothing counts. */
+    x: STOP.x - 1.6, z: STOP.z + 1.7, radius: 2.4,
+    get enabled() { return Math.max(0, stickiesAt(clock.hour)) > 0; },
+    set enabled(_v: boolean) { /* the sprint decides */ },
+    prompt: 'PEEL ONE OFF',
+    touch: () => { office.peel(); },
+  } as unknown as WorldPOI,
+  {
+    /* THE BOARD, close up: where THE CUBICLE MILE's second door is
+     * (`THE-FUN-PASS` §6). With the line walked it is a card: wipe the
+     * board, or press the corner back and leave the grime. */
+    x: BOARD.x + 0.8, z: BOARD.z + 1.5, radius: 2.4,
+    get prompt() {
+      const done = knowledge.has('door:the-board-wiped') || knowledge.has('door:the-corner-pressed');
+      if (!done && knowledge.has('route:the-line')) return 'WIPE IT, OR PRESS THE CORNER';
+      return 'LOOK AT THE BOARD';
+    },
+    get choice() {
+      if (!knowledge.has('route:the-line')) return undefined;
+      return {
+        body: 'twelve names and twelve times, in order, under a century of grime, and the corner has lifted. you have walked the whole of it, the gate to the car park, and nothing else ever has. the board could be wiped. or the corner could be pressed back and the rest left as it is.',
+        options: [
+          { label: 'WIPE THE BOARD', door: 'door:the-board-wiped' },
+          { label: 'PRESS THE CORNER BACK', door: 'door:the-corner-pressed' },
+        ],
+      };
+    },
+    note: {
+      title: 'the board',
+      body: () => {
+        if (knowledge.has('door:the-board-wiped')) return 'twelve names and twelve times, in order, and every line of it clean. dennis does not go to it in the morning any more. there is nothing on it he does not have by heart, and nothing on it now that is older than the rest.';
+        if (knowledge.has('door:the-corner-pressed')) return 'twelve names and twelve times, in order, under a century of grime. the corner has been pressed back and is staying back. one line is cleaner than the others, if you know which.';
+        return 'twelve names and twelve times, in order, under a century of grime, and the corner has lifted.';
+      },
+    },
+  } as unknown as WorldPOI,
+  {
+    /* THE CHAIR, wherever it stopped. Sit, and it rolls the way you
+     * were facing, and you go with it. */
+    get x() { return things.get('office-chair')!.x; },
+    get z() { return things.get('office-chair')!.z; },
+    radius: 3.6,
+    prompt: 'SIT ON THE CHAIR',
+    sit: {
+      get x() { return things.get('office-chair')!.x; },
+      get z() { return things.get('office-chair')!.z; },
+      lift: 0.5,
+      follow: (t: number) => {
+        const c = things.get('office-chair')!;
+        const sp = Math.hypot(c.vx, c.vz);
+        return { dx: 0, dy: 0, rot: sp > 0.5 ? Math.sin(t * 7) * 0.03 : 0 };
+      },
+      onSit: (_px: number, _pz: number, heading: number) => {
+        const r = things.roll('office-chair', heading, 36);
+        say(r === 'moved' ? 'chair-roll' : 'bin-knock');
+      },
+    },
+  } as unknown as WorldPOI,
   {
     x: 322, z: 200, radius: 10, label: 'THE CAR PARK',
     note: {
