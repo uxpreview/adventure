@@ -59,9 +59,10 @@ sheet's fault.**
    the pavement; from the pavement the train's thing was behind a
    roof and the frame showed a carriage with its doors open on nothing,
    which is the OTHER ending. Probed from the road's own verge, north
-   of the house at (34, 206.5), the cans stand in front of the carriage
-   beside the walker and the house fades under B2's rule. Both sheets
-   frame it from there.
+   of the house, the cans stand in front of the carriage beside the
+   walker and the house fades under B2's rule. Both sheets frame it
+   from there (and from three units further east after round two's
+   first portrait, below).
 2. **The lamps lit in daylight were not lit.** The halo at half
    opacity on a page that is already light is nothing; at five in the
    afternoon the square looked like five in the afternoon. The halo is
@@ -93,4 +94,39 @@ sheet's fault.**
    frame the card is offered in — a walker at that distance IS in the
    pines — and the boat's own frame at (146, −177) does the boat.
 
-## Round 2 — ROUND_2_PLACEHOLDER
+## Round 2 — PASS, with Marget small on her platform
+
+Re-shot the seventeen frames the four fixes touch, both rigs, and the
+six door-driven framings on the 8:15's own sheet.
+
+- **The cans are on the platform.** From the road's verge at (37,
+  207.5) the two cans stand beside the walker in front of the open
+  doors, with three in the windows behind them, on both rigs — and in
+  portrait only because the standpoint moved three units east after
+  the first re-shoot put them outside a twenty-six degree frame. The
+  morning after, with the train asleep in the car park, they are
+  still there beside the fence, and that frame is the one that says
+  what the ending did.
+- **The lamps are lit at ten past five.** From the fountain the two
+  north lamps carry a full halo on the frame's shoulders in daylight,
+  and the square goes on with its market under them. It reads as what
+  it is: a man went by the clock.
+- **The table's card says *the table*.**
+- **The oar is at the lean and the can is on the ground.** The walker
+  is empty-handed at Hallows' twelve and on the grown-over track.
+- **The pots**: a heap between the wheels at Longshore's stop, and a
+  heap by the crossroads the morning after with nothing behind it.
+  Passed as noted in round one.
+- **Marget on Brim's platform** (`shoot-8-15` 31): the stop is halfway
+  up a street of terraces and she is a figure with a bolt of cloth
+  beside a carriage, small, exactly as `shoot-8-15`'s own note warned
+  about Brim's stop in Session 14. Passed, not praised: the harness
+  asserts the drawing is hers, and the frame is the frame that stop
+  can give.
+
+**Verdict: PASS.** Five lands re-earned on their door frames. The
+second doors' costs are drawings at the scale of their rewards — a
+shut stall under bunting, lamps in daylight, chalk gone to dashes, a
+tank filled by the wrong hands and a track going back to scrub, a
+boat with nothing across its thwarts and a lean with one right oar in
+it, a plate put away — and none of them says which door was right.

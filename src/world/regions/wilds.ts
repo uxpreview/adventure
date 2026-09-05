@@ -1901,15 +1901,21 @@ export const buildDesert: RegionBuilder = (ctx) => {
       const sub = wear.filter((_, i) => i % 2 === v);
       const f = ctx.field(tex[v], sub.length,
         { w: 4.4, h: 7.4, decal: true, baseOpacity: 0.85 });
-      sub.forEach(([x, z], i) => f.set(i, x, z, 1, 0, r() > 0.5));
-      trackWorn.push(f);
       /* THE TRACK GROWN OVER (Session 21): the same forty units, the
        * same wear points, scrub across them — drawn once the cistern
        * has been filled by somebody who was not him, because from
-       * that night nobody walks it. */
+       * that night nobody walks it. ONE flip per wear point, shared:
+       * a second draw on the land's seeded stream here moved every
+       * weed on the Flats by a pixel, and `diff-sheets` saw it at the
+       * curl rim. */
       const g = ctx.field(grown[v], sub.length,
         { w: 4.4, h: 7.4, decal: true, baseOpacity: 0.85 });
-      sub.forEach(([x, z], i) => g.set(i, x, z, 1, 0, r() > 0.5));
+      sub.forEach(([x, z], i) => {
+        const flip = r() > 0.5;
+        f.set(i, x, z, 1, 0, flip);
+        g.set(i, x, z, 1, 0, flip);
+      });
+      trackWorn.push(f);
       g.mesh.visible = false;
       trackGrown.push(g);
     }
