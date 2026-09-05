@@ -177,7 +177,42 @@ a trolley, a sledge) is this pattern and nothing new.
 
 ### THE GATES, AND WHAT MOVED
 
-{{GATES}}
+- **Build green.** `tsc` and `vite build`; `check-terrain`,
+  `check-fields` (94 figures driven through their hours, six drawn by
+  a land's own hand — the barista's dog, the flock, the visitors —
+  all drawn right), `check-roads` (both rigs, no road silent for
+  fifteen seconds with the cart, the studio and the flock in earshot
+  and in frame), `check-audio` (−22 dB below full scale with the nine
+  new voices in), `check-sightline` (clear), `check-lures`,
+  `check-camera` (both rigs; home to exactly zero in 2.75 s; walking
+  turns the frame 0.00°/s). `check-verbs`' first run passed 126 and
+  failed four, all four in the harness and none in the world: §10
+  counted three answered waits where Val's answer is now a door (two);
+  §11's poke stood a stride off the visitor's foot and opened the
+  Pale's note instead, and the note it left open ate the bin's first
+  press; and the kick was measured after the dog had brought the ball
+  back. All four are corrected in the tool (and the poke's reach in
+  the world); the second run's result and `diff-sheets`' numbers are
+  in the commit after this one.
+- **Art gate**: `critique-art-14`, two rounds. Round one's seven
+  (the loader in eleven frames, the walk-in behind the shop row, the
+  card answered by the settle, the chair's reach and its home in the
+  studio's footprint, the flock small, the lane faint, the low dog
+  sat short of the edge) fixed and re-shot; round two passes with
+  **THE BLEACH FLATS, GREYLINE CITY, THE CUBICLE MILE and MAPLE COURT
+  re-earned**. Passed, not praised: THE CART's label on the shop row,
+  the paws a dotted line at ten units, the studio's three small at
+  dusk.
+- **The proofs sheet** `shoot-session20` (30 framings, both rigs).
+- **The ear gate handed over: ninety-five voices** for `render-wavs`,
+  nine of them new. Unheard.
+- **The feel gate handed over**, with the bicycle and now the chair on
+  it.
+- **THE PLAY GATE HANDED OVER AND NOT RUN.**
+  `design/play-sheets/session-20.md`: the owner's drawings first, then
+  the visitors by day and by night, the cart and the cups, the bin,
+  the pavement's doors, the studio and the chair, the flock, and Val's
+  doors on the third day.
 
 ### DECLINED, IN WRITING
 
