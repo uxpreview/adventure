@@ -191,9 +191,9 @@ a trolley, a sledge) is this pattern and nothing new.
   §11's poke stood a stride off the visitor's foot and opened the
   Pale's note instead, and the note it left open ate the bin's first
   press; and the kick was measured after the dog had brought the ball
-  back. All four are corrected in the tool (and the poke's reach in
-  the world); the second run's result and `diff-sheets`' numbers are
-  in the commit after this one.
+  back. All four corrected in the tool (and the poke's reach in the
+  world); **the second run passes every section, 130 assertions**, §11
+  on a fresh page.
 - **Art gate**: `critique-art-14`, two rounds. Round one's seven
   (the loader in eleven frames, the walk-in behind the shop row, the
   card answered by the settle, the chair's reach and its home in the
