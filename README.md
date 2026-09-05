@@ -297,6 +297,30 @@ and deals a region card — nothing else, because the sheet is continuous.
   passes wear a lane of your own into the stone); at the board, wipe
   it clean or press the corner back (wiped, Dennis no longer goes to
   it at eight). Nothing says which was right.
+- **The second door** (Session 21, `THE-FUN-PASS` §6, finished):
+  **every one of the twelve waits has two doors on a card now.** At
+  Brim's belfry, holding the hour, three doors: let the bell ring the
+  lamps' hour, or set the clock to eight and the market is called round
+  a stall that never opens, or set it to eleven and the lamplighter is
+  three hours early every night for the rest of time. At Splitrock's
+  trestles, holding the river: tell him about the river and the boat
+  comes off the trestles, or tell him the sea has no bottom and he
+  stops oiling, the marks weather, and he is up on the rim. At the
+  Flats' catch, holding the fold: take the lid off, or **fill it
+  yourself** — pick up his can, forty units down to the water, fill it,
+  forty back up, empty it in, in daylight — and he stops carrying and
+  the track grows over. At the Penwood's tarn, from outside the twenty:
+  stand at the water and Brack turns, or take the oar out of the boat
+  and stand it with Hallows' eleven, and the twelfth is the only one
+  that is right, and the boat has none, and Brack does not turn. At the
+  Downs' table: sit down, or clear the second setting away and it is
+  not laid again. **And the 8:15 reads the doors**: a door that relieved
+  somebody empties their platform whatever else you brought; a door
+  that produced a thing puts the thing there instead — two cans on the
+  Flats' platform, seven pots on Longshore's — and the morning after
+  the run they are still there. It comes for a walker who chose the
+  other way at seven gates, because a second door is a decision too.
+  Nothing says which was right.
 - Position, discovered lands, strides walked, the boat, the bicycle,
   the hour, what you know, what you chose, and where you left the
   cart, saved to `localStorage`. (The gate, the bull and the goat are not: a fresh
@@ -391,7 +415,8 @@ node tools/check-fields.mjs    # no instanced field is ever half inked in —
 node tools/check-verbs.mjs     # THE VERBS: the cart stops at the border, the
                                #   stone lands inside it, one thing in hand, a
                                #   seated walker is due north, the drove keeps
-                               #   its hours, a door is knowledge
+                               #   its hours, a door is knowledge, and (§12) the
+                               #   five last cards and the 8:15 reading the doors
 node tools/shoot-session15.mjs # the proofs, both states, both viewports
 node tools/shoot-session16.mjs # THE FIRST HOUR: the bull, the gate, the goat,
                                #   the lures, Nell's doors, both viewports
@@ -417,6 +442,11 @@ node tools/shoot-session20.mjs # THE NEW CAST, EAST AND SOUTH: the pattern and t
                                #   the cups, the dog, the bin, your lane; the sprint,
                                #   the stickies, the square flock, the chair; the low
                                #   dog and the ball; three cards with two doors
+node tools/shoot-session21.mjs # THE SECOND DOOR: the five cards; the clock set
+                               #   and the lamps lit at five; the sea told and the
+                               #   marks weathered; the can carried and the track
+                               #   grown over; the oar at Hallows'; the setting
+                               #   cleared; the cans and the pots on their platforms
 node tools/qa-play-local.mjs   # THE LOCAL QA PASS (headed, real keys, real time,
 node tools/qa-play-local-2.mjs #   on the owner's machine): the first hour, the
                                #   verbs, the walls, the lands at every hour

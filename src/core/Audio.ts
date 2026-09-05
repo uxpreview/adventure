@@ -1806,6 +1806,56 @@ export class Audio {
         this.knock(170 * j, 0.01, 0.42);
         break;
       }
+      /* ---------------------------------------------------------------
+       * SESSION 21 — THE SECOND DOOR. Five voices for five doors, and
+       * every one of them is a thing done by hand: a clock set, a can
+       * filled, a can emptied into a tank, an oar stood against wood,
+       * a plate cleared away. None of them is a person's voice.
+       * --------------------------------------------------------------- */
+      case 'clock-set': {
+        /* THE CLOCK SET BY HAND: a ratchet of small ticks going round,
+         * and the bell answering once it is there. */
+        for (let i = 0; i < 7; i++) this.knock(1900 - i * 40, 0.008, i * 0.07);
+        this.tone(392, 0.62, 0.9, 0.028);
+        this.tone(784, 0.62, 0.5, 0.012);
+        this.tone(196, 0.7, 1.6, 0.02);
+        break;
+      }
+      case 'can-fill': {
+        /* WATER GOING INTO A CAN at the oasis: a hollow note rising as
+         * the can fills, under a run of water, and it stops. */
+        this.surge(0.02, 1.1, 1400, 700, 0.012, 0, 'bandpass');
+        this.glide(180, 420, 0.05, 1.05, 0.014, 'sine');
+        this.knock(520, 0.01, 1.12);
+        break;
+      }
+      case 'can-pour': {
+        /* THE CAN EMPTIED INTO THE CISTERN: a pour, the tank's deep
+         * answer, and the last of it. */
+        this.surge(0.02, 1.3, 1100, 600, 0.014, 0, 'bandpass');
+        this.tone(98, 0.1, 1.4, 0.022);
+        this.knock(140, 0.016, 0.9);
+        this.surge(0.005, 0.2, 2200, 900, 0.006, 1.3, 'highpass');
+        break;
+      }
+      case 'oar-set': {
+        /* AN OAR STOOD WITH THE OTHERS: wood on wood, twice, and the
+         * loom settling against the trunk. */
+        const j = 0.95 + Math.random() * 0.1;
+        this.knock(410 * j, 0.03);
+        this.knock(360 * j, 0.02, 0.13);
+        this.surge(0.01, 0.18, 600 * j, 260, 0.01, 0.1, 'lowpass');
+        break;
+      }
+      case 'plate-clear': {
+        /* THE SECOND SETTING CLEARED AWAY: a plate on a plate, the
+         * cutlery, and the basket lid. The quietest door in the game. */
+        this.knock(1450, 0.012);
+        this.knock(1720, 0.009, 0.09);
+        this.knock(2100, 0.006, 0.14);
+        this.knock(260, 0.014, 0.42);
+        break;
+      }
       case 'pale-hum': {
         /* THE LIGHTS OVER THE PAN, at night: a hum under the hearing,
          * swelling and going, and it is not the grit. Frightening by

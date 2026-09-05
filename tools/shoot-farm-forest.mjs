@@ -49,9 +49,9 @@ const WAITS = [
   // close, because the change is one plate and one figure's quarter
   // turn and a sheet shot from forty units cannot show either
   ['40-picnic-evening-BEFORE', 140, 18, 21.0, []],
-  ['41-picnic-evening-AFTER', 140, 18, 21.0, ['fact:the-place-kept']],
+  ['41-picnic-evening-AFTER', 140, 18, 21.0, ['door:the-seat-taken', 'fact:the-place-kept']],
   ['42-picnic-noon-BEFORE', 140, 18, 12.0, []],
-  ['43-picnic-noon-AFTER', 140, 18, 12.0, ['fact:the-place-kept']],
+  ['43-picnic-noon-AFTER', 140, 18, 12.0, ['door:the-seat-taken', 'fact:the-place-kept']],
   ['44-brack-BEFORE', 151, -144, 12, []],
   ['45-brack-AFTER', 151, -144, 12, ['fact:the-tarn']],
   ['46-brack-dusk-BEFORE', 151, -144, 19.6, []],
