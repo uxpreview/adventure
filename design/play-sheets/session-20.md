@@ -130,9 +130,10 @@ the wait's answer.)
 ## What moved, and what I could not judge
 
 The four lands re-opened — THE BLEACH FLATS, GREYLINE CITY, THE
-CUBICLE MILE, MAPLE COURT — are the scope, and every protected framing
-that moved has this session's cast standing in it. `SESSIONS.md` has
-the `diff-sheets` numbers.
+CUBICLE MILE, MAPLE COURT — are the scope, and **no protected framing
+moved**: `diff-sheets` has all ninety-two bit-identical, because none
+of the six lands that hold a verdict has this session's cast standing
+in its frame. What changed is on this session's own sheet.
 
 - Whether any of it is **fun**. That is the gate, and it is yours.
 - **Whether the lights frighten.** The tool can say they never come
