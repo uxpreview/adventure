@@ -1738,6 +1738,84 @@ export class Audio {
         }
         break;
       }
+      /* ---- SESSION 20: THE NEW CAST, EAST AND SOUTH ------------------ */
+      case 'yap': {
+        /* THE LOW DOG on the green: two yaps, high and quick, the
+         * second a shade higher — a small dog with a lot to say. */
+        const j = 0.94 + Math.random() * 0.12;
+        this.glide(1500 * j, 1900 * j, 0, 0.07, 0.014, 'square');
+        this.glide(1650 * j, 2050 * j, 0.16, 0.07, 0.013, 'square');
+        this.knock(400 * j, 0.008, 0.0);
+        this.knock(420 * j, 0.008, 0.16);
+        break;
+      }
+      case 'ball-kick': {
+        /* A BALL KICKED: one dull thump and the air off it. */
+        const j = 0.92 + Math.random() * 0.16;
+        this.knock(120 * j, 0.03);
+        this.surge(0.005, 0.12, 900 * j, 400, 0.012, 0, 'bandpass');
+        break;
+      }
+      case 'order-call': {
+        /* THE BARISTA CALLS A NAME nobody collects: a voice going up
+         * and holding, two syllables, across the junction. Not a word —
+         * every voice here is synthesis — but the shape of one. */
+        const j = 0.95 + Math.random() * 0.1;
+        this.glide(330 * j, 420 * j, 0, 0.16, 0.016, 'triangle');
+        this.glide(440 * j, 400 * j, 0.2, 0.3, 0.016, 'triangle');
+        this.surge(0.05, 0.3, 1800, 700, 0.004, 0.18, 'bandpass');
+        break;
+      }
+      case 'bin-roll': {
+        /* A WHEELIE BIN GOING OVER THE PAVING: a rumble on two wheels
+         * and the lid knocking on every joint. */
+        const j = 0.94 + Math.random() * 0.12;
+        this.surge(0.06, 0.9, 140 * j, 60, 0.02, 0, 'lowpass');
+        for (let i = 0; i < 4; i++) this.knock(260 * j, 0.012, 0.12 + i * 0.19);
+        break;
+      }
+      case 'bin-knock': {
+        /* A BIN THAT WILL NOT GO: one knock, and the lid. */
+        const j = 0.94 + Math.random() * 0.12;
+        this.knock(200 * j, 0.024);
+        this.knock(320 * j, 0.012, 0.09);
+        break;
+      }
+      case 'chair-roll': {
+        /* CASTORS ON A GLOSSY FLOOR: five small wheels chattering, and
+         * the hiss of the floor under them. The mile's own toy. */
+        const j = 0.95 + Math.random() * 0.1;
+        this.surge(0.02, 0.5, 2600 * j, 1200, 0.006, 0, 'highpass');
+        for (let i = 0; i < 6; i++) this.knock(900 * j + Math.random() * 500, 0.004, i * 0.07 + Math.random() * 0.03);
+        break;
+      }
+      case 'sticky-peel': {
+        /* A STICKY NOTE COMING OFF GLASS: a short tear, high, and the
+         * flutter of it going down. */
+        this.surge(0.005, 0.11, 3200 + Math.random() * 600, 1400, 0.008, 0, 'highpass');
+        this.surge(0.03, 0.2, 1600, 700, 0.003, 0.14, 'bandpass');
+        break;
+      }
+      case 'alien-blink': {
+        /* A VISITOR, POKED: a wet click and a small pleased note going
+         * up, and the two small ones landing. Absurd by day. */
+        const j = 0.9 + Math.random() * 0.2;
+        this.knock(1300 * j, 0.012);
+        this.glide(620 * j, 980 * j, 0.06, 0.18, 0.012, 'sine');
+        this.knock(160 * j, 0.012, 0.36);
+        this.knock(170 * j, 0.01, 0.42);
+        break;
+      }
+      case 'pale-hum': {
+        /* THE LIGHTS OVER THE PAN, at night: a hum under the hearing,
+         * swelling and going, and it is not the grit. Frightening by
+         * night, and nothing anywhere says what it is. */
+        const j = 0.97 + Math.random() * 0.06;
+        this.glide(52 * j, 58 * j, 0, 2.4, 0.02, 'sine');
+        this.glide(104 * j, 99 * j, 0.4, 2.0, 0.006, 'triangle');
+        this.surge(1.0, 1.4, 240, 90, 0.005, 0.2, 'lowpass');
+        break;
+      }
     }
   }
 

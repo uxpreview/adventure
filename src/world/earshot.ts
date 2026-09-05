@@ -107,11 +107,22 @@ export const VOICES: Voice[] = [
    * else; the swing on the green. */
   { land: 'neighborhood', id: 'sprinkler', x: -28, z: 190, r: 62, from: 8, to: 20.5 },
   { land: 'neighborhood', id: 'far-dog', x: -28, z: 190, r: 62 },
-  /* GREYLINE: the crossing's tick at the junction. */
+  /* GREYLINE: the crossing's tick at the junction; and (Session 20)
+   * THE BARISTA calling a name on the hour from the cart, seven till
+   * six, for nobody. */
   { land: 'city', id: 'crossing-tick', x: 148, z: 203, r: 34 },
-  /* THE CUBICLE MILE: the cup, in the atrium, by day. */
+  { land: 'city', id: 'order-call', x: 153, z: 216, r: 30, from: 7, to: 18.6 },
+  /* THE CUBICLE MILE: the cup, in the atrium, by day; and (Session 20)
+   * THE SQUARE FLOCK in the overflow's bays, which is the second thing
+   * that has ever happened there. */
   { land: 'office', id: 'cup-turn', x: 334, z: 191, r: 40, from: 7, to: 19.5 },
   { land: 'office', id: 'car-door', x: 322, z: 200, r: 30, from: 7, to: 19.5 },
+  { land: 'office', id: 'sheep', x: 308, z: 150, r: 28 },
+  /* THE FLATS (Session 20): THE LIGHTS OVER THE PAN, after dark, a hum
+   * under the grit. Nothing says what it is. */
+  { land: 'desert', id: 'pale-hum', x: 268, z: 52, r: 40, from: 20.5, to: 5.2 },
+  /* MAPLE COURT (Session 20): THE LOW DOG on the green, by day. */
+  { land: 'neighborhood', id: 'yap', x: 2, z: 180, r: 26, from: 7, to: 20 },
 ];
 
 /** How near the sea the walker has to be before the surf is a PLACE

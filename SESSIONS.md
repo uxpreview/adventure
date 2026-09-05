@@ -1,5 +1,280 @@
 # SESSIONS — the handoff log
 
+## Session 20 — 2026-09-05 — the new cast, east and south
+
+*`THE-FUN-PASS` §14's last cast session — the aliens in the Pale, the
+barista at the junction, the design studio in the atrium, the office
+chair, the bin, the ball, second doors on cards for the three
+present-day lands — **and four drawings from the owner's own
+notebook**, handed over with the brief and put in the game as drawn.
+The art gate on the four re-opened lands
+(`design/critiques/critique-art-14.md`). **The play gate was handed
+over and not run** (`design/play-sheets/session-20.md`). Sessions 16
+to 19's sheets had not come back when this session started.*
+
+### THE ONE THING TO KNOW
+
+**The owner's four sketches are in the game line for line, and they
+are the one place the no-faces law bends.** On 2026-09-05 the owner
+sent four photographs from a notebook — a dachshund in a neckerchief,
+six square sheep in a watercolour field, a one-eyed thing shaped like
+a pine tree with a grin and two boots, a spotted dog sitting in a bow
+tie beside a paw print — and said *add these animals and elements into
+the game somewhere*. They are `src/world/textures-cast.ts`, drawn
+from the photographs in the house pen: the same lines, the same
+proportions, the same joke in each. **Where the sketch has an eye,
+the drawing has an eye**, because that is the owner's pen and not
+this session's decision; the law that only the walker has a face is
+recorded as bent there, on the owner's hand, and nowhere else. Each
+was given the place that already wanted it: the dachshund is THE LOW
+DOG on Maple Court's green, with a ball; the square sheep are THE
+SQUARE FLOCK, one to a bay in the Cubicle Mile's overflow, which is
+the joke the painting was already telling; the one-eyed thing is THE
+VISITORS — the aliens the brief asked for — three of them in a ruled
+scorch in the Pale; the bow-tie dog is THE BARISTA'S DOG, sat beside
+the cart all day, and the paw print is what it leaves on the pavement.
+**If the owner says one of them is not their drawing, that drawing
+changes and nothing else about it does.**
+
+**And a seat can move now.** The office chair is a pushable that is
+also a seat: `sit.x`/`sit.z` are getters on the thing, `sit.onSit`
+fires once with the walker's heading, `things.roll` sends the chair
+that way, and `App` follows a seat with a `follow` in both axes — so
+the walker rides. Any later mount that is a thing you sit on (a cart,
+a trolley, a sledge) is this pattern and nothing new.
+
+### WHAT SHIPPED
+
+- **THE OWNER'S FOUR** (`textures-cast.ts`): `dachshundTexture` ×4
+  postures, `bowtieDogTexture` ×3 and `pawTexture` (white, for the
+  footprint shader), `squareSheepTexture` ×3 kinds (a sheep, the ram
+  with curled horns, the long-horned face in the middle of the
+  square) ×2 postures, `alienTexture` ×3 (grinning, blinking, mouth
+  shut) and `eyeGlowTexture`. Plus the session's own: the scorch
+  pattern, the coffee cart, the cup row (twelve states, names
+  lettered), the barista, the wheelie bin, your lane, the designers,
+  the persona board, the journey map, the sticky glass (seven levels)
+  and a peeled sticky, the office chair, the ball, the lifted corner,
+  a lettered sprint sign.
+- **THE ALIENS IN THE PALE** (`wilds.ts`). `scorchDecal` at (270, 52),
+  thirty-six units, ruled: three squares inside each other, eight
+  rules with ticks, a scorch under the middle. `VISITORS` ×3 at three
+  heights; by day they shuffle in the pattern, turn to a walker within
+  twenty-two, and POKE IT (a POI on the big one, day only) blinks it
+  and hops the small two (`alien-blink`). After dark
+  (`the-lights-over-the-pan`, 20.5 to 5.2) the bodies are hidden and
+  three eye glows hang at five to eight units, drift on slow sines,
+  lean toward a walker within forty-five, and are **clamped never
+  inside twelve of the walker and never off the pale**
+  (`LIGHT_KEEP`); `pale-hum` every eight to thirteen seconds within
+  forty, and a row in `earshot.ts`. THE PALE's note reads the hour and
+  explains nothing. Nothing of theirs has a position outside the Flats
+  by any path.
+- **THE BARISTA AT THE JUNCTION** (`civic.ts`, Greyline). The cart at
+  (142, 216), solid; `BARISTA` on a routine in by mill lane and across
+  the junction at 6.7, behind the cart from seven, and on every hour
+  from seven to six the drawing with a hand up for six minutes
+  (`the-order-0..11`, `order-call` within thirty-four) and a cup set
+  down with a name on it — WICK, MARGET, VAL, HOLT, AMOS, PYE, BRACK,
+  WREN, NELL, JOAN, one with nothing on it, DENNIS — the row a pure
+  function of the hour (`cupsAt`), gone at 18.6, and THE CART's note
+  lists them. **THE DOG** (`BARISTA_DOG`, a routine drawn by a
+  `Creature`) sits beside the cart from seven to six and walks in and
+  out with the barista, stamping the owner's paw every half unit on a
+  second `Footprints` (`map` option, fade 900) — the only prints in
+  Greyline that are not the walker's. **THE BIN** (`the-bin`, E19): on
+  its side at the junction's north-east corner until RIGHT THE BIN
+  (`fact:the-bin-righted`), then a pushable (shove 7, refuses
+  buildings and water); rolling within seven of the junction the
+  pigeons go up and the box ticks (`bin-roll`, `bin-knock`).
+- **THE DESIGN STUDIO IN THE ATRIUM** (`civic.ts`, the office). A
+  persona on an easel (DENNIS, COMMUTER 58, GOALS / FRUSTRATIONS /
+  NEEDS, *'IT SAYS 8:15.'*), a journey map (twelve stages, four rows,
+  a red line that goes down at the fourth and stays down), a table
+  with a laptop, SPRINT 2 - WEEK 2 lettered under it, all solid.
+  Three on routines (`LEAD`, `RESEARCHER`, `MAKER`, `designerTexture`
+  with a lanyard): out of the atrium at 8.3, the researcher at the
+  stop from 7.98 with a clipboard beside Dennis while he reads the
+  board (**the intercept**), then at the shelter's glass at 8.5; the
+  maker out with a foam board at 8.5; all in at twelve, out at one,
+  in at five. **The stickies**: `stickiesAt(h)` — none first thing,
+  the wall of twenty-four by five, up until the morning — drawn on a
+  transparent sheet the shelter's size standing on its glass; PEEL
+  ONE OFF (a POI at the glass) takes one off and lays it on the apron
+  (eight decals, reused), and the morning puts the wall back. THE
+  SPRINT's note is accurate and says nothing about what it means.
+- **THE SQUARE FLOCK** in the overflow: six `Creature`s at
+  `FLOCK_BAYS`, one to a bay across both bay runs; within eight a
+  sheep moves square off the walker up to six units, inside the
+  overflow's rect, and re-parks slowly; within fourteen its head is
+  up; **the long-horned one never moves**; `sheep` on a scatter and
+  every twelve to twenty-two seconds within twenty-two, and a row in
+  `earshot.ts`. THE OVERFLOW's note has them.
+- **THE OFFICE CHAIR** (`office-chair`, L8): a pushable on the spur
+  road's verge at (291, 208.6) that is a seat (reach 3.6, lift 0.5,
+  `follow` with a castor wobble, `onSit` → `things.roll(…, heading,
+  36)`), refusing buildings, the atrium's doors, the shelter, and the
+  mile's edges; `chair-roll` while it moves. It stays where it stops.
+- **THE LOW DOG AND THE BALL** (`civic.ts`, Maple Court). `the-ball`
+  is a carriable with `rolls: 7` (a throw at a run lands and rolls
+  on; `ball-kick` on the throw); refuses buildings, the steep and
+  water. THE LOW DOG is out seven to eight at night (`the-low-dog`),
+  its land THE GREEN's district rect: it notices a walker on the grass
+  within twelve (`yap`), follows at a stride and a half, goes for the
+  ball when the ball is loose on the green and not at your feet, noses
+  it back toward you (`things.roll` toward the walker) and keeps
+  doing that, and when you leave the green it goes on toward you as
+  far as the edge and sits there looking after you. A companion at
+  the size of a lawn, written by hand rather than on `Follower`
+  because it has two targets.
+- **THREE SECOND DOORS, ON CARDS** (`THE-FUN-PASS` §6): **VAL** — at
+  the three chairs with `name:castle`, CUT THE GAP
+  (`door:the-gap-cut`, now `WAIT_ANSWERS.neighborhood`) or TURN HER
+  LIGHT OFF (`door:the-light-off`: the porch dark at once, and the
+  lit houses go dark one a day off `fact:the-light-went-off-on-day-N`,
+  written once by the land and read back with `knowledge.first`).
+  **THE MAN AT THE JUNCTION** — read the pavement (`fact:the-pavement`)
+  and it is a card: STAND WITH HIM (`door:the-stood-with`; the four
+  seconds resolve it) or WALK ROUND, LIKE EVERYONE
+  (`door:the-walked-round`: the four seconds stop counting, and the
+  third pass — in past seven, out past thirteen — writes
+  `fact:your-lane` and lays `yourLaneDecal`, nearer him than the
+  city's two). The four seconds do not count while a note or a card
+  is up (`UI.chrome.open`). **DENNIS** — the board close up with
+  `route:the-line` is a card: WIPE THE BOARD (`door:the-board-wiped`:
+  a clean timetable, `timetableTexture(…, clean)`, and Dennis skips
+  his eight o'clock) or PRESS THE CORNER BACK
+  (`door:the-corner-pressed`: the lifted corner, E20, stays down).
+  The pavement's POI moved two units east so it wins the nearest test
+  from the man's spot.
+- **Engine**: `Footprints` takes a `map`; `ThingDef.rolls` and
+  `things.roll(id, heading, dist)`, and `tick` rolls any grounded
+  thing with velocity; `sit.onSit` and a seat that moves in both
+  axes; `knowledge.first(prefix)`; `UI.chrome`; the harness's
+  `closeChoice`. Nine voices in `Audio.ts` (`yap`, `ball-kick`,
+  `order-call`, `bin-roll`, `bin-knock`, `chair-roll`, `sticky-peel`,
+  `alien-blink`, `pale-hum`); six rows in `earshot.ts`. `render-wavs`
+  carries them under `the-new-cast-east`.
+- **Tools**: `check-verbs` §11 on a fresh page (the visitors by day
+  inside the pale and no lights; the poke; the bodies gone and the
+  lights up at night; the lights sampled for twelve seconds never
+  inside twelve and never off the pale; the routines and the twelve
+  orders registered; the barista and the dog at noon, the dog walking
+  in at 6.86; the bin righted, rolled to the junction, the pigeons up;
+  the pavement a note then a card, the second door and three passes
+  and the lane with him still standing; the intercept at 8.1; PEEL
+  ONE OFF twice; six sheep in the overflow, one scattered and the
+  long-horned one not, re-parked; the chair sat on and rolled with
+  the walker on it, short of the atrium; the board's card and the
+  wipe; the low dog to a walker, to the ball, and sat at the green's
+  edge with the walker past it; Val's card, the light-off door and its
+  day written, not an answer, and the gap answering);
+  `shoot-session20` (30 framings, both rigs, a DO table that pokes,
+  pushes the bin, opens cards, peels, walks at the flock, rides the
+  chair, kicks the ball and leaves the green; waits for the loader to
+  let go before the title); `shoot-now` and `shoot-8-15` learn
+  `door:the-gap-cut` where they learned `name:castle`.
+
+### THE GATES, AND WHAT MOVED
+
+- **Build green.** `tsc` and `vite build`; `check-terrain`,
+  `check-fields` (94 figures driven through their hours, six drawn by
+  a land's own hand — the barista's dog, the flock, the visitors —
+  all drawn right), `check-roads` (both rigs, no road silent for
+  fifteen seconds with the cart, the studio and the flock in earshot
+  and in frame), `check-audio` (−22 dB below full scale with the nine
+  new voices in), `check-sightline` (clear), `check-lures`,
+  `check-camera` (both rigs; home to exactly zero in 2.75 s; walking
+  turns the frame 0.00°/s). `check-verbs`' first run passed 126 and
+  failed four, all four in the harness and none in the world: §10
+  counted three answered waits where Val's answer is now a door (two);
+  §11's poke stood a stride off the visitor's foot and opened the
+  Pale's note instead, and the note it left open ate the bin's first
+  press; and the kick was measured after the dog had brought the ball
+  back. All four corrected in the tool (and the poke's reach in the
+  world); **the second run passes every section, 130 assertions**, §11
+  on a fresh page.
+- **What moved, by `diff-sheets` against `origin/main` (447a16e), 92
+  framings, bearing pinned, twelve game seconds of settle: nothing.**
+  92 of 92 bit-identical, page and writing. The protected set is the
+  six lands that hold a WOWED at two hours, and none of this session's
+  cast stands in one of them: the four re-opened lands are judged by
+  `critique-art-14` on their own sheet, and Val's hedge in the court's
+  frames is shut on a page that has not taken the door. The first
+  session of the fun pass that moved no protected framing at all.
+- **Art gate**: `critique-art-14`, two rounds. Round one's seven
+  (the loader in eleven frames, the walk-in behind the shop row, the
+  card answered by the settle, the chair's reach and its home in the
+  studio's footprint, the flock small, the lane faint, the low dog
+  sat short of the edge) fixed and re-shot; round two passes with
+  **THE BLEACH FLATS, GREYLINE CITY, THE CUBICLE MILE and MAPLE COURT
+  re-earned**. Passed, not praised: THE CART's label on the shop row,
+  the paws a dotted line at ten units, the studio's three small at
+  dusk.
+- **The proofs sheet** `shoot-session20` (30 framings, both rigs).
+- **The ear gate handed over: ninety-five voices** for `render-wavs`,
+  nine of them new. Unheard.
+- **The feel gate handed over**, with the bicycle and now the chair on
+  it.
+- **THE PLAY GATE HANDED OVER AND NOT RUN.**
+  `design/play-sheets/session-20.md`: the owner's drawings first, then
+  the visitors by day and by night, the cart and the cups, the bin,
+  the pavement's doors, the studio and the chair, the flock, and Val's
+  doors on the third day.
+
+### DECLINED, IN WRITING
+
+- **A face for the aliens beyond the owner's eye.** The drawing is
+  the owner's; the eye is the light over the pan; nothing was added.
+- **A word about what the visitors are.** THE PALE's note says what
+  is there at each hour and stops. The lights are lights.
+- **The barista calling a name in words.** Every voice is synthesis;
+  `order-call` is the shape of two syllables, and the cup carries the
+  name.
+- **The square flock on the Downs.** The Downs is the one land in its
+  category that is not a joke; the overflow is a car park set out for
+  people who were coming, and sheep parked in it is the Cubicle Mile's
+  absurdity, played straight.
+- **Making the stand-still door depend on the card.** Four seconds by
+  the man without reading the stone still answers his wait, the way
+  Session 13 built it. The card is the way to see both doors; forcing
+  it would put a gate on a wait that never had one. Recorded in
+  `PROMPT.md` for the owner.
+- **Paw prints that last for ever.** The dog's `Footprints` fade in
+  fifteen minutes; a pavement that kept them wants them as a decal on
+  the routine's line, and that is a line in `PROMPT.md`.
+
+### Gotchas (new; everything from Sessions 1–19 still applies)
+
+- **A ROUTINE'S STRAIGHT LINE GOES THROUGH DRAWINGS.** The barista's
+  first route from the north end's door to the cart ran behind the
+  shop row and the walk-in was a dog seen through a shopfront. A
+  routine that crosses a land goes by the road with a stop at the
+  turn.
+- **A SEAT THAT MOVES OUTRUNS THE CAMERA.** The rig walks twelve
+  behind and lerps; a thirty-unit ride needs four seconds of settle
+  before a frame, or the frame is of where the walker was.
+- **A FRAME'S SETTLE IS FOUR SECONDS OF STANDING STILL.** Within nine
+  of the man that is his wait answered before the card is offered.
+  Stand the frame off him, and — for the player — the four seconds do
+  not count while a card is up.
+- **THE LOADER OUTLASTS A TWENTY-FIVE SECOND WAIT IN THE SANDBOX.**
+  Eleven of twenty-nine frames on the first sheet were the loader.
+  Wait for `.loader.gone` before the title veil.
+- **A CHAIR'S REACH IS WHERE A WALKER STOPS.** Two and six tenths is
+  inside the chair; a walker stops about two and three quarters out.
+  And the poke's point was a stride off the visitor's foot: a touch's
+  point is the drawing's foot, and its reach is measured from there.
+- **A NOTE A TEST LEAVES OPEN EATS THE NEXT PRESS.** §11's first run
+  opened THE PALE's note where it meant to poke, and the bin's first
+  press closed the note instead of righting the bin. Close what you
+  opened before the next assertion.
+- **A PROMPT'S NEAREST TEST IS DECIDED BY THE POI'S POINT, NOT ITS
+  LABEL.** The pavement's point at (137, 196) lost to the junction's
+  from the man's own spot; it is at (139, 199.5).
+- **A DOOR THAT NEEDS A DAY WRITES THE DAY.** The knowledge is a set;
+  the land writes `fact:…-on-day-N` once and reads it back by prefix.
+
 ## Session 19 — 2026-09-04 — the new cast, west and north
 
 *The first local QA pass came first, all five of its jobs, before a

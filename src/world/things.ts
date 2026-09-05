@@ -77,6 +77,12 @@ export type ThingDef = {
    * what the ground was and calls `skip`. The register's own toy.
    */
   skims?: number;
+  /**
+   * A CARRIABLE THAT ROLLS (Session 20, the ball on the green): units it
+   * runs on after a throw lands it, along the throw's heading, slowing
+   * the way the cart slows. A kick is a throw with a roll on the end.
+   */
+  rolls?: number;
 };
 
 export type Thing = {
@@ -243,6 +249,27 @@ class Things {
   /** Per second: the cart loses this much of its speed. */
   static DECAY = 2.6;
 
+  /**
+   * A ROLL ON A HEADING (Session 20): the office chair, ridden. The
+   * same clamp and the same refusals as a push, but the direction is
+   * given rather than taken from where the walker stands, because the
+   * walker is ON it. `dist` is about how far it goes.
+   */
+  roll(id: string, heading: number, dist: number): 'moved' | 'refused' | false {
+    const t = this.map.get(id);
+    if (!t) return false;
+    const dx = Math.sin(heading);
+    const dz = Math.cos(heading);
+    const ax = t.x + dx * 0.6;
+    const az = t.z + dz * 0.6;
+    const blocked = this.clampX(t, ax) !== ax || this.clampZ(t, az) !== az
+      || (t.def.refuse ? t.def.refuse(ax, az) : false);
+    if (blocked) return 'refused';
+    t.vx = dx * dist * Things.DECAY;
+    t.vz = dz * dist * Things.DECAY;
+    return 'moved';
+  }
+
   /* ---- CARRY ------------------------------------------------------- */
   pickUp(id: string): boolean {
     const t = this.map.get(id);
@@ -383,7 +410,7 @@ class Things {
   /* ---- the frame --------------------------------------------------- */
   tick(dt: number) {
     for (const t of this.map.values()) {
-      if (t.def.kind === 'pushable') {
+      if (t.def.kind === 'pushable' || (t.state === 'ground' && (t.vx !== 0 || t.vz !== 0))) {
         const sp = Math.hypot(t.vx, t.vz);
         if (sp < 0.02) {
           t.vx = 0;
@@ -420,6 +447,13 @@ class Things {
             }
           }
           t.fly = undefined;
+          /* A BALL ROLLS ON from where it came down, along the throw,
+           * and slows; the same integration as the cart, clamped the
+           * same way. Set down, it stays set down. */
+          if (t.def.rolls && landing.thrown && !landing.caught) {
+            t.vx = Math.sin(landing.heading) * t.def.rolls * Things.DECAY;
+            t.vz = Math.cos(landing.heading) * t.def.rolls * Things.DECAY;
+          }
           this.landed.push(landing);
           this.dirty = true;
         }

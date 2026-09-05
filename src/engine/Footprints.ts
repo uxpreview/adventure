@@ -8,6 +8,10 @@ export type FootprintOpts = {
   capacity?: number;
   /** World size of one print. */
   size?: number;
+  /** The stamp itself, drawn in white for the shader to tint: the
+   *  walker's shoe unless a land says otherwise (Session 20: the
+   *  barista's dog leaves a paw). */
+  map?: THREE.Texture;
 };
 
 /**
@@ -60,7 +64,7 @@ export class Footprints {
   onStamp: ((pos: THREE.Vector3, heading: number) => void) | null = null;
 
   constructor(opts: FootprintOpts = {}) {
-    const { color = 0x232633, fade = 70, capacity = 700, size = 0.3 } = opts;
+    const { color = 0x232633, fade = 70, capacity = 700, size = 0.3, map } = opts;
     this.capacity = capacity;
 
     const geo = new THREE.PlaneGeometry(size * 0.68, size);
@@ -79,7 +83,7 @@ export class Footprints {
 
     this.mat = new THREE.ShaderMaterial({
       uniforms: {
-        uMap: { value: footprintTexture('#ffffff') },
+        uMap: { value: map ?? footprintTexture('#ffffff') },
         uColor: { value: new THREE.Color(color) },
         uTime: { value: 0 },
         uFade: { value: fade },

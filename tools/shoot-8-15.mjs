@@ -56,7 +56,7 @@ const SHOTS = [
   ['19-line-it-stops-empty',     -45,  42, { train: [5, 2] }],   // LONGSHORE, z 24
   /* MAPLE COURT's stop rather than Brim's: Brim's is halfway up a
    * street of terraces and the carriage comes back buried in a town. */
-  ['20-line-somebody-gets-on',   -45, 168, { train: [8, 4], learn: ['name:castle'] }],
+  ['20-line-somebody-gets-on',   -45, 168, { train: [8, 4], learn: ['name:castle', 'door:the-gap-cut'] }],
   ['21-line-at-the-junction',    148, 218,
     { train: [10, 6], learn: ['fact:the-man-at-the-junction'] }],
   ['22-line-at-the-stop',        252, 216,

@@ -230,8 +230,12 @@ export const WAIT_ANSWERS: Partial<Record<string, Known>> = {
   /** JOAN HARROW: a place kept for nobody was always a place kept for
    *  anybody. **She is not on the platform** — see `Eight15.ts`. */
   downs: 'fact:the-place-kept',
-  /** VAL: one land can be seen from another, if somebody cuts a hedge. */
-  neighborhood: 'name:castle',
+  /** VAL (Session 20): one land can be seen from another, if somebody
+   *  cuts a hedge — and from this session the cut is a door, taken at
+   *  the three chairs with the castle's name. The second door turns her
+   *  light off, and is a door and not an answer: the street goes dark a
+   *  house a day, and her platform stays empty (`THE-FUN-PASS` §6). */
+  neighborhood: 'door:the-gap-cut',
   /** THE MAN AT THE JUNCTION: somebody has been waiting to be asked. */
   city: 'fact:the-man-at-the-junction',
   /** DENNIS: there is a list, and the twelve are on it, in order. */
@@ -284,6 +288,15 @@ class Knowledge {
 
   has(id: Known): boolean {
     return this.set.has(id);
+  }
+
+  /** The first known id under a readable prefix, or null — for the one
+   *  fact whose id carries a day in it (Session 20: the day Val's light
+   *  went off, so the street can go dark a house a day from it). Not a
+   *  count and not a list; one id, read back. */
+  first(prefix: string): string | null {
+    for (const id of this.set) if (id.startsWith(prefix)) return id;
+    return null;
   }
 
   /** True if this was new. Callers use that to make a noise ONCE. */

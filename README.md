@@ -258,6 +258,45 @@ and deals a region card — nothing else, because the sheet is continuous.
   a few units of the lens fades; a name is written a line-height over
   its own drawing, a prompt beside the thing in reach, the region card
   on a paper halo; the tarn's water lies on its bowl.
+- **The new cast, east and south** (Session 20, `THE-FUN-PASS` §10),
+  **and four drawings from the owner's own notebook.** **THE ALIENS in
+  the Pale**: something has burned a ruled pattern into the flattest
+  ground in the world, and by day three one-eyed things stand in it,
+  grinning, and turn to look at you — poke the big one and it blinks
+  and the small two hop — and after dark the bodies are gone and there
+  are three lights over the pan that come toward you and never nearer
+  than twelve units, with a hum under the grit. They are stuck too.
+  Nothing says what they are. **THE BARISTA at the junction**: a
+  coffee cart, and a person who calls a name out on the hour from
+  seven until six and sets a cup on the counter with the name on it —
+  wick, marget, val, holt, amos, pye, brack, wren, nell, joan, one
+  with nothing on it, dennis — and nobody comes for any of them. The
+  only person in the city who stands still on purpose, and **the dog
+  in the bow tie beside the cart** is the second; it walks in and out
+  with the barista and leaves paw prints on the pavement, the only
+  prints in Greyline that are not yours. **THE DESIGN STUDIO in the
+  atrium**: a persona pinned to an easel called DENNIS, a journey map
+  twelve stages long with a line that goes down at the fourth and
+  stays down, three people with lanyards, one of them out at the stop
+  at eight with a clipboard while Dennis reads the board, and the
+  shelter's glass filling with sticky notes through the day; peel one
+  off and it lies on the apron until morning. **THE SQUARE FLOCK** in
+  the overflow: six sheep, one to a bay, square, that scatter and
+  re-park, one with curled horns and one that is not a sheep and does
+  not move for anybody. **THE LOW DOG** on the green in Maple Court:
+  a dachshund in a neckerchief that falls in beside you on the grass,
+  chases the ball when you kick it, noses it back, and stops dead at
+  the green's edge, which is a line and not a border. **Toys**: the
+  ball, the wheelie bin at the junction (right it, push it into the
+  crossing, and the pigeons go up for it), and **the office chair**:
+  sit on it and it rolls the way you were facing, down the mile on
+  castors, with you on it, and stops where the floor lets it. **Three
+  more waits are cards with two doors**: at the three chairs, cut the
+  gap or turn Val's light off (and the street goes dark a house a day);
+  at the pavement, stand with him or walk round like everyone (three
+  passes wear a lane of your own into the stone); at the board, wipe
+  it clean or press the corner back (wiped, Dennis no longer goes to
+  it at eight). Nothing says which was right.
 - Position, discovered lands, strides walked, the boat, the bicycle,
   the hour, what you know, what you chose, and where you left the
   cart, saved to `localStorage`. (The gate, the bull and the goat are not: a fresh
@@ -373,6 +412,11 @@ node tools/shoot-session19.mjs # THE NEW CAST, WEST AND NORTH: the longship in,
                                #   the surfers; Pye, Wren and Wick and their doors;
                                #   the keep re-drawn; the portcullis; the moat red;
                                #   the shape in the pines; the stone skipping
+node tools/shoot-session20.mjs # THE NEW CAST, EAST AND SOUTH: the pattern and the
+                               #   visitors by day, the lights at night; the cart,
+                               #   the cups, the dog, the bin, your lane; the sprint,
+                               #   the stickies, the square flock, the chair; the low
+                               #   dog and the ball; three cards with two doors
 node tools/qa-play-local.mjs   # THE LOCAL QA PASS (headed, real keys, real time,
 node tools/qa-play-local-2.mjs #   on the owner's machine): the first hour, the
                                #   verbs, the walls, the lands at every hour
