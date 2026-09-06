@@ -171,6 +171,21 @@ export class Character {
     this.hand.visible = false;
     this.sprite.add(this.hand);
 
+    /* THE ONE THING WORN (Session 22, `world/worn.ts`): a second small
+     * cutout, on the head or round the neck, anchored at its own
+     * bottom edge so a hat sits ON the head and a lanyard hangs FROM
+     * the neck. Parented to the sprite like the hand, so it mirrors,
+     * leans and recoils with the body. Empty nearly all the time. */
+    const wg = new THREE.PlaneGeometry(1, 1);
+    wg.translate(0, 0.5, 0);
+    this.wornMat = new THREE.MeshBasicMaterial({
+      transparent: true, alphaTest: 0.1, side: THREE.DoubleSide,
+    });
+    this.worn = new THREE.Mesh(wg, this.wornMat);
+    this.worn.visible = false;
+    this.worn.position.set(0, Character.HEAD_TOP, 0.03);
+    this.sprite.add(this.worn);
+
     this.group.add(this.shadow, this.sprite);
   }
 
@@ -180,6 +195,25 @@ export class Character {
     this.handMat.map = tex;
     this.handMat.needsUpdate = true;
     this.hand.scale.set(w / 0.46, h / 0.46, 1);
+  }
+
+  /** Where the top of the head is, in the figure's own units: the
+   *  head's circle is centred forty-two pixels down a hundred and
+   *  seventy-six, radius twenty-two, on a figure one and a half tall. */
+  private static HEAD_TOP = 1.55 * (1 - (42 - 22) / 176);
+  /** And the shoulders, where a cord round the neck hangs from. */
+  private static NECK = 1.55 * (1 - 66 / 176);
+  private worn: THREE.Mesh;
+  private wornMat: THREE.MeshBasicMaterial;
+
+  /** Put something on, or take it off (`null`). `slot` says where it
+   *  sits; `dy` lifts or drops its bottom edge from there. */
+  wear(tex: THREE.Texture | null, slot: 'head' | 'neck' = 'head', w = 0.4, h = 0.3, dy = 0) {
+    this.worn.visible = tex !== null;
+    this.wornMat.map = tex;
+    this.wornMat.needsUpdate = true;
+    this.worn.scale.set(w, h, 1);
+    this.worn.position.y = (slot === 'head' ? Character.HEAD_TOP : Character.NECK) + dy;
   }
 
   get isSitting() {

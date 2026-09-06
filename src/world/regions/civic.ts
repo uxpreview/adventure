@@ -66,6 +66,8 @@ import { weather } from '../weather';
 import { rookAt } from '../rooks';
 import { clock } from '../daylight';
 import { knowledge } from '../knowledge';
+import { REGION_SPECS } from '../layout';
+import { worn } from '../worn';
 /* WHOEVER IS ON A PLATFORM RIGHT NOW (Session 14, `Eight15.ts`).
  * Nobody may be in two places at once: while the 8:15's doors are open
  * at a land's stop, that land's own person is the one standing on it. */
@@ -1162,6 +1164,11 @@ export const buildCastle: RegionBuilder = (ctx) => {
    * reads its market. Both are built so the swap costs nothing. */
   const kingDown = ctx.standee(toppledStatueTexture(990), 7, 4, -56, -222, { rotY: 0.15 });
   const kingUp = ctx.standee(standingKingTexture(991), 7, 8, -56, -222, { rotY: 0.15 });
+  /* AND BARE-HEADED (Session 22, `worn.ts`): the walker took his crown
+   * off him, lying or standing, and he is drawn without it from then
+   * on. Two more drawings on the same spot; four states, one read. */
+  const kingDownBare = ctx.standee(toppledStatueTexture(990, true), 7, 4, -56, -222, { rotY: 0.15 });
+  const kingUpBare = ctx.standee(standingKingTexture(991, true), 7, 8, -56, -222, { rotY: 0.15 });
 
   /* -- the moat pool: at the ridge's west foot, reflecting it -------- */
   const reedSpots: [number, number, number][] = [
@@ -1269,11 +1276,19 @@ export const buildCastle: RegionBuilder = (ctx) => {
 
   /** The door, last frame, so the swap is done once and not per tick. */
   let shownRestored: boolean | null = null;
+  let shownBare: boolean | null = null;
 
   return (dt: number, t: number, px: number, pz: number) => {
     const h = clock.hour;
     // the fires at the gate, on the same clock as Brim's lamps
     lightUp(braziers, clock.lamp);
+
+    /* THE CROWN, read back: which of the four kings is drawn. */
+    const bare = worn.has('the-crown');
+    if (bare !== shownBare || shownRestored === null) {
+      shownBare = bare;
+      shownRestored = null; // re-run the door's swap below with the crown known
+    }
 
     /* ---- THE SECOND DOOR, READ BACK ----------------------------------
      * `door:the-king-restored`: he is on his plinth, the banners are
@@ -1283,8 +1298,10 @@ export const buildCastle: RegionBuilder = (ctx) => {
     const restored = knowledge.has('door:the-king-restored');
     if (restored !== shownRestored) {
       shownRestored = restored;
-      kingDown.visible = !restored;
-      kingUp.visible = restored;
+      kingDown.visible = !restored && !bare;
+      kingUp.visible = restored && !bare;
+      kingDownBare.visible = !restored && bare;
+      kingUpBare.visible = restored && bare;
       for (const f of avenueBanners) f.mesh.visible = !restored;
       for (const f of avenuePoles) f.mesh.visible = restored;
       for (const m of keepBanners) m.visible = !restored;
@@ -1483,12 +1500,31 @@ export const CASTLE_POIS: WorldPOI[] = [
        * it is said. Four hundred and eighty units south a man has been
        * saying it wrong for thirty years and has never once been told.
        * Nothing here mentions him and nothing there mentions this. */
-      body: () => (knowledge.has('door:the-king-restored')
-        ? 'a king is on his plinth, sceptre in hand, with a crooked line across the stone where he was mended. the plinth says he was beloved of graweder, which is this place with the old spelling still on it. the rooks have moved to the wall and are not speaking to you.'
-        : 'a king fell over and was left where he landed, sceptre a body\'s length away. the plinth says he was beloved of graweder, which is this place with the old spelling still on it. the rooks say he is comfortable.'),
+      body: () => {
+        const bare = worn.has('the-crown') ? ' his head is bare. nobody has mentioned it.' : '';
+        return knowledge.has('door:the-king-restored')
+          ? 'a king is on his plinth, sceptre in hand, with a crooked line across the stone where he was mended. the plinth says he was beloved of graweder, which is this place with the old spelling still on it.' + bare + ' the rooks have moved to the wall and are not speaking to you.'
+          : 'a king fell over and was left where he landed, sceptre a body\'s length away. the plinth says he was beloved of graweder, which is this place with the old spelling still on it.' + bare + ' the rooks say he is comfortable.';
+      },
       learns: ['fact:the-old-name'],
     },
   },
+  {
+    /* THE CROWN (Session 22, `worn.ts`). Once a door has been taken at
+     * the plinth — he is back on it, or he is left — his crown is a
+     * thing you can take, at the head end of him, and it is the first
+     * thing the walker ever wears. The cost is his: he is drawn
+     * bare-headed from then on, standing or lying, in every save, and
+     * nothing in the land remarks on it. A touch, in reach only from
+     * his head; the plinth's own note wins from anywhere else. */
+    x: -53.2, z: -221.4, radius: 2.6,
+    get enabled() {
+      return (knowledge.has('door:the-king-restored') || knowledge.has('door:the-king-left')) && !worn.has('the-crown');
+    },
+    set enabled(_v: boolean) { /* the plinth decides */ },
+    prompt: 'TAKE HIS CROWN',
+    touch: () => { worn.take('the-crown'); say('crown-lift'); },
+  } as unknown as WorldPOI,
   {
     x: -100, z: -215, radius: 8, label: 'THE MOAT POOL',
     note: {
@@ -3088,6 +3124,13 @@ const FLOCK_BAYS: { x: number; z: number; kind: 0 | 1 | 2 }[] = [
 const OVERFLOW = { minX: 285, maxX: 331, minZ: 135, maxZ: 163 };
 /** The studio's toy, reached from the POI list: set by the builder. */
 const office = { peel: () => {} };
+/** How many of the twelve lands' names the walker holds — read by the
+ *  stop's note and by nothing else (Session 22; the same bargain as
+ *  every count in `knowledge.ts`: the bookkeeping is ours, the player
+ *  gets no number). */
+const knownNames = () => REGION_SPECS.filter((s) => knowledge.has(`name:${s.id}`)).length;
+/** Six of twelve: enough that the list has stopped being words. */
+const NAMES_FOR_THE_LIST = 6;
 
 export const buildOffice: RegionBuilder = (ctx) => {
   const { r } = ctx;
@@ -3503,7 +3546,9 @@ export const buildOffice: RegionBuilder = (ctx) => {
   events.register({ id: 'the-mile-dark', land: 'office', at: 4.8, hours: 1.8, place: STOP });
 
   /* ---- THE DESIGN STUDIO (Session 20) --------------------------------- */
-  ctx.standee(personaBoardTexture(7900), 2.3, 2.9, STUDIO.persona.x, STUDIO.persona.z, { rotY: 0.18, solid: 0.6 });
+  const easel = ctx.standee(personaBoardTexture(7900, true), 2.3, 2.9, STUDIO.persona.x, STUDIO.persona.z, { rotY: 0.18, solid: 0.6 });
+  const easelBare = ctx.standee(personaBoardTexture(7900, false), 2.3, 2.9, STUDIO.persona.x, STUDIO.persona.z, { rotY: 0.18 });
+  easelBare.visible = false;
   ctx.standee(journeyMapTexture(7901), 3.5, 2.15, STUDIO.map.x, STUDIO.map.z, { rotY: -0.1, solid: 1.0 });
   ctx.standee(sprintSignTexture(7902, 'SPRINT 2 - WEEK 2'), 2.4, 0.45, STUDIO.map.x - 0.2, STUDIO.map.z - 0.2);
   // the table is a bench with a laptop on it, in this land's ruled hand
@@ -3560,6 +3605,13 @@ export const buildOffice: RegionBuilder = (ctx) => {
   let cupSay = 14;
   let doorOpen = false;
   return (dt: number, t: number, px: number, pz: number) => {
+    /* THE SPARE LANYARD, read back (Session 22): taken, the easel is
+     * bare at that corner and stays bare. */
+    {
+      const gone = worn.has('the-lanyard');
+      easel.visible = !gone;
+      easelBare.visible = gone;
+    }
     const h = clock.hour;
 
     /* THE LIGHTS. Every window in the mile that is still occupied at
@@ -3790,10 +3842,23 @@ export const OFFICE_POIS: WorldPOI[] = [
      * because there was nothing under it at all. */
     x: 252, z: 200.2, radius: 8, label: 'THE 8:15 STOP',
     prompt: 'CHECK THE TIMETABLE',
+    /* THE LIST MEANS NOTHING UNTIL SOME OF THE NAMES ON IT DO
+     * (`critique-story-2` RECOMMENDED 2, carried three sessions and
+     * built in Session 22). A timetable is a list of place-names, and a
+     * walker who has stood in two lands recognises two of them. So the
+     * twelfth piece — *there is a list, and the twelve are on it, in
+     * order* — is not handed over by reading the board; it is handed
+     * over by reading the board KNOWING what the words are, which is
+     * six of the twelve names, earned by having been places, the way
+     * the map already draws them. Not a gate and not a lock: the note
+     * reads either way, and early it reads as a list of words. The
+     * threshold is bookkeeping and the player never sees it. */
     note: {
       title: 'the 8:15 stop',
-      body: 'the timetable says the 8:15 is coming. there is no track here, and there is no track anywhere. everyone waiting knows both of these things and has made their peace.',
-      learns: ['fact:the-timetable'],
+      body: () => (knownNames() >= NAMES_FOR_THE_LIST
+        ? 'the timetable says the 8:15 is coming. twelve names down the left, and they are places, and you have stood in most of them, and they are in the order they are in. there is no track here, and there is no track anywhere. everyone waiting knows both of these things and has made their peace.'
+        : 'the timetable says the 8:15 is coming. twelve names down the left, most of them just words. there is no track here, and there is no track anywhere. everyone waiting knows both of these things and has made their peace.'),
+      get learns() { return knownNames() >= NAMES_FOR_THE_LIST ? ['fact:the-timetable'] : []; },
     },
   },
   {
@@ -3829,11 +3894,24 @@ export const OFFICE_POIS: WorldPOI[] = [
      * they are, which is accurate, and not what it means. */
     x: STUDIO.map.x - 1, z: STUDIO.map.z + 2.2, radius: 4.6, label: 'THE SPRINT',
     prompt: 'READ THE PERSONA',
+    /* The note says what is there, and the lanyard is there until it
+     * is not; it does not say who took it. */
     note: {
       title: 'the sprint',
-      body: 'a board on an easel with a name on it, dennis, and a circle where a photograph would go, and three headings: goals, frustrations, needs. under the quote it says it says 8:15. beside it a journey map in four rows and twelve stages, with a line for how it feels that goes down at the fourth stage and stays down. three people with lanyards. it is week two of a two-week sprint, and has been for some time.',
+      body: () => 'a board on an easel with a name on it, dennis, and a circle where a photograph would go, and three headings: goals, frustrations, needs. under the quote it says it says 8:15. beside it a journey map in four rows and twelve stages, with a line for how it feels that goes down at the fourth stage and stays down. three people with lanyards' + (worn.has('the-lanyard') ? '' : ', and a fourth lanyard on the easel that says visitor') + '. it is week two of a two-week sprint, and has been for some time.',
     },
   },
+  {
+    /* THE SPARE LANYARD (Session 22, `worn.ts`). With the board decided
+     * — wiped, or the corner pressed — the fourth lanyard on the easel
+     * is yours: VISITOR, which is the one thing nobody in the sprint has
+     * ever been. In reach from the easel's own foot only. */
+    x: STUDIO.persona.x - 0.9, z: STUDIO.persona.z + 1.2, radius: 2.2,
+    get enabled() { return knowledge.decided('office') && !worn.has('the-lanyard'); },
+    set enabled(_v: boolean) { /* the board decides */ },
+    prompt: 'TAKE THE SPARE LANYARD',
+    touch: () => { worn.take('the-lanyard'); say('lanyard-clip'); },
+  } as unknown as WorldPOI,
   {
     /* THE STICKIES ON THE GLASS: peel one off, and it comes down on
      * the apron and lies there, and the wall is back in the morning.
@@ -3899,7 +3977,7 @@ export const OFFICE_POIS: WorldPOI[] = [
     x: 322, z: 200, radius: 10, label: 'THE CAR PARK',
     note: {
       title: 'the car park',
-      body: 'the bay by the door is marked and empty and the one car is at the far end. past the last kerb the page begins to lift, and there is nowhere further east than this.',
+      body: 'the bay by the door is marked and empty and the one car is at the far end. past the last kerb the ground begins to lift, and there is nowhere further east than this.',
     },
   },
   {

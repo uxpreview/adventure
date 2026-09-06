@@ -33,6 +33,9 @@ export class UI {
   onBegin: (() => void) | null = null;
   onContinue: (() => void) | null = null;
   onToggleSound: (() => boolean) | null = null;
+  /** THE WORN BUTTON's press (Session 22): goes round what the walker
+   *  has earned. App answers with the label to letter. */
+  onWear: (() => string | null) | null = null;
   onOpenMap: ((width: number) => HTMLCanvasElement) | null = null;
   onPromptClick: (() => void) | null = null;
 
@@ -67,6 +70,7 @@ export class UI {
   private mapSlot: HTMLElement;
   private hud: HTMLElement;
   private soundBtn: HTMLElement;
+  private wearBtn: HTMLElement;
   private hintEl: HTMLElement;
   private hintTimer = 0;
   /**
@@ -102,6 +106,19 @@ export class UI {
     this.soundBtn.addEventListener('click', () => {
       const muted = this.onToggleSound?.() ?? false;
       letterEl(this.soundBtn, muted ? 'sound: off' : 'sound: on', S.button(11));
+    });
+    /* THE WORN BUTTON (Session 22, `world/worn.ts`). The whole of the
+     * wardrobe's interface: one lettered button that is not on the page
+     * until the walker has taken something, and then goes round what
+     * they have — nothing, the crown, the hat — on each press. No
+     * screen, no grid, no preview; it is the sound button's sibling
+     * and it says what is on your head. */
+    this.wearBtn = el('hud-btn', this.hud, 'button');
+    this.wearBtn.style.display = 'none';
+    letterEl(this.wearBtn, 'wearing: nothing', S.button(11));
+    this.wearBtn.addEventListener('click', () => {
+      const label = this.onWear?.();
+      if (label) letterEl(this.wearBtn, label, S.button(11));
     });
 
     // region card
@@ -222,6 +239,13 @@ export class UI {
 
   setSoundLabel(muted: boolean) {
     letterEl(this.soundBtn, muted ? 'sound: off' : 'sound: on', S.button(11));
+  }
+
+  /** What the worn button says, and whether it is on the page at all
+   *  (`null` takes it off: nothing has been earned). */
+  setWearLabel(label: string | null) {
+    this.wearBtn.style.display = label === null ? 'none' : '';
+    if (label !== null) letterEl(this.wearBtn, label, S.button(11));
   }
 
   /** The border-crossing card: kicker over name, then it lets go.

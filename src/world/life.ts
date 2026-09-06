@@ -169,6 +169,15 @@ export class Creature {
     this.present = false;
   }
 
+  /** SWAP THE DRAWINGS under a creature that is already on the page
+   *  (Session 22: the longship once the helm is off the bow man), and
+   *  redraw the posture it is in. */
+  remap(maps: THREE.Texture[]) {
+    for (let i = 0; i < maps.length && i < this.maps.length; i++) this.maps[i] = maps[i];
+    this.mat.map = this.maps[Math.max(0, Math.min(this.maps.length - 1, this.pose))];
+    this.mat.needsUpdate = true;
+  }
+
   report(): LifeReport {
     return {
       id: this.id, land: this.land, kind: 'creature',

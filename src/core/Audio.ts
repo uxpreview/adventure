@@ -723,6 +723,151 @@ export function buildBed(
   };
 }
 
+/* ================================================================== *
+ * THE RAIN, REBUILT (Session 22). The owner's words: *the rain sound
+ * is horrible.* It was — Session 17 built it as white noise with the
+ * bottom shut and the top open, which is the sound of a detuned radio
+ * and not of anything falling on anything.
+ *
+ * Rain is not a hiss. It is thousands of small separate events, and
+ * the ear knows the difference between a texture made of events and a
+ * texture made of nothing: the first has a crest to it (a peak well
+ * above its average) and the second is flat. So the patter here is
+ * built out of DROPS — a seeded buffer that is silence with short
+ * raised-cosine impulses in it, each with its own sign and weight, and
+ * two densities of that: a drizzle a few hundred a second, a downpour
+ * a few thousand. They loop under a bandpass that sits where rain on a
+ * page sits (around a kilohertz and a half, wide), the intensity
+ * crossfades the drizzle into the downpour, and heavy rain brings a
+ * low wash under it — the roar a real downpour has and a hiss never
+ * did. Over that, the LIVE class schedules the drops you can hear one
+ * at a time: a short damped ping at a random pitch, a few a second at
+ * a shower, a couple of dozen in a storm.
+ *
+ * Every piece of this is a function of the context it is built in and
+ * a seeded stream, like the beds and the voices, so `render-wavs` can
+ * hand the ear gate a rain file and `check-audio` can measure that it
+ * is not a hiss — the crest factor and the spectral centre are the two
+ * numbers a hiss cannot fake.
+ * ================================================================== */
+
+/** A buffer of `seconds` of silence with `perSecond` drop impulses in
+ *  it — the patter's raw material. Cached per context like the noise. */
+function dropBuf(ctx: Ctx, seconds: number, perSecond: number, seed: number): AudioBuffer {
+  let m = noiseCache.get(ctx);
+  if (!m) noiseCache.set(ctx, (m = new Map()));
+  const key = `drops|${seconds}|${perSecond}|${seed}`;
+  const hit = m.get(key);
+  if (hit) return hit;
+  const sr = ctx.sampleRate;
+  const buf = ctx.createBuffer(1, Math.max(1, Math.floor(sr * seconds)), sr);
+  const d = buf.getChannelData(0);
+  const r = srand(seed);
+  const n = Math.floor(seconds * perSecond);
+  for (let i = 0; i < n; i++) {
+    const at = Math.floor(r() * d.length);
+    // a drop is one to three milliseconds, a raised cosine, one sign
+    const len = Math.max(4, Math.floor(sr * (0.001 + r() * 0.002)));
+    // most drops are small and a few are big, which is what a crest is
+    const big = r();
+    const amp = (r() > 0.5 ? 1 : -1) * (0.12 + big * big * big * 0.88);
+    for (let k = 0; k < len && at + k < d.length; k++) {
+      d[at + k] += amp * 0.5 * (1 - Math.cos((2 * Math.PI * k) / len));
+    }
+  }
+  // tamed: the sum of overlapping drops must never leave full scale
+  let peak = 0;
+  for (let i = 0; i < d.length; i++) peak = Math.max(peak, Math.abs(d[i]));
+  if (peak > 1) for (let i = 0; i < d.length; i++) d[i] /= peak;
+  m.set(key, buf);
+  return buf;
+}
+
+export type RainBed = {
+  /** Set from the rain's 0..1; ramped. */
+  set(k: number, at: number, ramp: number): void;
+  stop(at: number): void;
+};
+
+/**
+ * THE PATTER AND THE WASH, wired and started, silent until `set`. Pure
+ * graph, like `buildBed`: `dest` is the ambient bus in the game and the
+ * booth's ambient in a render.
+ */
+export function buildRain(ctx: Ctx, dest: AudioNode, t0: number, seed = 5): RainBed {
+  const mk = (buf: AudioBuffer, type: BiquadFilterType, freq: number, q: number) => {
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const f = ctx.createBiquadFilter();
+    f.type = type;
+    f.frequency.value = freq;
+    f.Q.value = q;
+    const g = ctx.createGain();
+    g.gain.value = 0;
+    src.connect(f).connect(g).connect(dest);
+    src.start(t0);
+    return { src, g };
+  };
+  // the drizzle: sparse drops, and the downpour: dense ones. Both sit
+  // in the band where rain on paper lives, and the downpour a little
+  // lower, because more water is a bigger sound
+  const drizzle = mk(dropBuf(ctx, 5, 260, seed), 'bandpass', 1900, 0.55);
+  const pour = mk(dropBuf(ctx, 5, 1500, seed + 1), 'bandpass', 1300, 0.5);
+  // the wash under a downpour: the world's noise with the room shut
+  const wash = mk(noiseBuf(ctx, NOISE_SECONDS, seed + 2), 'lowpass', 420, 0.7);
+  return {
+    set(k, at, ramp) {
+      const u = Math.max(0, Math.min(1, k));
+      // drizzle first, then the downpour takes over; the wash only
+      // once it is really coming down
+      const dz = Math.min(1, u * 2.2) * (1 - u * 0.55);
+      const pr = Math.max(0, u - 0.18) / 0.82;
+      const ws = Math.max(0, u - 0.45) / 0.55;
+      drizzle.g.gain.linearRampToValueAtTime(dz * 0.11, at + ramp);
+      pour.g.gain.linearRampToValueAtTime(pr * pr * 0.11, at + ramp);
+      wash.g.gain.linearRampToValueAtTime(ws * ws * 0.04, at + ramp);
+    },
+    stop(at) {
+      try { drizzle.src.stop(at); pour.src.stop(at); wash.src.stop(at); } catch { /* stopped */ }
+    },
+  };
+}
+
+/**
+ * THE DROPS YOU CAN PICK OUT: `seconds` of them from `t0`, at a rate
+ * that follows `k`. Each is a damped sine at its own pitch — a drop on
+ * a leaf, a gutter, the page — with a breath of noise on the front.
+ * Pure, so a render can lay them down; the live class calls it half a
+ * second at a time.
+ */
+export function rainDrops(
+  ctx: Ctx, dest: AudioNode, t0: number, seconds: number, k: number, rand: () => number
+) {
+  const u = Math.max(0, Math.min(1, k));
+  if (u <= 0.02) return;
+  const rate = 3 + u * u * 26;
+  let t = t0 + rand() * (1 / rate);
+  while (t < t0 + seconds) {
+    const f = 900 * Math.pow(2, rand() * 2.2);
+    const dur = 0.03 + rand() * 0.05;
+    const vol = (0.006 + rand() * rand() * 0.03) * (0.5 + u * 0.5);
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(f, t);
+    o.frequency.exponentialRampToValueAtTime(f * 0.7, t + dur);
+    const g = ctx.createGain();
+    g.gain.value = 0.0001;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(dest);
+    o.start(t);
+    o.stop(t + dur + 0.02);
+    t += (0.4 + rand() * 1.2) / rate;
+  }
+}
+
 export type StepZone =
   | 'paper' | 'dead' | 'wet' | 'hollow' | 'fiber' | 'gloss'
   | 'sand' | 'grass' | 'stone';
@@ -1789,6 +1934,62 @@ export class Audio {
         for (let i = 0; i < 6; i++) this.knock(900 * j + Math.random() * 500, 0.004, i * 0.07 + Math.random() * 0.03);
         break;
       }
+      /* ================================================================ *
+       * SESSION 22 — THE WORN THINGS. Four sounds of taking something
+       * and putting it on: a crown lifted off stone, a hat caught out of
+       * the air, a lanyard's clip, a helm lifted off wet sand. Nothing
+       * plays when the button changes what is worn; that is chrome.
+       * ================================================================ */
+      case 'crown-lift': {
+        // metal off stone: a short bright ring and the scrape under it
+        const j = 0.95 + Math.random() * 0.1;
+        this.surge(0.004, 0.09, 2400 * j, 900, 0.01, 0, 'bandpass');
+        this.knock(1180 * j, 0.012, 0.03);
+        this.tone(2360 * j, 0.05, 0.5, 0.006);
+        break;
+      }
+      case 'hat-catch': {
+        // felt into a hand: one soft thump and the air it displaced
+        const j = 0.9 + Math.random() * 0.2;
+        this.surge(0.006, 0.12, 700 * j, 260, 0.014, 0, 'lowpass');
+        this.surge(0.02, 0.18, 2600 * j, 1200, 0.004, 0.02, 'bandpass');
+        break;
+      }
+      case 'lanyard-clip': {
+        // a clip going shut, twice: high, tiny, plastic
+        const j = 0.95 + Math.random() * 0.1;
+        this.knock(3200 * j, 0.008);
+        this.knock(2900 * j, 0.006, 0.09);
+        break;
+      }
+      case 'helm-lift': {
+        // iron off wet sand: the suck of the sand and a dull ring
+        const j = 0.92 + Math.random() * 0.16;
+        this.surge(0.05, 0.16, 420 * j, 180, 0.012, 0, 'lowpass');
+        this.knock(640 * j, 0.014, 0.08);
+        this.tone(1280 * j, 0.1, 0.4, 0.004);
+        break;
+      }
+      case 'line-out': {
+        /* A LINE PAID OUT: a coil going over a hand, loop by loop, a
+         * dry whisper that speeds up and then stops short — at the
+         * oasis because it hit bottom, on the long water because it
+         * ran out. The same sound both places; the note says which. */
+        for (let i = 0; i < 9; i++) {
+          this.surge(0.01, 0.05, 2200 + i * 90, 1200, 0.004, i * (0.13 - i * 0.006), 'bandpass');
+        }
+        this.knock(260, 0.008, 1.0);
+        break;
+      }
+      case 'chalk-cut': {
+        // chalk cut into stone: three short dry scrapes, one tick
+        const j = 0.94 + Math.random() * 0.12;
+        this.surge(0.01, 0.16, 2900 * j, 1500, 0.007, 0, 'bandpass');
+        this.surge(0.01, 0.14, 3100 * j, 1600, 0.006, 0.24, 'bandpass');
+        this.surge(0.01, 0.12, 2800 * j, 1400, 0.006, 0.46, 'bandpass');
+        this.surge(0.005, 0.06, 3600 * j, 2000, 0.006, 0.72, 'bandpass');
+        break;
+      }
       case 'sticky-peel': {
         /* A STICKY NOTE COMING OFF GLASS: a short tear, high, and the
          * flutter of it going down. */
@@ -1878,7 +2079,10 @@ export class Audio {
    * arrives is already falling when they arrive. Calm is exactly
    * silent: on the shipped page these two nodes carry nothing.
    * ================================================================ */
-  private rainGain: GainNode | null = null;
+  private rainBed: RainBed | null = null;
+  /** How far ahead the drops are scheduled, in context seconds. */
+  private rainUntil = 0;
+  private rainNow = 0;
   private windGain: GainNode | null = null;
   private windFilter: BiquadFilterNode | null = null;
   private weatherSent = { rain: -1, wind: -1 };
@@ -1886,21 +2090,13 @@ export class Audio {
   setWeather(rain: number, wind: number) {
     if (!this.ctx || !this.ambient) return;
     const ctx = this.ctx;
-    if (!this.rainGain) {
-      const src = ctx.createBufferSource();
-      src.buffer = this.noiseBuffer(6);
-      src.loop = true;
-      const hp = ctx.createBiquadFilter();
-      hp.type = 'highpass';
-      hp.frequency.value = 1700;
-      const lp = ctx.createBiquadFilter();
-      lp.type = 'lowpass';
-      lp.frequency.value = 5200;
-      const g = ctx.createGain();
-      g.gain.value = 0;
-      src.connect(hp).connect(lp).connect(g).connect(this.ambient);
-      src.start();
-      this.rainGain = g;
+    if (!this.rainBed) {
+      /* THE RAIN (Session 22): the patter is `buildRain`, drops and
+       * not noise, and the audible drops are laid down half a second
+       * ahead of the clock from here, every frame, so a shower that
+       * changes while it falls changes the rate of them. */
+      this.rainBed = buildRain(ctx, this.ambient, ctx.currentTime);
+      this.rainUntil = ctx.currentTime;
       const wsrc = ctx.createBufferSource();
       wsrc.buffer = this.noiseBuffer(7);
       wsrc.loop = true;
@@ -1926,7 +2122,17 @@ export class Audio {
     const w = Math.round(wind * 40) / 40;
     if (r !== this.weatherSent.rain) {
       this.weatherSent.rain = r;
-      this.rainGain!.gain.linearRampToValueAtTime(r * 0.03, ctx.currentTime + 1.5);
+      this.rainNow = r;
+      this.rainBed.set(r, ctx.currentTime, 1.5);
+    }
+    // the drops, scheduled just ahead of now; silent when it is dry
+    if (this.rainNow > 0.02 && !this.muted && !this.tacet) {
+      const now = ctx.currentTime;
+      if (this.rainUntil < now) this.rainUntil = now;
+      while (this.rainUntil < now + 0.5) {
+        rainDrops(ctx, this.ambient, this.rainUntil, 0.25, this.rainNow, Math.random);
+        this.rainUntil += 0.25;
+      }
     }
     if (w !== this.weatherSent.wind) {
       this.weatherSent.wind = w;

@@ -1619,6 +1619,211 @@ console.log('\nthe second door (Session 21):');
   if (F.joan.seated && F.joan.kept && F.joan.answered && !F.joan.cardAgain) pass('door one at the table seats the walker on the card, keeps the place, and the card is never offered again'); else fail(`Joan's first door: ${JSON.stringify(F.joan)}`);
 }
 
+/* ================================================================== *
+ * 13. THE WORN THINGS (Session 22, `world/worn.ts`). On the first-door
+ * page: a door at the plinth makes the crown a thing you can take, and
+ * taking it puts it on, letters the button, and goes round nothing and
+ * back; the hat is caught on the coast road at a run or picked up off
+ * the border, and never runs again; the lanyard comes off the easel
+ * once the board is decided; the helm is on the foreshore the morning
+ * after the fleet finished, and the bow man is drawn without it. A
+ * thing in hand and a thing worn coexist. Nothing counts them.
+ *
+ * 14. HOW DEEP (Session 22, `THE-STRANGERS` S5). Odd on the floor; the
+ * line known; tried in the oasis (a hand deep) and paid out on the
+ * long water (it does not reach); told to him, the mark below the
+ * floor is cut and he is at it. And `critique-story-2` RECOMMENDED 2:
+ * the timetable hands over nothing until six of the twelve names are
+ * held.
+ * ================================================================== */
+r.worn = await page.evaluate(() => {
+  const I = window.__inklands;
+  const at = (x, z) => { I.goto(x, z); I.setTime(0); I.step(1 / 60, 120); };
+  const settle = (secs) => I.step(1 / 60, Math.round(secs * 60));
+  const closeNote = () => { if (document.querySelector('.note-veil.show')) { I.press(); I.step(1 / 60, 5); } };
+  const W = {};
+  W.labelBefore = I.wearLabel();
+  W.buttonBefore = document.querySelectorAll('.hud-btn')[2]?.style.display;
+  // the crown: nothing at the head end before a door, TAKE HIS CROWN after
+  at(-53.2, -219.6);
+  settle(0.3);
+  W.crownBefore = I.promptText();
+  I.learn('door:the-king-left');
+  settle(0.3);
+  W.crownPrompt = I.promptText();
+  I.press();
+  settle(0.5);
+  W.crown = { wearing: I.wearing(), known: I.knowledge.has('wear:the-crown'), drawn: I.char.worn.visible, label: I.wearLabel(), button: document.querySelectorAll('.hud-btn')[2]?.style.display, promptAfter: I.promptText() };
+  // the button goes round: nothing, then the crown again
+  I.pressWear(); settle(0.2);
+  W.round1 = { wearing: I.wearing(), drawn: I.char.worn.visible, label: I.wearLabel() };
+  I.pressWear(); settle(0.2);
+  W.round2 = { wearing: I.wearing(), label: I.wearLabel() };
+  // the plinth's note reads it
+  at(-56, -219);
+  settle(0.3);
+  I.press(); I.step(1 / 60, 5);
+  W.plinthNote = document.querySelector('.note-body')?.getAttribute('aria-label') ?? '';
+  closeNote();
+  // the hat, lying at the border between runs: PICK IT UP
+  I.setHour(9, false);
+  I.events.resync();
+  at(-152.2, 60.2);
+  settle(0.6);
+  W.hatPrompt = I.promptText();
+  I.press();
+  settle(0.4);
+  W.hat = { wearing: I.wearing(), known: I.knowledge.has('wear:the-hat'), label: I.wearLabel() };
+  // and at the next run's hour it does not run: nothing at the boardwalk end either
+  I.setHour(11.42, false);
+  I.events.resync();
+  at(-200, 60.2);
+  settle(1.0);
+  W.hatGone = { prompt: I.promptText(), drawn: I.life.drawn().find((d) => d.id === 'the-hat')?.visible ?? null };
+  I.setHour(12, false);
+  I.events.resync();
+  // the lanyard: nothing before the board is decided, TAKE THE SPARE LANYARD after
+  at(285.1, 177.9);
+  settle(0.3);
+  W.lanyardBefore = I.promptText();
+  I.learn('door:the-corner-pressed');
+  settle(0.3);
+  W.lanyardPrompt = I.promptText();
+  I.press();
+  settle(0.4);
+  W.lanyard = { wearing: I.wearing(), known: I.knowledge.has('wear:the-lanyard'), label: I.wearLabel() };
+  // the helm: on the foreshore only after the fleet finished
+  at(-243, -50.4);
+  settle(0.3);
+  W.helmBefore = I.promptText();
+  W.helmGround = { blocked: I.terrain.blockedAt(-243, -52), water: +I.terrain.waterAt(-243, -52).toFixed(2), walkerBlocked: I.terrain.blockedAt(-243, -50.4) };
+  I.learn('door:the-fleet-finished');
+  settle(0.5);
+  W.helmPrompt = I.promptText();
+  I.press();
+  settle(0.4);
+  W.helm = { wearing: I.wearing(), known: I.knowledge.has('wear:the-helm'), label: I.wearLabel() };
+  // a thing in hand and a thing on the head at once
+  const stone = I.things.get('fist-stone');
+  at(stone.x, stone.z + 1.4);
+  settle(0.3);
+  I.press();
+  settle(0.3);
+  W.both = { held: I.holding(), wearing: I.wearing(), hand: I.char.hand.visible, worn: I.char.worn.visible };
+  I.press();
+  settle(0.6);
+  W.owned = I.worn.owned().map((d) => d.id);
+  return W;
+});
+
+r.deep = await page.evaluate(() => {
+  const I = window.__inklands;
+  const at = (x, z) => { I.goto(x, z); I.setTime(0); I.step(1 / 60, 120); };
+  const settle = (secs) => I.step(1 / 60, Math.round(secs * 60));
+  const closeNote = () => { if (document.querySelector('.note-veil.show')) { I.press(); I.step(1 / 60, 5); } };
+  const noteText = () => document.querySelector('.note-body')?.getAttribute('aria-label') ?? '';
+  const S = {};
+  I.setHour(12, false);
+  I.events.resync();
+  at(309, -201);
+  settle(0.3);
+  S.askPrompt = I.promptText();
+  I.press(); I.step(1 / 60, 5);
+  S.askNote = noteText();
+  closeNote();
+  settle(0.2);
+  S.line = { known: I.knowledge.has('fact:odds-line'), prompt: I.promptText() };
+  // the oasis, holding the line
+  at(305, 66.6);
+  settle(0.3);
+  S.oasisPrompt = I.promptText();
+  I.press();
+  settle(0.5);
+  S.oasis = { fact: I.knowledge.has('fact:the-oasis-a-hand-deep'), promptAfter: I.promptText() };
+  // the long water
+  at(-299, 16);
+  settle(0.3);
+  S.waterPrompt = I.promptText();
+  I.press();
+  settle(0.5);
+  S.water = { fact: I.knowledge.has('fact:the-line-did-not-reach'), promptAfter: I.promptText() };
+  I.press(); I.step(1 / 60, 5);
+  S.waterNote = noteText();
+  closeNote();
+  // back to Odd
+  at(309, -201);
+  settle(0.3);
+  S.tellPrompt = I.promptText();
+  I.press();
+  settle(0.5);
+  S.deep = { fact: I.knowledge.has('fact:how-deep'), promptAfter: I.promptText() };
+  I.press(); I.step(1 / 60, 5);
+  S.deepNote = noteText();
+  closeNote();
+  return S;
+});
+
+/* The names rule wants a FRESH page: the harness's own `goto` has
+ * discovered ten lands by now, and ten names is past the threshold. */
+await page.reload({ waitUntil: 'load', timeout: 120000 });
+await page.waitForSelector('.title-veil:not(.gone)', { timeout: 60000 }).catch(() => {});
+r.names = await page.evaluate(() => {
+  const I = window.__inklands;
+  I.setHour(12, false);
+  I.begin();
+  I.setBearing(true);
+  const at = (x, z) => { I.goto(x, z); I.setTime(0); I.step(1 / 60, 120); };
+  const settle = (secs) => I.step(1 / 60, Math.round(secs * 60));
+  const closeNote = () => { if (document.querySelector('.note-veil.show')) { I.press(); I.step(1 / 60, 5); } };
+  const noteText = () => document.querySelector('.note-body')?.getAttribute('aria-label') ?? '';
+  const S = {};
+  // the timetable means nothing until the names do
+  at(252, 202);
+  settle(0.3);
+  const names = ['meadow', 'kingdom', 'castle', 'beach', 'ocean', 'forest', 'downs', 'neighborhood', 'city', 'office', 'canyon', 'desert'];
+  S.namesBefore = names.filter((n) => I.knowledge.has(`name:${n}`)).length;
+  I.press(); I.step(1 / 60, 5);
+  S.stopNoteBefore = noteText();
+  closeNote();
+  S.timetableBefore = I.knowledge.has('fact:the-timetable');
+  for (const n of ['kingdom', 'castle', 'beach', 'forest', 'downs']) I.learn(`name:${n}`);
+  S.namesAfter = names.filter((n) => I.knowledge.has(`name:${n}`)).length;
+  I.press(); I.step(1 / 60, 5);
+  S.stopNoteAfter = noteText();
+  closeNote();
+  S.timetableAfter = I.knowledge.has('fact:the-timetable');
+  return S;
+});
+
+console.log('\nthe worn things (Session 22):');
+{
+  const W = r.worn;
+  if (W.labelBefore === null && W.buttonBefore === 'none') pass('nothing earned: no button on the page'); else fail(`before anything: label ${W.labelBefore}, button ${W.buttonBefore}`);
+  if (W.crownBefore !== 'TAKE HIS CROWN' && W.crownPrompt === 'TAKE HIS CROWN') pass(`the crown is not offered before a door (${W.crownBefore}) and is after`); else fail(`the crown: before ${W.crownBefore}, after ${W.crownPrompt}`);
+  if (W.crown.wearing === 'the-crown' && W.crown.known && W.crown.drawn && W.crown.label === 'wearing: the crown' && W.crown.button !== 'none' && W.crown.promptAfter !== 'TAKE HIS CROWN') pass('taken, it is on, drawn, known, and the button says so'); else fail(`the crown taken: ${JSON.stringify(W.crown)}`);
+  if (W.round1.wearing === null && !W.round1.drawn && W.round1.label === 'wearing: nothing' && W.round2.wearing === 'the-crown') pass('the button goes round: nothing, then the crown again'); else fail(`the button: ${JSON.stringify(W.round1)} then ${JSON.stringify(W.round2)}`);
+  if (/his head is bare/.test(W.plinthNote)) pass('the plinth says his head is bare, and nobody has mentioned it'); else fail(`the plinth: ${W.plinthNote}`);
+  if (W.hatPrompt === 'PICK UP THE HAT' && W.hat.wearing === 'the-hat' && W.hat.known) pass('the hat is picked up off the border between runs, and is on'); else fail(`the hat: ${W.hatPrompt}, ${JSON.stringify(W.hat)}`);
+  if (W.hatGone.prompt !== 'CATCH THE HAT' && W.hatGone.drawn === false) pass('and at the next run\'s hour it does not run'); else fail(`the hat after: ${JSON.stringify(W.hatGone)}`);
+  if (W.lanyardBefore !== 'TAKE THE SPARE LANYARD' && W.lanyardPrompt === 'TAKE THE SPARE LANYARD' && W.lanyard.wearing === 'the-lanyard' && W.lanyard.known) pass('the lanyard is on the easel only once the board is decided, and then it is yours'); else fail(`the lanyard: ${W.lanyardBefore} / ${W.lanyardPrompt} / ${JSON.stringify(W.lanyard)}`);
+  if (!W.helmGround.blocked && W.helmGround.water < 0.3 && !W.helmGround.walkerBlocked) pass(`the foreshore under the point is sand a foot can stand on (water ${W.helmGround.water})`); else fail(`the foreshore: ${JSON.stringify(W.helmGround)}`);
+  if (W.helmBefore !== 'PICK UP THE HELM' && W.helmPrompt === 'PICK UP THE HELM' && W.helm.wearing === 'the-helm' && W.helm.known) pass('the helm is on the foreshore only after the fleet finished, and then it is yours'); else fail(`the helm: ${W.helmBefore} / ${W.helmPrompt} / ${JSON.stringify(W.helm)}`);
+  if (W.both.held === 'fist-stone' && W.both.wearing === 'the-helm' && W.both.hand && W.both.worn) pass('a stone in hand and a helm on the head at once'); else fail(`both: ${JSON.stringify(W.both)}`);
+  if (W.owned.length === 4 && W.owned[0] === 'the-crown') pass(`four earned, in the order they were taken: ${W.owned.join(', ')}`); else fail(`owned: ${JSON.stringify(W.owned)}`);
+}
+
+console.log('\nhow deep (Session 22, S5):');
+{
+  const S = r.deep;
+  if (S.askPrompt === 'ASK WHAT HE MEASURED' && /ten point eight/.test(S.askNote) && S.line.known && S.line.prompt === 'LOOK AT THE LINE') pass('Odd says ten point eight, and the line is known'); else fail(`Odd: ${S.askPrompt}, ${S.askNote}, ${JSON.stringify(S.line)}`);
+  if (S.oasisPrompt === 'TRY THE LINE IN IT' && S.oasis.fact && S.oasis.promptAfter !== 'TRY THE LINE IN IT') pass('the line, tried in the oasis: a hand deep'); else fail(`the oasis: ${S.oasisPrompt}, ${JSON.stringify(S.oasis)}`);
+  if (S.waterPrompt === 'PAY OUT THE LINE' && S.water.fact && S.water.promptAfter === 'STAND HERE A MOMENT' && /hung there/.test(S.waterNote)) pass('the line, paid out on the long water: it does not reach, and the note says so'); else fail(`the long water: ${S.waterPrompt}, ${JSON.stringify(S.water)}, ${S.waterNote}`);
+  if (S.tellPrompt === 'TELL HIM WHAT HAPPENED TO THE LINE' && S.deep.fact && S.deep.promptAfter === 'LOOK AT THE LINE' && /below the five/.test(S.deepNote) && !/deep(er)? than|how deep/i.test(S.deepNote)) pass('told, he cuts a mark below the floor, and nothing says how deep the sea is'); else fail(`how deep: ${S.tellPrompt}, ${JSON.stringify(S.deep)}, ${S.deepNote}`);
+  const N = r.names;
+  if (N.namesBefore < 6 && !N.timetableBefore && /just words/.test(N.stopNoteBefore)) pass(`on a fresh page with ${N.namesBefore} names the timetable is words and hands over nothing`); else fail(`the timetable before: ${N.namesBefore} names, fact ${N.timetableBefore}, ${N.stopNoteBefore}`);
+  if (N.namesAfter >= 6 && N.timetableAfter && /they are places/.test(N.stopNoteAfter)) pass(`with ${N.namesAfter} the names are places, and the twelfth piece is handed over`); else fail(`the timetable after: ${N.namesAfter} names, fact ${N.timetableAfter}, ${N.stopNoteAfter}`);
+}
+
 await browser.close();
 console.log(fails ? `\n${fails} FAILURE(S)` : '\nall verb checks pass');
 process.exit(fails ? 1 : 0);

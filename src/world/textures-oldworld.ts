@@ -1393,8 +1393,10 @@ export function cragTexture(seed: number): THREE.CanvasTexture {
   });
 }
 
-/** The toppled king: a plinth still standing, a monarch who is not. */
-export function toppledStatueTexture(seed: number): THREE.CanvasTexture {
+/** The toppled king: a plinth still standing, a monarch who is not.
+ *  `bare` (Session 22, `worn.ts`): the walker took his crown, and the
+ *  head end is a circle with nothing on it, for good. */
+export function toppledStatueTexture(seed: number, bare = false): THREE.CanvasTexture {
   return makeTexture(224, 128, seed, (ctx, r) => {
     // the plinth, upright, with the break at its top
     fillPoly(ctx, [[26, 120], [30, 64], [74, 62], [78, 120]], WASH.castle, 0.55);
@@ -1412,7 +1414,7 @@ export function toppledStatueTexture(seed: number): THREE.CanvasTexture {
     stroke(ctx, [[98, 118], [140, 118], [190, 114], [208, 112]], r, { width: 2.4, alpha: 0.85 });
     // the head end, crowned: a circle and its zigzag
     scribbleCircle(ctx, 196, 106, 9, r, { width: 1.8, alpha: 0.85 }, 1.15);
-    stroke(ctx, [[204, 100], [208, 92], [212, 99], [216, 91], [220, 100]], r, { width: 1.6, alpha: 0.85 });
+    if (!bare) stroke(ctx, [[204, 100], [208, 92], [212, 99], [216, 91], [220, 100]], r, { width: 1.6, alpha: 0.85 });
     // the sceptre, flung a body's length away
     line(ctx, 130, 90, 156, 84, r, { width: 1.8, alpha: 0.75 });
     scribbleCircle(ctx, 158, 83, 3.4, r, { width: 1.2, alpha: 0.7 });
@@ -1435,7 +1437,7 @@ export function toppledStatueTexture(seed: number): THREE.CanvasTexture {
  * because somebody picked that up too. The seam where he broke off is
  * still there at his feet: a thing put back is not a thing unbroken.
  */
-export function standingKingTexture(seed: number): THREE.CanvasTexture {
+export function standingKingTexture(seed: number, bare = false): THREE.CanvasTexture {
   return makeTexture(224, 256, seed, (ctx, r) => {
     // the plinth, exactly where the toppled drawing has it (y offset
     // by the taller canvas)
@@ -1459,8 +1461,10 @@ export function standingKingTexture(seed: number): THREE.CanvasTexture {
     stroke(ctx, [[cx - 11, 128], [cx + 11, 124]], r, { width: 1.6, alpha: 0.5, passes: 1 });
     // the head, crowned: a circle and its zigzag
     scribbleCircle(ctx, cx, 78, 10, r, { width: 1.8, alpha: 0.85 }, 1.15);
-    stroke(ctx, [[cx - 10, 70], [cx - 6, 60], [cx - 2, 68], [cx + 2, 59], [cx + 6, 68], [cx + 10, 60], [cx + 11, 70]], r,
-      { width: 1.6, alpha: 0.85 });
+    if (!bare) {
+      stroke(ctx, [[cx - 10, 70], [cx - 6, 60], [cx - 2, 68], [cx + 2, 59], [cx + 6, 68], [cx + 10, 60], [cx + 11, 70]], r,
+        { width: 1.6, alpha: 0.85 });
+    }
     // the sceptre, in his hand again
     line(ctx, cx + 16, 108, cx + 24, 66, r, { width: 1.8, alpha: 0.75 });
     scribbleCircle(ctx, cx + 25, 63, 3.4, r, { width: 1.2, alpha: 0.7 });

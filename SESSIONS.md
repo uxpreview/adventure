@@ -1,5 +1,205 @@
 # SESSIONS — the handoff log
 
+## Session 22 — 2026-09-06 — the story, rewritten; the rain; the worn things
+
+*`THE-FUN-PASS` §14 row 22, and two things the owner asked for on the
+day: **"the rain sound is horrible"** — it was a filtered hiss, and it
+is drops now — and **cosmetic items the player equips and acquires
+through the story, e.g. a crown**, which is THE WORN THINGS (`worn.ts`).
+Then the session's own job: S5 · HOW DEEP built end to end, the
+timetable's names rule (`critique-story-2` RECOMMENDED 2, three
+sessions carried), the tonal re-key over every note in the game, and
+the story gate's fourth run (`critique-story-4`: PASSED, NOT WOWED).
+**The play gate was handed over and not run**
+(`design/play-sheets/session-22.md`). Sessions 16 to 21's sheets had
+not come back when this session started. **Not done:** the errands as
+carry, and the strangers beyond S5; both carried in `PROMPT.md`.*
+
+### THE ONE THING TO KNOW
+
+**A worn thing is knowledge taken off the world at a cost, and it is
+never a prize.** The owner asked for cosmetics; the law had one slot in
+the hand and no inventory, and the cheapest honest way to add a crown
+without adding a reward was to make it the same shape as everything
+else the walker accumulates: `wear:the-crown` is a sixth kind of
+knowledge (`WORLD-SYSTEMS` §6), learned by a touch — TAKE HIS CROWN —
+in the land that had it, and that land is drawn without it for good
+(`toppledStatueTexture(seed, bare)`, `standingKingTexture(seed, bare)`,
+four kings on one spot). `worn.current` is one id or nothing;
+`Character.wear` draws it at the head or the neck, parented to the
+sprite so it mirrors and leans with the body; the HUD's third button —
+*wearing: the crown* — goes round what has been earned and is not on
+the page until the first thing is. Nothing counts them. None is gated
+on WHICH door: the crown after either door at the plinth, the lanyard
+after either at the board, the helm after the fleet's finish because
+that is the door under which the crew have nothing to do and one of
+them throws something at the sand. **Four** exist — the crown
+(Greyweather), the hat that runs the coast road (Longshore; CATCH THE
+HAT going past at seven units a second, or PICK UP THE HAT off the
+border between runs; it never runs again), the spare VISITOR lanyard on
+the sprint's easel (the Cubicle Mile), the helm on the foreshore under
+the point (the Wide Blue's crew, Longshore's sand; the bow man drawn
+without it). The scarecrow's hat was the obvious fifth and was declined
+(below).
+
+**And the rain.** Session 17's rain was white noise between 1.7 and
+5.2 kHz at 0.03 — the sound of a radio between stations. `buildRain`
+builds the patter out of DROPS: a seeded buffer of one-to-three
+millisecond raised-cosine impulses, most small and a few big, at two
+densities (a drizzle at 260 a second, a downpour at 1500) looping under
+a bandpass where paper sits, crossfaded by intensity, with a low wash
+under a real downpour; `rainDrops` lays the audible drops — a damped
+sine each, at its own pitch, three to thirty a second — half a second
+ahead of the clock from `setWeather` every frame. Both are pure graph
+functions like the beds, so the booth renders them (`kind: 'weather'`),
+`render-wavs` writes `weather-rain-drizzle`, `-shower` and
+`weather-storm`, and `check-audio` §9 asserts the two numbers a hiss
+cannot fake: **a crest of 10.7×, 8.0× and 5.4× over the average at the
+three weights where the sea's noise bed is 4.7×, and a spectral centre
+between 1.4 and 1.6 kHz** where the old one lived above three.
+Whether it is GOOD is sheet 22 §0; the tool can only say it is not the
+thing that was called horrible.
+
+### WHAT SHIPPED
+
+- **THE RAIN, REBUILT** (`Audio.ts` `dropBuf`, `buildRain`, `rainDrops`,
+  `setWeather`; `audio-lib` `weather`; `render-wavs`; `check-audio` §9).
+- **THE WORN THINGS** (`worn.ts`, `textures-worn.ts`; `Character.wear`,
+  `HEAD_TOP`, `NECK`; `Save.worn`; `UI.onWear`, `setWearLabel`;
+  `App.dress`, `wearLabel`; harness `worn`, `WORN`, `wearing`,
+  `wearLabel`, `pressWear`). The crown at Greyweather (`civic.ts`, a
+  touch at the head end, in reach only from there; the plinth's note
+  gains *his head is bare. nobody has mentioned it.*); the hat on
+  Longshore (`coast.ts` `hatState`, a place with live getters on the
+  hat's own position, the prompt reading whether it is running); the
+  lanyard in the atrium (`personaBoardTexture(seed, lanyard)`, two
+  easels, the sprint's note lists the fourth lanyard until it is gone);
+  the helm (`helmTexture` on the sand at (−243, −52), visible after
+  `door:the-fleet-finished`; `longshipTexture(seed, pose, bare)` and
+  `Creature.remap` swap the ship's three drawings once it is taken; the
+  longship's note has three states). Four voices.
+- **S5 · HOW DEEP** (`wilds.ts` ODD at (309, −204), `oddTexture` ×2,
+  `deepMarkDecal` at the east wall's foot; THE LINE's place with a
+  prompt, a touch and a note that are all getters on what is known;
+  the oasis's south bank TRY THE LINE IN IT with a ring that grows and
+  goes in three seconds; `coast.ts` THE LONG WATER's PAY OUT THE LINE
+  and a note that reads it). `fact:odds-line`,
+  `fact:the-oasis-a-hand-deep`, `fact:the-line-did-not-reach`,
+  `fact:how-deep`. Two voices. `THE-STRANGERS` S5 marked built.
+- **THE TIMETABLE MEANS NOTHING UNTIL THE NAMES DO** (`civic.ts`
+  `knownNames`, `NAMES_FOR_THE_LIST = 6`; THE 8:15 STOP's note reads
+  the count and its `learns` is a getter that hands over
+  `fact:the-timetable` only past it).
+- **THE TONAL RE-KEY.** Every note in the game read in its land's key.
+  Eight moved: THE WOOD ROAD (the funny key in the frightening land →
+  *something in here ticks. it stops when you stop*), THE TARN ×4
+  (*black as the good ink* → *black, and it does not move when the wind
+  does*), RIVERBEND (a cursive joke → a thing the river carries that you
+  cannot see), THE MOUTH (*the page is only scratched*), WHERE THE ROAD
+  STOPS (*the next sheet down*), THE PALE (*on the sheet*), THE CAR
+  PARK (*the page begins to lift*), and THE RIVER MOUTH's prompt (WATCH
+  THE INK GO OUT → WATCH IT GO OUT). Every one either a wink at the
+  medium (`STORY.md` §8 rule 7) or the wrong key. `critique-story-4` Q1
+  has the land-by-land read.
+- **Law**: `WORLD-SYSTEMS` §6 (the WEAR kind), `QUALITY-BAR` §3 (the
+  no-faces clause takes a worn thing), `README` (the tool list).
+- **Tools**: `check-verbs` §13 (the worn things: no button before the
+  first, the crown after a door and on, the button round and back, the
+  plinth's clause, the hat off the border and not running after, the
+  lanyard after the board, the foreshore is sand, the helm after the
+  finish, a stone in hand and a helm on at once, four owned in order)
+  and §14 (Odd, the oasis, the long water, the mark, the note never
+  saying how deep; the timetable words then places).
+
+### THE GATES, AND WHAT MOVED
+
+- **Build green.** `tsc` and `vite build`; `check-audio` (nine
+  sections now: the score as before, at −22 dB below full scale with
+  the six new voices in, and **§9 the rain is made of drops** — crest
+  10.7× / 8.0× / 5.4× at a drizzle, a shower and a storm against the
+  sea's noise bed at 4.7×, centred at 1606 / 1503 / 1382 Hz where the
+  old hiss lived above three thousand; the storm louder than the
+  drizzle; the storm peaking with room for the thunder).
+- **`check-verbs`**: VERBS_PLACEHOLDER
+- **`diff-sheets` against `origin/main` (a0acc4f)**: DIFF_PLACEHOLDER
+- **The drawings, at actual size** (`.tmp/worn-sheet.mjs`, a one-off
+  contact sheet of the ten new drawings): the crown, the hat, the
+  lanyard and the helm read at the walker's scale; the two bare kings;
+  Odd in both postures (round one drew his coil in chalk, which is
+  invisible on paper — it is rope now); the mark; the easel with the
+  spare lanyard, which round one hung over DENNIS's name and now hangs
+  off the board's corner down the leg.
+- **Art gate: not run.** Nothing new stands in a protected framing on a
+  fresh page: the crown, the lanyard's absence and the helm exist only
+  after a door, the hat is where it was, Odd is south of both canyon
+  framings (`shoot-dry-lands` 10 and 17 look north from z = −222 and
+  −228; he stands at −204). Session 23's art gate on the lands it opens
+  should look at Greyweather's bailey with a bare king and Splitrock's
+  floor with Odd on it.
+- **Story gate: `critique-story-4`, PASSED, NOT WOWED.** Two
+  RECOMMENDED (THE SHALLOWS in the frightening key; the helm's absence
+  visible under Wren's other door) and the departure decision recorded
+  as the thing between the two verdicts.
+- **The ear gate handed over: a hundred and nine files** — a hundred
+  voices, six new, and the three rain files, which are the first thing
+  in the pack the owner has actually passed a verdict on.
+- **The feel gate handed over**, unchanged.
+- **THE PLAY GATE HANDED OVER AND NOT RUN.**
+  `design/play-sheets/session-22.md`: the rain first, then the crown,
+  the hat, the lanyard and the helm, the stranger with the line, the
+  timetable's names, four re-keyed notes, and §7 — the departure, the
+  scarecrow's hat — which are the owner's.
+
+### DECLINED, IN WRITING
+
+- **The scarecrow's hat.** The natural fifth worn thing. The Downs is
+  the one land in WORK that is not a joke (`THE-FUN-PASS` §4), the
+  scarecrow's drawing has no hat to take, and it stands in a protected
+  framing. Sheet 22 §7 asks the owner.
+- **A wardrobe screen, a preview, a set, a count.** One button, going
+  round. The law's refusal of an inventory (`THE-FUN-PASS` §5) stands
+  for the head as it stands for the hand.
+- **Horns on the crew.** The helm the walker wears has them; the four
+  in the longship are drawn as they were (a cap with a nasal), and the
+  note says the other three have not let the bow man forget it. A
+  protected framing at the Holdfast does not move on a fresh page.
+- **The crown as a thing** (`things.ts`). A thing may not leave its
+  land; a crown you could only wear in Greyweather is not a cosmetic.
+- **The line as a thing**, for the same reason: the whole of S5 is that
+  it goes where Odd cannot.
+- **A sound when the button changes what is worn.** That is chrome.
+- **The errands as carry.** Twenty, one line each, each a carriable
+  with a home and a place that takes it — a session-half the rain and
+  the worn things took. Carried to 23, with the can, the oar and the
+  board as the pattern.
+- **Rewriting notes that were already in key.** The pass read all of
+  them and moved eight. A voice pass that rewrites what is right is a
+  second author.
+
+### Gotchas (new; everything from Sessions 1–21 still applies)
+
+- **A DRAWING ON THE WALKER IS PARENTED TO THE SPRITE, NOT THE GROUP.**
+  The hand and the worn thing both are: the sprite mirrors, leans and
+  recoils, and a child of the group would stand still through all
+  three.
+- **A POI WHOSE PROMPT, TOUCH AND NOTE ARE ALL GETTERS** (THE LINE) is
+  dispatched by App in the order choice → note → touch → sit; a note
+  getter that returns `undefined` at the moment the touch is wanted is
+  how one place is a note most days and a touch on the day it matters.
+- **A CONTINUOUS BED WITH DISCRETE EVENTS ON TOP NEEDS A LOOK-AHEAD**,
+  not a timer: `rainUntil` is scheduled to half a second past
+  `currentTime` every frame, and it is the same function the offline
+  booth calls once for the whole file.
+- **THE CREST FACTOR IS THE HISS TEST.** Peak over RMS: gaussian noise
+  through any filter sits near four; a texture made of events does
+  not. A dense enough impulse buffer converges back to noise (2600 a
+  second did); 1500 with a skewed amplitude distribution does not.
+- **A HUD BUTTON THAT IS SOMETIMES ON THE PAGE IS THE THIRD `.hud-btn`**
+  and the harness presses it by index; the chrome's box list picks it
+  up for the label collision test only while it is displayed.
+- **`worn.load` HONOURS THE SAVE ONLY IF THE SAVE ALSO KNOWS IT WAS
+  EARNED**, so a hand-edited `worn` with no `wear:` id is nothing.
+
 ## Session 21 — 2026-09-05 — the second door
 
 *`THE-FUN-PASS` §6, finished: the five waits that had one door have

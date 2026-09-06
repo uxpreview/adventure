@@ -507,6 +507,17 @@ up for it:
   read back by the land every frame the way Brim reads `reason:brim`.
   A choice is a thing the walker knows they did. There is no second
   store of choices anywhere; the ending reads the doors from here.
+- **And a WEAR** (Session 22, the owner's ask: *cosmetic items the
+  player equips and acquires through the story, e.g. a crown*): a sixth
+  kind, `wear:the-crown`, learned by taking a thing off the world with a
+  touch — the king's crown, the hat that runs the coast road, the
+  spare lanyard on the sprint's easel, a helm off the foreshore — and
+  read back by the land that lost it, which is drawn without it for
+  good. What is ON the walker is one id in `src/world/worn.ts` and one
+  lettered button in the HUD that goes round what has been earned; it
+  is not on the page until the first thing is. No screen, no grid, no
+  set, no rarity, nothing counted. A worn thing is not a reward: every
+  one costs its land something visible, the way a door does.
 - **And the things the walker has moved** are not knowledge and not an
   inventory: `src/world/things.ts` keeps where a pushed cart and a
   thrown stone are, with one slot for what is in the hand and no list.

@@ -1329,7 +1329,7 @@ export const MEADOW_POIS: WorldPOI[] = [
     prompt: 'WATCH THE WATER',
     note: {
       title: 'riverbend',
-      body: 'the river practices its cursive on this corner of the common. the reeds lean in to read it. so far it has written the same word the whole way to the sea.',
+      body: 'the river comes round this corner slower than it should, and the reeds lean in over it. whatever it is carrying it has carried the whole way from the hills, and it does not put it down here, and you cannot see what it is.',
     },
   },
 ];

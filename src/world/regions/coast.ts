@@ -23,6 +23,8 @@ import { weather } from '../weather';
 import { clock } from '../daylight';
 import { things } from '../things';
 import { knowledge } from '../knowledge';
+import { worn } from '../worn';
+import { helmTexture } from '../textures-worn';
 import { platform } from '../../engine/Eight15';
 import { rowboat } from '../../engine/Boat';
 import type { BuildCtx, RegionBuilder, WorldPOI } from './index';
@@ -145,6 +147,16 @@ const FIRE_FOLK = [0, 1].map((i) => ({ id: `the-fire-folk-${i}`, land: 'beach' a
  *  second, and it stops at the Common's border like everybody else. */
 const HAT_RUNS = [7.4, 11.4, 15.4];
 HAT_RUNS.forEach((at, i) => events.register({ id: `the-hat-${i}`, land: 'beach', at, hours: 0.1 }));
+/** WHERE THE HAT IS THIS FRAME, and whether it is going (Session 22,
+ *  `worn.ts`): the beach's update writes it, the hat's own place reads
+ *  it. Catch it going past at seven units a second, or pick it up off
+ *  the border where it lies between runs; either way it is yours and
+ *  it never runs the coast road again. */
+const hatState = { x: -215, z: 58.6, running: false };
+/** THE HELM ON THE FORESHORE (Session 22): the morning after the fleet
+ *  finished, on the sand under the point. The first thing of theirs to
+ *  touch it. */
+const HELM = { x: -243, z: -52 };
 
 /* ================================================================== *
  * THE SURFERS AT THE CUT (Session 19, `THE-FUN-PASS` §10). Board racks,
@@ -607,6 +619,10 @@ export const buildBeach: RegionBuilder = (ctx) => {
   const surfers = SURFERS.map((d, i) => new Figure(ctx, d, 2, { scale: i % 2 ? 1 : 1.06 }));
   /* THE HORN, on its stone beside the cairn. */
   ctx.standee(hornTexture(1508), 1.7, 1.4, -233, -76.4);
+  /* THE HELM (Session 22, `worn.ts`), on the sand at the cliff's foot,
+   * on its side, the morning after the fleet finished. */
+  const helm = ctx.standee(helmTexture(1509), 0.9, 0.7, HELM.x, HELM.z, { rotY: 0.6 });
+  helm.visible = false;
   const boardThing = things.get('the-board')!;
   boardThing.def.hand = surfboardTexture(1506);
   boardThing.def.handSize = [1.5, 0.45];
@@ -783,16 +799,43 @@ export const buildBeach: RegionBuilder = (ctx) => {
         if (p >= 0) k = p;
         if (h >= HAT_RUNS[i]) ran = true;
       }
-      if (h < HAT_RUNS[0] || h > 22.5) hat.set(0, X0, 58.6, 1, 0.05);
+      if (worn.has('the-hat')) { hat.hide(); hatState.running = false; }
+      else if (h < HAT_RUNS[0] || h > 22.5) hat.set(0, X0, 58.6, 1, 0.05);
       else if (k >= 0) hat.set(0, X0 + (X1 - X0) * k, 58.6 + Math.sin(k * 40) * 0.5, 1, 0.3 + Math.abs(Math.sin(k * 60)) * 0.9);
       else hat.set(0, ran ? X1 : X0, 58.6, 1, 0.05);
+      hatState.x = hat.mesh.position.x;
+      hatState.z = hat.mesh.position.z;
+      hatState.running = !worn.has('the-hat') && k >= 0;
     }
+    /* THE HELM, on the foreshore, until it is picked up. */
+    helm.visible = knowledge.has('door:the-fleet-finished') && !worn.has('the-helm');
   };
 };
 
 const _m = new THREE.Matrix4();
 
 export const BEACH_POIS: WorldPOI[] = [
+  {
+    /* THE HAT (Session 22, `worn.ts`), where it is: going past at seven
+     * units a second three times a day, or lying at the border between
+     * runs. CATCH it or PICK it UP; the prompt says which. Reach is a
+     * stride and a half, so catching it is standing in its way. */
+    get x() { return hatState.x; },
+    get z() { return hatState.z; },
+    get enabled() { return !worn.has('the-hat'); },
+    set enabled(_v: boolean) { /* the hat decides */ },
+    radius: 1.8,
+    get prompt() { return hatState.running ? 'CATCH THE HAT' : 'PICK UP THE HAT'; },
+    touch: () => { worn.take('the-hat'); say('hat-catch'); },
+  } as unknown as WorldPOI,
+  {
+    /* THE HELM, on the foreshore under the point (Session 22). */
+    x: HELM.x, z: HELM.z, radius: 2.4,
+    get enabled() { return knowledge.has('door:the-fleet-finished') && !worn.has('the-helm'); },
+    set enabled(_v: boolean) { /* the fleet decides */ },
+    prompt: 'PICK UP THE HELM',
+    touch: () => { worn.take('the-helm'); say('helm-lift'); },
+  } as unknown as WorldPOI,
   {
     x: -224, z: 58, radius: 10, label: 'THE BOARDWALK',
     prompt: 'WALK THE PLANKS',
@@ -835,7 +878,7 @@ export const BEACH_POIS: WorldPOI[] = [
   },
   {
     x: -203, z: 204, radius: 11, label: 'THE RIVER MOUTH',
-    prompt: 'WATCH THE INK GO OUT',
+    prompt: 'WATCH IT GO OUT',
     note: {
       title: 'the river mouth',
       body: 'the whole river comes down to this, and here is where it stops being one. what goes out on the tide does not come back, and upstream it keeps coming down at exactly the same rate, which is either patience or arithmetic.',
@@ -1159,6 +1202,10 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
   /* ---- THE VIKINGS (Session 19) ------------------------------------- */
   const longship = new Creature(ctx, 'the-longship', 'ocean',
     [longshipTexture(1600, 0), longshipTexture(1601, 1), longshipTexture(1602, 2)], 14, 7, BERTH.x, BERTH.z);
+  /* AND THE MAN IN THE BOW WITHOUT HIS HELM (Session 22, `worn.ts`):
+   * the same three drawings with one line missing, swapped in once
+   * the helm is picked up off the sand, for good. */
+  let shipBare = false;
   const ship = { roarT: 0, next: 4 + r() * 6, seen: false };
   /* Where the ship is at an hour, and what it is doing. Pure. */
   const shipAt = (h: number): { x: number; z: number; pose: 0 | 1; face: -1 | 1 } => {
@@ -1258,6 +1305,10 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
 
     /* ---- THE VIKINGS (Session 19) ------------------------------------- */
     {
+      if (!shipBare && worn.has('the-helm')) {
+        shipBare = true;
+        longship.remap([longshipTexture(1600, 0, true), longshipTexture(1601, 1, true), longshipTexture(1602, 2, true)]);
+      }
       const hh = clock.hour;
       const at = shipAt(hh);
       const beached = at.pose === 0;
@@ -1460,11 +1511,25 @@ export const OCEAN_POIS: WorldPOI[] = [
     },
   },
   {
+    /* THE LINE, PAID OUT ON THE LONG WATER (Session 22, S5 beat three):
+     * holding what Odd told you, sixty paces from anything. You cannot
+     * see the bottom, the line does not reach, and there is no way to
+     * tell how much further it goes. Nearer than the note's reach, so
+     * the note still wins from where you first stand. */
+    x: -299, z: 16, radius: 5,
+    get enabled() { return knowledge.has('fact:odds-line') && !knowledge.has('fact:the-line-did-not-reach'); },
+    set enabled(_v: boolean) { /* the line decides */ },
+    prompt: 'PAY OUT THE LINE',
+    touch: () => { knowledge.learn('fact:the-line-did-not-reach'); say('line-out'); },
+  } as unknown as WorldPOI,
+  {
     x: -299, z: 16, radius: 12, label: 'THE LONG WATER',
     prompt: 'STAND HERE A MOMENT',
     note: {
       title: 'the long water',
-      body: 'sixty paces from anything, and then nothing at all between here and the fog. no boat, no bird, no bar, no sound. in a world where something is always going on just out of sight, that is the loudest thing in it.',
+      body: () => (knowledge.has('fact:the-line-did-not-reach')
+        ? 'sixty paces from anything, and then nothing at all between here and the fog. no boat, no bird, no bar, no sound. the line went down all the way to its end and hung there, and that is all the line will ever say.'
+        : 'sixty paces from anything, and then nothing at all between here and the fog. no boat, no bird, no bar, no sound. in a world where something is always going on just out of sight, that is the loudest thing in it.'),
     },
   },
   {
@@ -1492,7 +1557,11 @@ export const OCEAN_POIS: WorldPOI[] = [
     prompt: 'COUNT THE SHIELDS',
     note: {
       title: 'the longship',
-      body: 'a longship, beached at the foot of the point, with seven shields along her side and four men in her who have been waiting for a wind for four hundred years. every day at noon they row out and go round the mark with the others, because it is the only thing to do. they roar at the sand. they have never once stood on it.',
+      body: () => {
+        if (worn.has('the-helm')) return 'a longship, beached at the foot of the point, with seven shields along her side and four men in her who have been waiting for a wind for four hundred years. the one in the bow has no helm. the other three have not let him forget it. they roar at the sand. they have never once stood on it.';
+        if (knowledge.has('door:the-fleet-finished')) return 'a longship, beached at the foot of the point, with seven shields along her side and four men in her who have been waiting for a wind for four hundred years. there is no race to row out to now, so they do not. the one in the bow threw something at the sand this morning. it went further than they ever have. they roar at it.';
+        return 'a longship, beached at the foot of the point, with seven shields along her side and four men in her who have been waiting for a wind for four hundred years. every day at noon they row out and go round the mark with the others, because it is the only thing to do. they roar at the sand. they have never once stood on it.';
+      },
     },
   },
   {

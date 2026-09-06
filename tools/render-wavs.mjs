@@ -77,6 +77,17 @@ for (const h of [12, 18, 21, 23]) {
     `THE PENWOOD at ${h}:00 — nightness ${A.mixLevels('forest', { hour: h }).night.toFixed(2)}`);
 }
 
+/* ---- THE RAIN, REBUILT (Session 22) ------------------------------- *
+ * The owner heard the old one and called it horrible; this is the new
+ * one, at three weights, from the same builders the game plays. The
+ * first thing in this pack a person has actually heard and judged. */
+await write('weather-rain-drizzle', { kind: 'weather', land: 'meadow', seconds: 14, k: 0.3, seed: 5 },
+  'THE RAIN at a third: a drizzle — sparse drops on the page, no wash under it');
+await write('weather-rain-shower', { kind: 'weather', land: 'meadow', seconds: 14, k: 0.85, seed: 5 },
+  'THE RAIN at a shower (day zero, mid-afternoon): the downpour patter and the drops you can pick out');
+await write('weather-storm', { kind: 'weather', land: 'meadow', seconds: 16, k: 1.0, seed: 5, thunder: 5 },
+  'THE STORM: rain at full, the low wash under it, and one thunder five seconds in');
+
 /* ================================================================== *
  * AND THE LAND VOICES — thirty-four one-shots, and NOT ONE OF THEM HAS
  * EVER BEEN HEARD (Session 14).
@@ -143,6 +154,12 @@ const VOICES = [
    * oar stood with eleven others; a plate cleared away. In the pack
    * unheard like everything else. */
   ['the-second-door', ['clock-set', 'can-fill', 'can-pour', 'oar-set', 'plate-clear']],
+  /* SESSION 22 — THE WORN THINGS, and HOW DEEP. A crown lifted off a
+   * stone king, a hat caught out of the air, a lanyard's clip, a helm
+   * off wet sand; a line paid out and a chalk mark cut below a floor.
+   * In the pack unheard like everything else. */
+  ['the-worn-things', ['crown-lift', 'hat-catch', 'lanyard-clip', 'helm-lift']],
+  ['how-deep', ['line-out', 'chalk-cut']],
 ];
 console.log('');
 for (const [land, names] of VOICES) {
@@ -229,6 +246,13 @@ So the ear gate is yours. What it is worth asking:
    Does the answer sound like the same voice a long way down? Does
    the cart sound like a thing with a wheel, and heavy? Is the stone
    a stone?
+
+6. WEATHER-RAIN-*.wav and WEATHER-STORM.wav (Session 22). The rain
+   you called horrible was a hiss — filtered noise, nothing falling on
+   anything. It is drops now: a drizzle, a shower, and the storm with
+   its thunder. The one question: does it sound like rain on a page,
+   or like rain on a roof? It should be the first, and it should
+   never sound like a radio between stations again.
 
 WHAT IS NOT IN THESE FILES
 --------------------------

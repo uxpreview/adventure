@@ -134,7 +134,7 @@ accident.*
 ---
 
 ### S5 · HOW DEEP
-**SPLITROCK CANYON → THE BLEACH FLATS → THE WIDE BLUE → SPLITROCK**
+**SPLITROCK CANYON → THE BLEACH FLATS → THE WIDE BLUE → SPLITROCK** *(built end to end, Session 22)*
 
 The one three-land stranger, and the tier's widest walk.
 
@@ -151,6 +151,18 @@ measured and it stays chalked.
 
 **Never says:** how deep the sea is. Nobody knows and nobody in this
 world ever will.
+
+*Session 22, built: ODD stands on the floor at (309, −204) with the
+coil over his arm — ASK WHAT HE MEASURED, and `fact:odds-line` is the
+line, as knowledge, because a thing may not leave its land and the
+whole beat is that his line goes where he cannot. TRY THE LINE IN IT on
+the oasis's south bank (`fact:the-oasis-a-hand-deep`; the water rings
+once), PAY OUT THE LINE on the long water (`fact:the-line-did-not-reach`;
+the note there reads it), and TELL HIM WHAT HAPPENED TO THE LINE:
+`fact:how-deep`, `deepMarkDecal` cut into the floor at the east wall's
+foot below the five, nothing beside it, and he is crouched at it from
+then on. `chalk-cut` and `line-out`. Nothing says how deep the sea is;
+`check-verbs` §14 asserts the note does not either.*
 
 *Session 11 note, and it is the reason this entry is untouched: that
 land's tear was moved forty units west into the middle of its own rect,

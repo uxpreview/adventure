@@ -315,6 +315,34 @@ console.log('\nnothing clips, and there is room left for the steps:');
   else ok(`${db(hottest[1]).toFixed(0)} dB below full scale with the steps and the events still to come`);
 }
 
+/* ---- 9. the rain is drops and not a hiss (Session 22) -------------- */
+console.log('\nthe rain is made of drops:');
+{
+  /* The owner's verdict on the Session 17 rain was one word, and the
+   * two numbers that word turns into are these: a hiss is FLAT — its
+   * peak sits three or four times over its average, the way any
+   * gaussian noise does — and it is BRIGHT, centred up where the
+   * filter put it. Rain made of drops has a crest to it (a drop is a
+   * peak) and sits where things falling on paper sit. Neither number
+   * is a judgement about whether it is good; both are proof that it is
+   * no longer the thing that was called horrible. */
+  const rows = [];
+  for (const k of [0.3, 0.85, 1.0]) {
+    const r = await R({ kind: 'weather', land: 'meadow', seconds: 8, k, seed: 5 });
+    rows.push([k, r.peak / (r.rms || 1e-9), r.centroid, r.rms, r.peak]);
+  }
+  console.log('  ' + rows.map(([k, c, f, rms]) => `rain ${k}: crest ${c.toFixed(1)}×, centre ${Math.round(f)} Hz, ${db(rms).toFixed(1)} dB`).join('   '));
+  const hiss = await R({ kind: 'bed', land: 'beach', seconds: 8, offset: 0.4 });
+  console.log(`  (for scale, a noise bed — the sea's — has a crest of ${(hiss.peak / hiss.rms).toFixed(1)}×)`);
+  for (const [k, crest, centre] of rows) {
+    if (crest < 5) fail(`rain at ${k} has a crest of ${crest.toFixed(1)}× — that is a hiss, not drops`);
+    if (centre > 3200) fail(`rain at ${k} is centred at ${Math.round(centre)} Hz — up where the old hiss lived`);
+  }
+  if (rows[2][3] <= rows[0][3]) fail('a storm is not louder than a drizzle');
+  if (rows[2][4] > 0.5) fail(`the storm peaks at ${rows[2][4].toFixed(3)} — no room left for the thunder`);
+  ok('every weight of rain has a crest a hiss cannot have, and sits where paper sits');
+}
+
 if (booth.errors.length) {
   for (const e of booth.errors) fail('page error: ' + e);
 }

@@ -388,6 +388,10 @@ terrain probes, frame cost, audio, and the harness clock — `setTime`,
 `step`, `setBearing`) for testing.
 
 ```sh
+node tools/check-audio.mjs     # the score measured, and (§9, Session 22) the
+                               #   rain is drops and not a hiss: crest and centre
+node tools/render-wavs.mjs     # the ear gate's pack: out/sound/*.wav, with
+                               #   weather-rain-*.wav and weather-storm.wav
 node tools/check-terrain.mjs   # assert the height field, off-screen
 node tools/check-camera.mjs    # assert the BEARING: the envelope, the walk
                                #   home, the walk south — AND THE RATE, in
@@ -415,8 +419,10 @@ node tools/check-fields.mjs    # no instanced field is ever half inked in —
 node tools/check-verbs.mjs     # THE VERBS: the cart stops at the border, the
                                #   stone lands inside it, one thing in hand, a
                                #   seated walker is due north, the drove keeps
-                               #   its hours, a door is knowledge, and (§12) the
-                               #   five last cards and the 8:15 reading the doors
+                               #   its hours, a door is knowledge, (§12) the
+                               #   five last cards and the 8:15 reading the doors,
+                               #   (§13) the four worn things and the button, and
+                               #   (§14) Odd's line and the timetable's names
 node tools/shoot-session15.mjs # the proofs, both states, both viewports
 node tools/shoot-session16.mjs # THE FIRST HOUR: the bull, the gate, the goat,
                                #   the lures, Nell's doors, both viewports
