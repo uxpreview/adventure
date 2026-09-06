@@ -128,7 +128,9 @@ thing that was called horrible.
   names is past the threshold; on a fresh page it holds two and the
   board is words. The second run, with the drawings' two fixes in,
   passes everything.
-- **`diff-sheets` against `origin/main` (a0acc4f)**: DIFF_PLACEHOLDER
+- **`diff-sheets` against `origin/main` (a0acc4f)**: **92 of 92 framings bit-identical**, bearing pinned, twelve game
+  seconds of settle, both rigs, both hours. Nothing this session built
+  is on a fresh page inside a protected framing, and the diff says so.
 - **The drawings, at actual size** (`.tmp/worn-sheet.mjs`, a one-off
   contact sheet of the ten new drawings): the crown, the hat, the
   lanyard and the helm read at the walker's scale; the two bare kings;
@@ -149,7 +151,14 @@ thing that was called horrible.
   as the thing between the two verdicts.
 - **The ear gate handed over: a hundred and nine files** — a hundred
   voices, six new, and the three rain files, which are the first thing
-  in the pack the owner has actually passed a verdict on.
+  in the pack the owner has actually passed a verdict on. One honest
+  note on the listening copies: the pack's sixteen-fold gain is uniform
+  on purpose and never per file, and under it `weather-storm.wav` —
+  rain at full with a thunder at five seconds — touches full scale at
+  the strike. In the game it sits at a sixteenth of that; in the file
+  the crack is the one sample that clips, and the gain was not lowered
+  for it because lowering it would make every other file quieter than
+  the game.
 - **The feel gate handed over**, unchanged.
 - **THE PLAY GATE HANDED OVER AND NOT RUN.**
   `design/play-sheets/session-22.md`: the rain first, then the crown,
