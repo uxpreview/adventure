@@ -4,7 +4,7 @@ import { tearX } from '../elevation';
 import {
   wallPanelTexture, stackTexture, blockTexture, dryBedDecal, screeTexture,
   slotShadowTexture, gritTexture, deadScrubTexture, needleArchTexture,
-  markSlabTexture, rimMarkTexture, holtShedTexture, holtHouseTexture,
+  markSlabTexture, rimMarkTexture, holtShedTexture, holtHouseTexture, oddTexture, deepMarkDecal,
   boatOnTrestlesTexture, trestlesTexture, boatRightedTexture, holtTexture,
   bootsTexture, cairnTexture, turningBirdTexture, fallDustTexture,
   mouthPostTexture,
@@ -973,7 +973,7 @@ export const FOREST_POIS: WorldPOI[] = [
     x: 78, z: -124, radius: 10, label: 'THE WOOD ROAD',
     note: {
       title: 'the wood road',
-      body: 'the sky goes out over about twelve paces. the road keeps going, and the ground under it stops being grass and starts being needles, and everything gets about four degrees colder and a great deal more polite.',
+      body: 'the sky goes out over about twelve paces. the road keeps going, and the ground under it stops being grass and starts being needles, and it gets about four degrees colder. something in here ticks. it stops when you stop.',
     },
   },
   {
@@ -1010,7 +1010,7 @@ export const FOREST_POIS: WorldPOI[] = [
     get choice() {
       if (knowledge.decided('forest')) return undefined;
       return {
-        body: 'still water, black as the good ink, and a path around it that everybody uses and nobody comes off. there is a rowboat on it with one oar, and the oar is newer than the boat, and forty paces back up the road a man has made eleven oars and never seen one. you could go down to the water. or you could go for the boat.',
+        body: 'still water, black, and it does not move when the wind does, and a path around it that everybody uses and nobody comes off. there is a rowboat on it with one oar, and the oar is newer than the boat, and forty paces back up the road a man has made eleven oars and never seen one. you could go down to the water. or you could go for the boat.',
         options: [
           { label: 'STAND AT THE WATER', door: 'door:the-water-stood' },
           { label: 'TAKE THE OAR OUT OF THE BOAT', door: 'door:the-oar-taken' },
@@ -1020,10 +1020,10 @@ export const FOREST_POIS: WorldPOI[] = [
     note: {
       title: 'the tarn',
       body: () => {
-        if (knowledge.has('fact:the-twelfth-oar')) return 'still water, black as the good ink. the rowboat has no oar. the man on the road round it has not turned his back on it, and now he has a reason: something came out of that water, and it was you. there is a path around it, and everybody uses it.';
-        if (knowledge.has('door:the-oar-taken')) return 'still water, black as the good ink. the rowboat has no oar now, and nobody in the penwood has said anything about where it went. the man on the road round it is still facing the water. there is a path around it, and everybody uses it.';
-        if (knowledge.has('fact:the-tarn')) return 'still water, black as the good ink. there is nothing in it. the rowboat has one oar, and the oar is newer than the boat, and a man who walked round this water for forty years has turned his back on it. there is a path around it, and everybody uses it.';
-        return 'still water, black as the good ink. the rowboat has one oar, and the oar is newer than the boat. nobody comes down to the water and nobody will say why. there is a path around it, and everybody uses it.';
+        if (knowledge.has('fact:the-twelfth-oar')) return 'still water, black, and it does not move when the wind does. the rowboat has no oar. the man on the road round it has not turned his back on it, and now he has a reason: something came out of that water, and it was you. there is a path around it, and everybody uses it.';
+        if (knowledge.has('door:the-oar-taken')) return 'still water, black, and it does not move when the wind does. the rowboat has no oar now, and nobody in the penwood has said anything about where it went. the man on the road round it is still facing the water. there is a path around it, and everybody uses it.';
+        if (knowledge.has('fact:the-tarn')) return 'still water, black, and it does not move when the wind does. there is nothing in it. the rowboat has one oar, and the oar is newer than the boat, and a man who walked round this water for forty years has turned his back on it. there is a path around it, and everybody uses it.';
+        return 'still water, black, and it does not move when the wind does. the rowboat has one oar, and the oar is newer than the boat. nobody comes down to the water and nobody will say why. there is a path around it, and everybody uses it.';
       },
     },
   } as unknown as WorldPOI,
@@ -1103,6 +1103,24 @@ const BOAT = { x: 306, z: -234 };
 /** HOLT'S, on the rim above the head wall — which is where the fifth
  *  mark says it is. */
 const HOUSE = { x: 302, z: -272 };
+
+/* ================================================================== *
+ * S5 · HOW DEEP (Session 22, `THE-STRANGERS` Part One — the one
+ * three-land stranger, and the last of Part One to be built after
+ * Session 21 leaned on it). ODD has measured the canyon: ten point
+ * eight units from lip to floor, taken twice, with a line, which is
+ * the number `elevation.ts` holds the floor to and `check-terrain`
+ * prints. He would like to know whether the sea is deeper. The line is
+ * KNOWLEDGE and not a thing — a thing may not leave its land, and the
+ * whole beat is that his line goes where he cannot: the oasis (a hand
+ * deep; it would not get wet), the long water (it does not reach), and
+ * back to him. The change is a chalk mark cut into the floor at the
+ * wall's foot, below the five, with nothing written beside it. Nothing
+ * says how deep the sea is. Nobody in this world will ever know.
+ * ================================================================== */
+const ODD = { x: 309, z: -204 };
+/** THE MARK BELOW THE FLOOR, at the foot of the east wall by him. */
+const DEEP_MARK = { x: 314.5, z: -206 };
 
 /* ================================================================== *
  * THE PAPER PLANE — the wilds' mount, and the throw from height
@@ -1382,6 +1400,11 @@ export const buildCanyon: RegionBuilder = (ctx) => {
     ctx.standee(holtTexture(6220 + p, p as 0 | 1 | 2), 1.55, 2.65, BOAT.x - 5.5, BOAT.z + 1.5));
   for (const m of holt) (m.material as THREE.MeshBasicMaterial).transparent = true;
 
+  /* ---- ODD, on the floor, with his line (Session 22, S5) ----------- */
+  const odd = [0, 1].map((p) => ctx.standee(oddTexture(6240 + p, p as 0 | 1), 1.55, 2.65, ODD.x, ODD.z, { rotY: -0.1 }));
+  const deepMark = ctx.decal(deepMarkDecal(6242), 7.2, 2.7, DEEP_MARK.x, DEEP_MARK.z, 0.06, 0.92);
+  deepMark.visible = false;
+
   /* ---- THE HOUSE, on the rim, and it is lit at night -------------- */
   const houseDark = ctx.standee(holtHouseTexture(6230, false), 6.6, 6.0, HOUSE.x, HOUSE.z, { solid: true });
   const houseLit = ctx.standee(holtHouseTexture(6231, true), 6.6, 6.0, HOUSE.x, HOUSE.z);
@@ -1493,6 +1516,18 @@ export const buildCanyon: RegionBuilder = (ctx) => {
     houseLit.visible = !day;
     lightUpOne(houseGlow, day ? 0 : 0.9);
 
+    /* ODD, read back: on the floor with the coil, all day, until he has
+     * been told what happened to the line — and then at the wall, by
+     * the mark, which is where he stays. Not out after dark; nobody on
+     * this floor is. */
+    {
+      const deep = knowledge.has('fact:how-deep');
+      odd[0].visible = day && !deep;
+      odd[1].visible = day && deep;
+      if (deep) odd[1].position.set(DEEP_MARK.x - 2.2, ctx.groundY(DEEP_MARK.x - 2.2, DEEP_MARK.z + 0.8), DEEP_MARK.z + 0.8);
+      deepMark.visible = deep;
+    }
+
     /* ---- THE PLANE (Session 18) -------------------------------------- */
     {
       const fp = things.flyPos(planeThing);
@@ -1583,7 +1618,7 @@ export const CANYON_POIS: WorldPOI[] = [
     prompt: 'GO DOWN',
     note: {
       title: 'the mouth',
-      body: 'the page is only scratched here. walk north and it opens. there is no other way in and no way out at the far end.',
+      body: 'a scratch in the ground here, no more. walk north and it opens. there is no other way in and no way out at the far end.',
     },
   },
   {
@@ -1607,6 +1642,41 @@ export const CANYON_POIS: WorldPOI[] = [
       body: 'a hole worn through solid rock by weather and insistence. you stand under it. it holds.',
     },
   },
+  {
+    /* ODD (Session 22, S5 · HOW DEEP). Ask him what he measured and
+     * the line is yours to know about; come back holding what it did at
+     * the oasis and on the long water, and he cuts a mark below the
+     * floor. Short sentences, like everything on this floor. The note
+     * never says how deep the sea is, because he does not know and
+     * neither do you. */
+    x: ODD.x, z: ODD.z, radius: 7, label: 'THE LINE', labelHeight: 3.2,
+    get prompt() {
+      if (!knowledge.has('fact:odds-line')) return 'ASK WHAT HE MEASURED';
+      if (!knowledge.has('fact:how-deep') && knowledge.has('fact:the-oasis-a-hand-deep') && knowledge.has('fact:the-line-did-not-reach')) return 'TELL HIM WHAT HAPPENED TO THE LINE';
+      return 'LOOK AT THE LINE';
+    },
+    get touch() {
+      if (knowledge.has('fact:odds-line') && !knowledge.has('fact:how-deep')
+        && knowledge.has('fact:the-oasis-a-hand-deep') && knowledge.has('fact:the-line-did-not-reach')) {
+        return () => { knowledge.learn('fact:how-deep'); say('chalk-cut'); };
+      }
+      return undefined;
+    },
+    get note() {
+      const deep = knowledge.has('fact:how-deep');
+      if (knowledge.has('fact:odds-line') && !deep
+        && knowledge.has('fact:the-oasis-a-hand-deep') && knowledge.has('fact:the-line-did-not-reach')) return undefined;
+      return {
+        title: 'the line',
+        body: () => {
+          if (deep) return 'a mark cut into the floor at the foot of the wall, below the five. nothing written beside it. he is by it. the line is beside him, coiled, dry.';
+          if (!knowledge.has('fact:odds-line')) return 'a man with a coil of line. ten point eight, he says. lip to floor. twice. he would like to know if the sea is deeper. nobody here has seen water past ankle depth.';
+          return 'a man with a coil of line. ten point eight, lip to floor, twice. he has asked about the sea once and is not going to ask again.';
+        },
+        learns: ['fact:odds-line'],
+      };
+    },
+  } as unknown as WorldPOI,
   {
     /* THE LABEL SITS WEST OF THE BOAT, and that is Session 10's lesson
      * applied before it cost anything: the skyline writes a name above
@@ -1669,6 +1739,13 @@ export const CANYON_POIS: WorldPOI[] = [
 /** THE OASIS. `layout.PONDS[1]`; the only water in the land and the
  *  bottom of THE PAN (`elevation.ts`). */
 const OASIS = { x: 305, z: 55 };
+/** THE LINE IN THE OASIS (Session 22, S5): when it was tried, so the
+ *  water can ring once and settle. Written by the touch, read by the
+ *  builder. */
+const lineTried = { at: -99 };
+/** The world's seconds, as the desert's update last saw them, so a
+ *  touch with no clock of its own can stamp one. */
+const flatsClock = { t: 0 };
 /** Whether the door's can has water in it. Not saved: a can put down
  *  by closing the tab is a can to fill again, which costs a walk. */
 const canFull = { full: false };
@@ -2058,9 +2135,25 @@ export const buildDesert: RegionBuilder = (ctx) => {
    * thing that comes toward you has to remember where it was. */
   const lightAt = VISITORS.map((v) => ({ x: v.x, z: v.z, ph: v.x * 0.37 }));
   const pale = { hum: 6, blink: 0, hop: 0 };
+  /* THE RING the line leaves on the oasis (Session 22, S5): one pale
+   * ring on the south bank's water, which grows and goes in three
+   * seconds. The line did not get wet; the ring is the whole answer. */
+  const lineRing = ctx.decal(rippleDecal(7090), 1, 1, OASIS.x, OASIS.z + 9.5, 0, 0.8);
+  lineRing.visible = false;
 
   return (dt: number, t: number, px: number, pz: number) => {
     const h = clock.hour;
+    flatsClock.t = t;
+
+    {
+      const age = t - lineTried.at;
+      if (age >= 0 && age < 3) {
+        lineRing.visible = true;
+        const k = age / 3;
+        lineRing.scale.setScalar(1 + k * 4.5);
+        (lineRing.material as THREE.MeshBasicMaterial).opacity = 0.8 * (1 - k);
+      } else lineRing.visible = false;
+    }
 
     /* THE LID COMES OFF, AND STAYS OFF.
      *
@@ -2284,8 +2377,8 @@ export const DESERT_POIS: WorldPOI[] = [
     note: {
       title: 'the pale',
       body: () => (isNight(clock.hour)
-        ? 'the flattest ground on the sheet, and something has burned a pattern into it, ruled straight, which nothing out here has ever been. four fence posts stand across it with no wire between them. it is dark. there are lights over the pan, three of them, at about the height of a roof, and they are not the stars and they are not still. nobody in the flats has said anything about any of it.'
-        : 'the flattest ground on the sheet, and something has burned a pattern into it, ruled straight, which nothing out here has ever been. four fence posts stand across it with no wire between them. three of them are standing in the pattern this morning, one big and two small, and they seem pleased about it. they do not go anywhere either. nobody in the flats has said anything about any of it.'),
+        ? 'the flattest ground in the world, and something has burned a pattern into it, ruled straight, which nothing out here has ever been. four fence posts stand across it with no wire between them. it is dark. there are lights over the pan, three of them, at about the height of a roof, and they are not the stars and they are not still. nobody in the flats has said anything about any of it.'
+        : 'the flattest ground in the world, and something has burned a pattern into it, ruled straight, which nothing out here has ever been. four fence posts stand across it with no wire between them. three of them are standing in the pattern this morning, one big and two small, and they seem pleased about it. they do not go anywhere either. nobody in the flats has said anything about any of it.'),
     },
   },
   {
@@ -2337,6 +2430,16 @@ export const DESERT_POIS: WorldPOI[] = [
         say('can-pour');
       }
     },
+  } as unknown as WorldPOI,
+  {
+    /* THE LINE, TRIED IN THE OASIS (Session 22, S5 beat two): on the
+     * south bank, holding what Odd told you. It is a hand deep. His
+     * line would not get wet in it. The water rings once. */
+    x: 305, z: 64.5, radius: 3.2,
+    get enabled() { return knowledge.has('fact:odds-line') && !knowledge.has('fact:the-oasis-a-hand-deep'); },
+    set enabled(_v: boolean) { /* the line decides */ },
+    prompt: 'TRY THE LINE IN IT',
+    touch: () => { knowledge.learn('fact:the-oasis-a-hand-deep'); lineTried.at = flatsClock.t; say('line-out'); },
   } as unknown as WorldPOI,
   {
     x: 305, z: 55, radius: 13, label: 'THE OASIS',
@@ -2397,7 +2500,7 @@ export const DESERT_POIS: WorldPOI[] = [
     x: 348, z: 18, radius: 10, label: 'WHERE THE ROAD STOPS',
     note: {
       title: 'where the road stops',
-      body: 'the east road runs four hundred units from the meadow and then quits, here, at the foot of the place the page lifts. you can climb the rest. there is nothing up there but the edge and the next sheet down.',
+      body: 'the east road runs four hundred units from the meadow and then quits, here, at the foot of the place the ground lifts. you can climb the rest. there is nothing up there but the edge, and past the edge there is nothing, and it goes on a long way.',
     },
   },
 ];

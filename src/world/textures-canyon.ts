@@ -50,6 +50,9 @@ const TIMBER = '#6a5a45';
 const HULL = '#7d6547';
 const CHALK = '#f6f3ea';
 const CLOTH = '#c9c0ac';
+/** Odd's line: rope, not chalk — the one thing on the floor that is
+ *  neither rock nor cloth. */
+const ROPE = '#7a6248';
 
 function fillPoly(ctx: Ctx2D, pts: [number, number][], color: string, alpha: number) {
   ctx.save();
@@ -1006,3 +1009,75 @@ export function paperPlaneTexture(seed: number): THREE.CanvasTexture {
     line(ctx, 30, 36, 34, 26, r, { width: 1, alpha: 0.45, color: PENCIL, passes: 1 });
   });
 }
+
+/* ================================================================== *
+ * S5 · HOW DEEP (Session 22, `THE-STRANGERS` Part One). ODD, on the
+ * floor, who measured the canyon with a line — ten point eight, lip to
+ * floor, twice — and would like to know whether the sea is deeper.
+ * Two postures, no face, in this land's register: a coat, and a coil
+ * of line that is the whole of what he owns.
+ * ================================================================== */
+export function oddTexture(seed: number, pose: 0 | 1): THREE.CanvasTexture {
+  return makeTexture(112, 176, seed, (ctx, r) => {
+    const cx = 52;
+    if (pose === 0) {
+      // STANDING ON THE FLOOR WITH THE COIL. Square to you, weight
+      // even, the line looped over one forearm — a man who has been
+      // holding the same thing for a long time.
+      scribbleCircle(ctx, cx, 34, 12.5, r, { width: 2, alpha: 0.85 }, 1.05);
+      stroke(ctx, [[cx - 13, 30], [cx - 9, 18], [cx + 9, 18], [cx + 13, 30]], r, { width: 1.7, alpha: 0.72 });
+      fillPoly(ctx, [[cx - 16, 52], [cx - 20, 122], [cx + 19, 122], [cx + 14, 52]], CLOTH, 0.4);
+      hardPoly(ctx, [[cx - 16, 52], [cx - 20, 122], [cx + 19, 122], [cx + 14, 52]], r, { width: 2, alpha: 0.84 });
+      stroke(ctx, [[cx - 15, 58], [cx - 26, 84], [cx - 20, 104]], r, { width: 2, alpha: 0.84 });
+      stroke(ctx, [[cx + 14, 58], [cx + 26, 82], [cx + 30, 100]], r, { width: 2, alpha: 0.84 });
+      // the coil, over the right forearm: five loops and the loose end
+      for (let i = 0; i < 5; i++) {
+        scribbleCircle(ctx, cx + 30 + i * 1.2, 96 + i * 2.2, 9 - i * 0.4, r, { width: 1.3, alpha: 0.62, color: ROPE }, 1.0);
+      }
+      stroke(ctx, [[cx + 34, 108], [cx + 30, 130], [cx + 36, 150]], r, { width: 1.3, alpha: 0.6, color: ROPE });
+      line(ctx, cx - 12, 118, cx - 16, 172, r, { width: 2.4, alpha: 0.86 });
+      line(ctx, cx + 11, 118, cx + 15, 172, r, { width: 2.4, alpha: 0.86 });
+    } else {
+      // AT THE WALL, CROUCHED, one hand flat on the floor where the
+      // mark is: the only posture in the land where somebody is
+      // touching the ground on purpose.
+      scribbleCircle(ctx, cx + 4, 72, 12, r, { width: 2, alpha: 0.85 }, 1.05);
+      stroke(ctx, [[cx - 9, 68], [cx - 4, 56], [cx + 14, 56], [cx + 17, 68]], r, { width: 1.7, alpha: 0.72 });
+      fillPoly(ctx, [[cx - 18, 90], [cx - 26, 140], [cx + 20, 140], [cx + 12, 90]], CLOTH, 0.4);
+      hardPoly(ctx, [[cx - 18, 90], [cx - 26, 140], [cx + 20, 140], [cx + 12, 90]], r, { width: 2, alpha: 0.84 });
+      stroke(ctx, [[cx + 12, 96], [cx + 30, 130], [cx + 40, 168]], r, { width: 2, alpha: 0.84 });
+      line(ctx, cx + 30, 168, cx + 52, 168, r, { width: 2, alpha: 0.8, passes: 1 });
+      stroke(ctx, [[cx - 18, 96], [cx - 30, 124], [cx - 22, 138]], r, { width: 2, alpha: 0.84 });
+      stroke(ctx, [[cx - 22, 140], [cx - 30, 158], [cx - 14, 172]], r, { width: 2.4, alpha: 0.86 });
+      stroke(ctx, [[cx + 14, 140], [cx + 12, 160], [cx + 22, 172]], r, { width: 2.4, alpha: 0.86 });
+      // the coil, set down beside him
+      for (let i = 0; i < 4; i++) {
+        scribbleCircle(ctx, cx - 40 + i, 160 + i * 1.5, 8 - i * 0.5, r, { width: 1.3, alpha: 0.6, color: ROPE }, 1.0);
+      }
+    }
+  });
+}
+
+/**
+ * THE MARK BELOW THE FLOOR. There is no wall below the floor, so it is
+ * cut into the floor at the wall's foot: one chalk line, level, with a
+ * tick at the end of it, the same hand as the five up the wall — and
+ * nothing written beside it, because it is a mark for a depth that
+ * cannot be measured. A ground decal on a transparent sheet.
+ */
+export function deepMarkDecal(seed: number): THREE.CanvasTexture {
+  return makeTexture(256, 96, seed, (ctx, r) => {
+    for (let p = 0; p < 2; p++) {
+      line(ctx, 30, 48 + (r() - 0.5) * 3, 214, 46 + (r() - 0.5) * 3, r,
+        { width: 5.5 - p * 2, alpha: 0.9 - p * 0.3, passes: 1, color: CHALK }, 6);
+    }
+    line(ctx, 214, 34, 216, 60, r, { width: 4, alpha: 0.82, passes: 1, color: CHALK }, 2);
+    // the dust the cutting left, either side of it
+    for (let i = 0; i < 14; i++) {
+      const x = 40 + r() * 170;
+      line(ctx, x, 42 + (r() - 0.5) * 20, x + 2 + r() * 4, 44 + (r() - 0.5) * 20, r,
+        { width: 1.2, alpha: 0.2 + r() * 0.2, passes: 1, color: CHALK }, 1);
+    }
+  });
+}
+

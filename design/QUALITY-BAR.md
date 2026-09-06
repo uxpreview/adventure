@@ -409,6 +409,10 @@ regression check it always was.
 - **No faces.** The walker has two dots; nobody else has a face.
   Doodle-folk are posture, placement and clothing — which is exactly why
   they must express through routine instead (WORLD-SYSTEMS §5).
+  *(Session 22: the walker may have something on their head or round
+  their neck — a WORN THING, `WORLD-SYSTEMS` §6 — taken off the world
+  at a cost to the land it came from. One slot, one button, no screen.
+  It is the same drawing as the thing it came off.)*
 - **Mobile and desktop are both first-class.** Every contact sheet is
   shot in portrait (390×844) as well as desktop (1280×720), and the art
   director reviews both. A composition that only works in landscape is

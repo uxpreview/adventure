@@ -617,7 +617,7 @@ function sticky(ctx: Ctx2D, x: number, y: number, s: number, r: () => number, co
 
 /** THE PERSONA, pinned up on an easel. A name, a circle where a face
  *  would go and is not, three headings, and a quote. Accurate. */
-export function personaBoardTexture(seed: number): THREE.CanvasTexture {
+export function personaBoardTexture(seed: number, lanyard = true): THREE.CanvasTexture {
   return makeTexture(192, 240, seed, (ctx, r) => {
     // the easel
     line(ctx, 40, 236, 60, 60, r, { width: 2.6, alpha: 0.88 });
@@ -643,6 +643,19 @@ export function personaBoardTexture(seed: number): THREE.CanvasTexture {
     poly(ctx, [[36, 160], [156, 160], [156, 172], [36, 172]], r, { width: 1, alpha: 0.5, passes: 1 });
     lettering(ctx, "'IT SAYS 8:15.'", 44, 170, 7.5, r, { crooked: 0.4, width: 1.1, alpha: 0.82 });
     sticky(ctx, 150, 40, 20, r, STICKY[0]);
+    /* THE SPARE LANYARD (Session 22, `worn.ts`), hung over the easel's
+     * left leg at the board's corner: a loop of cord and a card that
+     * says VISITOR, for the visitor the sprint has never had. Taken,
+     * the easel is bare there and the board says nothing about it. */
+    if (lanyard) {
+      // hung over the board's bottom-right corner, down the easel's leg
+      stroke(ctx, [[160, 176], [150, 190], [146, 204]], r, { width: 1.4, alpha: 0.86, color: '#5b6ee0' });
+      stroke(ctx, [[166, 178], [164, 192], [160, 204]], r, { width: 1.4, alpha: 0.86, color: '#5b6ee0' });
+      const card: [number, number][] = [[144, 204], [162, 204], [163, 226], [143, 226]];
+      fillPoly(ctx, card, '#e6ddc4', 0.94);
+      poly(ctx, card, r, { width: 1.2, alpha: 0.86 });
+      lettering(ctx, 'VISITOR', 144.5, 219, 3.9, r, { crooked: 0.2, width: 0.9, alpha: 0.82, tracking: 0.6 });
+    }
   });
 }
 

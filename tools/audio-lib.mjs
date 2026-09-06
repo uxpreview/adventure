@@ -178,6 +178,24 @@ window.__booth = (() => {
       a.muted = false;
       a.tacet = false;
       a.event(spec.name);
+    } else if (spec.kind === 'weather') {
+      /* THE RAIN (Session 22): the patter bed and the drops, at one
+       * intensity, from the same builders the game plays — nothing is
+       * re-implemented here. \`k\` is the rain's 0..1; \`thunder\` adds
+       * one strike partway through, so the storm file has its loudest
+       * thing in it. */
+      const k = spec.k ?? 0.85;
+      const bed = A.buildRain(ctx, g.ambient, 0, spec.seed ?? 5);
+      bed.set(k, 0, 0.01);
+      A.rainDrops(ctx, g.ambient, 0, sec, k, A.srand(spec.seed ?? 5));
+      if (spec.thunder) {
+        const a = new A.Audio();
+        a.ctx = ctx;
+        a.master = g.master;
+        a.muted = false;
+        a.tacet = false;
+        a.event('thunder', spec.thunder);
+      }
     } else if (spec.kind === 'xfade-ref') {
       /* THE EQUAL-POWER PROOF. The same bed on both sides of the fade,
        * so anything the meter does in the middle is the CURVE and not

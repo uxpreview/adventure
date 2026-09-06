@@ -78,6 +78,14 @@ export type SaveData = {
    * older save looks like and costs nothing to read.
    */
   things: Record<string, { x: number; z: number } | null>;
+  /**
+   * WHAT THE WALKER HAS ON (Session 22, `src/world/worn.ts`): one id
+   * or nothing. What they have EARNED is in `known` as `wear:` ids,
+   * the same as every other piece of knowledge; this is only which of
+   * them is on their head today. Absent in an older save, which reads
+   * as nothing, which is what an older walker was wearing.
+   */
+  worn?: string | null;
 };
 
 const KEY = 'inklands-save-v1';
@@ -96,6 +104,7 @@ const DEFAULTS: SaveData = {
   passed: [],
   taughtRun: false,
   things: {},
+  worn: null,
 };
 
 export class Save {

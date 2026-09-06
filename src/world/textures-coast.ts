@@ -1161,7 +1161,7 @@ export function fishShoalDecal(seed: number): THREE.CanvasTexture {
  * the sail set, and ROARING, which is the same four people with their
  * arms up. Cut off flat at the waterline like everything afloat here.
  */
-export function longshipTexture(seed: number, pose: 0 | 1 | 2): THREE.CanvasTexture {
+export function longshipTexture(seed: number, pose: 0 | 1 | 2, bare = false): THREE.CanvasTexture {
   return makeTexture(384, 192, seed, (ctx, r) => {
     const wl = 150;
     const gun = 112;
@@ -1229,8 +1229,10 @@ export function longshipTexture(seed: number, pose: 0 | 1 | 2): THREE.CanvasText
       const bent = pose === 1;
       const hy = bent ? gun - 8 : gun - 20;
       scribbleCircle(ctx, cx + (bent ? 8 : 0), hy, 8, r, { width: 1.8, alpha: 0.85 }, 1.05);
-      // a helmet is a cap with a nasal; a line across and one down
-      line(ctx, cx - 8 + (bent ? 8 : 0), hy - 6, cx + 9 + (bent ? 8 : 0), hy - 7, r, { width: 1.6, alpha: 0.8, passes: 1 });
+      // a helmet is a cap with a nasal; a line across and one down —
+      // and the man in the bow has none, once his is on the foreshore
+      // (Session 22, `worn.ts`)
+      if (!(bare && cx === 104)) line(ctx, cx - 8 + (bent ? 8 : 0), hy - 6, cx + 9 + (bent ? 8 : 0), hy - 7, r, { width: 1.6, alpha: 0.8, passes: 1 });
       stroke(ctx, [[cx - 12, hy + 8], [cx, hy + 6], [cx + 12, hy + 8], [cx + 10, gun + 2], [cx - 10, gun + 2]], r, { width: 1.8, alpha: 0.82 });
       if (pose === 2) {
         // arms up, and the thing in the hand is an axe: a haft and a wedge

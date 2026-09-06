@@ -28,6 +28,8 @@ import { earshotAt, voice, SURF_REACH } from '../world/earshot';
 import { ROADS, BRIDGES, PONDS, RIVER, DISTRICTS } from '../world/layout';
 import { knowledge, WAIT_ANSWERS } from '../world/knowledge';
 import { things } from '../world/things';
+import { worn, WORN, type WornDef } from '../world/worn';
+import { crownTexture, wornHatTexture, lanyardTexture, helmTexture } from '../world/textures-worn';
 import { events, routines, routineAt } from '../world/events';
 import { drawn } from '../world/life';
 import { weather, PRESETS, type WeatherKind } from '../world/weather';
@@ -293,6 +295,13 @@ export class App {
     };
     this.audio.muted = this.save.data.muted;
     this.ui.setSoundLabel(this.audio.muted);
+    /* THE WORN BUTTON: a press goes round what has been earned, and
+     * the label says what is on. The frame dresses the walker. */
+    this.ui.onWear = () => {
+      worn.next();
+      this.dress();
+      return this.wearLabel();
+    };
 
     this.ui.onOpenMap = (width) =>
       renderMap({
@@ -337,6 +346,9 @@ export class App {
      * was left; a thrown stone is where it landed; a stone down the
      * well is gone until the morning. */
     things.load(this.save.data.things ?? {});
+    /* AND WHAT IS ON THEIR HEAD (Session 22): one id, honoured only if
+     * the save also knows it was earned. */
+    worn.load(this.save.data.worn ?? null);
 
     /* Stand the walker under the title: where the last walk left them,
      * or — on a fresh page — at THE POSTER, which is the composition the
@@ -673,6 +685,17 @@ export class App {
         openChoice: (title: string, body: string, options: string[]) =>
           this.ui.openChoice(title, body, options, () => {}),
         holding: () => things.held,
+        /* ---- THE WORN THINGS, for the harness (Session 22) ------------ */
+        worn,
+        WORN,
+        /** What is on the walker's head, and what the button says. */
+        wearing: () => worn.current,
+        wearLabel: () => this.wearLabel(),
+        /** The button, pressed as a thumb would. */
+        pressWear: () => {
+          const b = document.querySelectorAll<HTMLButtonElement>('.hud-btn')[2];
+          b?.click();
+        },
         /** Hold a peek, for the bearing sheet: −1 hard left, +1 right. */
         peek: (v: number | null) => {
           this.input.holdPeek = v;
@@ -853,6 +876,40 @@ export class App {
    * minutes and dusk arrives on the king while you watch. Any step, or
    * the key again, stands you up.
    * ================================================================ */
+  /* ================================================================ *
+   * DRESS (Session 22, `world/worn.ts`). What the walker has on is one
+   * id in the registry; this puts the drawing for it on the figure and
+   * letters the button. The drawings are made once, here, because a
+   * worn thing is on the walker and not in any land.
+   * ================================================================ */
+  private wornTex: Partial<Record<string, THREE.Texture>> = {};
+  private dress() {
+    worn.dirty = false;
+    const d = worn.def(worn.current);
+    if (!d) this.char.wear(null);
+    else {
+      const tex = (this.wornTex[d.id] ??= App.drawWorn(d));
+      this.char.wear(tex, d.slot, d.w, d.h, d.dy ?? 0);
+    }
+    this.ui.setWearLabel(this.wearLabel());
+    this.save.data.worn = worn.current;
+    this.save.persist();
+  }
+  private static drawWorn(d: WornDef): THREE.Texture {
+    switch (d.id) {
+      case 'the-crown': return crownTexture(2201);
+      case 'the-hat': return wornHatTexture(2202);
+      case 'the-lanyard': return lanyardTexture(2203);
+      default: return helmTexture(2204);
+    }
+  }
+  /** What the button says: nothing until something is earned. */
+  private wearLabel(): string | null {
+    if (!worn.owned().length) return null;
+    const d = worn.def(worn.current);
+    return `wearing: ${d ? d.name.toLowerCase() : 'nothing'}`;
+  }
+
   private static SIT_TIME = 6;
   private sitDown(def: WorldPOI) {
     if (!def.sit || this.boat.aboard || this.train.aboard) return;
@@ -1834,6 +1891,8 @@ export class App {
       if (t) t.stranded = water > 0.3 || this.terrain.blockedAt(l.x, l.z);
     }
     things.landed.length = 0;
+    // and what is worn is drawn on the walker, when it changes
+    if (worn.dirty) this.dress();
     // and what is in the hand is drawn in the hand
     const held = things.holding;
     if ((held !== null) !== this.handShown) {
@@ -2113,6 +2172,7 @@ export class App {
         knowledge.dirty = false;
         things.dirty = false;
         this.save.data.things = things.saved(this.char.pos.x, this.char.pos.z);
+        this.save.data.worn = worn.current;
         this.save.data.known = k.known;
         this.save.data.passed = k.passed;
         this.save.data.pos = { x: this.char.pos.x, z: this.char.pos.z };
