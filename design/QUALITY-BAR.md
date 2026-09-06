@@ -490,6 +490,14 @@ regression check it always was.
   the verdict on the new frame. The rule that a framing may not move
   for a session's CONVENIENCE stands. The rule that it may not move at
   all does not.
+- **A ROOM IS A SECTION, AND ITS WALLS ARE BARRIERS** (Session 23,
+  `WORLD-SYSTEMS` §11). An interior is the roofless cutaway and nothing
+  else: a plan on the ground, an elevation at the north edge, two side
+  walls edge-on, and the house's own front with a door in its
+  footprint. A room opens south, is inside its land, is flat ground to
+  the camera, and every wall in it refuses a foot. Nothing is furnished
+  by the player and nothing is a menu. The rig may close on a room and
+  may never do it faster than the walk; `check-verbs` §15 measures it.
 - **Inherited rules must be re-ratified or dropped.** This engine was
   ported whole from margins, and some of its laws are margins' story
   rather than our design — the flat ground was one, and it cost us a

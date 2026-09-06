@@ -1795,6 +1795,214 @@ r.names = await page.evaluate(() => {
   return S;
 });
 
+/* ================================================================== *
+ * 15. THE INTERIORS (Session 23, `world/rooms.ts`, `WORLD-SYSTEMS` §11).
+ * A room is walked into through its door and the front of the house
+ * goes to pencil; walked out of and it is a house again. The side
+ * walls refuse a foot from inside; the door admits one. Inside, the
+ * rig closes and NEVER FASTER THAN THE WALK (the dolly ceiling from
+ * `check-camera`, coming the other way), the rise term reads zero in
+ * the loft under the ridge, and a stopped walker is due north. A
+ * person drawn inside is inside their own land. And the three errands
+ * the interiors opened: the crate carried the length of Brim and set
+ * down empty, the wet banner carried up with no run under it and hung
+ * on the fourth peg, the small bike stood up and wheeled home.
+ * ================================================================== */
+r.rooms = await page.evaluate(() => {
+  const I = window.__inklands;
+  const at = (x, z) => { I.goto(x, z); I.setTime(0); I.step(1 / 60, 120); };
+  const settle = (secs) => I.step(1 / 60, Math.round(secs * 60));
+  const walk = (mx, mz, secs, run = 0) => { I.drive(mx, mz, run); I.step(1 / 60, Math.round(secs * 60)); I.release(); };
+  const closeNote = () => { if (document.querySelector('.note-veil.show')) { I.press(); I.step(1 / 60, 5); } };
+  const noteText = () => document.querySelector('.note-body')?.getAttribute('aria-label') ?? '';
+  const R = {};
+  I.setHour(12, false);
+  I.events.resync();
+  const facade = (land) => {
+    // the biggest solid standee on the room's south line is the front
+    const room = I.rooms.get(land);
+    let best = null;
+    I.scene.traverse((o) => {
+      if (!o.isMesh || !o.material || !o.material.map) return;
+      const q = room.rect;
+      if (Math.abs(o.position.z - (q.maxZ + 0.4)) < 1.2 && Math.abs(o.position.x - (q.minX + q.maxX) / 2) < 1.5 && o.geometry?.parameters?.width > 7 && (!best || o.geometry.parameters.width > best.geometry.parameters.width)) best = o;
+    });
+    return best;
+  };
+  const enter = (id, outsideZ, insideZ, x, lanes) => {
+    const room = I.rooms.get(id);
+    const front = facade(id);
+    at(x, outsideZ);
+    settle(1.5);
+    const out = { k: I.roomK(), inside: I.rooms.inside?.id ?? null, facade: front ? +front.material.opacity.toFixed(3) : null, back: I.bearing().back };
+    // walk in through the door, and measure the rig's trail every tick
+    let maxRate = 0;
+    let prevBack = I.bearing().back;
+    I.drive(0, -1, 0);
+    const n = Math.round(((outsideZ - insideZ) / 4.1 + 2.4) * 60);
+    for (let i = 0; i < n; i++) {
+      I.step(1 / 60, 1);
+      const b = I.bearing().back;
+      maxRate = Math.max(maxRate, Math.abs(b - prevBack) * 60);
+      prevBack = b;
+      if (I.char.pos.z <= insideZ) I.release();
+    }
+    I.release();
+    settle(4.5);
+    const b = I.bearing();
+    const inn = { k: +I.roomK().toFixed(3), inside: I.rooms.inside?.id ?? null, facade: front ? +front.material.opacity.toFixed(3) : null, back: +b.back.toFixed(2), yaw: +b.yaw.toFixed(3), z: +I.char.pos.z.toFixed(2), x: +I.char.pos.x.toFixed(2), maxRate: +maxRate.toFixed(2), landAt: I.rooms.inside ? I.districtAt(I.char.pos.x, I.char.pos.z)?.land ?? null : null };
+    // the side walls refuse a foot: shove west for two seconds, along
+    // a lane of floor with nothing standing on it
+    at(x, lanes.ew);
+    settle(0.3);
+    walk(-1, 0, 2.0);
+    const west = +I.char.pos.x.toFixed(2);
+    walk(1, 0, 4.0);
+    const east = +I.char.pos.x.toFixed(2);
+    // and the far wall, up a lane with nothing on it
+    at(lanes.n, lanes.ew);
+    settle(0.3);
+    walk(0, -1, 2.5);
+    const north = +I.char.pos.z.toFixed(2);
+    // out again through the door, from the strip just inside it
+    at(room.door.x, room.rect.maxZ - 1.2);
+    settle(0.5);
+    walk(0, 1, (outsideZ + 2 - insideZ) / 4.1 + 0.5);
+    settle(4.5);
+    const after = { k: +I.roomK().toFixed(3), inside: I.rooms.inside?.id ?? null, facade: front ? +front.material.opacity.toFixed(3) : null, z: +I.char.pos.z.toFixed(2) };
+    return { rect: room.rect, out, inn, west, east, north, after };
+  };
+  R.val = enter('vals-kitchen', 132, 124.6, -78, { ew: 126.6, n: -79 });
+  R.marget = enter('margets-house', -93, -101, -80, { ew: -99.4, n: -80.6 });
+  R.loft = enter('the-loft', -209, -217.4, -34, { ew: -216.0, n: -34 });
+  // the rise under the ridge: at the loft's door the lens reads the
+  // ridge; inside it reads nothing
+  // A ROOM IS INSIDE ITS LAND: every room's rect, against its land's
+  R.inLand = I.rooms.all.map((rm) => ({ id: rm.id, land: rm.land, ok: [[rm.rect.minX, rm.rect.minZ], [rm.rect.maxX, rm.rect.maxZ], [rm.rect.minX, rm.rect.maxZ], [rm.rect.maxX, rm.rect.minZ]].every(([x, z]) => I.regionAt(x, z).id === rm.land) }));
+  // the person inside, and the same person outside, never both
+  I.setHour(22.5, false); I.events.resync();
+  at(-80, -101); settle(1.0);
+  const visibleAt = (x, z, r) => { let n = 0; I.scene.traverse((o) => { if (o.isMesh && o.visible && o.material?.map && o.material.opacity > 0.5 && Math.hypot(o.position.x - x, o.position.z - z) < r && o.geometry?.parameters?.height > 2.4 && o.geometry?.parameters?.height < 2.8 && o.geometry?.parameters?.width < 1.6) n++; }); return n; };
+  R.margetNight = { home: visibleAt(-80.7, -102, 0.6), atStall: visibleAt(-43.1, -75, 0.6) };
+  I.press(); I.step(1 / 60, 5);
+  R.margetNoteNight = noteText();
+  closeNote();
+  I.setHour(12, false); I.events.resync();
+  at(-80, -101); settle(1.0);
+  R.margetNoon = { home: visibleAt(-80.7, -102, 0.6), atStall: visibleAt(-43.1, -75, 0.6) };
+  I.press(); I.step(1 / 60, 5);
+  R.margetNoteNoon = noteText();
+  closeNote();
+  // Val: at the range at noon, by the lamp at ten, at the gate at seven
+  const valAt = (x, z) => { let n = 0; I.scene.traverse((o) => { if (o.isMesh && o.visible && o.material?.map && o.material.opacity > 0.5 && Math.hypot(o.position.x - x, o.position.z - z) < 0.5 && Math.abs(o.geometry?.parameters?.height - 2.05) < 0.01) n++; }); return n; };
+  at(-78, 124.6); settle(1.0);
+  R.valNoon = { range: valAt(-79.3, 122.7), lamp: valAt(-75.4, 123.0), gate: valAt(-74.6, 136.8) };
+  I.setHour(22, false); I.events.resync(); settle(1.0);
+  R.valTen = { range: valAt(-79.3, 122.7), lamp: valAt(-75.4, 123.0), gate: valAt(-74.6, 136.8) };
+  I.setHour(19.3, false); I.events.resync(); settle(1.0);
+  R.valSeven = { range: valAt(-79.3, 122.7), lamp: valAt(-75.4, 123.0), gate: valAt(-74.6, 136.8) };
+  I.setHour(12, false); I.events.resync();
+
+  /* ---- THE CRATE (E5): the lane to the stall ---------------------- */
+  const crate = I.things.get('the-crate');
+  at(crate.x, crate.z + 1.5); settle(0.4);
+  R.cratePrompt = I.promptText();
+  I.press(); settle(0.3);
+  R.crateHeld = I.holding();
+  R.crateSpeed = I.char.maxSpeed;
+  at(-37.4, -76.6); settle(0.4);
+  R.cratePlacePrompt = I.promptText();
+  I.press(); settle(0.5);
+  R.crate = { held: I.holding(), state: crate.state, x: +crate.x.toFixed(1), z: +crate.z.toFixed(1), fact: I.knowledge.has('fact:the-crate-was-empty') };
+  at(crate.x, crate.z + 1.5); settle(0.4);
+  R.cratePromptAfter = I.promptText();
+  I.press(); I.step(1 / 60, 5);
+  R.crateNote = noteText();
+  closeNote();
+
+  /* ---- THE WET BANNER (E6): the bank to the peg, heavy ------------ */
+  const banner = I.things.get('the-wet-banner');
+  R.bankGround = { blocked: I.terrain.blockedAt(banner.x, banner.z), water: +I.terrain.waterAt(banner.x, banner.z).toFixed(2) };
+  at(banner.x, banner.z + 1.5); settle(0.4);
+  R.bannerPrompt = I.promptText();
+  I.press(); settle(0.3);
+  R.bannerHeld = I.holding();
+  // run east across the bailey with it: no run, two thirds of a walk
+  at(-70, -222); settle(0.2);
+  walk(1, 0, 3.0, 1);
+  R.heavy = { speed: +Math.hypot(I.char.vel.x, I.char.vel.z).toFixed(2), max: I.char.maxSpeed, runMult: I.char.runMult };
+  at(-31.3, -218.5); settle(0.4);
+  R.pegPrompt = I.promptText();
+  I.press(); settle(0.5);
+  R.banner = { held: I.holding(), state: banner.state, fact: I.knowledge.has('fact:a-banner-wet'), max: I.char.maxSpeed, runMult: I.char.runMult };
+  at(-34.2, -218.2); settle(0.4);
+  R.rackPrompt = I.promptText();
+  I.press(); I.step(1 / 60, 5);
+  R.rackNote = noteText();
+  closeNote();
+  // and the morning puts a dry one on the bank
+  I.setHour(5.85, false); I.events.resync(); settle(0.2);
+  I.setHour(5.95, false); settle(0.5);
+  I.setHour(12, false); I.events.resync(); settle(0.2);
+  R.bannerMorning = { state: banner.state, x: +banner.x.toFixed(1), z: +banner.z.toFixed(1) };
+  // relieved: nothing on the bank at all
+  I.learn('door:the-king-restored'); settle(0.3);
+  at(banner.x, banner.z + 1.5); settle(0.4);
+  R.bannerRelieved = I.promptText();
+
+  /* ---- THE SMALL BIKE (E18): stood up, wheeled home --------------- */
+  const bike = I.things.get('the-small-bike');
+  at(bike.x, bike.z + 1.6); settle(0.4);
+  R.bikePrompt = I.promptText();
+  I.press(); settle(0.3);
+  R.bikeUp = { prompt: (() => { at(bike.x, bike.z + 1.6); settle(0.3); return I.promptText(); })(), x: +bike.x.toFixed(2) };
+  // shove it east along the court to the king's road and across
+  let shoves = 0;
+  for (let i = 0; i < 40 && !(bike.x === -27.4 && bike.z === 145.8); i++) {
+    const tx = -27.4, tz = 145.8;
+    const dx = tx - bike.x, dz = tz - bike.z;
+    const d = Math.hypot(dx, dz) || 1;
+    I.goto(bike.x - (dx / d) * 1.7, bike.z - (dz / d) * 1.7);
+    settle(0.3);
+    if (I.promptText() !== 'WHEEL IT') break;
+    I.press(); shoves++;
+    settle(2.2);
+  }
+  R.bike = { shoves, x: +bike.x.toFixed(2), z: +bike.z.toFixed(2), parked: bike.x === -27.4 && bike.z === 145.8, promptAfter: (() => { at(bike.x, bike.z + 1.6); settle(0.3); return I.promptText(); })() };
+  return R;
+});
+
+console.log('\nthe interiors (Session 23):');
+{
+  const R = r.rooms;
+  for (const [name, E] of [['val\'s kitchen', R.val], ['marget\'s house', R.marget], ['the loft', R.loft]]) {
+    if (E.out.inside === null && E.out.k === 0 && E.out.facade !== null && E.out.facade > 0.95) pass(`${name}: outside, the house is a house (front at ${E.out.facade}, blend ${E.out.k})`); else fail(`${name} outside: ${JSON.stringify(E.out)}`);
+    if (E.inn.inside && E.inn.k > 0.98 && E.inn.facade !== null && E.inn.facade < 0.1) pass(`${name}: through the door the front goes to pencil (${E.inn.facade}) and the blend is ${E.inn.k}`); else fail(`${name} inside: ${JSON.stringify(E.inn)}`);
+    if (E.inn.maxRate <= 4.1) pass(`${name}: the rig closed at ${E.inn.maxRate} u/s, never faster than the walk`); else fail(`${name}: THE RIG CLOSED AT ${E.inn.maxRate} u/s, past the walk`);
+    if (Math.abs(E.inn.yaw) < 0.01) pass(`${name}: a stopped walker inside is due north (${E.inn.yaw}°)`); else fail(`${name}: yaw inside ${E.inn.yaw}°`);
+    if (E.inn.back < E.out.back - 1.5) pass(`${name}: the rig trails ${E.inn.back} inside against ${E.out.back.toFixed(2)} outside`); else fail(`${name}: the rig did not close (${E.inn.back} vs ${E.out.back})`);
+    if (E.west >= E.rect.minX && E.west < E.rect.minX + 1.4 && E.east <= E.rect.maxX && E.east > E.rect.maxX - 1.4 && E.north >= E.rect.minZ && E.north < E.rect.minZ + 1.6) pass(`${name}: the walls refuse a foot (west ${E.west}, east ${E.east}, north ${E.north} in ${JSON.stringify(E.rect)})`); else fail(`${name}: a wall let a foot through: west ${E.west}, east ${E.east}, north ${E.north}, rect ${JSON.stringify(E.rect)}`);
+    if (E.after.inside === null && E.after.k === 0 && E.after.facade !== null && E.after.facade > 0.95) pass(`${name}: out again, and the house is a house`); else fail(`${name} after: ${JSON.stringify(E.after)}`);
+  }
+  if (R.inLand.every((q) => q.ok)) pass(`every room is inside its own land: ${R.inLand.map((q) => `${q.id} in ${q.land}`).join(', ')}`); else fail(`a room crosses a border: ${JSON.stringify(R.inLand)}`);
+  if (R.loft.inn.back < 12) pass(`in the loft the rig reads no ridge: trailing ${R.loft.inn.back} under the curtain wall`); else fail(`the loft still reads the ridge: trailing ${R.loft.inn.back}`);
+  if (R.margetNight.home === 1 && R.margetNight.atStall === 0 && /she is here/.test(R.margetNoteNight)) pass('at half past ten Marget is home, the stall is bare, and the note says she is here'); else fail(`Marget at night: ${JSON.stringify(R.margetNight)}, ${R.margetNoteNight}`);
+  if (R.margetNoon.home === 0 && R.margetNoon.atStall === 1 && /she is at the square|so is she/.test(R.margetNoteNoon)) pass('at noon she is at the stall and the table is bare'); else fail(`Marget at noon: ${JSON.stringify(R.margetNoon)}, ${R.margetNoteNoon}`);
+  if (R.valNoon.range === 1 && R.valNoon.lamp === 0 && R.valNoon.gate === 0) pass('Val is at the range at noon'); else fail(`Val at noon: ${JSON.stringify(R.valNoon)}`);
+  if (R.valTen.range === 0 && R.valTen.lamp === 1 && R.valTen.gate === 0) pass('and by the lamp at ten'); else fail(`Val at ten: ${JSON.stringify(R.valTen)}`);
+  if (R.valSeven.range === 0 && R.valSeven.lamp === 0 && R.valSeven.gate === 1) pass('and at the gate at seven, and never in two places'); else fail(`Val at seven: ${JSON.stringify(R.valSeven)}`);
+  if (R.cratePrompt === 'PICK UP THE CRATE' && R.crateHeld === 'the-crate' && R.crateSpeed === 4.1 && R.cratePlacePrompt === 'SET IT DOWN BY THE STALL' && R.crate.state === 'ground' && R.crate.held === null && R.crate.fact && R.crate.x < -36 && R.crate.x > -39) pass(`the crate is carried from the lane to the stall at a full walk and set down (${R.crate.x}, ${R.crate.z})`); else fail(`the crate: ${R.cratePrompt} / ${R.crateHeld} / ${R.crateSpeed} / ${R.cratePlacePrompt} / ${JSON.stringify(R.crate)}`);
+  if (R.cratePromptAfter === 'LOOK IN THE CRATE' && /nothing in the straw/.test(R.crateNote)) pass('and it was empty, and the note says so, and it stays'); else fail(`the crate after: ${R.cratePromptAfter}, ${R.crateNote}`);
+  if (!R.bankGround.blocked && R.bankGround.water < 0.3) pass(`the bank where the banner lies is dry ground (water ${R.bankGround.water})`); else fail(`the bank: ${JSON.stringify(R.bankGround)}`);
+  if (R.bannerPrompt === 'PICK UP THE BANNER' && R.bannerHeld === 'the-wet-banner' && R.heavy.runMult === 1 && R.heavy.max < 3 && R.heavy.speed < 3.0) pass(`the wet banner is picked up off the bank and there is no run under it: ${R.heavy.speed} u/s flat out (max ${R.heavy.max})`); else fail(`the banner: ${R.bannerPrompt} / ${R.bannerHeld} / ${JSON.stringify(R.heavy)}`);
+  if (R.pegPrompt === 'HANG IT ON THE PEG' && R.banner.held === null && R.banner.state === 'gone' && R.banner.fact && R.banner.max === 4.1 && R.banner.runMult === 1.5) pass('hung on the fourth peg, it is gone from the hand and the walk is a walk again'); else fail(`the peg: ${R.pegPrompt}, ${JSON.stringify(R.banner)}`);
+  if (R.rackPrompt === 'LOOK AT THE RACK' && /this morning's on it/.test(R.rackNote) && !/spare/.test(R.rackNote)) pass('the rack\'s note reads the wet one on the peg and never says the word spare'); else fail(`the rack: ${R.rackPrompt}, ${R.rackNote}`);
+  if (R.bannerMorning.state === 'ground' && R.bannerMorning.x === -100) pass('and the morning puts a dry one on the bank'); else fail(`the morning: ${JSON.stringify(R.bannerMorning)}`);
+  if (R.bannerRelieved !== 'PICK UP THE BANNER') pass(`with the king back nothing is on the bank (${R.bannerRelieved})`); else fail('the banner is still on the bank with Wick relieved');
+  if (R.bikePrompt === 'STAND IT UP' && R.bikeUp.prompt === 'WHEEL IT' && R.bikeUp.x > -75.3) pass('the small bike is stood up, and then it is a thing to wheel'); else fail(`the bike: ${R.bikePrompt} / ${JSON.stringify(R.bikeUp)}`);
+  if (R.bike.parked && R.bike.promptAfter !== 'WHEEL IT' && R.bike.shoves > 8) pass(`wheeled home in ${R.bike.shoves} shoves across the king's road, it leans on its own wall and stays (${R.bike.x}, ${R.bike.z})`); else fail(`the bike home: ${JSON.stringify(R.bike)}`);
+}
+
 console.log('\nthe worn things (Session 22):');
 {
   const W = r.worn;

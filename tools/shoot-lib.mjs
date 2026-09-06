@@ -138,6 +138,20 @@ export async function shoot({ out, framings, url, map = false, hour, extra, bear
         await page.evaluate((ids) => ids.forEach((i) => window.__inklands.learn(i)), opts.learn);
       }
       await page.evaluate(([tx, tz]) => window.__inklands.goto(tx, tz), [x, z]);
+      /* SESSION 23 adds `gameSecs`: settle on the HARNESS CLOCK and
+       * hold the frame, for a framing whose subject is an ease — a room
+       * comes up over a second or four of game time, which at this
+       * sandbox's three and a half frames a second is half a minute of
+       * wall clock, and a shutter on wall clock catches the front wall
+       * half faded. Stepped, the frame is the settled one, and the
+       * clock is handed back afterwards. */
+      if (opts.gameSecs) {
+        await page.evaluate((g) => window.__inklands.step(1 / 60, Math.round(g * 60)), opts.gameSecs);
+        await page.waitForTimeout(400);
+        await page.screenshot({ path: `${dir}/${name}.png` });
+        await page.evaluate(() => window.__inklands.resume());
+        continue;
+      }
       if (opts.aboard) {
         await page.evaluate(() => window.__inklands.takeOars());
         await page.waitForTimeout(200);

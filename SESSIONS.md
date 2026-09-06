@@ -1,5 +1,231 @@
 # SESSIONS — the handoff log
 
+## Session 23 — 2026-09-06 — the interiors
+
+*`THE-FUN-PASS` §14 row 23: **the roofless cutaway (`WORLD-SYSTEMS`
+§11), camera first**. One room per MEMORY land — Val's kitchen,
+Marget's house, the loft — on a system every later room is authored
+on; the errands as carry, three of the twenty, opened with the lands
+the rooms opened; `critique-story-4` RECOMMENDED 1 and 2 built. **The
+play gate was handed over and not run**
+(`design/play-sheets/session-23.md`). Sessions 16 to 22's sheets had
+not come back when this session started; the departure decision is
+still the owner's and §2 of `PROMPT.md` still carries it. **Not done:**
+the studio, the van and the longship as rooms; seventeen errands;
+the lit window seen from inside, which the section cannot show.*
+
+### THE ONE THING TO KNOW
+
+**A ROOM IS A SECTION.** Not a scene, a load, a second sheet or a
+camera trick — a plan and an elevation on the same page, which is what
+a draughtsman draws and puts the whole thing in craft and nowhere near
+subject. The floor is a decal, the plan, lying on the ground the house
+already stands on. The far wall is a standee at the north edge, the
+elevation, with the window or the rack on it. The side walls are the
+same drawing turned edge-on, registered solid, with the section's cut
+face drawn heavy at their south ends, so from the camera they are two
+lines going away. The front wall is the house's own drawing, which the
+land has already registered solid, with a door left in its footprint
+(`solid: { gap }`), and it goes to a whisper of pencil as the walker
+goes in. **A room is born at nothing and comes up only by the walker's
+blend** (`rooms.blend(id)`), which is why from outside every house is
+exactly the house it was, to the pixel, and why nothing in a protected
+framing that looks at one moved. Four rules, in `rooms.ts` and
+asserted in `check-verbs` §15: a room OPENS SOUTH, because the camera
+stands there; a room is INSIDE ITS LAND, so a person drawn in it is in
+their land; a room is FLAT GROUND, and the rig's rise term reads zero
+inside; EVERY WALL IS A DRAWING AND A BARRIER.
+
+**And the camera was the cost, exactly as §11 said.** The rig trails
+thirteen units and a room is six deep, so the front wall stands
+between the lens and a walker who has just gone in. Two answers, both
+subtractions from the resting rig and neither a second camera
+(`App.CAM.room`): the front wall goes to pencil, and the rig CLOSES —
+four back, one and a half up, most of a unit of aim on desktop; two
+back in portrait, whose frame is already narrow — so the frame's
+bottom edge lands two units behind the walker, where the section
+cuts. **The rate is the law.** The blend moves at 3.4 units of dolly a
+second whatever the dolly is, so a flat room closes in about a second
+and the loft under the ridge in four and nothing lurches; `check-verbs`
+§15 measures the rig's commanded trail every tick on the way in and
+holds it under the walk's 4.1, which is `check-camera`'s ceiling coming
+the other way. Measured: {VAL_RATE}, {MARGET_RATE} and {LOFT_RATE}
+units a second.
+
+**And the loft could not stand where the brief put it.** *The
+gatehouse*: the ramp beside the barbican slopes 0.37 everywhere near
+the gate (probed), a third of a unit up for every unit north, and a
+six-unit room on it puts its far wall two units above its door. It
+stands on the plateau just inside the curtain wall, against the east
+tower, where the ground is flat to a hundredth — a lean-to of the
+wall's own stone with a plank door, and from the bailey it is the
+first new front in Greyweather since the keep.
+
+### WHAT SHIPPED
+
+- **THE ROOM SYSTEM** (`src/world/rooms.ts`: the registry, the inside
+  test, the per-room blend and the camera's; `src/world/regions/room.ts`:
+  `buildRoom`, one call per room, and `roomHide` for a land that hides
+  a person on its own account; `src/world/textures-rooms.ts`: three
+  floors, three far walls, a side wall in three registers, and every
+  object below; `App.CAM.room`, the room block in `tick`, the weather's
+  beds coming down by two thirds indoors, `roomK` and `rooms` on the
+  harness).
+- **VAL'S KITCHEN** (`civic.ts` `VAL_ROOM`; the house's footprint gets
+  a door): boards and a rug, the far wall with the clock, the window
+  over the sink with the nets across it and a night variant, a shelf of
+  three mugs and one that does not match; the range with the kettle on
+  and a lit variant, a table laid for one with the chair out, the lamp
+  on after dark and off under `door:the-light-off`, the hooks with one
+  coat. Val at the range in the middle of the day, by the lamp late,
+  and never on the page twice with the Val at the gate. A note that
+  reads the hour and her other door.
+- **MARGET'S HOUSE** (`MARGET_HOUSE`, `MARGET_ROOM`; `margetHouseTexture`):
+  a new front in the back streets west of the square; flags, the far
+  wall with the shelf of weights in her order and the scale on the
+  beam, level, the shuttered window, the hook with the apron on it at
+  night; the dresser, the table with the cloth folded in four on it at
+  night and bare by day, the chair. Marget home from dusk to dawn, off
+  the same `outNow` that draws her at the stall. A note that reads the
+  hour and the clock set to eight.
+- **THE LOFT** (`LOFT`, `LOFT_ROOM`, `LOFT_PEG`; `loftLeanToTexture`):
+  the vat with the paddle in it over a floor gone red in that corner
+  for good, the stool, and the rack — a rail on two brackets, four
+  pegs, the fourth stained. Under `door:the-king-restored` all four
+  hung, folded, dry, and the vat rinsed. A note that never says spare
+  (`check-verbs` asserts it).
+- **THE ERRANDS AS CARRY** (`THE-STRANGERS` Part Two): **E5 the crate**
+  (`the-crate`, light, from the lane's end to the stall; SET IT DOWN BY
+  THE STALL; open there for good with straw in it and nothing in the
+  straw; `fact:the-crate-was-empty`); **E6 the wet banner**
+  (`the-wet-banner`, **the first HEAVY thing** — `things.ts` `heavy`,
+  no run under it and two thirds of a walk, set in `App` off what is
+  held; on the bank of the pool between Wick's dyeing and his evening
+  round, `bannerOut(h)`; HANG IT ON THE PEG consumes it and the rack
+  draws it until dusk; the morning puts a dry one on the bank; nothing
+  at all once he is relieved; `fact:a-banner-wet`); **E18 the small
+  bike** (`the-small-bike`, a pushable on a lawn in the court: STAND IT
+  UP, then WHEEL IT a shove at a time across the king's road, and
+  within reach of its own house it snaps to the wall and leans and is
+  not a thing to push any more).
+- **`critique-story-4` RECOMMENDED 1 and 2** (`coast.ts`): THE SHALLOWS
+  in the frightening key — *past the knee the bottom goes, and the
+  blue under your feet is not a colour, it is a distance*; the
+  longship's note under `door:the-second-mark` — *the one in the bow
+  stood up this morning with his helm in his hand and looked at the
+  sand a long time, and put it back on*.
+- **Three voices** (`latch` on every door, `crate-down`, `cloth-hung`)
+  under `the-interiors` in `render-wavs`.
+- **Law**: `WORLD-SYSTEMS` §11 (BUILT, with the four rules and what was
+  not built), `QUALITY-BAR` §3 (a room is a section and its walls are
+  barriers), `THE-STRANGERS` (E5, E6, E18 built), `README`.
+- **Tools**: `check-verbs` §15; `shoot-session23` (18 framings, both
+  rigs); `shoot-lib` `gameSecs` — a framing may settle on the harness
+  clock and hold the frame, for a subject that is an ease.
+
+### THE GATES, AND WHAT MOVED
+
+- **Build green.** `tsc` and `vite build`.
+- **`check-terrain`**: all pass (nothing in the height field moved).
+- **`check-camera`**: {CAMERA}.
+- **`check-fields`**: {FIELDS}.
+- **`check-sightline`**: {SIGHTLINE}.
+- **`check-audio`**: {AUDIO}.
+- **`check-verbs`**: **{VERBS_N} assertions, {VERBS_VERDICT}**, on five
+  pages — §1–§10, §11, §12's two, §14's names page, and now §15 on
+  the first-door page: every room walked into through its door and
+  out again, the front at 1 outside and 0.06 inside and 1 again, the
+  rig closed at no more than 3.76 u/s against the walk's 4.1, yaw zero
+  inside, the side walls and the far wall refusing a foot along a lane
+  of clear floor, every room's four corners inside its land, Marget
+  home at half past ten and at the stall at noon and never both, Val
+  at the range at noon and by the lamp at ten and at the gate at seven,
+  the crate carried at a full walk and set down empty, the banner
+  carried at 2.72 u/s flat out and hung and the walk a walk again and
+  the rack's note without the word spare, the morning's dry one, the
+  bank bare with the king back, the bike stood up and wheeled home in
+  {BIKE_SHOVES} shoves. The first run of §15 failed five and four were
+  the tool's (walls tested through furniture, an exit begun inside a
+  table, the bike shoved from just outside its prompt's reach, a
+  morning that never crossed 5.9); the fifth was real — Marget's room
+  had no lane a foot could take to its far wall, and the dresser's and
+  the table's footprints shrank until it did.
+- **`diff-sheets` against `origin/main` (4b1614f)**: {DIFF}.
+- **The art gate: `critique-art-16`, WOWED on round 2.** Round 1 found
+  the front wall at fourteen per cent still a dark roof over every
+  room (to six), the loft on a slope (to the plateau), three placements
+  (the bank behind the hawthorn, the bike under the car, the crate's
+  framing), and one finding that was the harness's: every room's first
+  frame caught the front wall half faded because the shoot settles on
+  wall clock at three and a half frames a second. `shoot-lib` has a
+  game-clock settle now.
+- **The ear gate handed over: a hundred and twelve files** once
+  `render-wavs` is run — three new under `the-interiors`, unheard.
+- **The feel gate handed over**, and the room rig is new on it.
+- **THE PLAY GATE HANDED OVER AND NOT RUN.**
+  `design/play-sheets/session-23.md`.
+
+### DECLINED, IN WRITING
+
+- **The studio, the van and the longship as rooms.** §14 listed them
+  after the Memory three. The system is the session's product; each of
+  them is an afternoon on it and none of them is a MEMORY land, which
+  is where §4 said interiors live first. Carried in `PROMPT.md`.
+- **The lit window seen from inside it** (`WORLD-SYSTEMS` §11's own
+  line). The porch light is in the front wall, and the front wall is
+  the one the section cuts. A second warm window on the far wall would
+  be a second light for one house; declined. Val's lamp is the warm
+  thing indoors.
+- **A room that opens any way but south.** The camera stands south. A
+  room whose door faces the road at the Cubicle Mile's studio would
+  have to be entered from the road's south side, which is how the
+  studio will be built when it is.
+- **The gatehouse itself as the loft.** The barbican is nine units
+  wide with a three-unit arch through the middle and two-and-a-half
+  unit towers either side; there is no room in it, and the ramp under
+  it is a slope. The loft is *at the gate*, inside the wall.
+- **A light source in a room.** A section has none, and a shadow on a
+  plan would be a shading pass on a drawing that has never had one.
+- **Furniture the walker can move.** The chairs and the stool are
+  solid and stay. `WORLD-SYSTEMS` §11: no furnishing, and a chair on
+  castors already exists where it belongs.
+- **A voice per room.** A room is quieter — the weather's beds come
+  down — and has no voice of its own. The latch is the same latch on
+  every door in the world.
+
+### Gotchas (new; everything from Sessions 1–22 still applies)
+
+- **A ROOM'S THINGS ARE BORN AT NOTHING AND THE LAND SCALES THEM.**
+  `buildRoom` sets every mesh to opacity zero and hidden; `show(k)`
+  draws them up. A land that wants to hide one on its own account (a
+  person not home) uses `roomHide`, which the blend respects and never
+  un-hides. A mesh added to the group without `put` will be visible
+  from outside, through the roof.
+- **A STANDEE TURNED EDGE-ON REGISTERS ITS BARRIER ALONG Z**, and the
+  `feet` list `nearFade` reads still thinks it runs along x. Harmless
+  here because the lens is never within four and a half of a side
+  wall; a room the camera can get beside would fade its side wall on
+  the wrong test.
+- **THE SHOOT HARNESS SETTLES ON WALL CLOCK**, and at three and a half
+  frames a second a blend that takes a second takes seven. A framing
+  whose subject is an ease asks for `gameSecs` and gets the settled
+  frame, held; the clock is handed back after the shot.
+- **A ROOM MUST LEAVE A LANE.** The walker cannot pass between two
+  solid footprints closer than about 1.7 units (two halves of 0.8 and
+  a stride), and a room eight units wide with three things across it
+  has no lane by accident. `check-verbs` §15 walks one to the far
+  wall of every room.
+- **`things.morning()` IS A CROSSING AT 5.9**, fired by the Common's
+  own event; a harness that jumps past it with `setHour` and `resync`
+  has not crossed it. Sit at 5.85, resync, then 5.95.
+- **A CARRIABLE'S DRAWING IS THE LAND'S**, and a land that draws it
+  where the registry says it is must also hide it while it is held or
+  flying, and draw it at `flyPos` while it flies — the crate and the
+  banner both do; the can's pattern from Session 21.
+- **`heavy` IS READ EVERY FRAME OFF WHAT IS HELD**, on foot only; the
+  mounts set their own speeds and the reset on dismount finds the
+  walk speeds already right for the hand.
+
 ## Session 22 — 2026-09-06 — the story, rewritten; the rain; the worn things
 
 *`THE-FUN-PASS` §14 row 22, and two things the owner asked for on the

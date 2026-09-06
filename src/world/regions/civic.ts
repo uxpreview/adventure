@@ -55,6 +55,14 @@ import {
   liftedCornerTexture, sprintSignTexture,
 } from '../textures-cast';
 import { things } from '../things';
+import { rooms } from '../rooms';
+import { buildRoom, roomHide } from './room';
+import {
+  boardFloorDecal, flagFloorDecal, loftFloorDecal, valWallTexture, margetWallTexture,
+  loftWallTexture, tableTexture, chairTexture, rangeTexture, coatHooksTexture,
+  standingLampTexture, dresserTexture, dyeVatTexture, stoolTexture, wetBannerTexture,
+  handBannerTexture, margetHouseTexture, loftLeanToTexture, crateTexture, smallBikeTexture,
+} from '../textures-rooms';
 import { barriers } from '../barriers';
 import { Footprints } from '../../engine/Footprints';
 import { INK_HEX } from '../../engine/palette';
@@ -226,6 +234,26 @@ const DUSK_WALKER = { id: 'the-dusk-walker', land: 'kingdom' as const, pace: 380
 /** THE SHUTTERS: thrown back at first light, pulled to at nine. Every
  *  row a little after the last, because nobody in Brim does anything
  *  at the same moment as anybody else. */
+/* ================================================================== *
+ * MARGET'S HOUSE (Session 23, the first interior — `rooms.ts`,
+ * `WORLD-SYSTEMS` §11). In the back streets west of the square, where
+ * she is between dusk and dawn, which is the sixteen hours a day the
+ * stall is packed away and nobody in the square has ever seen her.
+ * MEMORY's tone is *seeing someone at an hour nobody else sees them*,
+ * and this is the hour: the cloth folded in four on the table, the
+ * apron on its hook, the weights on the shelf in the order she keeps
+ * them, and the scale level. By day the room is scrubbed and empty
+ * and she is at the square.
+ * ================================================================== */
+const MARGET_HOUSE = { x: -80, z: -97.5 };
+const MARGET_ROOM = { minX: -84, maxX: -76, minZ: -104, maxZ: -98 };
+/* THE CRATE (`THE-STRANGERS` E5): *carry a crate from the market lane
+ * to the square, and find out it was empty.* A carriable with a home
+ * at the lane's end and a place by the stall that takes it. It is not
+ * heavy, and that is the errand. */
+things.register({ id: 'the-crate', kind: 'carriable', land: 'kingdom', home: { x: -3, z: -100.5 }, name: 'THE CRATE' });
+const CRATE_PLACE = { x: -37.4, z: -78.2 };
+
 events.register({ id: 'the-shutters-open', land: 'kingdom', at: 6.6, hours: 0.3, place: { x: -45, z: -60 } });
 events.register({ id: 'the-shutters-shut', land: 'kingdom', at: 20.85, hours: 0.3, place: { x: -45, z: -60 } });
 events.register({ id: 'the-square-children', land: 'kingdom', at: 15.2, hours: 2.0, place: { x: -45, z: -81 } });
@@ -398,6 +426,34 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   ];
   // hung at lamp height: flags must clear a walker's head, not swipe it
   for (const b of bunting) ctx.hang(b, 1.75);
+
+  /* ---- MARGET'S HOUSE, and the room behind its door (Session 23) --- *
+   * The house stands in the back streets and is a house from outside:
+   * dark oak over plaster, one window, a door with the step worn. The
+   * door is a gap in its footprint. Behind it the room is drawn as a
+   * section — flags, the far wall with the shelf and the scale, the
+   * side walls edge-on — and it is drawn up only as the walker goes
+   * in, so from the square the house is exactly the house. */
+  const margetHouse = ctx.standee(margetHouseTexture(1495), 8.2, 5.74, MARGET_HOUSE.x, MARGET_HOUSE.z, { solid: { gap: 0.85 } });
+  (margetHouse.material as THREE.MeshBasicMaterial).transparent = true;
+  const margetRoom = buildRoom(ctx, {
+    id: 'margets-house', land: 'kingdom', name: 'marget\'s house',
+    rect: MARGET_ROOM, door: { x: MARGET_HOUSE.x, r: 0.85 },
+  }, 'plaster', flagFloorDecal(1496), margetWallTexture(1497, false), 2.9, 1498);
+  const margetWallNight = margetRoom.put(ctx.standee(margetWallTexture(1499, true), 8, 2.9, -80, MARGET_ROOM.minZ + 0.19));
+  margetRoom.put(ctx.standee(dresserTexture(1500), 2.4, 2.2, -82.2, -103.0, { solid: 0.7 }));
+  const margetTableDay = margetRoom.put(ctx.standee(tableTexture(1501, 'bare'), 2.4, 1.4, -78.8, -101.0, { solid: 0.9 }));
+  const margetTableNight = margetRoom.put(ctx.standee(tableTexture(1502, 'cloth'), 2.4, 1.4, -78.8, -101.0));
+  margetRoom.put(ctx.standee(chairTexture(1503), 1.0, 1.6, -77.5, -100.2, { rotY: 0.2, solid: 0.4 }));
+  const margetHome = margetRoom.put(ctx.standee(margetTexture(1504), 1.45, 2.6, -80.7, -102.0));
+  /* THE CRATE, wherever the registry says it is: shut in the lane,
+   * open by the stall once it has been set down there and looked in. */
+  const crateThing = things.get('the-crate')!;
+  crateThing.def.hand = crateTexture(1505, 'hand');
+  crateThing.def.handSize = [0.5, 0.42];
+  const crateShut = ctx.standee(crateTexture(1506, 'shut'), 1.3, 1.1, crateThing.x, crateThing.z, { rotY: 0.2 });
+  const crateOpen = ctx.standee(crateTexture(1507, 'open'), 1.3, 1.1, crateThing.x, crateThing.z, { rotY: 0.2 });
+  crateThing.mesh = crateShut;
 
   /* -- THE BELFRY YARD (open to the south — the camera needs in) ----- */
   const belfry = ctx.standee(brimBelfryTexture(1480), 6.5, 13, -66, -44, { solid: true });
@@ -661,6 +717,32 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     marget.visible = outNow > 0.02 && platform.land !== 'kingdom';
     marketBoard.visible = called;
 
+    /* ---- MARGET'S HOUSE, read every frame (Session 23) --------------- *
+     * The house goes to pencil by the room's blend; the room comes up
+     * by it. She is HOME when she is not out, and never on the page
+     * twice: the same `outNow` that draws her at the stall, inverted,
+     * and the platform's word over both. The cloth is on the table
+     * when she is; by day the table is bare because the cloth is on
+     * the stall. */
+    {
+      const k = rooms.blend('margets-house');
+      (margetHouse.material as THREE.MeshBasicMaterial).opacity = 1 - 0.94 * k;
+      const home = outNow < 0.98 && platform.land !== 'kingdom';
+      roomHide(margetHome, !home);
+      roomHide(margetTableNight, !home);
+      roomHide(margetTableDay, home);
+      roomHide(margetWallNight, !home);
+      margetRoom.show(k);
+      // the crate, on the ground, shut until it has been looked into
+      const emptied = knowledge.has('fact:the-crate-was-empty');
+      const onGround = crateThing.state === 'ground';
+      crateShut.visible = onGround && !emptied;
+      crateOpen.visible = onGround && emptied;
+      for (const m of [crateShut, crateOpen]) m.position.set(crateThing.x, ctx.groundY(crateThing.x, crateThing.z), crateThing.z);
+      const fp = things.flyPos(crateThing);
+      if (fp) { crateShut.visible = true; crateShut.position.set(fp.x, fp.y, fp.z); }
+    }
+
     if (!open) {
       // the belfry yard, while the lamps are settling the hour
       if (clock.lamp > 0.3 && Math.hypot(px + 64, pz + 42) < 9) {
@@ -890,6 +972,60 @@ export const KINGDOM_POIS: WorldPOI[] = [
     },
   },
   { x: 50, z: -110, radius: 7, label: 'THE WOOD GATE' },
+  {
+    /* MARGET'S TABLE (Session 23). The note reads the hour the way
+     * the stall does: by day the room is empty and scrubbed, and at
+     * night the cloth is on it, folded, and she is here. Under the
+     * clock set to eight, which is the door her stall never opens
+     * under, the folding is at an hour nobody else keeps. */
+    x: -78.8, z: -101.4, radius: 2.4,
+    prompt: 'LOOK AT THE TABLE',
+    note: {
+      title: 'marget\'s table',
+      body: () => {
+        const night = clock.hour < 5.6 || clock.hour > 20.3;
+        const setEight = knowledge.has('door:the-clock-set-to-eight');
+        if (night) {
+          return 'the cloth is on the table, folded in four, the way it is folded every night, and the apron is on its hook. the weights are on the shelf in the order she keeps them and the scale is level. she is here.'
+            + (setEight ? ' the town keeps eight now, and she does not, and she has not said anything about it and will not.' : ' she is up before the town is, which is the one hour in brim nobody argues about.');
+        }
+        return 'a table with nothing on it, scrubbed. the cloth is on the stall and so is she. the weights are on the shelf in the order she keeps them, the biggest at the left, and the scale beside them is level, and has been level for a very long time.';
+      },
+    },
+  },
+  {
+    /* THE CRATE (`THE-STRANGERS` E5): in the lane it is PICK UP THE
+     * CRATE; by the stall, once it has been set down, it is a note.
+     * Off while it is in the hand or in the air. */
+    get x() { return things.get('the-crate')!.x; },
+    get z() { return things.get('the-crate')!.z; },
+    get enabled() { return things.get('the-crate')!.state === 'ground'; },
+    set enabled(_v: boolean) { /* the registry decides */ },
+    radius: 2.2,
+    get prompt() { return knowledge.has('fact:the-crate-was-empty') ? 'LOOK IN THE CRATE' : 'PICK UP THE CRATE'; },
+    get note() {
+      if (!knowledge.has('fact:the-crate-was-empty')) return undefined;
+      return {
+        title: 'the crate',
+        body: 'open, with straw in the bottom of it and nothing in the straw. it weighed this much in the lane too. it was carried the length of the town anyway, and set down by the one stall in brim that has never had anything to put in it, and that is where it is.',
+      };
+    },
+    touch: () => { if (things.pickUp('the-crate')) say('crate-down'); },
+  } as unknown as WorldPOI,
+  {
+    /* AND WHERE IT GOES: beside Marget's stall, in reach only with the
+     * crate in hand. Set down, it is open, and it was empty. */
+    x: CRATE_PLACE.x, z: CRATE_PLACE.z, radius: 3.2,
+    get enabled() { return things.held === 'the-crate'; },
+    set enabled(_v: boolean) { /* the hand decides */ },
+    prompt: 'SET IT DOWN BY THE STALL',
+    touch: () => {
+      if (things.place('the-crate', CRATE_PLACE.x - 0.2, CRATE_PLACE.z - 0.4)) {
+        knowledge.learn('fact:the-crate-was-empty');
+        say('crate-down');
+      }
+    },
+  } as unknown as WorldPOI,
 ];
 
 /* ================================================================== *
@@ -942,6 +1078,28 @@ const WICK_RELIEVED_PM = stops([[17.4, WICK_DOOR.x, WICK_DOOR.z, 0, 1], [17.7, W
 export const moatRed = (day: number) => day % 9 === 1 || day % 9 === 2;
 /** The portcullis, for the touch at the gate. */
 const portcullis = { at: -1e9 as number };
+/* ================================================================== *
+ * THE LOFT (Session 23, `rooms.ts`, `WORLD-SYSTEMS` §11: *Wick's banner
+ * loft*). A lean-to of the wall's own stone against the east tower,
+ * just inside the gate, where the banners go between the vat and the
+ * pole. The rack on its far wall has four pegs. Three are bare because
+ * three of the banners are on the avenue; the fourth is bare because
+ * the fourth is wet, on the bank of the pool, until somebody carries
+ * it up — and that is `THE-STRANGERS` E6, *carry a banner up the ramp
+ * for Wick, once, and learn what one weighs*: the wet one is HEAVY
+ * (`things.ts`), there is no run under it, and nothing says so.
+ * Nothing in the loft says there have never been any spares. It has
+ * four pegs.
+ * ================================================================== */
+const LOFT = { x: -34, z: -214.2 };
+const LOFT_ROOM = { minX: -38, maxX: -30, minZ: -220.5, maxZ: -214.6 };
+const LOFT_PEG = { x: -31.3, z: -220.1 };
+const BANNER_BANK = { x: -100, z: -204.5 };
+things.register({ id: 'the-wet-banner', kind: 'carriable', land: 'castle', home: BANNER_BANK, name: 'THE BANNER', heavy: true });
+/** The wet one is on the bank between Wick's dyeing and his evening
+ *  round, and not at all once he is relieved: a pure function of the
+ *  hour and the door. */
+const bannerOut = (h: number) => h >= 8.3 && h < 17.4 && !knowledge.has('door:the-king-restored');
 
 export const buildCastle: RegionBuilder = (ctx) => {
   const { r } = ctx;
@@ -1098,6 +1256,29 @@ export const buildCastle: RegionBuilder = (ctx) => {
   // the bailey's furniture: the castle well, and stone that never
   // got built into anything
   ctx.standee(wellTexture(983), 3.4, 4.3, -32, -228, { solid: 1.2 });
+
+  /* ---- THE LOFT (Session 23) ---------------------------------------- *
+   * A lean-to against the east tower, inside the wall, on the plateau
+   * where the ground is flat to a hundredth: a room may not stand on
+   * the ramp, whose slope is a third, and the one place at the gate
+   * that is level is behind it. From the bailey it is a low stone shed
+   * with a plank door. Inside it is the vat, the stool, and the rack. */
+  const loft = ctx.standee(loftLeanToTexture(1050), 8.2, 4.1, LOFT.x, LOFT.z, { solid: { gap: 0.8 } });
+  (loft.material as THREE.MeshBasicMaterial).transparent = true;
+  const loftRoom = buildRoom(ctx, {
+    id: 'the-loft', land: 'castle', name: 'the loft',
+    rect: LOFT_ROOM, door: { x: LOFT.x, r: 0.8 },
+  }, 'stone', loftFloorDecal(1051), loftWallTexture(1052), 2.9, 1053);
+  loftRoom.put(ctx.standee(dyeVatTexture(1054), 2.0, 1.6, -36.4, -218.6, { solid: 0.9 }));
+  loftRoom.put(ctx.standee(stoolTexture(1055), 0.9, 0.9, -31.6, -217.2, { rotY: -0.3, solid: 0.35 }));
+  const hungBanner = loftRoom.put(ctx.standee(wetBannerTexture(1056), 0.9, 2.2, LOFT_PEG.x, LOFT_PEG.z));
+  /* THE WET ONE, on the bank, and in the hand. */
+  const bannerThing = things.get('the-wet-banner')!;
+  bannerThing.def.hand = handBannerTexture(1057);
+  bannerThing.def.handSize = [0.62, 0.84];
+  const bankBanner = ctx.standee(handBannerTexture(1058), 1.1, 1.4, BANNER_BANK.x, BANNER_BANK.z, { rotY: 0.4 });
+  (bankBanner.material as THREE.MeshBasicMaterial).transparent = true;
+  bannerThing.mesh = bankBanner;
 
   /* -- THE BANNER AVENUE: pairs tightening up the climb --------------- */
   const avenue: [number, number][] = [];
@@ -1348,6 +1529,23 @@ export const buildCastle: RegionBuilder = (ctx) => {
       else portcullisMesh.rotation.z = 0;
       if (age > 0 && age < 1.8) lightUp(braziers, clock.lamp * (0.55 + 0.45 * Math.abs(Math.sin(t * 17))));
     }
+    /* ---- THE LOFT, read every frame (Session 23) --------------------- *
+     * The lean-to to pencil by the room's blend, the room up by it.
+     * The wet banner is on the bank in the hours it is on the bank; on
+     * the peg once it has been hung and until Wick's evening round;
+     * and nowhere at all once he is relieved. */
+    {
+      const k = rooms.blend('the-loft');
+      (loft.material as THREE.MeshBasicMaterial).opacity = 1 - 0.94 * k;
+      const out = bannerOut(h);
+      const onBank = bannerThing.state === 'ground' && out;
+      bankBanner.visible = onBank;
+      bankBanner.position.set(bannerThing.x, ctx.groundY(bannerThing.x, bannerThing.z), bannerThing.z);
+      const fp = things.flyPos(bannerThing);
+      if (fp) { bankBanner.visible = true; bankBanner.position.set(fp.x, fp.y, fp.z); }
+      roomHide(hungBanner, !(bannerThing.state === 'gone' && h < 17.4 && !restored));
+      loftRoom.show(k);
+    }
     /* THE MOAT'S RED DAYS. */
     {
       const red = moatRed(clock.day);
@@ -1526,6 +1724,52 @@ export const CASTLE_POIS: WorldPOI[] = [
     touch: () => { worn.take('the-crown'); say('crown-lift'); },
   } as unknown as WorldPOI,
   {
+    /* THE RACK (Session 23, the loft's note). Four pegs, and what is on
+     * them is read off the hour, the door and the errand. Nothing here
+     * says there were never any spares. */
+    x: -34.2, z: -219.4, radius: 3.0,
+    prompt: 'LOOK AT THE RACK',
+    note: {
+      title: 'the loft',
+      body: () => {
+        if (knowledge.has('door:the-king-restored')) return 'a rail with four pegs on it, and all four have a banner on, folded, dry, with the red gone to the pink it goes to between dyeings. the vat is empty and has been rinsed. nobody has been in here since the morning the king went back up.';
+        const t = things.get('the-wet-banner')!;
+        const hung = t.state === 'gone' && clock.hour < 17.4;
+        const base = 'a rail with four pegs on it, a vat, a stool, and the red gone into the boards under the vat for good. three of the pegs are bare because three of the banners are on the avenue. ';
+        if (hung) return base + 'the fourth has this morning\'s on it, wet through, dripping onto the boards. it weighs what it weighs. you know that now. he will take it down at dusk and hang it where it goes.';
+        if (bannerOut(clock.hour)) return base + 'the fourth is bare because the fourth is wet, and it is on the bank of the pool where he wrung it, and he will come for it at dusk.';
+        return base + 'the fourth is bare because the fourth is on the pole, and will be in the vat in the morning, and on this peg by noon if anybody carries it, and on the pole again by dark. that is the whole of the day, and it is every day.';
+      },
+    },
+  },
+  {
+    /* THE WET BANNER, on the bank (`THE-STRANGERS` E6). PICK UP THE
+     * BANNER, in the hours it is there; it is heavy, and the walk says
+     * so. Off in the hand, in the air, and once he is relieved. */
+    get x() { return things.get('the-wet-banner')!.x; },
+    get z() { return things.get('the-wet-banner')!.z; },
+    get enabled() { return things.get('the-wet-banner')!.state === 'ground' && bannerOut(clock.hour); },
+    set enabled(_v: boolean) { /* the registry decides */ },
+    radius: 2.2,
+    prompt: 'PICK UP THE BANNER',
+    touch: () => { if (things.pickUp('the-wet-banner')) say('cloth-hung'); },
+  } as unknown as WorldPOI,
+  {
+    /* AND THE PEG IT GOES ON, in reach only with it over a shoulder.
+     * Hung, it is gone from the hand for good; the morning puts a dry
+     * one on the bank again after the next dyeing. */
+    x: LOFT_PEG.x, z: LOFT_PEG.z + 1.4, radius: 2.4,
+    get enabled() { return things.held === 'the-wet-banner'; },
+    set enabled(_v: boolean) { /* the hand decides */ },
+    prompt: 'HANG IT ON THE PEG',
+    touch: () => {
+      if (things.consume('the-wet-banner')) {
+        knowledge.learn('fact:a-banner-wet');
+        say('cloth-hung');
+      }
+    },
+  } as unknown as WorldPOI,
+  {
     x: -100, z: -215, radius: 8, label: 'THE MOAT POOL',
     note: {
       title: 'the moat pool',
@@ -1585,6 +1829,23 @@ const inLine = (x: number, z: number) =>
 
 /** VAL'S, at the head of the court (`THE-WAITS` §3). */
 const VAL = { x: -78, z: 128 };
+/* VAL'S KITCHEN (Session 23, `rooms.ts`, `WORLD-SYSTEMS` §11: *Val's lit
+ * window seen from inside it*). The room behind the porch, drawn as a
+ * section when the walker goes in through the door: boards and a rug,
+ * the far wall with the window over the sink and the clock, the range
+ * with the kettle on, a table laid for one with the chair out, the
+ * lamp, and the coat hooks with one coat. She is home when she is not
+ * at the gate or the bin — the middle of the day at the range, the
+ * late evening by the lamp — and never on the page twice. */
+const VAL_ROOM = { minX: -83, maxX: -73, minZ: 121, maxZ: 127.6 };
+/* THE SMALL BIKE (`THE-STRANGERS` E18): *a bicycle is on its side four
+ * gardens from home.* A child's, on a lawn by the hopscotch; stood up,
+ * it is a pushable, and wheeled to the house it lives at it leans on
+ * the wall and stays. Four gardens is across the king's road, which
+ * is what a child's bike in this street is for. */
+const BIKE_HOME = { x: -75.5, z: 161.5 };
+const BIKE_PARK = { x: -27.4, z: 145.8 };
+things.register({ id: 'the-small-bike', kind: 'pushable', land: 'neighborhood', home: BIKE_HOME, name: 'THE BIKE', shove: 5 });
 /** The three chairs, and the hedge they face (`WORLD-SYSTEMS` §10). */
 const CHAIRS = { x: -61, z: 134 };
 const HEDGE_Z = 126;
@@ -1703,9 +1964,35 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
    * she is not holding a light for the people who left, she is holding
    * the street's line.
    * ================================================================ */
-  ctx.standee(valHouseTexture(8100), 10.6, 8.6, VAL.x, VAL.z, { solid: true });
+  /* THE DOOR IS A GAP IN THE FOOTPRINT (Session 23): the house refuses
+   * a foot everywhere but under the light. */
+  const valHouse = ctx.standee(valHouseTexture(8100), 10.6, 8.6, VAL.x, VAL.z, { solid: { gap: 0.85 } });
+  (valHouse.material as THREE.MeshBasicMaterial).transparent = true;
   const porch = ctx.standee(valPorchLitTexture(8101), 10.6, 8.6, VAL.x, VAL.z, { opacity: 0 });
   (porch.material as THREE.MeshBasicMaterial).transparent = true;
+  /* ---- VAL'S KITCHEN, the room behind the porch (Session 23) ------- */
+  const valRoom = buildRoom(ctx, {
+    id: 'vals-kitchen', land: 'neighborhood', name: 'val\'s kitchen',
+    rect: VAL_ROOM, door: { x: VAL.x, r: 0.85 },
+  }, 'paper', boardFloorDecal(8130), valWallTexture(8131, false), 3.2, 8132);
+  const valWallNight = valRoom.put(ctx.standee(valWallTexture(8133, true), 10, 3.2, VAL.x, VAL_ROOM.minZ + 0.19));
+  const rangeCold = valRoom.put(ctx.standee(rangeTexture(8134, false), 2.2, 1.7, -80.6, 121.9, { solid: 1.0 }));
+  const rangeLit = valRoom.put(ctx.standee(rangeTexture(8135, true), 2.2, 1.7, -80.6, 121.9));
+  valRoom.put(ctx.standee(tableTexture(8136, 'cup'), 2.4, 1.4, -76.2, 124.2, { solid: 1.1 }));
+  valRoom.put(ctx.standee(chairTexture(8137), 1.0, 1.6, -77.9, 125.3, { rotY: -0.15, solid: 0.4 }));
+  const lampOff = valRoom.put(ctx.standee(standingLampTexture(8138, false), 1.0, 2.2, -74.2, 122.4, { solid: 0.4 }));
+  const lampOn = valRoom.put(ctx.standee(standingLampTexture(8139, true), 1.0, 2.2, -74.2, 122.4));
+  valRoom.put(ctx.standee(coatHooksTexture(8140), 1.3, 1.5, -74.6, 126.9));
+  const valHome = valRoom.put(ctx.standee(valTexture(8141, 0), 1.15, 2.05, -79.3, 122.7));
+  /* THE SMALL BIKE, at three angles: down on the lawn, up, and leaning
+   * on the wall it lives against. */
+  const bikeThing = things.get('the-small-bike')!;
+  const bikeDown = ctx.standee(smallBikeTexture(8150, 'down'), 1.6, 1.2, BIKE_HOME.x, BIKE_HOME.z, { rotY: 0.3 });
+  const bikeUp = ctx.standee(smallBikeTexture(8151, 'up'), 1.6, 1.2, BIKE_HOME.x, BIKE_HOME.z);
+  const bikeParked = ctx.standee(smallBikeTexture(8152, 'parked'), 1.6, 1.2, BIKE_PARK.x, BIKE_PARK.z, { rotY: 0.1 });
+  bikeUp.visible = false;
+  bikeParked.visible = false;
+  bikeThing.mesh = bikeUp;
   ctx.decal(LAWN[0], 13, 10, VAL.x - 1, VAL.z + 7.5, 0, 0.5);
   ctx.standee(picketFenceTexture(8110), 5.4, 1.3, VAL.x - 5.8, VAL.z + 8.4, { rotY: 0.04 });
   ctx.standee(picketFenceTexture(8111), 5.4, 1.3, VAL.x + 5.6, VAL.z + 8.2, { rotY: -0.03 });
@@ -2010,6 +2297,56 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
     (porch.material as THREE.MeshBasicMaterial).opacity = off ? 0 : 0.3 + k * 0.7;
     porch.visible = !off;
 
+    /* ---- VAL'S KITCHEN, read every frame (Session 23) ---------------- *
+     * The house and the porch's light go to pencil by the room's
+     * blend; the room comes up by it. She is HOME in the middle of the
+     * day and the late evening, at the range and then by the lamp, and
+     * her hours at the gate and the bin are hers outside. After dark
+     * the window is dark and the lamp and the range are what is warm;
+     * under her other door the lamp is off, and she sits by it. */
+    {
+      const rk = rooms.blend('vals-kitchen');
+      (valHouse.material as THREE.MeshBasicMaterial).opacity = 1 - 0.94 * rk;
+      (porch.material as THREE.MeshBasicMaterial).opacity *= 1 - 0.7 * rk;
+      const dark = h < 6.6 || h > 18.6;
+      const atRange = h >= 8.6 && h < 18.0;
+      const byLamp = h >= 21.0 && h < 23.4;
+      const home = (atRange || byLamp) && platform.land !== 'neighborhood';
+      valHome.position.x = byLamp ? -75.4 : -79.3;
+      valHome.position.z = byLamp ? 123.0 : 122.7;
+      valHome.scale.x = byLamp ? -1 : 1;
+      roomHide(valHome, !home);
+      roomHide(valWallNight, !dark);
+      roomHide(rangeLit, !(dark && home));
+      roomHide(rangeCold, dark && home);
+      const lamp = dark && !off;
+      roomHide(lampOn, !lamp);
+      roomHide(lampOff, lamp);
+      valRoom.show(rk);
+    }
+
+    /* ---- THE SMALL BIKE (Session 23, E18) ---------------------------- *
+     * Down at home; up once it has been stood; leaning on the wall it
+     * lives at once it has been wheeled within reach of it, and then
+     * it is not a thing to push any more. */
+    {
+      const atHome = Math.hypot(bikeThing.x - BIKE_HOME.x, bikeThing.z - BIKE_HOME.z) < 0.3;
+      const parked = bikeThing.x === BIKE_PARK.x && bikeThing.z === BIKE_PARK.z;
+      if (!parked && !atHome && Math.hypot(bikeThing.x - BIKE_PARK.x, bikeThing.z - BIKE_PARK.z) < 2.4) {
+        bikeThing.x = BIKE_PARK.x;
+        bikeThing.z = BIKE_PARK.z;
+        bikeThing.vx = 0;
+        bikeThing.vz = 0;
+        things.dirty = true;
+        say('bicycle-bell');
+      }
+      bikeDown.visible = atHome;
+      bikeParked.visible = bikeThing.x === BIKE_PARK.x && bikeThing.z === BIKE_PARK.z;
+      bikeUp.visible = !atHome && !bikeParked.visible;
+      bikeUp.position.set(bikeThing.x, ctx.groundY(bikeThing.x, bikeThing.z), bikeThing.z);
+      bikeUp.rotation.z = Math.sin(_t * 9) * 0.03 * Math.min(1, Math.hypot(bikeThing.vx, bikeThing.vz));
+    }
+
     /* THE GAP IS CUT BACK OPEN, and it stays cut. You have stood under
      * Greyweather and said so at the three chairs (from Session 20 the
      * cut is a door, taken on a card with the castle's name); the hedge
@@ -2170,6 +2507,52 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
 };
 
 export const NEIGHBORHOOD_POIS: WorldPOI[] = [
+  {
+    /* VAL'S TABLE (Session 23). Laid for one, and the note reads the
+     * hour and her other door. Nobody in Maple Court would be so rude
+     * as to say who the pushed-in chairs were for. */
+    x: -76.2, z: 124.6, radius: 2.4,
+    prompt: 'LOOK AT THE TABLE',
+    note: {
+      title: 'val\'s kitchen',
+      body: () => {
+        const off = knowledge.has('door:the-light-off');
+        const h = clock.hour;
+        const night = h < 6.6 || h > 18.6;
+        const home = (h >= 8.6 && h < 18.0) || (h >= 21.0 && h < 23.4);
+        const table = 'a table laid for one, with the chair pulled out, and the other chairs pushed in, which they have been for a while. a cup and a saucer, because this is a house with saucers. the kettle is on the range and the clock over the sink is right, which nobody on this road has ever checked. ';
+        if (off) return table + (night ? 'the lamp is off. she sits by the window in the dark now, at the hour she used to sit by the light, and the street outside is going the same way, a house at a time.' : 'the porch light is off, and has been since you did that, and the room is the same room it was, and she keeps it.');
+        if (night && home) return table + 'the lamp is on, and the range, and she is by the window with her back to the room, looking at a street with one light on it, which is hers.';
+        if (home) return table + 'she is at the range. she does not turn round. there is a second cup on the shelf that is not the same as the others, and it has not been down in a while.';
+        return table + 'she is out. the coat is on its hook, so she is not far.';
+      },
+    },
+  },
+  {
+    /* THE SMALL BIKE (E18): STAND IT UP where it lies; WHEEL IT after,
+     * a shove at a time; off once it is leaning on its own wall. */
+    get x() { return things.get('the-small-bike')!.x; },
+    get z() { return things.get('the-small-bike')!.z; },
+    get enabled() { const t = things.get('the-small-bike')!; return !(t.x === BIKE_PARK.x && t.z === BIKE_PARK.z); },
+    set enabled(_v: boolean) { /* the registry decides */ },
+    radius: 2.2,
+    get prompt() {
+      const t = things.get('the-small-bike')!;
+      return Math.hypot(t.x - BIKE_HOME.x, t.z - BIKE_HOME.z) < 0.3 ? 'STAND IT UP' : 'WHEEL IT';
+    },
+    touch: (px: number, pz: number) => {
+      const t = things.get('the-small-bike')!;
+      if (Math.hypot(t.x - BIKE_HOME.x, t.z - BIKE_HOME.z) < 0.3) {
+        // stood: a hand's width off where it lay, and it is up
+        t.x += 0.5;
+        t.z -= 0.3;
+        things.dirty = true;
+        say('bicycle-bell');
+        return;
+      }
+      if (things.push('the-small-bike', px, pz) === 'moved') say('bicycle-bell');
+    },
+  } as unknown as WorldPOI,
   {
     x: 2, z: 178, radius: 8, label: 'THE GREEN',
     prompt: 'SIT A WHILE',

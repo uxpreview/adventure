@@ -1498,7 +1498,10 @@ export const OCEAN_POIS: WorldPOI[] = [
     prompt: 'WADE OUT',
     note: {
       title: 'the shallows',
-      body: 'you can wade to about the knee. past that the blue gets serious, and nobody on this coast has ever learned to swim, on the grounds that the sea is not somewhere a person goes. what there is instead is a bar of dry sand, going out.',
+      /* IN THE FRIGHTENING KEY (Session 23, `critique-story-4` RECOMMENDED
+       * 1): the land's own note in the land's own category. What the
+       * blue does past the knee, said plainly, and no joke after it. */
+      body: 'you can wade to about the knee. past the knee the bottom goes, and the blue under your feet is not a colour, it is a distance, and there is nothing in it to see the bottom by. nobody on this coast has ever learned to swim. the sea is not somewhere a person goes. what there is instead is a bar of dry sand, going out, and you can hear where the water stops being shallow before you can see it.',
       learns: ['name:ocean'],
     },
   },
@@ -1560,6 +1563,12 @@ export const OCEAN_POIS: WorldPOI[] = [
       body: () => {
         if (worn.has('the-helm')) return 'a longship, beached at the foot of the point, with seven shields along her side and four men in her who have been waiting for a wind for four hundred years. the one in the bow has no helm. the other three have not let him forget it. they roar at the sand. they have never once stood on it.';
         if (knowledge.has('door:the-fleet-finished')) return 'a longship, beached at the foot of the point, with seven shields along her side and four men in her who have been waiting for a wind for four hundred years. there is no race to row out to now, so they do not. the one in the bow threw something at the sand this morning. it went further than they ever have. they roar at it.';
+        /* THE HELM UNDER THE OTHER DOOR (Session 23, `critique-story-4`
+         * RECOMMENDED 2): with the second mark alone the fleet still
+         * races and nothing is thrown, and the note says what the bow
+         * man did not do, so a cost the walker never took is a cost they
+         * can see. One clause. */
+        if (knowledge.has('door:the-second-mark')) return 'a longship, beached at the foot of the point, with seven shields along her side and four men in her who have been waiting for a wind for four hundred years. every day at noon they row out and go round the mark, and the second mark, with the others, because it is still the only thing to do. the one in the bow stood up this morning with his helm in his hand and looked at the sand a long time, and put it back on. they roar at the sand. they have never once stood on it.';
         return 'a longship, beached at the foot of the point, with seven shields along her side and four men in her who have been waiting for a wind for four hundred years. every day at noon they row out and go round the mark with the others, because it is the only thing to do. they roar at the sand. they have never once stood on it.';
       },
     },
