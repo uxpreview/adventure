@@ -49,7 +49,7 @@ second whatever the dolly is, so a flat room closes in about a second
 and the loft under the ridge in four and nothing lurches; `check-verbs`
 §15 measures the rig's commanded trail every tick on the way in and
 holds it under the walk's 4.1, which is `check-camera`'s ceiling coming
-the other way. Measured: {VAL_RATE}, {MARGET_RATE} and {LOFT_RATE}
+the other way. Measured: 3.47, 3.40 and 3.77
 units a second.
 
 **And the loft could not stand where the brief put it.** *The
@@ -127,11 +127,11 @@ first new front in Greyweather since the keep.
 
 - **Build green.** `tsc` and `vite build`.
 - **`check-terrain`**: all pass (nothing in the height field moved).
-- **`check-camera`**: {CAMERA}.
-- **`check-fields`**: {FIELDS}.
-- **`check-sightline`**: {SIGHTLINE}.
-- **`check-audio`**: {AUDIO}.
-- **`check-verbs`**: **{VERBS_N} assertions, {VERBS_VERDICT}**, on five
+- **`check-camera`**: all seven claims green on both rigs, and the rig gives ground at 3.35 u/s on desktop and 3.38 in portrait against the walk's 4.1 — the room rig is a subtraction from the resting rig and is zero on every walk the check drives.
+- **`check-fields`**: all pass — every routine drawn when it is out and not when it is in, at every hour it changes at; the two new people indoors are not routines and are asserted by §15 instead.
+- **`check-sightline`**: clear — nothing new stands in the corridor; the small bike's lawn and its wall are both outside it by design (its park is thirteen east of the line, beyond the house that was already there).
+- **`check-audio`**: all pass, nine sections; −22 dB below full scale with the events still to come, and §9's crest and centre unchanged, because the three new voices are events and the rooms have no voice.
+- **`check-verbs`**: **212 assertions, every one green**, on five
   pages — §1–§10, §11, §12's two, §14's names page, and now §15 on
   the first-door page: every room walked into through its door and
   out again, the front at 1 outside and 0.06 inside and 1 again, the
@@ -144,7 +144,7 @@ first new front in Greyweather since the keep.
   carried at 2.72 u/s flat out and hung and the walk a walk again and
   the rack's note without the word spare, the morning's dry one, the
   bank bare with the king back, the bike stood up and wheeled home in
-  {BIKE_SHOVES} shoves. The first run of §15 failed five and four were
+  ten shoves. The first run of §15 failed five and four were
   the tool's (walls tested through furniture, an exit begun inside a
   table, the bike shoved from just outside its prompt's reach, a
   morning that never crossed 5.9); the fifth was real — Marget's room

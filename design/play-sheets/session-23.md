@@ -75,7 +75,7 @@ across the king's road, to the house with the car on the drive. It
 leans on the wall and stays.
 
 *Ask:* how many shoves? Did it feel like an errand or a chore?
-(Fourteen or so, at a walk.)
+(Ten or so, at a walk.)
 
 ## 5. THE THINGS THAT ARE STILL YOURS TO DECIDE
 
@@ -95,7 +95,7 @@ Three lands re-opened for the rooms — MAPLE COURT, BRIM, GREYWEATHER.
 From outside every house is exactly the house it was: a room is drawn
 up only as you go in, so nothing in a protected framing moved but the
 two new fronts (Marget's house in the back streets, the loft inside
-the wall) and one rock. `diff-sheets` has the numbers in `SESSIONS.md`.
+the wall). `diff-sheets` has the numbers in `SESSIONS.md`.
 
 - **Whether a room is worth walking into.** `check-verbs` §15 can say
   the door admits, the walls refuse, the front goes to pencil and the
