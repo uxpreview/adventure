@@ -19,14 +19,16 @@ late evening, `?hour=19.3` is the hour Val is at her gate.
 
 Maple Court, the head of the court, the house with the porch. Walk up
 the steps and **through the door** — it opens; it has never opened
-before. The front of the house goes to pencil and the room is drawn
-behind it: the boards, the rug, the range with the kettle on, a table
+before. The front of the house loses its wash and keeps its lines, as
+pencil over the room, and the room draws itself up behind it, floor
+first: the boards, the rug, the range with the kettle on, a table
 laid for one with the chair pulled out, the lamp, the hooks by the
 door with one coat on them. She is at the range. **LOOK AT THE TABLE.**
 Walk out and the house is a house.
 
 *Ask:* did the roof coming off read as a drawing, or as a bug? Is the
-camera too close, too far, or right? (It comes in four units on a
+pencil of the front wall a help (it shows you the door) or a
+distraction? Is the camera too close, too far, or right? (It comes in four units on a
 desktop and two on a phone, over about a second.) Come back at
 `?hour=22`: the window is dark, the lamp and the range are lit, and
 she is by the window with her back to the room.

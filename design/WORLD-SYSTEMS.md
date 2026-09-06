@@ -957,10 +957,14 @@ authored on (`src/world/rooms.ts`, `src/world/regions/room.ts`,
 
 - **THE CONVENTION IS A SECTION.** The floor is a decal (a plan), the
   far wall is a standee (an elevation), the two side walls are the same
-  drawing turned edge-on with the cut face drawn heavy at their south
-  ends, and the front wall is the house's own drawing with a door left
-  in its footprint. Walk in and the front goes to a whisper of pencil
-  and the room draws up behind it; walk out and it is a house again,
+  drawing turned edge-on with the cut face drawn heavy and hatched at
+  their south ends, and the front wall is the house's own drawing with
+  a door left in its footprint. Walk in and the front's wash goes and
+  its ink stays, as pencil — the same drawing read back off its own
+  canvas (`pencilGhostTexture`), so a cut wall is drawn as a section
+  draws one and no house needs a second front — and the room draws
+  itself up behind it in order, plan then walls then things; walk out
+  and it is a house again,
   to the pixel — a room is born at nothing and comes up only by the
   walker's blend, which is what keeps every framing that looks at a
   house unmoved (`diff-sheets` says so).

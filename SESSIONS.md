@@ -61,6 +61,29 @@ tower, where the ground is flat to a hundredth — a lean-to of the
 wall's own stone with a plank door, and from the bailey it is the
 first new front in Greyweather since the keep.
 
+### THE AWWWARDS PASS ON THE FRONT WALL (the owner, same day)
+
+The owner asked whether the front wall should disappear inside, and
+then said *make it award-winning*. The answer built: **the cut wall is
+line work.** The house's own drawing goes to NOTHING as the walker
+goes in, and in its place stands the same drawing's ink alone —
+`pencilGhostTexture` reads the house's canvas back and keeps every
+pixel dark enough to be pen as `PENCIL`, and drops every wash — held
+at a fifth (`room.ts` `GHOST`). That is what a section draws for a
+wall the plane has gone through, it is the under-drawing that was on
+the page before the wash went on, and no house ever needs a second
+front: a land hands its house to `room.front(mesh)` and gets the ghost
+for free. **The section draws itself in order** (`show(k)`): the wash
+of the front is gone by the time the plan is half drawn, the plan
+comes up first, the walls up off it, then what stands in it, on
+smoothstep stages of the one blend, so the room arrives the way a hand
+would draw it and not as a crossfade. **And the cut faces are
+hatched**: the side walls' south ends carry the draughtsman's diagonal
+hatch for a solid the section cuts, beside the heavy line. `check-verbs`
+§15 re-run standalone after the pass: the front is at 0 inside and 1
+outside and every other assertion holds; `shoot-session23` re-shot,
+both rigs.
+
 ### WHAT SHIPPED
 
 - **THE ROOM SYSTEM** (`src/world/rooms.ts`: the registry, the inside

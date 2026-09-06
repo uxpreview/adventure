@@ -175,6 +175,56 @@ export function loftFloorDecal(seed: number): THREE.CanvasTexture {
 }
 
 /* ================================================================== *
+ * THE CUT WALL — a house's own ink, and nothing else.
+ *
+ * The front of a house is the wall the section cuts, and a section
+ * draws a cut wall as LINE: the outline survives, the wash does not.
+ * Rather than draw a second front for every house (and every house a
+ * later session gives a door), this reads the house's own drawing back
+ * and keeps only what the pen put there — every pixel dark enough to
+ * be ink comes through as pencil, every wash and every fill drops out.
+ * The result is the under-drawing a draughtsman would have left on the
+ * page before the wash went on, which is exactly what a cut wall on a
+ * plan should look like, and it is the same drawing as the house.
+ * ================================================================== */
+export function pencilGhostTexture(src: THREE.Texture): THREE.CanvasTexture {
+  const img = src.image as HTMLCanvasElement;
+  const w = img.width;
+  const h = img.height;
+  const from = img.getContext('2d')!.getImageData(0, 0, w, h);
+  const out = document.createElement('canvas');
+  out.width = w;
+  out.height = h;
+  const ctx = out.getContext('2d')!;
+  const to = ctx.createImageData(w, h);
+  const pr = parseInt(PENCIL.slice(1, 3), 16);
+  const pg = parseInt(PENCIL.slice(3, 5), 16);
+  const pb = parseInt(PENCIL.slice(5, 7), 16);
+  const d = from.data;
+  const o = to.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const a = d[i + 3] / 255;
+    if (a < 0.05) continue;
+    const lum = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255;
+    // ink is dark; a wash is light. The threshold sits where the
+    // darkest wash in the game (Greyweather's stone at 0.6) still
+    // drops out and the lightest pen mark (a hatch at 0.3) survives.
+    const ink = Math.max(0, Math.min(1, ((1 - lum) * a - 0.38) / 0.3));
+    if (ink <= 0) continue;
+    o[i] = pr; o[i + 1] = pg; o[i + 2] = pb; o[i + 3] = Math.round(ink * 255);
+  }
+  ctx.putImageData(to, 0, 0);
+  const tex = new THREE.CanvasTexture(out);
+  tex.colorSpace = src.colorSpace;
+  tex.minFilter = src.minFilter;
+  tex.magFilter = src.magFilter;
+  tex.generateMipmaps = src.generateMipmaps;
+  tex.anisotropy = src.anisotropy;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/* ================================================================== *
  * THE WALLS — elevations. The far wall face-on; a side wall is the
  * same kind of drawing stood edge-on to the camera, and it is a
  * barrier as well as a picture.
@@ -349,8 +399,13 @@ export function sideWallTexture(seed: number, kind: 'paper' | 'plaster' | 'stone
     line(ctx, 0, 2, w, 3, r, { width: 2.4, alpha: 0.88 });
     line(ctx, 0, h - 8, w, h - 9, r, { width: 2, alpha: 0.78 });
     // THE CUT EDGE: the wall's south end is where the section cuts it,
-    // and a section is drawn with its cut face heavy
+    // and a section is drawn with its cut face heavy and HATCHED — the
+    // draughtsman's mark for a solid the plane has gone through
     const ex = flip ? w - 4 : 4;
+    const bx = flip ? w - 14 : 4;
+    fillPoly(ctx, [[bx, 0], [bx + 10, 0], [bx + 10, h], [bx, h]], CREAM, 0.5);
+    hatch(ctx, bx, 0, 10, h, 0.78, 5, r, { alpha: 0.55, width: 1 });
+    line(ctx, bx + (flip ? 0 : 10), 0, bx + (flip ? 0 : 10), h, r, { width: 1.4, alpha: 0.7 });
     line(ctx, ex, 0, ex, h, r, { width: 3.4, alpha: 0.92 });
     if (kind === 'paper') {
       for (let y = 14; y < h - 20; y += 26) {

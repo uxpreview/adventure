@@ -140,6 +140,23 @@ what §11 said it would have to and does it at a rate a stomach can
 take; and every room is a return visit that pays off routine, which is
 what interiors were promised for.
 
+## Round 3 — after the owner: the cut wall as line
+
+The owner asked whether the front wall should disappear and then asked
+for the award-winning version, and the answer is the one Round 1
+should have asked for instead of six per cent: **a section draws a cut
+wall as line.** The house's drawing is gone inside; its ink alone,
+read back off its own canvas as pencil (`pencilGhostTexture`), stands
+where it stood at a fifth. Val's gable, eaves, porch posts and window
+frames hang over the kitchen as a clean under-drawing with no wash in
+it; the loft's slate ridge and plank door do the same over the rack;
+Marget's thatch is a pencil curve over the flags. The side walls' cut
+ends carry the draughtsman's hatch beside the heavy line, and the room
+draws itself in order — plan, walls, things — on the way in. It reads
+as what it is: a plan and an elevation on one sheet, with the cut
+drawn as a cut. **WOWED stands**, and the six-per-cent ghost is
+retired.
+
 ---
 
 ## What this gate did not do

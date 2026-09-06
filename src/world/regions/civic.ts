@@ -435,11 +435,11 @@ export const buildKingdom: RegionBuilder = (ctx) => {
    * side walls edge-on — and it is drawn up only as the walker goes
    * in, so from the square the house is exactly the house. */
   const margetHouse = ctx.standee(margetHouseTexture(1495), 8.2, 5.74, MARGET_HOUSE.x, MARGET_HOUSE.z, { solid: { gap: 0.85 } });
-  (margetHouse.material as THREE.MeshBasicMaterial).transparent = true;
   const margetRoom = buildRoom(ctx, {
     id: 'margets-house', land: 'kingdom', name: 'marget\'s house',
     rect: MARGET_ROOM, door: { x: MARGET_HOUSE.x, r: 0.85 },
   }, 'plaster', flagFloorDecal(1496), margetWallTexture(1497, false), 2.9, 1498);
+  margetRoom.front(margetHouse);
   const margetWallNight = margetRoom.put(ctx.standee(margetWallTexture(1499, true), 8, 2.9, -80, MARGET_ROOM.minZ + 0.19));
   margetRoom.put(ctx.standee(dresserTexture(1500), 2.4, 2.2, -82.2, -103.0, { solid: 0.7 }));
   const margetTableDay = margetRoom.put(ctx.standee(tableTexture(1501, 'bare'), 2.4, 1.4, -78.8, -101.0, { solid: 0.9 }));
@@ -726,7 +726,6 @@ export const buildKingdom: RegionBuilder = (ctx) => {
      * the stall. */
     {
       const k = rooms.blend('margets-house');
-      (margetHouse.material as THREE.MeshBasicMaterial).opacity = 1 - 0.94 * k;
       const home = outNow < 0.98 && platform.land !== 'kingdom';
       roomHide(margetHome, !home);
       roomHide(margetTableNight, !home);
@@ -1264,11 +1263,11 @@ export const buildCastle: RegionBuilder = (ctx) => {
    * that is level is behind it. From the bailey it is a low stone shed
    * with a plank door. Inside it is the vat, the stool, and the rack. */
   const loft = ctx.standee(loftLeanToTexture(1050), 8.2, 4.1, LOFT.x, LOFT.z, { solid: { gap: 0.8 } });
-  (loft.material as THREE.MeshBasicMaterial).transparent = true;
   const loftRoom = buildRoom(ctx, {
     id: 'the-loft', land: 'castle', name: 'the loft',
     rect: LOFT_ROOM, door: { x: LOFT.x, r: 0.8 },
   }, 'stone', loftFloorDecal(1051), loftWallTexture(1052), 2.9, 1053);
+  loftRoom.front(loft);
   loftRoom.put(ctx.standee(dyeVatTexture(1054), 2.0, 1.6, -36.4, -218.6, { solid: 0.9 }));
   loftRoom.put(ctx.standee(stoolTexture(1055), 0.9, 0.9, -31.6, -217.2, { rotY: -0.3, solid: 0.35 }));
   const hungBanner = loftRoom.put(ctx.standee(wetBannerTexture(1056), 0.9, 2.2, LOFT_PEG.x, LOFT_PEG.z));
@@ -1536,7 +1535,6 @@ export const buildCastle: RegionBuilder = (ctx) => {
      * and nowhere at all once he is relieved. */
     {
       const k = rooms.blend('the-loft');
-      (loft.material as THREE.MeshBasicMaterial).opacity = 1 - 0.94 * k;
       const out = bannerOut(h);
       const onBank = bannerThing.state === 'ground' && out;
       bankBanner.visible = onBank;
@@ -1967,7 +1965,6 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
   /* THE DOOR IS A GAP IN THE FOOTPRINT (Session 23): the house refuses
    * a foot everywhere but under the light. */
   const valHouse = ctx.standee(valHouseTexture(8100), 10.6, 8.6, VAL.x, VAL.z, { solid: { gap: 0.85 } });
-  (valHouse.material as THREE.MeshBasicMaterial).transparent = true;
   const porch = ctx.standee(valPorchLitTexture(8101), 10.6, 8.6, VAL.x, VAL.z, { opacity: 0 });
   (porch.material as THREE.MeshBasicMaterial).transparent = true;
   /* ---- VAL'S KITCHEN, the room behind the porch (Session 23) ------- */
@@ -1975,6 +1972,7 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
     id: 'vals-kitchen', land: 'neighborhood', name: 'val\'s kitchen',
     rect: VAL_ROOM, door: { x: VAL.x, r: 0.85 },
   }, 'paper', boardFloorDecal(8130), valWallTexture(8131, false), 3.2, 8132);
+  valRoom.front(valHouse);
   const valWallNight = valRoom.put(ctx.standee(valWallTexture(8133, true), 10, 3.2, VAL.x, VAL_ROOM.minZ + 0.19));
   const rangeCold = valRoom.put(ctx.standee(rangeTexture(8134, false), 2.2, 1.7, -80.6, 121.9, { solid: 1.0 }));
   const rangeLit = valRoom.put(ctx.standee(rangeTexture(8135, true), 2.2, 1.7, -80.6, 121.9));
@@ -2306,8 +2304,7 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
      * under her other door the lamp is off, and she sits by it. */
     {
       const rk = rooms.blend('vals-kitchen');
-      (valHouse.material as THREE.MeshBasicMaterial).opacity = 1 - 0.94 * rk;
-      (porch.material as THREE.MeshBasicMaterial).opacity *= 1 - 0.7 * rk;
+      (porch.material as THREE.MeshBasicMaterial).opacity *= 1 - rk;
       const dark = h < 6.6 || h > 18.6;
       const atRange = h >= 8.6 && h < 18.0;
       const byLamp = h >= 21.0 && h < 23.4;

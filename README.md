@@ -323,8 +323,9 @@ and deals a region card — nothing else, because the sheet is continuous.
   Nothing says which was right.
 - **The interiors** (Session 23, `WORLD-SYSTEMS` §11, `src/world/rooms.ts`):
   **you walk in through the door and the roof comes off.** No load, no
-  cut: the front of the house goes to a whisper of pencil and the room
-  is drawn where the house was standing, as a draughtsman draws one —
+  cut: the front of the house loses its wash and keeps its ink, as
+  pencil, and the room is drawn where the house was standing, as a
+  draughtsman draws one —
   the floor a plan, the far wall an elevation, the side walls edge-on
   with the section's cut face heavy at their ends. Three or four things
   in each and a person, at the hours they are home and never on the
