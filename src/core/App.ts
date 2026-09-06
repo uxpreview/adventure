@@ -28,6 +28,7 @@ import { earshotAt, voice, SURF_REACH } from '../world/earshot';
 import { ROADS, BRIDGES, PONDS, RIVER, DISTRICTS } from '../world/layout';
 import { knowledge, WAIT_ANSWERS } from '../world/knowledge';
 import { things } from '../world/things';
+import { rooms } from '../world/rooms';
 import { worn, WORN, type WornDef } from '../world/worn';
 import { crownTexture, wornHatTexture, lanyardTexture, helmTexture } from '../world/textures-worn';
 import { events, routines, routineAt } from '../world/events';
@@ -84,6 +85,9 @@ export class App {
   /** THE DISTRICT the walker is in, if any (Session 16), so a crossing
    *  between two districts of one land deals its own smaller card. */
   private district: District | null = null;
+  /** THE ROOM the walker is in (Session 23, `world/rooms.ts`), for the
+   *  card that says so once and not every frame. */
+  private roomId: string | null = null;
   private started = false;
   private elapsed = 0;
   private persistAcc = 0;
@@ -557,6 +561,7 @@ export class App {
         company: { goat: common.goat, dog: downsDog },
         barriers,
         districtAt,
+        regionAt,
         /* THE MOAT'S RED DAYS (Session 19), for `check-verbs`. */
         moatRed,
         /* THE ROADS AND WHAT IS IN EARSHOT (Session 18), for
@@ -685,6 +690,10 @@ export class App {
         openChoice: (title: string, body: string, options: string[]) =>
           this.ui.openChoice(title, body, options, () => {}),
         holding: () => things.held,
+        /* ---- THE ROOMS, for the harness (Session 23) ------------------ */
+        rooms,
+        /** How far into a room the camera thinks the walker is. */
+        roomK: () => rooms.camK,
         /* ---- THE WORN THINGS, for the harness (Session 22) ------------ */
         worn,
         WORN,
@@ -1544,6 +1553,43 @@ export class App {
      *  and its steady state is untouched, so the walk south still sees
      *  the same page it earned its verdict on. */
     asternEase: 0.85,
+
+    /* ================================================================ *
+     * THE ROOM RIG (Session 23, `WORLD-SYSTEMS` §11, `world/rooms.ts`).
+     *
+     * §11 said an interior is a camera problem before it is an art
+     * problem, and it is this one: the rig trails thirteen units and
+     * a room is six deep, so the front wall of any house stands exactly
+     * between the lens and a walker who has just gone in through its
+     * door. Two answers, and both are subtractions from the resting
+     * rig rather than a second camera:
+     *
+     *   1. THE FRONT WALL GOES TO PENCIL. That is the land's, off the
+     *      room's blend, and it is the drawing convention (a section)
+     *      and not a camera trick.
+     *   2. THE RIG CLOSES, by these much: back, up and aim all come in
+     *      so a room fills the frame the way a land does, and the
+     *      frame's bottom edge lands about two units behind the
+     *      walker, which is where the section cuts the room. Portrait
+     *      closes by less, because its frame is already narrow.
+     *
+     * And one rule about the ground: A ROOM IS FLAT. Inside, the rise
+     * term reads zero — the ridge behind the loft would otherwise pull
+     * the rig eleven units back to show a hill the room's back wall is
+     * in front of.
+     *
+     * THE RATE IS THE LAW. `check-camera` holds the rig to giving
+     * ground no faster than the walk (4.1 u/s) and this is the same
+     * ceiling coming the other way: the blend moves at 3.4 units of
+     * dolly a second, whatever the dolly is, so a flat room closes in
+     * about a second and the loft on the ridge takes four and never
+     * lurches. `rooms.tick` is handed the rate each frame. */
+    room: {
+      desktop: { back: 4.0, up: 1.4, look: 0.8 },
+      portrait: { back: 2.0, up: 1.3, look: 0.8 },
+      /** Units of dolly a second the blend may move at. */
+      rate: 3.4,
+    },
   };
 
   private camRig() {
@@ -1638,7 +1684,11 @@ export class App {
   private weatherVoices(dt: number) {
     if (!this.started) return;
     const w = weather.state;
-    this.audio.setWeather(w.rain, w.wind);
+    /* INDOORS THE RAIN IS ON THE ROOF (Session 23): the patter and the
+     * wind come down by the room's blend. A cutaway has no roof drawn,
+     * and has one. */
+    const inK = rooms.camK;
+    this.audio.setWeather(w.rain * (1 - 0.7 * inK), w.wind * (1 - 0.6 * inK));
     if (w.flashId !== this.lastFlash) {
       this.lastFlash = w.flashId;
       if (w.flashId >= 0) this.audio.event('thunder', 0.5 + Math.random() * 1.8);
@@ -1899,11 +1949,40 @@ export class App {
       this.handShown = held !== null;
       this.char.hold(held ? (held.def.hand ?? this.handTex) : null, held?.def.handSize?.[0] ?? 0.42, held?.def.handSize?.[1] ?? 0.42);
     }
+    /* AND A HEAVY THING IS FELT (Session 23, `things.ts` `heavy`): on
+     * foot with the wet banner over a shoulder there is no run and two
+     * thirds of a walk. Nothing says so. The mounts set their own
+     * speeds and are left alone. */
+    if (!this.boat.aboard && !this.bicycle.aboard && !this.train.aboard) {
+      const heavy = !!held?.def.heavy;
+      this.char.maxSpeed = App.WALK.max * (heavy ? 0.66 : 1);
+      this.char.runMult = heavy ? 1.0 : App.WALK.run;
+    }
 
     this.prints.update(dt);
     this.terrain.update(dt);
     this.world.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.region.id, weather.windK,
       this.camera.position.x, this.camera.position.z);
+
+    /* ---- THE ROOMS (Session 23) -------------------------------------- *
+     * Which room the walker is in and how far in, eased at a rate set
+     * by how far the rig will have to move for it (App.CAM.room). The
+     * card says the room's name under the land's, once, the way a
+     * district's does; walking out says nothing. */
+    {
+      const C = App.CAM;
+      const roomRig = this.camera.aspect < 0.8 ? C.room.portrait : C.room.desktop;
+      const dolly = this.camRise * C.riseBack + roomRig.back;
+      rooms.tick(dt, this.char.pos.x, this.char.pos.z, C.room.rate / Math.max(roomRig.back, dolly));
+      const rid = rooms.inside?.id ?? null;
+      if (rid !== this.roomId) {
+        this.roomId = rid;
+        if (rid && this.started) {
+          this.ui.showRegionCard(this.region.name.toLowerCase(), rooms.inside!.name, { small: true });
+          this.audio.event('latch');
+        }
+      }
+    }
 
     const here = regionAt(this.char.pos.x, this.char.pos.z);
     if (here.id !== this.region.id) this.crossInto(here);
@@ -2250,15 +2329,19 @@ export class App {
 
     const groundNow = this.terrain.smoothHeightAt(this.camTarget.x, this.camTarget.z);
     this.camGround += (groundNow - this.camGround) * (1 - Math.exp(-dt * 2.0));
+    /* A ROOM IS FLAT (App.CAM.room): the rise the lens reads ahead is
+     * taken away by the room's blend, at the blend's own bounded rate. */
+    const inK = rooms.camK;
+    const roomRig = this.camera.aspect < 0.8 ? C.room.portrait : C.room.desktop;
     const riseNow = this.riseAhead(
       this.camTarget.x, this.camTarget.z, groundNow, this.camYaw
-    );
+    ) * (1 - inK);
     this.camRise += (riseNow - this.camRise) * (1 - Math.exp(-dt * 1.1));
 
     /* The rig, swung. The camera orbits the AIM POINT, so the thing it
      * is aimed at never moves on the page when the bearing changes —
      * only what is around it does. */
-    const dBack = rig.back + this.camRise * C.riseBack + this.camAstern * C.asternBack;
+    const dBack = rig.back + this.camRise * C.riseBack + this.camAstern * C.asternBack - inK * roomRig.back;
     /* HOW FAR THE RIG IS ASKING TO SIT, kept for the harness. Session 12
      * asserts a ceiling on how fast this may CHANGE — the rig may not
      * give ground faster than the walker covers it — and neither of the
@@ -2276,7 +2359,7 @@ export class App {
     // never inside the hill: on the scarp the ground behind the walker
     // can be higher than the walker is
     const camY = Math.max(
-      this.camGround + rig.up + this.camRise * C.riseUp,
+      this.camGround + rig.up + this.camRise * C.riseUp - inK * roomRig.up,
       this.terrain.heightAt(camX, camZ) + C.clearance
     );
     this.camera.position.x += (camX - this.camera.position.x) * k;
@@ -2285,7 +2368,7 @@ export class App {
     this.camera.lookAt(
       this.camTarget.x,
       this.camGround + rig.look + this.camRise * C.riseLook
-        + this.camAstern * C.asternLook,
+        + this.camAstern * C.asternLook - inK * roomRig.look,
       this.camTarget.z
     );
     this.applyFog();

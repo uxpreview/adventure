@@ -83,6 +83,14 @@ export type ThingDef = {
    * the way the cart slows. A kick is a throw with a roll on the end.
    */
   rolls?: number;
+  /**
+   * A CARRIABLE THAT WEIGHS SOMETHING (Session 23, the wet banner —
+   * `THE-STRANGERS` E6: *carry a banner up the ramp for Wick, once,
+   * and learn what one weighs*). Held, the walker cannot run and walks
+   * at two thirds; nothing says so, and the prints say the rest. The
+   * only thing in the game that slows the walk that is not a hill.
+   */
+  heavy?: boolean;
 };
 
 export type Thing = {

@@ -321,6 +321,31 @@ and deals a region card — nothing else, because the sheet is continuous.
   the run they are still there. It comes for a walker who chose the
   other way at seven gates, because a second door is a decision too.
   Nothing says which was right.
+- **The interiors** (Session 23, `WORLD-SYSTEMS` §11, `src/world/rooms.ts`):
+  **you walk in through the door and the roof comes off.** No load, no
+  cut: the front of the house loses its wash and keeps its ink, as
+  pencil, and the room is drawn where the house was standing, as a
+  draughtsman draws one —
+  the floor a plan, the far wall an elevation, the side walls edge-on
+  with the section's cut face heavy at their ends. Three or four things
+  in each and a person, at the hours they are home and never on the
+  page twice. Three rooms, one per Memory land: **Val's kitchen** (the
+  range with the kettle on, a table laid for one with the chair out,
+  the lamp, the hooks with one coat; her at the range in the middle of
+  the day and by the lamp late, by the window in the dark under her
+  other door), **Marget's house** in Brim's back streets (the cloth
+  folded in four on the table at night, the apron on its hook, the
+  scale on the wall, level; her home for the sixteen hours nobody in
+  the square has ever seen her), and **the loft** against the east
+  tower inside Greyweather's wall (the vat, the stool, a rail with four
+  pegs, three bare; the fourth bare because the fourth is wet on the
+  bank of the moat pool until somebody carries it up — and it is
+  HEAVY: no run under it, and nothing says so). The camera closes on a
+  room by four units and never faster than you walk, and inside the
+  rain is on the roof. Every wall is a drawing and a barrier. From
+  outside every house is exactly the house it was. Plus three errands
+  as carry: the crate that was empty, the wet banner, the small bike
+  wheeled home.
 - Position, discovered lands, strides walked, the boat, the bicycle,
   the hour, what you know, what you chose, and where you left the
   cart, saved to `localStorage`. (The gate, the bull and the goat are not: a fresh
@@ -422,7 +447,10 @@ node tools/check-verbs.mjs     # THE VERBS: the cart stops at the border, the
                                #   its hours, a door is knowledge, (§12) the
                                #   five last cards and the 8:15 reading the doors,
                                #   (§13) the four worn things and the button, and
-                               #   (§14) Odd's line and the timetable's names
+                               #   (§14) Odd's line and the timetable's names, and
+                               #   (§15) the rooms: the door admits, the walls refuse,
+                               #   the front goes to pencil, the rig closes no faster
+                               #   than the walk; the crate, the banner, the bike
 node tools/shoot-session15.mjs # the proofs, both states, both viewports
 node tools/shoot-session16.mjs # THE FIRST HOUR: the bull, the gate, the goat,
                                #   the lures, Nell's doors, both viewports
@@ -448,6 +476,9 @@ node tools/shoot-session20.mjs # THE NEW CAST, EAST AND SOUTH: the pattern and t
                                #   the cups, the dog, the bin, your lane; the sprint,
                                #   the stickies, the square flock, the chair; the low
                                #   dog and the ball; three cards with two doors
+node tools/shoot-session23.mjs # THE INTERIORS: three rooms from outside, from the
+                               #   door and from inside, at the hours the person is
+                               #   home and is not; the three errands at both ends
 node tools/shoot-session21.mjs # THE SECOND DOOR: the five cards; the clock set
                                #   and the lamps lit at five; the sea told and the
                                #   marks weathered; the can carried and the track

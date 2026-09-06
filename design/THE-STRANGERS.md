@@ -277,8 +277,8 @@ One line each. That is the format and it is not a placeholder.
 | E2 | THE COMMON | the hay cart's tarp blew into the reeds at riverbend |
 | E3 | BRIM | tell Marget what the belfry clock actually says |
 | E4 | BRIM | the warden's count is one short; the twelfth tree is outside the paddock fence |
-| E5 | BRIM | carry a crate from the market lane to the square, and find out it was empty |
-| E6 | GREYWEATHER | carry a banner up the ramp for Wick, once, and learn what one weighs |
+| E5 | BRIM | carry a crate from the market lane to the square, and find out it was empty *(built Session 23: PICK UP THE CRATE at the lane's end, SET IT DOWN BY THE STALL, and it is open there for good, with straw in it and nothing in the straw)* |
+| E6 | GREYWEATHER | carry a banner up the ramp for Wick, once, and learn what one weighs *(built Session 23: the wet one on the bank of the pool between his dyeing and his evening round, the first HEAVY thing — no run under it, two thirds of a walk — hung on the fourth peg in the loft; the morning puts a dry one on the bank; nothing at all once he is relieved)* |
 | E7 | GREYWEATHER | the rooks have taken something bright off the plinth; it is on the ridge wall |
 | E8 | LONGSHORE | the third hut's chair is out on the sand; put it back inside |
 | E9 | LONGSHORE | walk the pot line at low water and tell Pye which one has shifted |
@@ -290,7 +290,7 @@ One line each. That is the format and it is not a placeholder.
 | E15 | THE HARROW DOWNS | shut the gate the sheep got through, and then find the sheep |
 | E16 | SPLITROCK | a chalk mark has weathered off; re-cut it where Odd shows you |
 | E17 | THE BLEACH FLATS | the gutter's last length is out of true by a hand's width |
-| E18 | MAPLE COURT | a bicycle is on its side four gardens from home |
+| E18 | MAPLE COURT | a bicycle is on its side four gardens from home *(built Session 23: a child's, on a lawn in the court; STAND IT UP, then WHEEL IT, a shove at a time, across the king's road to the house it lives at, where it leans on the wall and stays)* |
 | E19 | GREYLINE CITY | a bin has gone over at the junction and nobody has stopped |
 | E20 | THE CUBICLE MILE | the timetable's corner has lifted; press it back |
 | E21 | LONGSHORE | a board has come off the surfers' rack in the night and is down the beach on the wrack; bring it back and set it down at the rack *(built Session 19: a carry, and the third board on the rack stays)* |

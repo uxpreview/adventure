@@ -949,6 +949,64 @@ units, which is wider than most rooms. **A cutaway interior is a camera
 problem before it is an art problem**, and any session that takes this
 on budgets for that first.
 
+### BUILT, Session 23 ✓ — and the camera was the cost, exactly
+
+Three rooms, one per MEMORY land, and the system every later room is
+authored on (`src/world/rooms.ts`, `src/world/regions/room.ts`,
+`src/world/textures-rooms.ts`):
+
+- **THE CONVENTION IS A SECTION.** The floor is a decal (a plan), the
+  far wall is a standee (an elevation), the two side walls are the same
+  drawing turned edge-on with the cut face drawn heavy and hatched at
+  their south ends, and the front wall is the house's own drawing with
+  a door left in its footprint. Walk in and the front's wash goes and
+  its ink stays, as pencil — the same drawing read back off its own
+  canvas (`pencilGhostTexture`), so a cut wall is drawn as a section
+  draws one and no house needs a second front — and the room draws
+  itself up behind it in order, plan then walls then things; walk out
+  and it is a house again,
+  to the pixel — a room is born at nothing and comes up only by the
+  walker's blend, which is what keeps every framing that looks at a
+  house unmoved (`diff-sheets` says so).
+- **FOUR RULES.** A room opens SOUTH, because the camera stands there.
+  A room is INSIDE ITS LAND, so a person drawn in it is in their land.
+  A room is FLAT GROUND: inside, the rig's rise term reads zero — the
+  loft could not stand on the ramp (slope 0.37, measured) and stands on
+  the plateau just inside the wall instead. And EVERY WALL IS A DRAWING
+  AND A BARRIER, side walls included; there is no wall a foot cannot
+  see.
+- **THE CAMERA.** `App.CAM.room`: the rig closes by four back, one and
+  a half up and most of a unit of aim on desktop (two back in portrait,
+  whose frame is already narrow), so the frame's bottom edge lands two
+  units behind the walker, which is where the section cuts. **The rate
+  is the law**: the blend moves at 3.4 units of dolly a second whatever
+  the dolly is, so a flat room closes in about a second and the loft
+  under the ridge takes four and never lurches; `check-verbs` §15
+  measures the rig every tick on the way in and holds it under the walk
+  (4.1 u/s), which is `check-camera`'s ceiling coming the other way.
+- **THREE OR FOUR OBJECTS AND A PERSON**, as promised: Val's kitchen
+  (the range with the kettle, a table laid for one with the chair out,
+  the lamp, the hooks with one coat; Val at the range in the middle of
+  the day and by the lamp late, and never on the page twice), Marget's
+  house (the dresser, the table with the cloth folded on it at night
+  and bare by day, the scale on the wall, level; Marget home between
+  dusk and dawn, the sixteen hours nobody in the square has ever seen
+  her), and the loft against the east tower (the vat, the stool, the
+  rack with four pegs — three bare because three banners are on the
+  avenue, the fourth bare because the fourth is wet on the bank of the
+  pool until somebody carries it up).
+- **THE ERRANDS AS CARRY** came with them (`THE-STRANGERS` Part Two):
+  E5 the crate, E6 the wet banner — the first HEAVY thing, `things.ts`,
+  no run under it and two thirds of a walk, and nothing says so — and
+  E18 the small bike, a pushable that leans on its own wall once it is
+  home.
+- **What was not built:** the studio, the van and the longship, which
+  `THE-FUN-PASS` §14 listed after the Memory three. The system is
+  there; each is a land session's afternoon. The kitchen's lit window
+  seen from inside it is the one promise in the line above that the
+  section could not keep: the porch light is in the front wall, and
+  the front wall is the one that is cut away.
+
 ---
 
 ## The inheritance audit

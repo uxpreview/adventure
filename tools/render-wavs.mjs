@@ -160,6 +160,9 @@ const VOICES = [
    * In the pack unheard like everything else. */
   ['the-worn-things', ['crown-lift', 'hat-catch', 'lanyard-clip', 'helm-lift']],
   ['how-deep', ['line-out', 'chalk-cut']],
+  /* SESSION 23 — THE INTERIORS. A latch, a crate set down on cobbles,
+   * wet cloth hung on a peg. In the pack unheard like everything else. */
+  ['the-interiors', ['latch', 'crate-down', 'cloth-hung']],
 ];
 console.log('');
 for (const [land, names] of VOICES) {

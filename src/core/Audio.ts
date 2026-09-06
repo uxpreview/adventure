@@ -2008,6 +2008,41 @@ export class Audio {
         break;
       }
       /* ---------------------------------------------------------------
+       * SESSION 23 — THE INTERIORS. A latch as a door is gone through,
+       * a crate set down on cobbles, and wet cloth hung on a peg. None
+       * of them is a person's voice, and the rooms have no voice of
+       * their own: a room is quieter, which is the weather's beds
+       * coming down, not a sound.
+       * --------------------------------------------------------------- */
+      case 'latch': {
+        /* A LATCH LIFTED AND DROPPED: two small dry knocks, iron on
+         * wood, the second lower. The same latch on every door in the
+         * world, because it is one sound and not a house. */
+        const j = 0.94 + Math.random() * 0.12;
+        this.knock(2100 * j, 0.01);
+        this.knock(1500 * j, 0.012, 0.11);
+        this.surge(0.004, 0.05, 900 * j, 400, 0.005, 0.11, 'lowpass');
+        break;
+      }
+      case 'crate-down': {
+        /* A CRATE SET DOWN ON STONE, and it is light: the wood knocks
+         * twice as it rocks, and nothing inside it shifts, because
+         * nothing is inside it. */
+        const j = 0.92 + Math.random() * 0.16;
+        this.knock(420 * j, 0.03);
+        this.surge(0.005, 0.08, 700 * j, 300, 0.01, 0, 'lowpass');
+        this.knock(480 * j, 0.016, 0.16);
+        break;
+      }
+      case 'cloth-hung': {
+        /* WET CLOTH ON A PEG: the slap of it against the wall, and the
+         * drips after, four of them, slowing. */
+        const j = 0.9 + Math.random() * 0.2;
+        this.surge(0.006, 0.14, 520 * j, 240, 0.016, 0, 'lowpass');
+        for (let i = 0; i < 4; i++) this.knock(1800 * j - i * 120, 0.006, 0.3 + i * (0.18 + i * 0.05));
+        break;
+      }
+      /* ---------------------------------------------------------------
        * SESSION 21 — THE SECOND DOOR. Five voices for five doors, and
        * every one of them is a thing done by hand: a clock set, a can
        * filled, a can emptied into a tank, an oar stood against wood,
