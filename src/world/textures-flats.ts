@@ -768,3 +768,46 @@ export function flatsBoneTexture(seed: number): THREE.CanvasTexture {
     for (const y of [34, 44]) line(ctx, 30, y, 84, y + 2, r, { width: 1.0, alpha: 0.26, passes: 1 }, 3);
   });
 }
+
+/**
+ * THE TRACK, GROWN OVER (Session 21, Amos's second door). The same band
+ * as `trackDecal`, fainter, and scrub across it: grit tufts in a land
+ * where nothing grows unless nobody walks on it, which is exactly what
+ * has happened. Nothing else in the Flats has changed, and the cans are
+ * on a platform on the far side of the world.
+ */
+export function grownTrackDecal(seed: number): THREE.CanvasTexture {
+  return makeTexture(128, 256, seed, (ctx, r) => {
+    {
+      const g = ctx.createLinearGradient(0, 0, 128, 0);
+      g.addColorStop(0, 'rgba(168,151,122,0)');
+      g.addColorStop(0.36, 'rgba(168,151,122,0.12)');
+      g.addColorStop(0.5, 'rgba(139,122,94,0.18)');
+      g.addColorStop(0.64, 'rgba(168,151,122,0.12)');
+      g.addColorStop(1, 'rgba(168,151,122,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 128, 256);
+    }
+    for (let k = 0; k < 22; k++) {
+      const x = 30 + r() * 68;
+      const y = 8 + r() * 240;
+      const n = 3 + Math.floor(r() * 3);
+      for (let s = 0; s < n; s++) {
+        const a = -Math.PI / 2 + (s - (n - 1) / 2) * 0.5 + (r() - 0.5) * 0.2;
+        const len = 6 + r() * 7;
+        line(ctx, x, y, x + Math.cos(a) * len, y + Math.sin(a) * len, r,
+          { width: 0.9 + r() * 0.5, alpha: 0.34 + r() * 0.24, passes: 1, color: '#7f8a62' }, 2);
+      }
+    }
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    for (const [x0, x1] of [[0, 34], [128, 94]] as const) {
+      const g = ctx.createLinearGradient(x0, 0, x1, 0);
+      g.addColorStop(0, 'rgba(0,0,0,1)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(Math.min(x0, x1), 0, Math.abs(x1 - x0), 256);
+    }
+    ctx.restore();
+  });
+}

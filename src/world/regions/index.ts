@@ -125,8 +125,14 @@ export type WorldPOI = import('../../engine/POI').POIDef & {
    *  visible before either is taken, each writing one `door:` id into
    *  knowledge. Offered until one is taken, and never again. */
   choice?: {
+    /** The card's title, when the place has no note to take one from
+     *  (Session 21, the Downs' table). */
+    title?: string;
     body: string;
-    options: { label: string; door: string }[];
+    /** `sits` (Session 21, JOAN's card): a door that IS sitting down
+     *  puts the walker on this place's seat the moment it is taken,
+     *  so the card and the act are one press and not two. */
+    options: { label: string; door: string; sits?: boolean }[];
     /** Learned on choosing either door — reading the card is reading. */
     learns?: string[];
   };

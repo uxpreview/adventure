@@ -638,7 +638,7 @@ export function hallowsTexture(seed: number): THREE.CanvasTexture {
  * There is no number written anywhere on this drawing and the POI's
  * prompt says COUNT THEM, and the game will never tell you.
  */
-export function oarLeanTexture(seed: number): THREE.CanvasTexture {
+export function oarLeanTexture(seed: number, twelve = false): THREE.CanvasTexture {
   return makeTexture(224, 256, seed, (ctx, r) => {
     /* the blade shapes, authored rather than random: the joke only
      * works if they are each specifically, individually wrong */
@@ -679,6 +679,26 @@ export function oarLeanTexture(seed: number): THREE.CanvasTexture {
       line(ctx, topX, topY + 6, topX + Math.sin(lean) * -20, topY + 34, r,
         { width: 0.9, alpha: 0.28, passes: 1 }, 3);
     });
+    /* THE TWELFTH (Session 21, Brack's second door): the tarn boat's
+     * own oar, stood with the others, and it is the only one that is
+     * RIGHT — long, narrow, and drawn clean, the way it was drawn in
+     * the boat. Nothing here says so, and nothing points at it; it is
+     * simply the one that does not belong to the joke. */
+    if (twelve) {
+      const bx = 208;
+      const lean = 0.34;
+      const len = 214;
+      const topX = bx + Math.sin(lean) * len;
+      const topY = 244 - Math.cos(lean) * len;
+      line(ctx, bx, 246, topX, topY, r, { width: 3.4, alpha: 0.78, jitter: 0.7 });
+      const blade: [number, number][] = [[-5, 0], [-7, 26], [-3, 46], [3, 46], [7, 26], [5, 0]];
+      const pts = blade.map(([px, py]) => [
+        topX + px * Math.cos(lean) + py * Math.sin(lean) * 0.9,
+        topY + py * Math.cos(lean) - px * Math.sin(lean) * 0.9,
+      ] as [number, number]);
+      fillPoly(ctx, pts, CREAMY, 0.5);
+      poly(ctx, pts, r, { width: 1.8, alpha: 0.74, jitter: 0.7 });
+    }
   });
 }
 
@@ -815,7 +835,7 @@ export function wornRoundDecal(seed: number): THREE.CanvasTexture {
  * pressure; the oar at light clean pressure with no wear marks on it at
  * all. Nothing anywhere will ever mention that.
  */
-export function tarnBoatTexture(seed: number): THREE.CanvasTexture {
+export function tarnBoatTexture(seed: number, oarless = false): THREE.CanvasTexture {
   return makeTexture(256, 128, seed, (ctx, r) => {
     // the hull: a long sheer, cut off flat at its own waterline
     const hull: [number, number][] = [
@@ -847,7 +867,10 @@ export function tarnBoatTexture(seed: number): THREE.CanvasTexture {
     }
     /* THE OAR. One, shipped across the thwarts, drawn CLEAN: two passes
      * at low jitter, no broken pressure, no wear line, one grain mark.
-     * It is the newest thing in this land and nobody made it here. */
+     * It is the newest thing in this land and nobody made it here.
+     * `oarless` (Session 21): it has been taken to Hallows, and what is
+     * left is a boat with three thwarts and nothing across them. */
+    if (oarless) return;
     line(ctx, 44, 74, 208, 66, r, { width: 3.0, alpha: 0.72, jitter: 0.7 });
     const bp: [number, number][] = [[204, 60], [224, 58], [236, 66], [228, 76], [206, 72]];
     fillPoly(ctx, bp, CREAMY, 0.5);
@@ -945,5 +968,22 @@ export function pineShapeTexture(seed: number): THREE.CanvasTexture {
       const lean = ((250 - y) / 236) * 14;
       line(ctx, 30 + lean - 4, y, 30 + lean + 4, y + (r() - 0.5) * 6, r, { width: 2.4, alpha: 0.35, passes: 1 });
     }
+  });
+}
+
+/**
+ * THE OAR, on its own (Session 21, Brack's second door): the tarn
+ * boat's one clean oar, out of the boat, leaning, and then in the
+ * walker's hand. Drawn the way it is drawn in the boat — two passes at
+ * low jitter, no wear — because it is the newest thing in the land and
+ * it stays the newest thing wherever it goes.
+ */
+export function oarTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(64, 224, seed, (ctx, r) => {
+    line(ctx, 30, 216, 34, 46, r, { width: 3.2, alpha: 0.76, jitter: 0.7 });
+    const bp: [number, number][] = [[24, 52], [22, 26], [30, 10], [42, 12], [46, 30], [42, 54]];
+    fillPoly(ctx, bp, CREAMY, 0.5);
+    poly(ctx, bp, r, { width: 1.8, alpha: 0.74, jitter: 0.7 });
+    line(ctx, 33, 20, 34, 48, r, { width: 0.9, alpha: 0.3, passes: 1 }, 2);
   });
 }

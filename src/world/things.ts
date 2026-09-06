@@ -281,6 +281,37 @@ class Things {
     return true;
   }
 
+  /**
+   * PUT IT DOWN HERE, out of the hand, on the ground (Session 21): the
+   * can, once it has been emptied into the cistern, is set at the
+   * walker's feet by the pour and not thrown. Clamped to its own land
+   * like everything else.
+   */
+  place(id: string, x: number, z: number): boolean {
+    const t = this.map.get(id);
+    if (!t || t.state !== 'held') return false;
+    t.x = this.clampX(t, x);
+    t.z = this.clampZ(t, z);
+    t.state = 'ground';
+    t.vx = 0;
+    t.vz = 0;
+    this.held = null;
+    this.dirty = true;
+    return true;
+  }
+
+  /** AND GONE FOR GOOD (Session 21): the oar, set with Hallows'
+   *  eleven, is drawn as the twelfth of them from then on and is not a
+   *  thing any more. The same state the well leaves a stone in. */
+  consume(id: string): boolean {
+    const t = this.map.get(id);
+    if (!t || t.state !== 'held') return false;
+    t.state = 'gone';
+    this.held = null;
+    this.dirty = true;
+    return true;
+  }
+
   /* ---- THROW ------------------------------------------------------- */
   /**
    * Underarm, from the hand, `dist` units along `heading`, on an arc.

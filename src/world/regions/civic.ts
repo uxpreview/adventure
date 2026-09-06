@@ -153,11 +153,24 @@ const LAMPLIGHTER_DAWN = { id: 'the-lamplighter-dawn', land: 'kingdom' as const,
   ...LAMPS.map((l, i): [number, number, number, number, -1 | 1, number] => [DOUSE_AT[i], l[0], l[1], 6, i < 2 ? 1 : -1, 0.03]),
   [6.12, LAMP_DOOR[0], LAMP_DOOR[1], 6, -1, 0.02],
 ]) };
+/**
+ * THE CLOCK SET TO ELEVEN (Session 21, Marget's second door): the
+ * lamplighter lights by the belfry clock, and if the walker sets it to
+ * the hand that has never given ground, he is three hours early every
+ * evening for the rest of time — the lamps come on at four in the
+ * afternoon and go out at a quarter to three in the morning, and the
+ * square is dark from then to dawn. His round is re-written in place
+ * the frame the door is read, the way Wick's was. Nothing tells him.
+ */
+let lampShift = 0;
+const shiftRound = (def: { stops: { at: number }[] }, by: number) => {
+  for (const st of def.stops) st.at += by;
+};
 /** 0..1 lit, for lamp `i`, at an hour: a pure function, so a walker who
  *  arrives at half past seven finds all four on and the man gone in. */
 function lampLit(i: number, hour: number): number {
-  const on = LIGHT_AT[i];
-  const off = DOUSE_AT[i];
+  const on = LIGHT_AT[i] + lampShift;
+  const off = DOUSE_AT[i] + lampShift;
   const ramp = 0.02;
   const rise = Math.max(0, Math.min(1, (hour - on) / ramp));
   const fall = Math.max(0, Math.min(1, (hour - off) / ramp));
@@ -385,7 +398,14 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   for (const b of bunting) ctx.hang(b, 1.75);
 
   /* -- THE BELFRY YARD (open to the south — the camera needs in) ----- */
-  ctx.standee(brimBelfryTexture(1480), 6.5, 13, -66, -44, { solid: true });
+  const belfry = ctx.standee(brimBelfryTexture(1480), 6.5, 13, -66, -44, { solid: true });
+  /* THE CLOCK, SET BY HAND (Session 21): two more drawings of the same
+   * tower with both hands on one hour, and which is up is the door,
+   * read every frame. */
+  const belfrySet8 = ctx.standee(brimBelfryTexture(1480, 8), 6.5, 13, -66, -44);
+  const belfrySet11 = ctx.standee(brimBelfryTexture(1480, 11), 6.5, 13, -66, -44);
+  belfrySet8.visible = false;
+  belfrySet11.visible = false;
   ctx.decal(stoneWearDecal(1481, true), 9, 7, -66, -38, 0.7, 0.6);
   ctx.standee(benchTexture(1482), 3.2, 1.6, -61, -40, { rotY: -0.3 });
   ctx.decal(stoneWearDecal(1483, true), 7, 5, -58, -34, 1.4, 0.45);
@@ -557,7 +577,33 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     // at dawn, so at half past seven there are four on and at ten past
     // there are two, and it is the same two every night.
     lightUp(litWindows, clock.lamp);
-    lit.forEach((m, i) => lightUp([m], clock.lamp * lampLit(i, h)));
+    /* ---- THE SECOND DOOR, READ BACK (Session 21, `THE-FUN-PASS` §6) --
+     * Three doors on the belfry's card. The bell rings the lamps' hour
+     * and Marget opens; the clock set to eight is the same hour and she
+     * is the one hand that lost, so the market is called around a
+     * stall that never opens; the clock set to eleven is her hour, she
+     * opens, and the lamplighter is three hours wrong every night.
+     * Nothing here says which was right. */
+    const bellRung = knowledge.has('door:the-bell-rings-it');
+    const setEight = knowledge.has('door:the-clock-set-to-eight');
+    const setEleven = knowledge.has('door:the-clock-set-to-eleven');
+    if ((bellRung || setEleven) && knowledge.learn('reason:brim')) say('brim-bell');
+    if ((setEight || setEleven) && belfry.visible) say('clock-set');
+    belfry.visible = !setEight && !setEleven;
+    belfrySet8.visible = setEight;
+    belfrySet11.visible = setEleven;
+    if (setEleven && lampShift === 0) {
+      lampShift = -3;
+      shiftRound(LAMPLIGHTER_DUSK, -3);
+      shiftRound(LAMPLIGHTER_DAWN, -3);
+    }
+    lit.forEach((m, i) => {
+      const on = lampLit(i, h);
+      /* a lamp lit in daylight is still a lamp lit, and it has to READ
+       * as one on a page that is already light: the halo at full,
+       * which is the only way a warm blot shows on warm paper */
+      lightUp([m], Math.max(clock.lamp, lampShift ? 1 : 0) * on);
+    });
 
     /* ================================================================ *
      * MARGET'S DAY, AND THE DAY THE MARKET WAS CALLED.
@@ -584,6 +630,10 @@ export const buildKingdom: RegionBuilder = (ctx) => {
      *    knowing something and the world does the rest.
      * ================================================================ */
     const open = knowledge.has('reason:brim');
+    /* THE MARKET IS CALLED EITHER WAY (Session 21): under every door
+     * the board is chalked at the cross; under one of them the stall it
+     * was chalked for stays shut, at her hour, for good. */
+    const called = open || setEight;
     // dawn to dusk. A cloth laid at first light and folded at the last
     const outNow = Math.min(
       Math.max(0, Math.min(1, (clock.hour - 5.5) / 0.9)),
@@ -607,7 +657,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     stallShut.visible = outNow > 0.02 && !open;
     stallOpen.visible = outNow > 0.02 && open;
     marget.visible = outNow > 0.02 && platform.land !== 'kingdom';
-    marketBoard.visible = open;
+    marketBoard.visible = called;
 
     if (!open) {
       // the belfry yard, while the lamps are settling the hour
@@ -776,13 +826,41 @@ export const KINGDOM_POIS: WorldPOI[] = [
     },
   },
   {
+    /* THE BELFRY — and from Session 21 the card (`THE-FUN-PASS` §6,
+     * `THE-WAITS` §2). Stand in the yard while the lamps come on and
+     * one hand agrees with them; that is the fact, and with it the
+     * clock is a card with three doors: let the bell ring the hour the
+     * lamps keep, or set the clock yourself, to either hand. Walking to
+     * the cross holding the hour still calls the market the way it has
+     * since Session 7; the card is the way to see every door before
+     * one is taken. Nothing here says which was right. */
     x: -64, z: -42, radius: 7, label: 'THE BELFRY',
-    prompt: 'WAIT FOR THE BELL',
+    get prompt() {
+      const done = knowledge.decided('kingdom');
+      if (!done && knowledge.has('fact:brim-hour')) return 'SETTLE THE HOUR';
+      return 'WAIT FOR THE BELL';
+    },
+    get choice() {
+      if (!knowledge.has('fact:brim-hour') || knowledge.has('reason:brim')) return undefined;
+      return {
+        body: 'two hands on one clock, and they have disagreed for as long as anybody can remember. one says eight. the other says eleven and has never given ground. you stood in this yard while the lamps came on, which nobody in brim has thought to do, and the lamps came on with one of them. the bell could ring that hour. or the clock could be set, by hand, to either.',
+        options: [
+          { label: 'LET THE BELL RING THE LAMPS\' HOUR', door: 'door:the-bell-rings-it' },
+          { label: 'SET THE CLOCK TO EIGHT', door: 'door:the-clock-set-to-eight' },
+          { label: 'SET THE CLOCK TO ELEVEN', door: 'door:the-clock-set-to-eleven' },
+        ],
+      };
+    },
     note: {
       title: 'the belfry',
-      body: 'the clock\'s two hands have disagreed for as long as anybody can remember and neither will give ground. the bell splits the difference and rings when it judges the hour has been earned. brim has been taking the bell\'s word for it ever since.',
+      body: () => {
+        if (knowledge.has('door:the-clock-set-to-eight')) return 'both hands say eight now. somebody set them, and the bell rang it, and the market was called from the cross at that hour for the first time in living memory. the lamps agree. one stall in the square has not opened, and lays its cloth at dawn, and folds it at dusk, at an hour nobody else keeps any more.';
+        if (knowledge.has('door:the-clock-set-to-eleven')) return 'both hands say eleven now. somebody set them, and the bell rang it, and the market was called. the lamplighter goes by the clock, which is what a lamplighter is for, and his round comes three hours before the light goes. the lamps are lit in the afternoon. nobody has said anything to him.';
+        if (knowledge.has('reason:brim')) return 'the clock\'s two hands still disagree, and the bell rang the hour anyway, the one the lamps keep, and the market was called from the cross. brim has been taking the bell\'s word for it ever since, and now it has a reason to.';
+        return 'the clock\'s two hands have disagreed for as long as anybody can remember and neither will give ground. the bell splits the difference and rings when it judges the hour has been earned. brim has been taking the bell\'s word for it ever since.';
+      },
     },
-  },
+  } as unknown as WorldPOI,
   {
     /* THE MARKET CROSS — where Brim's wait is legible, and the place
      * it resolves at. The note carries the VOICE and not the
@@ -794,7 +872,11 @@ export const KINGDOM_POIS: WorldPOI[] = [
     prompt: 'READ THE CROSS',
     note: {
       title: 'the market cross',
-      body: 'a market is called from here, at the hour the bell strikes, and there is a step worn into the base from the calling. nobody in brim has been able to agree what hour the bell struck for a very long time. the step has not been stood on in living memory.',
+      body: () => {
+        if (knowledge.has('door:the-clock-set-to-eight')) return 'a market is called from here, at the hour the bell strikes, and it was, and the board is chalked. the step has been stood on. there is one stall in the square with its cloth still laid and nothing on it, at the top, under the bunting, and everybody has agreed to be civil about it.';
+        if (knowledge.has('reason:brim')) return 'a market is called from here, at the hour the bell strikes, and it was. there is a step worn into the base from the calling, and it has been stood on now, once, which is once more than in living memory. the board is chalked.';
+        return 'a market is called from here, at the hour the bell strikes, and there is a step worn into the base from the calling. nobody in brim has been able to agree what hour the bell struck for a very long time. the step has not been stood on in living memory.';
+      },
     },
   },
   {

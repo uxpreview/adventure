@@ -384,7 +384,7 @@ export function townRowShutTexture(seed: number): THREE.CanvasTexture {
  * stone tower, clock scratch, bell arch with its bell, steep cap, and
  * the chapel gable leaning against its foot.
  */
-export function brimBelfryTexture(seed: number): THREE.CanvasTexture {
+export function brimBelfryTexture(seed: number, set: 0 | 8 | 11 = 0): THREE.CanvasTexture {
   return makeTexture(224, 448, seed, (ctx, r) => {
     // chapel gable at the foot, first, so the tower overlaps it
     fillPoly(ctx, [[118, 440], [120, 350], [204, 350], [206, 440]], PLASTER, 0.5);
@@ -425,10 +425,22 @@ export function brimBelfryTexture(seed: number): THREE.CanvasTexture {
      * That is the whole of Brim's wait (design/THE-WAITS.md §2) and it
      * is two lines of geometry. Do not "fix" these angles. */
     scribbleCircle(ctx, 96, 300, 17, r, { width: 1.8, alpha: 0.8 }, 1.1);
-    // eight o'clock: down and to the left, and it is the right one
-    line(ctx, 96, 300, 96 - 12.1, 300 + 7.0, r, { width: 1.7, alpha: 0.82, passes: 1 }, 2);
-    // eleven: up and to the left, and it has never given ground
-    line(ctx, 96, 300, 96 - 7.0, 300 - 12.1, r, { width: 1.4, alpha: 0.72, passes: 1 }, 2);
+    /* SET BY HAND (Session 21, the second door): both hands on one
+     * hour, either one. The angles are the same two angles as before,
+     * because nobody is allowed to fix them — the walker only chose
+     * which of the two the other hand would be made to agree with. */
+    if (set === 8) {
+      line(ctx, 96, 300, 96 - 12.1, 300 + 7.0, r, { width: 1.7, alpha: 0.82, passes: 1 }, 2);
+      line(ctx, 96, 300, 96 - 8.6, 300 + 5.0, r, { width: 1.4, alpha: 0.72, passes: 1 }, 2);
+    } else if (set === 11) {
+      line(ctx, 96, 300, 96 - 7.0, 300 - 12.1, r, { width: 1.7, alpha: 0.82, passes: 1 }, 2);
+      line(ctx, 96, 300, 96 - 5.0, 300 - 8.6, r, { width: 1.4, alpha: 0.72, passes: 1 }, 2);
+    } else {
+      // eight o'clock: down and to the left, and it is the right one
+      line(ctx, 96, 300, 96 - 12.1, 300 + 7.0, r, { width: 1.7, alpha: 0.82, passes: 1 }, 2);
+      // eleven: up and to the left, and it has never given ground
+      line(ctx, 96, 300, 96 - 7.0, 300 - 12.1, r, { width: 1.4, alpha: 0.72, passes: 1 }, 2);
+    }
     // the bell stage: paired arches, the bell a dark bulb in the left
     for (const bx of [72, 104]) {
       stroke(ctx, [[bx, 220], [bx, 172], [bx + 8, 160], [bx + 16, 172], [bx + 16, 220]], r,

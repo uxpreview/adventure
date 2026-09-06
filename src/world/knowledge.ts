@@ -205,7 +205,12 @@ export const ROUTES: Route[] = [
  * player there are twelve of them.
  * ================================================================== */
 export const WAIT_ANSWERS: Partial<Record<string, Known>> = {
-  /** MARGET: the market never opened because of an argument about an hour. */
+  /** MARGET: the market never opened because of an argument about an
+   *  hour. Still learned at the cross holding the hour (Session 7's
+   *  mechanic, kept); from Session 21 the belfry is a card as well —
+   *  let the bell ring it, or set the clock to either hand — and two of
+   *  the three doors learn this, because under two of them she opens.
+   *  Under the third the market is called and she never does. */
   kingdom: 'reason:brim',
   /** WICK (Session 19): Brim's red came up the avenue, and a fifth
    *  banner went up. The second door — the king back on his plinth —
@@ -221,12 +226,25 @@ export const WAIT_ANSWERS: Partial<Record<string, Known>> = {
    *  obligation to use it. The second door calls the finish, once, and
    *  the fleet stops racing, and Wren is the reason there was a fleet. */
   ocean: 'door:the-second-mark',
-  /** BRACK: the tarn, and the road that is his circle. */
+  /** BRACK: the tarn, and the road that is his circle. Earned by
+   *  arriving at the water, or by the card's first door, which is the
+   *  same thing said out loud (Session 21). The second door — the oar
+   *  out of the boat — is a door and not an answer: he keeps facing the
+   *  water, and now he has a reason. */
   forest: 'fact:the-tarn',
-  /** HOLT: the river that left is running forty units away. */
-  canyon: 'route:the-river',
-  /** AMOS: the water was always coming from somewhere on this sheet. */
-  desert: 'fact:the-fold',
+  /** HOLT (Session 21): the river that left is running forty units
+   *  away — and from this session it is told to him at the trestles,
+   *  on a card, and the boat comes off them on the door. The second
+   *  door tells him the sea has no bottom; he stops oiling and the
+   *  marks weather. `route:the-river` opens the card and answers
+   *  nothing by itself any more. */
+  canyon: 'door:the-boat-righted',
+  /** AMOS (Session 21): the water was always coming from somewhere on
+   *  this sheet — and the lid comes off on a card now, at the catch,
+   *  holding the fold. The second door fills the cistern from the
+   *  oasis by hand, once, in daylight; he stops carrying and the track
+   *  grows over, and that is a door and not an answer. */
+  desert: 'door:the-lid-off',
   /** JOAN HARROW: a place kept for nobody was always a place kept for
    *  anybody. **She is not on the platform** — see `Eight15.ts`. */
   downs: 'fact:the-place-kept',
@@ -250,6 +268,40 @@ export const WAIT_ANSWERS: Partial<Record<string, Known>> = {
 };
 
 /**
+ * THE DOORS, LAND BY LAND (Session 21, `THE-FUN-PASS` §6).
+ *
+ * Every wait has two doors on a card now, and this is the only place
+ * in the source where they are written down against their lands. Two
+ * readers and no more: `decided` below, which is how the 8:15 knows a
+ * wait has been DECIDED rather than completed — a walker who took the
+ * second door at every gate in the world has made twelve decisions and
+ * the ending has to come and read them — and `Eight15.ts`, which asks
+ * which door was taken to know who is standing on a platform, or what
+ * is standing there instead, or nothing. Nothing counts these, shows
+ * these, or grades them; a door taken is a door taken.
+ *
+ * A land whose first door is its answer lists that door too, so the
+ * list is honest about the whole card. GREYWEATHER's first door is not
+ * a door at all — Brim's red comes up the avenue and the fifth banner
+ * goes up by arrival — and its `door:the-king-left` changes nothing, so
+ * only the one that relieves Wick is here.
+ */
+export const WAIT_DOORS: Record<string, Known[]> = {
+  kingdom: ['door:the-bell-rings-it', 'door:the-clock-set-to-eight', 'door:the-clock-set-to-eleven'],
+  castle: ['door:the-king-restored'],
+  beach: ['door:the-eighth-pot', 'door:the-pots-hauled'],
+  ocean: ['door:the-second-mark', 'door:the-fleet-finished'],
+  forest: ['door:the-water-stood', 'door:the-oar-taken'],
+  canyon: ['door:the-boat-righted', 'door:the-sea-has-no-bottom'],
+  desert: ['door:the-lid-off', 'door:the-cistern-yours'],
+  downs: ['door:the-seat-taken', 'door:the-setting-cleared'],
+  neighborhood: ['door:the-gap-cut', 'door:the-light-off'],
+  city: ['door:the-stood-with', 'door:the-walked-round'],
+  office: ['door:the-board-wiped', 'door:the-corner-pressed'],
+  meadow: ['door:the-cart-turned-north', 'door:the-cart-pushed'],
+};
+
+/**
  * HOW MANY WAITS THE 8:15 NEEDS, AND WHY IT IS NOT SEVEN.
  *
  * `THE-LINE.md` §4.1 proposed seven, against twelve waits, and said in
@@ -264,6 +316,12 @@ export const WAIT_ANSWERS: Partial<Record<string, Known>> = {
  * eleven of the twelve now exist in the source (JOAN's is the one
  * that resolves by sitting and never puts her on a platform). It is
  * never shown anywhere, to anybody, in any form (QUESTS §7).
+ *
+ * **And from Session 21 it counts waits DECIDED, not waits answered**
+ * (`decidedWaits` below): a second door is a decision about a wait as
+ * much as the first is, and `THE-FUN-PASS` §6's last rule — the ending
+ * reads the doors — is only true if the ending comes for a walker who
+ * chose the other way. The threshold is the same number.
  */
 export const WAITS_FOR_THE_LINE = 7;
 
@@ -373,11 +431,29 @@ class Knowledge {
     return n;
   }
 
-  /** Whether this land's wait is answered — the question the 8:15 asks
-   *  once per stop, and nothing else asks at all. */
+  /** Whether this land's wait is answered — its first door, as
+   *  designed. The 8:15 reads this AND the doors (`Eight15.ts`). */
   answered(regionId: string): boolean {
     const id = WAIT_ANSWERS[regionId];
     return !!id && this.set.has(id);
+  }
+
+  /** Whether this land's wait has been DECIDED — answered, or a door
+   *  taken at its card, either one (Session 21). */
+  decided(regionId: string): boolean {
+    if (this.answered(regionId)) return true;
+    for (const id of WAIT_DOORS[regionId] ?? []) if (this.set.has(id)) return true;
+    return false;
+  }
+
+  /** How many of the twelve are decided. The 8:15's threshold reads
+   *  this and nothing else does (Session 21; the same bargain as
+   *  `answeredWaits`: the bookkeeping is ours, the player gets no
+   *  count). */
+  decidedWaits(): number {
+    let n = 0;
+    for (const land of Object.keys(WAIT_DOORS)) if (this.decided(land)) n++;
+    return n;
   }
 
   /** After a load: a save from before routes existed still has posts. */

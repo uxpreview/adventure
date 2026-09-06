@@ -1,5 +1,253 @@
 # SESSIONS — the handoff log
 
+## Session 21 — 2026-09-05 — the second door
+
+*`THE-FUN-PASS` §6, finished: the five waits that had one door have
+two on a card — Marget's clock, Holt's sea, Amos's cistern, Brack's
+oar, Joan's setting — and **the 8:15 reads the doors**: who is on a
+platform, what stands there instead, and whether it comes at all are
+consequences of the cards and not of completion. The
+departure-permanence call, executed the smaller way in the owner's
+absence and written the larger way in `PROMPT.md`. The ending re-shot
+(`shoot-8-15`, six door-driven framings), the session's own sheet
+(`shoot-session21`, 31 framings, both rigs), and the art gate on the
+five re-opened lands (`design/critiques/critique-art-15.md`). **The
+play gate was handed over and not run**
+(`design/play-sheets/session-21.md`). Sessions 16 to 20's sheets had
+not come back when this session started.*
+
+### THE ONE THING TO KNOW
+
+**The ending qualifies on waits DECIDED, either door, and reads which
+door.** Until this session `Eight15.waiting()` asked one question —
+is this land's wait answered — and the threshold counted answers. A
+second door that was not the answer left the platform empty, which
+was right by accident, and a walker who chose the other way at every
+gate had made twelve decisions the train would never come for. Now
+`knowledge.decided(land)` is *answered or a door taken*
+(`WAIT_DOORS`, the one place the doors are written against their
+lands), `decidedWaits() >= 7` is what the 8:15 waits for, and
+`Eight15.onPlatform(land)` reads the card: a door that relieved
+somebody empties their platform whatever else the walker holds (Wick
+on his plinth's door, Marget under the clock set to eight, Holt told
+the sea, Brack with the oar gone, Nell, Wren, Val, the man, Dennis),
+and a door that produced a thing puts the thing there instead — **two
+cans on the Flats' platform, seven pots on Longshore's**
+(`platformThingTexture`). The train writes what it left as it pulls
+away (`fact:left-at-<land>-<thing>`), and twelve residue standees draw
+it there for good. Nothing says which was right; the windows show.
+
+**And three answers moved from a knowledge to a door**, because a
+wait that resolved the moment a route was held could never have had
+two doors in front of the walker: SPLITROCK's is `door:the-boat-righted`
+(was `route:the-river`; the boat comes off the trestles on the card),
+THE FLATS' is `door:the-lid-off` (was `fact:the-fold`; the lid comes
+off on the card), and BRIM's stays `reason:brim` with two of the
+belfry's three doors learning it. A save from before this session
+holding the river or the fold has the card still to take, the way
+Session 20 left `name:castle`.
+
+### WHAT SHIPPED
+
+- **MARGET'S CLOCK** (`civic.ts`, Brim): with `fact:brim-hour` the
+  belfry is a card with THREE doors. LET THE BELL RING THE LAMPS' HOUR
+  (`door:the-bell-rings-it`: the bell, `reason:brim`, the market
+  called, she opens — the wait as designed). SET THE CLOCK TO EIGHT
+  (`door:the-clock-set-to-eight`: both hands on the lamps' hour
+  (`brimBelfryTexture(seed, 8)`), the board chalked, the crowd out,
+  and **her stall never opens** — cloth laid at dawn, folded at dusk,
+  at every hour, in every save). SET THE CLOCK TO ELEVEN
+  (`door:the-clock-set-to-eleven`: both hands on her hour, she opens,
+  and **the lamplighter is three hours early every night** —
+  `lampShift`, the dusk and dawn rounds re-written in place the frame
+  the door is read, `LIGHT_AT − 3`, the lamps lit at four in the
+  afternoon with the halo at full so a warm blot reads on warm paper,
+  out at a quarter to three). The cross still calls the market
+  holding the hour (Session 7's mechanic, kept). `clock-set`.
+- **HOLT'S SEA** (`wilds.ts`, Splitrock): with `route:the-river` the
+  trestles are a card. TELL HIM ABOUT THE RIVER (`door:the-boat-righted`,
+  the answer). TELL HIM THE SEA HAS NO BOTTOM
+  (`door:the-sea-has-no-bottom`: the boat stays on the trestles and is
+  not oiled — `boatOnTrestlesTexture(seed, true)`, the stain gone and
+  the dust settled along her; the marks weather —
+  `markSlabTexture(seed, true)`, chalk in broken runs at a third of the
+  pressure, the ticks first to go; he is up on the rim by the house all
+  day and does not straighten for anybody). S5 is still unbuilt; the
+  card offers the sea off the route because the walker has been to the
+  salt.
+- **AMOS'S CISTERN** (`wilds.ts`, the Flats): with `fact:the-fold` the
+  catch is a card. TAKE THE LID OFF (`door:the-lid-off`, the answer).
+  FILL IT YOURSELF, FROM THE OASIS (`door:the-cistern-yours`) — **a
+  carry, and the can is the thing**: `the-can` is a carriable
+  (`things.register`, home at the catch end of the track, the
+  registry's can drawn where it says, `waterCanTexture` in the hand)
+  that is yours once the door is taken; PICK UP THE CAN, FILL THE CAN
+  on the south bank (`canFull`, not saved), EMPTY IT IN at the tank in
+  daylight only (`things.place` sets it at your feet;
+  `fact:the-cistern-filled`; `can-fill`, `can-pour`). Filled: the
+  night walk is over (`amos-night` is read and ignored), he stands at
+  the tank, **the track grows over** (`grownTrackDecal` on the same
+  forty wear points, the worn fields hidden), the lid stays on, the can
+  is his again.
+- **BRACK'S OAR** (`wilds.ts`, the Penwood): THE TARN's reach is
+  twenty-six units — outside the twenty that earn the fact by arriving
+  — and it is a card from there: STAND AT THE WATER
+  (`door:the-water-stood`, which learns `fact:the-tarn` where you stand)
+  or TAKE THE OAR OUT OF THE BOAT (`door:the-oar-taken`: the boat drawn
+  oarless — `tarnBoatTexture(seed, true)`, `the-oar` a carriable
+  leaning on the hull — `oarTexture` — and **a walker inside the twenty
+  with the oar door taken does not earn the fact**). Carry it to the
+  lean, STAND IT WITH THE OTHERS: `things.consume`,
+  `fact:the-twelfth-oar`, `oarLeanTexture(seed, true)` — twelve, and
+  the twelfth is the only one that is right, drawn clean. Brack does
+  not turn. Walking in without pressing still earns the fact the way
+  it has since Session 10, and the card is not offered afterwards.
+  `oar-set`.
+- **JOAN'S SETTING** (`wilds.ts`, the Downs): the table is a card
+  first, SIT DOWN, OR CLEAR IT. SIT DOWN (`door:the-seat-taken`) **seats
+  the walker on the door** — a card option may `sits`, and App calls
+  `sitDown` after the door is written, so a door that is sitting down
+  is one press. CLEAR THE SECOND SETTING AWAY
+  (`door:the-setting-cleared`): laid for one at every hour, the seat
+  still a seat, and `sit.learns` is empty under it, so sitting keeps
+  nothing. `plate-clear`. The card carries its own `title`, because the
+  seat has no note to borrow one from.
+- **THE 8:15 READS THE DOORS** (`Eight15.ts`): `PLATFORM_DOORS` per
+  land — `empties` and `leaves`; `onPlatform(land)`; `at(i)` in place
+  of `waiting(i)`; a `thing` mesh on the platform beside the figure;
+  `fact:left-at-…` written as the train pulls away from a stop with a
+  thing on it; twelve `residue` standees in world space, re-placed
+  whenever the set of left-at facts changes, so a save, the harness or
+  the train all place them once. `qualified()` on `decidedWaits()`.
+  The harness exposes `onPlatform` and `qualified()`.
+- **THE SMALLER DEPARTURE-PERMANENCE**: the platforms stay as the doors
+  left them the morning after — the cans and the pots are there at noon
+  on a day the train is asleep in the car park. The people who got on
+  are back where they stand when the doors shut, as since Session 14.
+  The larger is `PROMPT.md` §2, for the owner.
+- **Engine**: `things.place(id, x, z)`, `things.consume(id)`;
+  `choice.title`, `choice.options[].sits`; `knowledge.WAIT_DOORS`,
+  `decided`, `decidedWaits`. Five voices in `Audio.ts`; `render-wavs`
+  carries them under `the-second-door`.
+- **Tools**: `check-verbs` §12 on two fresh pages (every second door
+  taken and read back; the two carries end to end; the pour refused
+  at night; the tarn's fact not earned inside the twenty with the oar
+  door taken; the 8:15's platforms at four stops; seven decided the
+  other way and the train coming; the run from the gate to the car
+  park leaving the cans and the pots and nothing else; the residue
+  drawn; then every first door, and Joan's card seating the walker);
+  `shoot-session21` (31 framings, both rigs, a DO table that opens the
+  cards, carries the can down and up and empties it, carries the oar to
+  the lean, sits at a table for one, and warps the train to three
+  stops); `shoot-8-15` with six door-driven framings (the cans instead,
+  the pots instead, nobody at Splitrock, Marget at Brim, the morning
+  after at both); `shoot-dry-lands` and `shoot-farm-forest` learn the
+  doors where they learned the answers.
+
+### THE GATES, AND WHAT MOVED
+
+- **Build green.** `tsc` and `vite build`; `check-terrain` (the twelve
+  stops on ground a walker could stand on, the line ending in a car
+  park); `check-audio` (−22 dB below full scale with the five new
+  voices in); `check-fields` (94 figures driven through their hours,
+  six drawn by a land's own hand, all drawn right — Amos's night walk
+  is read and ignored once the cistern is filled and the registry does
+  not mind); `check-lures`; `check-sightline` (clear); `check-camera`
+  (both rigs, the rig never gives ground faster than the walk);
+  `check-roads` (both rigs, no road silent for fifteen seconds).
+  `check-verbs`' first run passed 155 and failed one, and the one was
+  the tool's: §12 asked for Amos's wait to be ANSWERED under the second
+  door, and a second door is decided and not answered, which is the
+  whole point of the section. Corrected in the tool; the second run
+  died at §11's page reload on a two-minute navigation timeout while
+  `check-fields` was running on the same four cores (the sandbox's,
+  not the world's); **the third run, alone on the machine, passes every section, 156 assertions**, §12 on two fresh pages.
+- **What moved, by `diff-sheets` against `origin/main` (b2ddced), 92
+  framings, bearing pinned, twelve game seconds of settle: three
+  framings, all at the curl rim, by a hundredth of a percent.** 89 of
+  92 bit-identical; `curl-rim` at 12 and at 19.6 on desktop and at 19.6
+  in portrait moved by 0.011–0.020% (a few weeds on the Flats, a pixel
+  each) — and the cause was the grown-track fields drawing their flips
+  off the land's seeded stream, which moved every draw after them by
+  one. One flip per wear point, shared between the worn field and the
+  grown one, `curl-rim` re-diffed at both hours on both rigs: **4 of 4 bit-identical, every protected framing unchanged**. No protected framing holds a door
+  this session opened: Brim's four are on a page that has taken none.
+- **Art gate**: `critique-art-15`, two rounds. Round one's seven (the
+  cans behind a house, the daylight lamps too far off to read, the
+  table's card untitled, the walker still holding the can and the oar
+  in the frames meant to show them put down, and three noted-not-
+  blocking: the twelfth oar reads only if you count, the pots are the
+  size of a stack of pots, the tarn's card stands in a frame the pines
+  have half eaten) — four fixed and re-shot; round two passes with
+  **BRIM, SPLITROCK, THE FLATS, THE PENWOOD and THE DOWNS re-earned**
+  on the door frames. Passed, not praised: Marget on Brim's platform
+  is a figure in a street of terraces, small.
+- **The proofs sheet** `shoot-session21` (31 framings, both rigs) and
+  **the ending re-shot** `shoot-8-15` (33 framings, both rigs, six of
+  them the doors: the cans instead, the pots instead, nobody at
+  Splitrock, Marget at Brim, the morning after at both).
+- **The ear gate handed over: a hundred voices** for `render-wavs`,
+  five of them new. Unheard.
+- **The feel gate handed over**, with the bicycle, the chair and the
+  two carries on it.
+- **THE PLAY GATE HANDED OVER AND NOT RUN.**
+  `design/play-sheets/session-21.md`: the five cards in order, both
+  doors on each, the train reading them, and §7 — does the departure
+  last — which is the owner's.
+
+### DECLINED, IN WRITING
+
+- **A single second door for Brim.** §6 says *either hand*, and a
+  card with two doors would have hidden one of them. Three doors, and
+  the two that set the clock are the two hands.
+- **Marget's stall opening late under the clock set to eight.** *One
+  person in Brim is permanently wrong*: a stall that opens an hour off
+  is a stall that opens. It never opens.
+- **The lamplighter shifted by one hour instead of three.** The
+  drawing says eight and eleven and the angles are not to be fixed
+  (`textures-oldworld.ts`); a hand that reads eleven at eight is three
+  hours wrong, and a man who goes by it is three hours wrong.
+- **Building S5 for Holt's second door.** The card leans on it; the
+  stranger is Session 22's, first.
+- **Gating Brack's card on the fact.** The card is offered from
+  outside the twenty so both doors are seen before either is taken;
+  a walker who walks in without pressing earns the fact as they always
+  have, and that is the pavement's rule (Session 20) applied again.
+- **Amos's can carriable before the door.** Picking it up would let
+  the fill and the pour resolve a door the walker had not seen.
+- **The pour at night.** He carries at night; you do not. The prompt
+  is not there after dark.
+- **Counting door-two lands toward `answeredWaits`.** `answered` stays
+  the first door; `decided` is the new question, and the train asks
+  the new one.
+- **The larger departure-permanence, unasked.** It re-opens seven
+  lands that hold verdicts and changes what a porch light means; the
+  owner's, in `PROMPT.md` §2, with every land's loss written out.
+
+### Gotchas (new; everything from Sessions 1–20 still applies)
+
+- **A SEAT'S PROMPT IS ASSIGNED, NOT READ.** App wraps a seat's prompt
+  with STAND UP by assigning to `def.prompt`; a getter there throws.
+  A place with a `sit` writes its prompt as a function.
+- **A STOP ON MAIN STREET STANDS BEHIND A HOUSE.** The Flats' stop is
+  at (40, 198) and the plot at (41, 211) is between it and the
+  pavement; from the pavement the train's thing is behind a roof. A
+  frame of that platform is from the road's verge, north of the house.
+- **A HALO AT HALF ON WARM PAPER IS NOTHING.** A lamp lit in daylight
+  reads only with the glow at full.
+- **A CARD WITH NO NOTE HAS NO TITLE.** A place whose card is its only
+  reader carries `choice.title`.
+- **A DO SCRIPT THAT STOPS A PRESS SHORT SHOOTS THE WALKER STILL
+  HOLDING THE THING.** The can and the oar were in hand in the frames
+  meant to show them put down; the script presses.
+- **A THING LEFT ON A PLATFORM IS A FACT WITH THE LAND IN IT.**
+  `fact:left-at-desert-cans`, read back by prefix and land; a door
+  taken the week after the ending cannot put a can on a platform the
+  train never stopped for.
+- **THE RESIDUE RE-PLACES OFF A SIGNATURE, NOT A FLAG.** A flag set by
+  the train missed a fact learned by the harness; twelve `has` calls a
+  frame is nothing.
+
 ## Session 20 — 2026-09-05 — the new cast, east and south
 
 *`THE-FUN-PASS` §14's last cast session — the aliens in the Pale, the

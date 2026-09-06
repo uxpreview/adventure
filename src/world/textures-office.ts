@@ -1432,3 +1432,59 @@ export function platformFigureTexture(seed: number, v: number): THREE.CanvasText
     }
   });
 }
+
+/**
+ * WHAT A DOOR LEAVES ON A PLATFORM (Session 21, `THE-FUN-PASS` §6's
+ * last rule: *the ending reads the doors*).
+ *
+ * At two of the twelve stops the second door puts something on the
+ * platform that is not a person: Amos's two cans, if the cistern was
+ * filled by hand and he stopped carrying, and Pye's seven pots, if
+ * they were hauled and stacked wet by the boat. They stand where the
+ * person would have stood, the doors open on them for the same
+ * thirteen seconds, and the train goes on — and the morning after,
+ * they are still there. Nobody put them there. Nobody collects them.
+ * The drawing says nothing about which door was right, because a can
+ * on a platform is a can on a platform.
+ */
+export function platformThingTexture(seed: number, kind: 'cans' | 'pots'): THREE.CanvasTexture {
+  return makeTexture(128, 112, seed, (ctx, r) => {
+    if (kind === 'cans') {
+      // two cans, side by side, the way he set them down at each end
+      for (const cx of [40, 88]) {
+        const can: [number, number][] = [[cx - 14, 104], [cx - 12, 48], [cx + 12, 48], [cx + 14, 104]];
+        fillPoly(ctx, can, STEEL, 0.46);
+        ruled(ctx, can, r, { width: 2.3, alpha: 0.9 }, true, 2.4);
+        for (const y of [66, 84]) line(ctx, cx - 11, y, cx + 11, y, r, { width: 1.0, alpha: 0.32, passes: 1 });
+        stroke(ctx, [[cx - 9, 46], [cx, 34], [cx + 9, 46]], r, { width: 1.9, alpha: 0.74 });
+      }
+      stain(ctx, 64, 104, 40, SOFFIT, 0.14);
+      return;
+    }
+    /* seven pots, stacked three, three and one, and wet: a pot is a
+     * dome of rope drawn as a scribbled arc with a ring at its foot */
+    const rows: [number, number, number][] = [
+      [28, 100, 0], [64, 100, 1], [100, 100, 2],
+      [46, 74, 3], [82, 74, 4],
+      [64, 48, 5],
+      [28, 74, 6],
+    ];
+    for (const [px, py, k] of rows) {
+      const w = 16 + (k % 3) * 1.5;
+      stroke(ctx, [[px - w, py], [px - w * 0.9, py - 18], [px, py - 26], [px + w * 0.9, py - 18], [px + w, py]], r,
+        { width: 1.8, alpha: 0.82 });
+      line(ctx, px - w, py, px + w, py, r, { width: 2.0, alpha: 0.86, passes: 1 });
+      for (let i = 0; i < 3; i++) {
+        const y = py - 6 - i * 6;
+        line(ctx, px - w * (0.95 - i * 0.14), y, px + w * (0.95 - i * 0.14), y - 1, r,
+          { width: 0.9, alpha: 0.34, passes: 1 });
+      }
+      for (let i = 0; i < 4; i++) {
+        const x = px - w * 0.7 + (i + 0.5) * (w * 1.4 / 4);
+        line(ctx, x, py - 2, x + (r() - 0.5) * 3, py - 20, r, { width: 0.8, alpha: 0.3, passes: 1 });
+      }
+    }
+    // the wet under them
+    stain(ctx, 64, 104, 56, SOFFIT, 0.18);
+  });
+}

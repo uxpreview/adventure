@@ -443,7 +443,7 @@ export function deadScrubTexture(seed: number): THREE.CanvasTexture {
  * Nothing is written beside any of them. There is no scale, no date and
  * no number anywhere in this land.
  */
-export function markSlabTexture(seed: number): THREE.CanvasTexture {
+export function markSlabTexture(seed: number, weathered = false): THREE.CanvasTexture {
   const W = 512;
   const H = 384;
   // 384 px over fifteen world units = 25.6 px per unit, measured up from
@@ -501,6 +501,27 @@ export function markSlabTexture(seed: number): THREE.CanvasTexture {
     ] as const) {
       const y = up(u);
       const jx = x0 + (r() - 0.5) * 18;
+      /* WEATHERED (Session 21, Holt's second door): he was told the
+       * sea has no bottom and he stopped going over them. Chalk that
+       * is not renewed goes in pieces — each mark is the same line
+       * drawn in short broken runs at a third of the pressure, and the
+       * tick at the end is the first thing to go. */
+      if (weathered) {
+        let x = jx;
+        while (x < jx + len) {
+          const run = 14 + r() * 30;
+          if (r() > 0.32) {
+            line(ctx, x, y + (r() - 0.5) * 4, Math.min(jx + len, x + run), y + (r() - 0.5) * 4, r,
+              { width: 3.2, alpha: 0.28 + r() * 0.2, passes: 1, color: CHALK }, 4);
+          }
+          x += run + 4 + r() * 10;
+        }
+        if (r() > 0.5) {
+          line(ctx, jx + len, y - 6, jx + len, y + 5, r,
+            { width: 2.6, alpha: 0.3, passes: 1, color: CHALK }, 2);
+        }
+        continue;
+      }
       for (let p = 0; p < 2; p++) {
         line(ctx, jx, y + (r() - 0.5) * 3, jx + len, y + (r() - 0.5) * 3, r,
           { width: 6.0 - p * 2.2, alpha: 0.96 - p * 0.28, passes: 1, color: CHALK }, 6);
@@ -537,7 +558,7 @@ export function rimMarkTexture(seed: number): THREE.CanvasTexture {
  * drawn with anything but a line — a thin pale stain along the turn of
  * the bilge, because somebody put oil on it recently.
  */
-export function boatOnTrestlesTexture(seed: number): THREE.CanvasTexture {
+export function boatOnTrestlesTexture(seed: number, dull = false): THREE.CanvasTexture {
   const W = 384;
   const H = 200;
   return makeTexture(W, H, seed, (ctx, r) => {
@@ -569,8 +590,21 @@ export function boatOnTrestlesTexture(seed: number): THREE.CanvasTexture {
     hardPoly(ctx, [[58, 99], [212, 70], [348, 105]], r, { width: 3.2, alpha: 0.82 }, false);
     // THE OIL. A pale stain along the turn of the bilge and nothing
     // else: the whole of "it is oiled" in one mark.
-    stain(ctx, 196, 96, 130, '#f2e8d2', 0.3);
-    stain(ctx, 118, 88, 62, '#f2e8d2', 0.22);
+    if (!dull) {
+      stain(ctx, 196, 96, 130, '#f2e8d2', 0.3);
+      stain(ctx, 118, 88, 62, '#f2e8d2', 0.22);
+    } else {
+      /* NOT OILED ANY MORE (Session 21): the stain is gone and the
+       * dust has settled along the keel instead — the same mark in the
+       * canyon's own colour, and the planks drawn once more, dry. */
+      stain(ctx, 200, 90, 120, DRYBED, 0.22);
+      for (let k = 0; k < 14; k++) {
+        const x = 60 + r() * 280;
+        const y = 92 + r() * 30;
+        line(ctx, x, y, x + 6 + r() * 12, y + (r() - 0.5) * 2, r,
+          { width: 1.0, alpha: 0.22 + r() * 0.16, passes: 1, color: ROCK_DEEP }, 2);
+      }
+    }
     feather(ctx, W, H, 10);
   });
 }

@@ -13,7 +13,7 @@ import {
 import {
   flatsGroundDecal, crackedPanDecal, trackDecal, oasisReedTexture,
   flatsPalmTexture, flatsScrubTexture, fencePostTexture, flatsSignTexture,
-  rainApronTexture, cisternTexture, rainTableTexture, amosTexture,
+  rainApronTexture, cisternTexture, rainTableTexture, amosTexture, grownTrackDecal,
   waterCanTexture, dustDevilTexture, flatsTumbleweedTexture, flatsBoneTexture,
 } from '../textures-flats';
 import {
@@ -21,7 +21,7 @@ import {
 } from '../textures-common';
 import {
   penwoodPineTexture, pineCropTexture, youngPineTexture, fallenPineTexture,
-  needleFloorDecal, tarnSkinDecal, brackTexture, hallowsTexture, oarLeanTexture,
+  needleFloorDecal, tarnSkinDecal, brackTexture, hallowsTexture, oarLeanTexture, oarTexture,
   choppingBlockTexture, stumpTexture, birchTexture, bracketFungusTexture,
   wornRoundDecal, tarnBoatTexture, goatTexture, pineShapeTexture, type Reg,
 } from '../textures-wood';
@@ -205,6 +205,10 @@ function polyInset(poly: [number, number][], x: number, z: number): number {
  * ================================================================== */
 
 const TARN = { x: 150, z: -195 };
+/** THE OAR (Session 21): the tarn boat's one, a carriable once the
+ *  second door has been taken at the water, home on the shore by the
+ *  boat, and gone for good once it is Hallows' twelfth. */
+things.register({ id: 'the-oar', kind: 'carriable', land: 'forest', home: { x: 140.2, z: -181.6 }, name: 'THE OAR' });
 /** The forty units. Brack's, and the road's, and — from this session —
  *  the boundary of the only stand in the wood nobody has ever cut. */
 const FORTY = 40;
@@ -604,7 +608,21 @@ export const buildForest: RegionBuilder = (ctx) => {
     drape(ctx.decal(SHORE[i % 2], 15, 15, sx, sz, a, 0.7), 15, 15, sx, sz, a);
   }
   // the boat, drawn up on the near shore where the walker arrives
-  ctx.standee(tarnBoatTexture(2920), 7.0, 3.5, 143, -184, { rotY: 0.42 });
+  const tarnBoat = ctx.standee(tarnBoatTexture(2920), 7.0, 3.5, 143, -184, { rotY: 0.42 });
+  /* AND THE BOAT WITHOUT ITS OAR (Session 21): the second door takes
+   * the one clean thing in the Penwood out of the boat and walks it
+   * forty paces to a man who has never seen one. The boat is drawn
+   * again with three thwarts and nothing across them, and the oar is
+   * a thing (`things.ts`) leaning on the hull until it is picked up. */
+  const tarnBoatOarless = ctx.standee(tarnBoatTexture(2920, true), 7.0, 3.5, 143, -184, { rotY: 0.42 });
+  tarnBoatOarless.visible = false;
+  const oarThing = things.get('the-oar')!;
+  const oarTex = oarTexture(2921);
+  oarThing.def.hand = oarTex;
+  oarThing.def.handSize = [0.34, 1.2];
+  const oar = ctx.standee(oarTex, 0.6, 2.1, oarThing.x, oarThing.z, { rotY: -0.3 });
+  oar.visible = false;
+  oarThing.mesh = oar;
 
   /* ================================================================ *
    * BRACK'S ROUND, dressed.
@@ -666,7 +684,12 @@ export const buildForest: RegionBuilder = (ctx) => {
    * say eleven (THE-STRANGERS S1 beat 1).
    * ================================================================ */
   ctx.standee(CROP[1], 6.4, 11.4, 96, -160);
-  ctx.standee(oarLeanTexture(3200), 5.6, 6.4, 99, -158.5, { rotY: 0.18 });
+  const oarsEleven = ctx.standee(oarLeanTexture(3200), 5.6, 6.4, 99, -158.5, { rotY: 0.18 });
+  /* THE TWELFTH (Session 21, Brack's second door): the same lean with
+   * the tarn boat's oar stood at the end of it, and which is up is
+   * whether the oar was ever carried here. */
+  const oarsTwelve = ctx.standee(oarLeanTexture(3200, true), 5.6, 6.4, 99, -158.5, { rotY: 0.18 });
+  oarsTwelve.visible = false;
   ctx.standee(choppingBlockTexture(3201), 3.2, 2.8, 105, -153, { rotY: -0.3 });
   const hallows = ctx.standee(hallowsTexture(3202), 2.2, 3.4, 108, -151.5);
   ctx.standee(stumpTexture(3203), 3.2, 2.0, 112, -157);
@@ -772,11 +795,33 @@ export const buildForest: RegionBuilder = (ctx) => {
     brackWatch.visible = !turned && !gone;
     brackTurn.visible = turned && !gone;
 
+    /* THE SECOND DOOR, READ BACK (Session 21, `THE-FUN-PASS` §6). The
+     * oar taken: the boat is drawn without it, the oar is a thing on
+     * the shore until it is carried, and Hallows' lean gains a twelfth
+     * once it is set with the others. And Brack does not turn — an oar
+     * walked out of that water, which is the first thing that has ever
+     * come out of it, and he was right. Nothing here says so. */
+    const oarTaken = knowledge.has('door:the-oar-taken');
+    const twelfth = knowledge.has('fact:the-twelfth-oar');
+    tarnBoat.visible = !oarTaken;
+    tarnBoatOarless.visible = oarTaken;
+    oarsEleven.visible = !twelfth;
+    oarsTwelve.visible = twelfth;
+    {
+      const fp = things.flyPos(oarThing);
+      if (!oarTaken || twelfth) oar.visible = false;
+      else if (fp) { oar.visible = true; oar.position.set(fp.x, fp.y, fp.z); }
+      else if (oarThing.state === 'ground') { oar.visible = true; oar.position.set(oarThing.x, ctx.groundY(oarThing.x, oarThing.z), oarThing.z); }
+      else oar.visible = false;
+    }
+
     /* THE FACT IS EARNED BY ARRIVING. Inside twenty units of the water
      * is inside Brack's forty, which is the one line in this world
      * nobody but the walker crosses. Nothing asks and nothing
-     * confirms. */
-    if (!turned && tarnD(px, pz) < 20) {
+     * confirms. And from Session 21 the card's first door is the same
+     * thing said out loud, and the second door — a walker who went in
+     * for the boat and not the water — does not earn it. */
+    if (!turned && !oarTaken && (tarnD(px, pz) < 20 || knowledge.has('door:the-water-stood'))) {
       if (knowledge.learn('fact:the-tarn')) say('tarn-drip');
     }
 
@@ -936,7 +981,9 @@ export const FOREST_POIS: WorldPOI[] = [
     prompt: 'COUNT THEM',
     note: {
       title: 'the oars',
-      body: 'a woodcutter here makes oars. he has been making them for years and not one of them is right, which he knows, because none of them has ever come back. he has never seen an oar. there is one on the tarn, forty paces off, and he will not go and look at it.',
+      body: () => (knowledge.has('fact:the-twelfth-oar')
+        ? 'a woodcutter here makes oars. he has been making them for years and not one of them is right, which he knows. there is one at the end of the row now that he did not make, and it is right, and he has stood it with the others and gone back to the block, and the next one he makes will be the first one he has ever made having seen one.'
+        : 'a woodcutter here makes oars. he has been making them for years and not one of them is right, which he knows, because none of them has ever come back. he has never seen an oar. there is one on the tarn, forty paces off, and he will not go and look at it.'),
     },
   },
   {
@@ -947,13 +994,65 @@ export const FOREST_POIS: WorldPOI[] = [
     },
   },
   {
-    x: 150, z: -195, radius: 13, label: 'THE TARN',
-    prompt: 'TRY THE ROWBOAT',
+    /* THE TARN — and from Session 21 the card (`THE-FUN-PASS` §6,
+     * `THE-WAITS` §7). Its reach is twenty-six units, which is OUTSIDE
+     * the twenty that earn the fact by arriving, so both doors are in
+     * front of the walker before either is taken: go down to the
+     * water, or go for the boat and take its oar. A walker who walks
+     * in without pressing anything still earns the fact the way they
+     * have since Session 10, and the card is not offered to them
+     * afterwards. Nothing here says which was right. */
+    x: 150, z: -195, radius: 26, label: 'THE TARN',
+    get prompt() {
+      if (!knowledge.decided('forest')) return 'GO DOWN TO THE WATER';
+      return 'LOOK AT THE WATER';
+    },
+    get choice() {
+      if (knowledge.decided('forest')) return undefined;
+      return {
+        body: 'still water, black as the good ink, and a path around it that everybody uses and nobody comes off. there is a rowboat on it with one oar, and the oar is newer than the boat, and forty paces back up the road a man has made eleven oars and never seen one. you could go down to the water. or you could go for the boat.',
+        options: [
+          { label: 'STAND AT THE WATER', door: 'door:the-water-stood' },
+          { label: 'TAKE THE OAR OUT OF THE BOAT', door: 'door:the-oar-taken' },
+        ],
+      };
+    },
     note: {
       title: 'the tarn',
-      body: 'still water, black as the good ink. the rowboat has one oar, and the oar is newer than the boat. nobody comes down to the water and nobody will say why. there is a path around it, and everybody uses it.',
+      body: () => {
+        if (knowledge.has('fact:the-twelfth-oar')) return 'still water, black as the good ink. the rowboat has no oar. the man on the road round it has not turned his back on it, and now he has a reason: something came out of that water, and it was you. there is a path around it, and everybody uses it.';
+        if (knowledge.has('door:the-oar-taken')) return 'still water, black as the good ink. the rowboat has no oar now, and nobody in the penwood has said anything about where it went. the man on the road round it is still facing the water. there is a path around it, and everybody uses it.';
+        if (knowledge.has('fact:the-tarn')) return 'still water, black as the good ink. there is nothing in it. the rowboat has one oar, and the oar is newer than the boat, and a man who walked round this water for forty years has turned his back on it. there is a path around it, and everybody uses it.';
+        return 'still water, black as the good ink. the rowboat has one oar, and the oar is newer than the boat. nobody comes down to the water and nobody will say why. there is a path around it, and everybody uses it.';
+      },
     },
-  },
+  } as unknown as WorldPOI,
+  {
+    /* THE OAR, where it lies: on the shore by the boat once the door
+     * is taken, off while it is in the hand or in the air, and gone
+     * once it is one of twelve. */
+    get x() { return things.get('the-oar')!.x; },
+    get z() { return things.get('the-oar')!.z; },
+    get enabled() { return knowledge.has('door:the-oar-taken') && things.get('the-oar')!.state === 'ground'; },
+    set enabled(_v: boolean) { /* the door and the registry decide */ },
+    radius: 2.8,
+    prompt: 'PICK UP THE OAR',
+    touch: () => { things.pickUp('the-oar'); },
+  } as unknown as WorldPOI,
+  {
+    /* HALLOWS' LEAN, with the oar in hand: set it with the others, and
+     * it is the twelfth, and it is right, and nothing says so. */
+    x: 99.5, z: -156, radius: 4.5,
+    get enabled() { return things.held === 'the-oar'; },
+    set enabled(_v: boolean) { /* the hand decides */ },
+    prompt: 'STAND IT WITH THE OTHERS',
+    touch: () => {
+      if (things.consume('the-oar')) {
+        knowledge.learn('fact:the-twelfth-oar');
+        say('oar-set');
+      }
+    },
+  } as unknown as WorldPOI,
   {
     x: 188, z: -246, radius: 12, label: 'THE DEEP PINES',
     prompt: 'LOOK UP',
@@ -1252,7 +1351,7 @@ export const buildCanyon: RegionBuilder = (ctx) => {
    * with four things you can see from where you are standing, and a
    * fifth that lines up with a roof.
    * ================================================================ */
-  ctx.standee(markSlabTexture(6200), 20, 15, HEAD.x, HEAD.z - 2, { rotY: -0.04 });
+  const marks = ctx.standee(markSlabTexture(6200), 20, 15, HEAD.x, HEAD.z - 2, { rotY: -0.04 });
   ctx.standee(rimMarkTexture(6201), 4.6, 2.8, 305.5, -267.5, { rotY: 0.08 });
   ctx.standee(holtShedTexture(6202), 5.6, 4.9, 301.5, -244, { rotY: 0.12 });
   ctx.decal(dryBedDecal(6203, 2), 12, 12, 303, -241, 0.2, 0.5);
@@ -1268,7 +1367,13 @@ export const buildCanyon: RegionBuilder = (ctx) => {
   const boatUp = ctx.standee(boatOnTrestlesTexture(6210), 12.6, 6.6, BOAT.x, BOAT.z);
   const trestles = ctx.standee(trestlesTexture(6211), 12.6, 6.6, BOAT.x, BOAT.z);
   const boatDown = ctx.standee(boatRightedTexture(6212), 12.4, 6.5, BOAT.x - 1.5, BOAT.z + 5.5);
-  for (const m of [boatUp, trestles, boatDown]) {
+  /* THE SECOND DOOR'S BOAT (Session 21): still on the trestles, keel
+   * up, and NOT oiled — the stain gone and the dust settled along her
+   * instead. And the marks weathered, on the same wall face. */
+  const boatDull = ctx.standee(boatOnTrestlesTexture(6210, true), 12.6, 6.6, BOAT.x, BOAT.z);
+  const marksWeathered = ctx.standee(markSlabTexture(6200, true), 20, 15, HEAD.x, HEAD.z - 2, { rotY: -0.04 });
+  marksWeathered.visible = false;
+  for (const m of [boatUp, trestles, boatDown, boatDull, marksWeathered]) {
     (m.material as THREE.MeshBasicMaterial).transparent = true;
   }
 
@@ -1343,11 +1448,22 @@ export const buildCanyon: RegionBuilder = (ctx) => {
   return (_dt: number, t: number, px: number, pz: number) => {
     const h = clock.hour;
 
-    /* THE BOAT COMES OFF THE TRESTLES. */
-    const rowed = knowledge.has('route:the-river');
-    boatUp.visible = !rowed;
+    /* THE BOAT COMES OFF THE TRESTLES — on the card's first door now
+     * (Session 21), told to him at the trestles holding the route. */
+    const rowed = knowledge.has('door:the-boat-righted');
+    /* THE SECOND DOOR, READ BACK (`THE-FUN-PASS` §6): he was told the
+     * sea has no bottom. The boat stays on the trestles and is not
+     * oiled again; the marks are not gone over again and weather; and
+     * he is up on the rim by the house all day, because there is
+     * nothing on the floor that needs him. Nothing says which was
+     * right. */
+    const told = knowledge.has('door:the-sea-has-no-bottom');
+    boatUp.visible = !rowed && !told;
+    boatDull.visible = told;
     trestles.visible = rowed;
     boatDown.visible = rowed;
+    marks.visible = !told;
+    marksWeathered.visible = told;
 
     /* HOLT'S DAY, and it is a short one.
      *
@@ -1361,14 +1477,16 @@ export const buildCanyon: RegionBuilder = (ctx) => {
      * stopping work because somebody is walking up his channel, which
      * out here has not happened in a while. */
     const day = h > 5.8 && h < 20.4;
-    const near = Math.hypot(px - BOAT.x, pz - BOAT.z) < 15;
-    const reading = h > 12.2 && h < 13.6;
-    const pose = !day ? -1 : near ? 2 : reading ? 1 : 0;
+    const near = !told && Math.hypot(px - BOAT.x, pz - BOAT.z) < 15;
+    const reading = !told && h > 12.2 && h < 13.6;
+    const pose = !day ? -1 : told ? 2 : near ? 2 : reading ? 1 : 0;
     for (let p = 0; p < 3; p++) {
       holt[p].visible = p === pose && platform.land !== 'canyon';
-      const at = p === 1
-        ? [HEAD.x - 3.2, HEAD.z + 4.4]
-        : [BOAT.x - 5.4 + Math.sin(t * 0.11) * 1.6, BOAT.z + 1.4 + Math.cos(t * 0.09) * 1.1];
+      const at = told
+        ? [HOUSE.x + 4.6, HOUSE.z + 3.2]
+        : p === 1
+          ? [HEAD.x - 3.2, HEAD.z + 4.4]
+          : [BOAT.x - 5.4 + Math.sin(t * 0.11) * 1.6, BOAT.z + 1.4 + Math.cos(t * 0.09) * 1.1];
       holt[p].position.set(at[0], ctx.groundY(at[0], at[1]), at[1]);
     }
     houseDark.visible = day;
@@ -1496,12 +1614,36 @@ export const CANYON_POIS: WorldPOI[] = [
      * behind this POI there is a sixteen-unit slab, a rim mark and a
      * house, all on one axis. Height does not solve that. Angle does. */
     x: 300, z: -232, radius: 11, label: 'THE TRESTLES', labelHeight: 3.4,
-    prompt: 'LOOK AT THE MARKS',
+    /* THE CARD (Session 21, `THE-FUN-PASS` §6, `THE-WAITS` §4). You
+     * have rowed the river salt to source, which nothing else in this
+     * world has, and the river came out of the sea. Tell him about the
+     * river, and the boat comes off the trestles; tell him the sea has
+     * no bottom — which is the thing at the end of the river, and the
+     * thing `THE-STRANGERS` S5 was written to find out — and he stops
+     * oiling. Short sentences: the card is in this land's register. */
+    get prompt() {
+      if (!knowledge.decided('canyon') && knowledge.has('route:the-river')) return 'TELL HIM WHAT YOU ROWED';
+      return 'LOOK AT THE MARKS';
+    },
+    get choice() {
+      if (!knowledge.has('route:the-river')) return undefined;
+      return {
+        body: 'a boat, keel up, oiled. marks up the wall behind it, in the order things would float. you rowed the river, salt to source. it starts here. it ends in the sea, and the sea has no bottom that anybody has found. he would like to know about the river. he has not asked about the sea.',
+        options: [
+          { label: 'TELL HIM ABOUT THE RIVER', door: 'door:the-boat-righted' },
+          { label: 'TELL HIM THE SEA HAS NO BOTTOM', door: 'door:the-sea-has-no-bottom' },
+        ],
+      };
+    },
     note: {
       title: 'the trestles',
-      body: 'a boat, keel up, off the ground, oiled. there are marks up the wall behind it. the lowest one is the height of the boat.',
+      body: () => {
+        if (knowledge.has('door:the-boat-righted')) return 'trestles, with nothing on them. the boat is on the floor of the channel, right way up, bow north, in the dry. the marks up the wall are the same marks. he goes over them.';
+        if (knowledge.has('door:the-sea-has-no-bottom')) return 'a boat, keel up, off the ground. not oiled. there are marks up the wall behind it and they are going. he is up at the house. he has not been down.';
+        return 'a boat, keel up, off the ground, oiled. there are marks up the wall behind it. the lowest one is the height of the boat.';
+      },
     },
-  },
+  } as unknown as WorldPOI,
 ];
 
 /* ================================================================== *
@@ -1527,6 +1669,9 @@ export const CANYON_POIS: WorldPOI[] = [
 /** THE OASIS. `layout.PONDS[1]`; the only water in the land and the
  *  bottom of THE PAN (`elevation.ts`). */
 const OASIS = { x: 305, z: 55 };
+/** Whether the door's can has water in it. Not saved: a can put down
+ *  by closing the tab is a can to fill again, which costs a walk. */
+const canFull = { full: false };
 /** THE CATCH — Amos's, forty units south, and on the pan's RIM, which
  *  is why the water he carries goes uphill both ways. */
 const CATCH = { x: 302, z: 95 };
@@ -1546,6 +1691,11 @@ const ROAD_WALKERS = [7.2, 15.4].map((at, k) => ({ id: `the-road-walker-${k}`, l
   [at, 234.5, 14.5, 0, 1], [at + 0.1, 263.5, 15.5, 0, 1, 0.2], [at + 0.4, 234.5, 14.5, 0, -1, 0.02],
 ]) }));
 const TRACK_X = (z: number) => 303.5 + Math.sin(z * 0.17) * 1.3;
+/** THE CAN (Session 21, Amos's second door): the one he leaves at the
+ *  catch end of the track, a carriable once the door is taken, and
+ *  the thing the door is about — forty units downhill empty and forty
+ *  back up full, once, by you, in daylight. */
+things.register({ id: 'the-can', kind: 'carriable', land: 'desert', home: { x: 300.4, z: 90.0 }, name: 'THE CAN' });
 const AMOS_NIGHT = (() => {
   const rows: [number, number, number, number, (-1 | 1)?, number?][] = [];
   for (let k = 0; k < 6; k++) {
@@ -1706,6 +1856,11 @@ export const buildDesert: RegionBuilder = (ctx) => {
    * **The land teaches you that you came at it from the wrong side**,
    * which is the belief of the place said in one placement rule.
    * ================================================================ */
+  /* THE DOOR'S CAN, AND THE TRACK IN TWO STATES (Session 21). */
+  const canThing = things.get('the-can')!;
+  let can: THREE.Mesh;
+  const trackWorn: { mesh: THREE.Object3D }[] = [];
+  const trackGrown: { mesh: THREE.Object3D }[] = [];
   {
     const palms: [number, number, number, 0 | 1 | 2][] = [
       [299, 42, 9.4, 0], [308, 39, 10.2, 1], [314, 46, 8.6, 2], [295, 47, 8.0, 1],
@@ -1741,16 +1896,38 @@ export const buildDesert: RegionBuilder = (ctx) => {
     const wear: [number, number][] = [];
     for (let z = 54; z <= 96; z += 4.4) wear.push([303.5 + Math.sin(z * 0.17) * 1.3, z]);
     const tex = [0, 1].map((v) => trackDecal(7060 + v));
+    const grown = [0, 1].map((v) => grownTrackDecal(7064 + v));
     for (let v = 0; v < 2; v++) {
       const sub = wear.filter((_, i) => i % 2 === v);
       const f = ctx.field(tex[v], sub.length,
         { w: 4.4, h: 7.4, decal: true, baseOpacity: 0.85 });
-      sub.forEach(([x, z], i) => f.set(i, x, z, 1, 0, r() > 0.5));
+      /* THE TRACK GROWN OVER (Session 21): the same forty units, the
+       * same wear points, scrub across them — drawn once the cistern
+       * has been filled by somebody who was not him, because from
+       * that night nobody walks it. ONE flip per wear point, shared:
+       * a second draw on the land's seeded stream here moved every
+       * weed on the Flats by a pixel, and `diff-sheets` saw it at the
+       * curl rim. */
+      const g = ctx.field(grown[v], sub.length,
+        { w: 4.4, h: 7.4, decal: true, baseOpacity: 0.85 });
+      sub.forEach(([x, z], i) => {
+        const flip = r() > 0.5;
+        f.set(i, x, z, 1, 0, flip);
+        g.set(i, x, z, 1, 0, flip);
+      });
+      trackWorn.push(f);
+      g.mesh.visible = false;
+      trackGrown.push(g);
     }
     /* AND HE LEAVES A CAN AT EACH END, because carrying an empty can
-     * forty units is work for nothing. Nobody is ever told that. */
+     * forty units is work for nothing. Nobody is ever told that. The
+     * one at the catch end is a THING from Session 21 — the door's
+     * can — and is drawn where the registry says it is. */
     ctx.standee(waterCanTexture(7062), 0.9, 1.2, 306.4, 63.5, { rotY: 0.3 });
-    ctx.standee(waterCanTexture(7063), 0.9, 1.2, 300.4, 90.0, { rotY: -0.2 });
+    canThing.def.hand = waterCanTexture(7063);
+    canThing.def.handSize = [0.42, 0.56];
+    can = ctx.standee(canThing.def.hand, 0.9, 1.2, canThing.x, canThing.z, { rotY: -0.2 });
+    canThing.mesh = can;
   }
 
   /* ================================================================ *
@@ -1891,9 +2068,25 @@ export const buildDesert: RegionBuilder = (ctx) => {
      * fold, which is where any water on this sheet would actually go.
      * `fact:the-fold` (knowledge.ts). He has decided to find out. The
      * game does not say whether that is despair or nerve. */
-    const open = knowledge.has('fact:the-fold');
+    const open = knowledge.has('door:the-lid-off');
     cisternShut.visible = !open;
     cisternOpen.visible = open;
+
+    /* THE SECOND DOOR, READ BACK (Session 21, `THE-FUN-PASS` §6): the
+     * cistern was filled from the oasis by hand, once, in daylight, by
+     * somebody who was not him. He stops carrying. The track grows
+     * over. The lid stays on. And the two cans are on a platform on
+     * the far side of the world the morning the 8:15 comes, which is
+     * `Eight15.ts`'s to draw. Nothing here says which was right. */
+    const filled = knowledge.has('fact:the-cistern-filled');
+    for (const f of trackWorn) f.mesh.visible = !filled;
+    for (const f of trackGrown) f.mesh.visible = filled;
+    {
+      const fp = things.flyPos(canThing);
+      if (fp) { can.visible = true; can.position.set(fp.x, fp.y, fp.z); }
+      else if (canThing.state === 'ground') { can.visible = true; can.position.set(canThing.x, ctx.groundY(canThing.x, canThing.z), canThing.z); }
+      else can.visible = false;
+    }
 
     /* AMOS'S NIGHT, and it is the whole of the wait.
      *
@@ -1904,7 +2097,8 @@ export const buildDesert: RegionBuilder = (ctx) => {
      * for it to be true. In the day he is at the catch, and what he is
      * doing there is maintenance on a machine that has never worked. */
     const walk = routineNow('amos-night', h);
-    const night = !!walk && walk.present;
+    // and with the cistern filled by your hand, the night walk is over
+    const night = !!walk && walk.present && !filled;
     let pose: 0 | 1 | 2 = 1;
     let ax = CATCH.x - 4.6;
     let az = CATCH.z + 2.4;
@@ -2106,6 +2300,45 @@ export const DESERT_POIS: WorldPOI[] = [
     touch: () => { poke.at = 1; },
   } as unknown as WorldPOI,
   {
+    /* THE CAN, where it stands: the catch end of the track until the
+     * door is taken, then wherever it was put down; off in the hand or
+     * in the air. Only a thing once the door has made it one. */
+    get x() { return things.get('the-can')!.x; },
+    get z() { return things.get('the-can')!.z; },
+    get enabled() { return knowledge.has('door:the-cistern-yours') && !knowledge.has('fact:the-cistern-filled') && things.get('the-can')!.state === 'ground'; },
+    set enabled(_v: boolean) { /* the door and the registry decide */ },
+    radius: 2.6,
+    prompt: 'PICK UP THE CAN',
+    touch: () => { things.pickUp('the-can'); },
+  } as unknown as WorldPOI,
+  {
+    /* THE WATER, with the can in hand: fill it. The south bank, where
+     * the reeds are, because that is the side you come up the track
+     * to. A carry, and the can is the thing. */
+    x: 305, z: 63.5, radius: 5.5,
+    get enabled() { return things.held === 'the-can' && !canFull.full; },
+    set enabled(_v: boolean) { /* the hand decides */ },
+    prompt: 'FILL THE CAN',
+    touch: () => { canFull.full = true; say('can-fill'); },
+  } as unknown as WorldPOI,
+  {
+    /* THE CISTERN, with a full can in hand, in daylight: empty it in.
+     * That is the door's whole cost paid — `fact:the-cistern-filled`,
+     * and the land reads it every frame from then on. At night the
+     * prompt is not there: he carries at night, and you do not. */
+    x: 302, z: 98.2, radius: 3.6,
+    get enabled() { return things.held === 'the-can' && canFull.full && !isNight(clock.hour) && clock.hour > 5.8 && clock.hour < 20.4; },
+    set enabled(_v: boolean) { /* the hand and the hour decide */ },
+    prompt: 'EMPTY IT IN',
+    touch: (px: number, pz: number) => {
+      if (things.place('the-can', px, pz)) {
+        canFull.full = false;
+        knowledge.learn('fact:the-cistern-filled');
+        say('can-pour');
+      }
+    },
+  } as unknown as WorldPOI,
+  {
     x: 305, z: 55, radius: 13, label: 'THE OASIS',
     prompt: 'DRINK',
     note: {
@@ -2118,7 +2351,9 @@ export const DESERT_POIS: WorldPOI[] = [
     x: 303, z: 77, radius: 9, label: 'THE TRACK',
     note: {
       title: 'the track',
-      body: 'forty units of worn ground between the only water out here and the only building. one set of feet, both ways, and it goes nowhere else. there is a can standing at each end of it.',
+      body: () => (knowledge.has('fact:the-cistern-filled')
+        ? 'forty units of ground between the only water out here and the only building, and it is growing over. nobody has walked it since the night the tank was full without him. there is a can standing at one end of it.'
+        : 'forty units of worn ground between the only water out here and the only building. one set of feet, both ways, and it goes nowhere else. there is a can standing at each end of it.'),
     },
   },
   {
@@ -2127,12 +2362,37 @@ export const DESERT_POIS: WorldPOI[] = [
      * front of the middle of it, so a name written over the tank lands
      * on the deck from anywhere on the track. Angle, not height. */
     x: 306, z: 97, radius: 11, label: 'THE CATCH', labelHeight: 3.2,
-    prompt: 'LOOK AT THE GUTTER',
+    /* THE CARD (Session 21, `THE-FUN-PASS` §6, `THE-WAITS` §5). Come
+     * to the catch holding the fold — both faces of the world's one
+     * real crease, where any water on this sheet would go — and it is
+     * a card: take the lid off, which is the wait as designed, or fill
+     * it yourself from the oasis, which is a walk he makes six times a
+     * night and you make once, in daylight. Nothing says which was
+     * right. */
+    get prompt() {
+      if (!knowledge.decided('desert') && knowledge.has('fact:the-fold')) return 'TELL HIM ABOUT THE FOLD';
+      return 'LOOK AT THE GUTTER';
+    },
+    get choice() {
+      if (!knowledge.has('fact:the-fold')) return undefined;
+      return {
+        body: 'a tank with a lid on it, full, and a gutter that runs downhill away from it, and a track worn to the only water in the land by one set of feet at night. you have walked the crease, both faces, which is where the rain would go if it came. the lid could come off, to find out. or the tank could be filled from the oasis by hand, once, in the daylight, by somebody who is not him.',
+        options: [
+          { label: 'TAKE THE LID OFF', door: 'door:the-lid-off' },
+          { label: 'FILL IT YOURSELF, FROM THE OASIS', door: 'door:the-cistern-yours' },
+        ],
+      };
+    },
     note: {
       title: 'the catch',
-      body: 'guttering, a fall, a tank with a lid on it, and every bracket on it present and true. the only piece of engineering in the bleach flats. there is a board beside it ruled into columns, ready.',
+      body: () => {
+        if (knowledge.has('fact:the-cistern-filled')) return 'guttering, a fall, a tank with a lid on it, full. it was filled in daylight by somebody who was not him, and he was there, and he has not been down the track since. the board beside it is ruled into columns, ready. the gutter has still never delivered a drop.';
+        if (knowledge.has('door:the-cistern-yours')) return 'guttering, a fall, a tank with a lid on it, and a can at the foot of it that is yours to carry now. the oasis is forty units down the track, and every one of them is uphill on the way back.';
+        if (knowledge.has('door:the-lid-off')) return 'guttering, a fall, and a tank with the lid off it, open to a sky that has never once rained here in anybody\'s memory. he has decided to find out. the board beside it is ruled into columns, ready.';
+        return 'guttering, a fall, a tank with a lid on it, and every bracket on it present and true. the only piece of engineering in the bleach flats. there is a board beside it ruled into columns, ready.';
+      },
     },
-  },
+  } as unknown as WorldPOI,
   {
     x: 348, z: 18, radius: 10, label: 'WHERE THE ROAD STOPS',
     note: {
@@ -2797,7 +3057,13 @@ export const buildDowns: RegionBuilder = (ctx) => {
      * hour, in every save, permanently — the only tableau in this game
      * that gets easier to look at. */
     const kept = knowledge.has('fact:the-place-kept');
-    const laid = kept || (h > 5.9 && h < 20.2);
+    /* THE SECOND DOOR, READ BACK (Session 21, `THE-FUN-PASS` §6): the
+     * second setting cleared away, and it is not laid again — one
+     * plate, at every hour, in every save. Nobody loses but the
+     * player, and nothing here says which was right. */
+    const cleared = knowledge.has('door:the-setting-cleared');
+    const laid = !cleared && (kept || (h > 5.9 && h < 20.2));
+    if (cleared && picnicLaid.visible) say('plate-clear');
     picnicLaid.visible = laid;
     picnicOne.visible = !laid;
 
@@ -2936,15 +3202,38 @@ export const DOWNS_POIS: WorldPOI[] = [
      * where the strip is. `fact:the-place-kept` is learned by sitting
      * and by nothing else, which is what `THE-WAITS` §10 always said. */
     x: 140, z: 10, radius: 6,
-    prompt: 'SIT DOWN',
-    sit: { x: 140.2, z: 10.6, learns: ['fact:the-place-kept'] },
-  },
+    /* AND FROM SESSION 21 A CARD, first (`THE-FUN-PASS` §6): sit down,
+     * which is the wait as it always was and seats you the moment the
+     * door is taken, or clear the second setting away. A table laid
+     * for one can still be sat at, and sitting at it keeps nothing. */
+    /* A function and not a getter, because App wraps a seat's prompt
+     * with STAND UP by assigning to it. */
+    prompt: () => (knowledge.decided('downs') ? 'SIT DOWN' : 'SIT DOWN, OR CLEAR IT'),
+    get choice() {
+      if (knowledge.decided('downs')) return undefined;
+      return {
+        title: 'the table',
+        body: 'a table laid for two, at the edge of a field, and a basket under it with the day in it. it is put away every evening and laid again every morning, and it has been, for years, in a land nobody can get to. you could sit down. or the second setting could be cleared away, and it would not be laid again.',
+        options: [
+          { label: 'SIT DOWN', door: 'door:the-seat-taken', sits: true },
+          { label: 'CLEAR THE SECOND SETTING AWAY', door: 'door:the-setting-cleared' },
+        ],
+      };
+    },
+    get sit() {
+      return knowledge.has('door:the-setting-cleared')
+        ? { x: 140.2, z: 10.6 }
+        : { x: 140.2, z: 10.6, learns: ['fact:the-place-kept'] };
+    },
+  } as unknown as WorldPOI,
   {
     x: 134.5, z: 12.5, radius: 4, label: 'THE HEADLAND',
     prompt: 'LOOK AT THE TABLE',
     note: {
       title: 'the headland',
-      body: 'the strip at the edge of a field, where the plough turns and nothing is sown. there is a table on it, laid for two, and a basket under it with the day in it. the cloth is clean.',
+      body: () => (knowledge.has('door:the-setting-cleared')
+        ? 'the strip at the edge of a field, where the plough turns and nothing is sown. there is a table on it, laid for one, and a basket under it with the day in it. the cloth is clean. the second plate is in the basket and has been since you put it there.'
+        : 'the strip at the edge of a field, where the plough turns and nothing is sown. there is a table on it, laid for two, and a basket under it with the day in it. the cloth is clean.'),
     },
   },
   {
