@@ -120,7 +120,14 @@ thing that was called horrible.
   sea's noise bed at 4.7×, centred at 1606 / 1503 / 1382 Hz where the
   old hiss lived above three thousand; the storm louder than the
   drizzle; the storm peaking with room for the thunder).
-- **`check-verbs`**: VERBS_PLACEHOLDER
+- **`check-verbs`**: **174 assertions, every one green, on four pages**
+  (§1–§10, then §11, §12's two fresh pages, and §14's names rule on a
+  fresh page of its own). The first run failed one and the one was the
+  tool's: §14 asked the timetable's names rule on the first-door page,
+  where the harness's own `goto` had discovered ten lands, and ten
+  names is past the threshold; on a fresh page it holds two and the
+  board is words. The second run, with the drawings' two fixes in,
+  passes everything.
 - **`diff-sheets` against `origin/main` (a0acc4f)**: DIFF_PLACEHOLDER
 - **The drawings, at actual size** (`.tmp/worn-sheet.mjs`, a one-off
   contact sheet of the ten new drawings): the crown, the hat, the
