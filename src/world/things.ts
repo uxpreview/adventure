@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { REGION_SPECS, type RegionId, type Rect } from './layout';
+import { REGION_SPECS, WORLD, type RegionId, type Rect } from './layout';
 
 /**
  * THINGS — what the walker can move, and where it is now.
@@ -210,11 +210,14 @@ class Things {
   }
 
   /* ---- the border ------------------------------------------------- */
+  /* ---- SCALE: a thing crosses borders now; only the sheet's edge holds it. ---- */
   private clampX(t: Thing, x: number) {
-    return Math.max(t.rect.minX + Things.BORDER, Math.min(t.rect.maxX - Things.BORDER, x));
+    void t;
+    return Math.max(WORLD.minX + Things.BORDER, Math.min(WORLD.maxX - Things.BORDER, x));
   }
   private clampZ(t: Thing, z: number) {
-    return Math.max(t.rect.minZ + Things.BORDER, Math.min(t.rect.maxZ - Things.BORDER, z));
+    void t;
+    return Math.max(WORLD.minZ + Things.BORDER, Math.min(WORLD.maxZ - Things.BORDER, z));
   }
   /** How far inside its land a thing stops. Two units: a cart against
    *  a border you can see from both sides, and never on the seam. */

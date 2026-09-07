@@ -163,7 +163,7 @@ barriers.register({
  *  a goat gets out. This is the one that did.) */
 const goat = new Follower({
   id: 'the-common-goat', rect: SPEC_BY_ID.meadow.rect, home: { x: -22, z: 72 },
-  gap: 3.2, notice: 18, walk: 3.6, trot: 8.6, margin: 2,
+  gap: 3.2, notice: 18, walk: 2.2, trot: 5.4, margin: 2, /* ---- SCALE ---- */
   // it will not go in with the bull, and it does not follow you in
   keepOut: { minX: -14, maxX: 46, minZ: 63, maxZ: 112 },
 });
@@ -182,7 +182,7 @@ const goat = new Follower({
  *  happened and cannot say why the line is there. Nobody says. */
 const dawnDog = new Follower({
   id: 'the-dawn-dog', rect: { minX: -150, maxX: -28, minZ: -10, maxZ: 120 }, home: { x: -122, z: 64 },
-  gap: 2.4, notice: 13, walk: 4.0, trot: 9.0, margin: 2,
+  gap: 2.4, notice: 13, walk: 2.5, trot: 5.6, margin: 2, /* ---- SCALE ---- */
 });
 events.register({ id: 'the-dawn-dog', land: 'meadow', at: 5.4, hours: 2.1 });
 
@@ -748,7 +748,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
         window.dispatchEvent(new CustomEvent('inklands:run-now'));
       }
     } else if (B.state === 'charge') {
-      const speed = 8.4;
+      const speed = 5.6; /* ---- SCALE: retuned to the run (4.3) ---- */
       /* IT RUNS AT YOUR SHOULDER, NOT AT YOU — and at the shoulder the
        * camera can see. The line of approach is walker-minus-bull; the
        * bull aims a stride and a half off that line on the NORTH side

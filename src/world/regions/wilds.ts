@@ -2692,7 +2692,7 @@ function droveAt(hour: number): number {
  *  bridge whose east end runs along the water. */
 export const downsDog = new Follower({
   id: 'the-downs-dog', rect: SPEC_BY_ID.downs.rect, home: { x: 106.5, z: 40.5 },
-  gap: 2.6, notice: 14, walk: 4.0, trot: 9.2, margin: 2,
+  gap: 2.6, notice: 14, walk: 2.5, trot: 5.7, margin: 2, /* ---- SCALE ---- */
 });
 
 export const buildDowns: RegionBuilder = (ctx) => {

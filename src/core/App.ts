@@ -14,6 +14,9 @@ import { renderMap } from '../ui/map';
 import { PAPER_HEX, INK_HEX } from '../engine/palette';
 import { Boat } from '../engine/Boat';
 import { Bicycle, BICYCLE_HOME } from '../engine/Bicycle';
+/* ---- SCALE: the horse and the traffic ---- */
+import { Horse, HORSE_HOME, HITCHING_POST } from '../engine/Horse';
+import { traffic } from '../world/traffic';
 import { Eight15, onPlatform } from '../engine/Eight15';
 import {
   SPAWN, POSTER, regionAt, districtAt, coastX, barDist, roadCarryAt, rowableAt, BOAT_HOME,
@@ -73,6 +76,8 @@ export class App {
   private char: Character;
   private boat = new Boat();
   private bicycle = new Bicycle();
+  /* ---- SCALE: the horse ---- */
+  private horse = new Horse();
   /* THE 8:15 (Session 14, `THE-LINE` §4). It exists from the first
    * frame, standing in a car park at the end of the world with its
    * doors shut, and it does not move until the walker has walked the
@@ -166,6 +171,12 @@ export class App {
     const bk = this.save.data.bicycle ?? BICYCLE_HOME;
     this.bicycle.setAt(bk.x, bk.z);
     this.scene.add(this.bicycle.group);
+    /* ---- SCALE: the horse at the crossroads, and the traffic ---- */
+    const hk = this.save.data.horse ?? HORSE_HOME;
+    this.horse.setAt(hk.x, hk.z);
+    this.horse.groundPost(this.terrain.heightAt(HITCHING_POST.x, HITCHING_POST.z));
+    this.scene.add(this.horse.group);
+    traffic.init(this.scene, this.terrain);
     this.scene.add(this.train.group);
 
     this.fx = new PaperFX(this.renderer, this.scene, this.camera);
@@ -250,6 +261,16 @@ export class App {
       prompt: () => !this.bicycle.aboard ? 'GET ON THE BICYCLE'
         : Math.hypot(this.char.vel.x, this.char.vel.z) > 0.8 ? 'RING THE BELL' : 'GET OFF',
       onInteract: () => this.bicycleKey(),
+    } as unknown as WorldPOI);
+    /* ---- SCALE: the horse — GET ON / WHOA / GET OFF, one prompt ---- */
+    this.poi.add({
+      get x() { return self.horse.pos.x; },
+      get z() { return self.horse.pos.y; },
+      get enabled() { return !self.bicycle.aboard && !self.boat.aboard && !self.train.aboard; },
+      radius: 4.6,
+      prompt: () => !this.horse.aboard ? 'GET ON THE HORSE'
+        : Math.hypot(this.char.vel.x, this.char.vel.z) > 0.8 ? 'WHOA' : 'GET OFF',
+      onInteract: () => this.horseKey(),
     } as unknown as WorldPOI);
 
     /* THE SEAT. The whole of the last mount's interface, and it is one
@@ -371,6 +392,10 @@ export class App {
     // fire their own one-shots through this bridge
     window.addEventListener('inklands:event', (e) => {
       if (this.started) this.audio.event((e as CustomEvent<string>).detail);
+    });
+    /* ---- SCALE: H whistles the horse ---- */
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'KeyH' && !e.repeat) this.whistle();
     });
 
     /* THE RUN, TAUGHT BY NECESSITY (Session 16). The bull's charge is
@@ -557,6 +582,12 @@ export class App {
         /* THE OPENING (Session 16): the bull, the gate, Nell and the
          * goat, for `check-verbs` and the proofs sheet. */
         common,
+        /* ---- SCALE: the horse and the traffic, for the harness ---- */
+        horse: this.horse,
+        traffic,
+        takeHorse: () => { if (!this.horse.aboard) this.horseKey(); },
+        putHorse: (x: number, z: number) => { this.horse.setAt(x, z); },
+        whistle: () => this.whistle(),
         /* THE COMPANY (Session 17): every follower, for the same tests. */
         company: { goat: common.goat, dog: downsDog },
         barriers,
@@ -1000,7 +1031,7 @@ export class App {
      * on a bicycle is six seconds of not walking, and *hold shift to
      * run* printed on a rider is a hint about a thing they are not
      * doing. The boat and the train are the same. */
-    if (this.bicycle.aboard || this.boat.aboard || this.train.aboard) { this.walkHeld = 0; return; }
+    if (this.bicycle.aboard || this.boat.aboard || this.train.aboard || this.horse.aboard) { this.walkHeld = 0; return; }
     if (this.input.run > 0.15) {
       // they found it on their own. Nothing is printed, ever.
       this.save.data.taughtRun = true;
@@ -1091,6 +1122,7 @@ export class App {
    * ================================================================ */
   private bicycleKey() {
     this.audio.init();
+    if (this.horse.aboard) return; /* ---- SCALE: one mount at a time ---- */
     if (!this.bicycle.aboard) {
       if (this.seat) this.standUp();
       this.bicycle.aboard = true;
@@ -1133,8 +1165,7 @@ export class App {
    * invisible walls anywhere.
    */
   private bicycleRefuses(x: number, z: number): boolean {
-    const here = regionAt(x, z);
-    if (here.id !== 'neighborhood' || here.step === 'sand') return true;
+    /* ---- SCALE: the bicycle goes anywhere flat and dry; sand slows it ---- */
     if (this.terrain.blockedAt(x, z) || barriers.blocks(x, z)) return true;
     if (this.terrain.waterAt(x, z) > 0.3 && !this.terrain.onPlanks(x, z)) return true;
     for (const s of App.STAIRS) {
@@ -1144,6 +1175,58 @@ export class App {
   }
   /** Val's porch steps: the one flight of stairs in the neighbourhood. */
   private static STAIRS = [{ minX: -82, maxX: -74, minZ: 128.5, maxZ: 131.8 }];
+
+  /* ---- SCALE: THE HORSE ------------------------------------------- *
+   * The bicycle's key, on a horse: parked, you get on; moving, WHOA
+   * stops it; stopped, you get off onto the verge and it stays where
+   * it is, saved. It refuses only what a foot refuses. */
+  private horseKey() {
+    this.audio.init();
+    if (this.bicycle.aboard || this.boat.aboard || this.train.aboard) return;
+    if (!this.horse.aboard) {
+      if (this.seat) this.standUp();
+      this.horse.aboard = true;
+      this.horse.coming = null;
+      this.char.rowing = true;
+      this.char.maxSpeed = App.HORSE.max;
+      this.char.runMult = App.HORSE.run;
+      this.char.teleport(this.horse.pos.x, this.horse.pos.y, this.char.heading);
+      this.snapCamera();
+      return;
+    }
+    const sp = Math.hypot(this.char.vel.x, this.char.vel.z);
+    if (sp > 0.8) {
+      this.char.vel.set(0, 0, 0);
+      this.char.recoil();
+      return;
+    }
+    const verge = this.stepOffNear(this.horse.pos.x, this.horse.pos.y);
+    if (!verge) return;
+    this.horse.aboard = false;
+    this.char.rowing = false;
+    this.char.maxSpeed = App.WALK.max;
+    this.char.runMult = App.WALK.run;
+    this.char.teleport(verge[0], verge[1], this.char.heading);
+    this.char.setGround(
+      this.terrain.heightAt(verge[0], verge[1]),
+      this.terrain.normalAt(verge[0], verge[1])
+    );
+    this.snapCamera();
+    this.save.data.horse = { x: this.horse.pos.x, z: this.horse.pos.y };
+    this.save.persist();
+  }
+  private horseRefuses(x: number, z: number): boolean {
+    return this.terrain.blockedAt(x, z) || barriers.blocks(x, z);
+  }
+  /** The whistle: the horse comes if it can hear you. */
+  private whistle() {
+    if (!this.started || this.char.frozen || this.horse.aboard) return;
+    this.audio.init();
+    this.audio.event('whistle');
+    if (!this.horse.call(this.char.pos.x, this.char.pos.z)) {
+      this.ui.showHint('the horse is too far to hear you', 2600);
+    }
+  }
 
   /* ================================================================ *
    * GETTING ON, AND GETTING OFF.
@@ -1333,15 +1416,21 @@ export class App {
    * a third again — because the point of the boat is that it opens a
    * route, not that it shortens one, and because the camera's follow
    * is what caps every speed in this game. */
-  private static WALK = { max: 4.1, run: 1.5 };
-  private static ROW = { max: 5.4, run: 1.3 };
+  /* ---- SCALE: the walker's pace, scaled to the world. A walk is
+   * two and a half units a second, a run a shade over four: the
+   * Common takes a minute and a half to cross on foot and the mounts
+   * are the reason the world is big. ---- */
+  private static WALK = { max: 2.5, run: 1.72 };
+  private static ROW = { max: 3.6, run: 1.3 };
   /* THE BICYCLE (Session 18): a shade under twice the walk on the flat
    * — faster than the run, which is the point of a bicycle — and the
    * grade paid back downhill, up to half again. It is not faster than
    * that because the camera's follow caps every speed in this game,
    * and because a bicycle is FUN before it is quick (`THE-FUN-PASS`
    * §8). */
-  private static BIKE = { max: 7.4, run: 1.2 };
+  private static BIKE = { max: 6.4, run: 1.2 };
+  /* ---- SCALE: the horse — a trot on the key, a gallop on shift ---- */
+  private static HORSE = { max: 5.6, run: 1.8 };
 
   private static CAM = {
     /** Resting framing: how far back, how high, and what height it aims
@@ -1815,6 +1904,8 @@ export class App {
       ? (x: number, z: number) => !rowableAt(x, z)
       : this.bicycle.aboard
         ? (x: number, z: number) => this.bicycleRefuses(x, z)
+        : this.horse.aboard /* ---- SCALE ---- */
+          ? (x: number, z: number) => this.horseRefuses(x, z)
         : (x: number, z: number) => this.terrain.blockedAt(x, z) || barriers.blocks(x, z);
     if (refuses(this.char.pos.x, this.char.pos.z)) {
       const nx = this.char.pos.x;
@@ -1842,6 +1933,7 @@ export class App {
     this.char.setGround(
       this.terrain.heightAt(this.char.pos.x, this.char.pos.z) - (this.boat.aboard ? 0.34 : 0)
         - (this.bicycle.aboard ? 0.26 : 0)
+        + (this.horse.aboard ? 0.92 : 0) /* ---- SCALE: up on the saddle ---- */
         + (this.seat?.sit?.lift ?? 0) + this.seatDy,
       this.boat.aboard ? [0, 1, 0] : this.terrain.normalAt(this.char.pos.x, this.char.pos.z)
     );
@@ -1880,7 +1972,9 @@ export class App {
     if (this.bicycle.aboard) {
       this.bicycle.setAt(this.char.pos.x, this.char.pos.z);
       const down = Math.max(0, -this.char.grade);
-      this.char.maxSpeed = App.BIKE.max * (1 + Math.min(0.5, down * 3));
+      /* ---- SCALE: on sand it is slow, not refused ---- */
+      const sandy = regionAt(this.char.pos.x, this.char.pos.z).step === 'sand' ? 0.45 : 1;
+      this.char.maxSpeed = App.BIKE.max * (1 + Math.min(0.5, down * 3)) * sandy;
     }
     this.bicycle.update(
       dt,
@@ -1888,6 +1982,22 @@ export class App {
       this.char.heading,
       this.bicycle.aboard ? Math.hypot(this.char.vel.x, this.char.vel.z) : 0
     );
+
+    /* ---- SCALE: THE HORSE. Aboard, it IS the walker's position; called,
+     * it trots to them; its hooves sound off its own stride. ---- */
+    if (this.horse.aboard) this.horse.setAt(this.char.pos.x, this.char.pos.z);
+    this.horse.update(
+      dt,
+      this.terrain.heightAt(this.horse.pos.x, this.horse.pos.y),
+      this.char.heading,
+      this.horse.aboard ? Math.hypot(this.char.vel.x, this.char.vel.z) : 0,
+      (x, z) => this.horseRefuses(x, z),
+      (x, z) => this.terrain.heightAt(x, z)
+    );
+    if (this.horse.hoofbeat && this.started
+      && Math.hypot(this.char.pos.x - this.horse.pos.x, this.char.pos.z - this.horse.pos.y) < 70) {
+      this.audio.event('hooves', this.horse.aboard ? this.char.effort : 0.4);
+    }
 
     /* ---- THE 8:15 --------------------------------------------------- *
      * It runs on the hour and on nothing else. Aboard, it IS the
@@ -1953,7 +2063,7 @@ export class App {
      * foot with the wet banner over a shoulder there is no run and two
      * thirds of a walk. Nothing says so. The mounts set their own
      * speeds and are left alone. */
-    if (!this.boat.aboard && !this.bicycle.aboard && !this.train.aboard) {
+    if (!this.boat.aboard && !this.bicycle.aboard && !this.train.aboard && !this.horse.aboard) {
       const heavy = !!held?.def.heavy;
       this.char.maxSpeed = App.WALK.max * (heavy ? 0.66 : 1);
       this.char.runMult = heavy ? 1.0 : App.WALK.run;
@@ -1963,6 +2073,8 @@ export class App {
     this.terrain.update(dt);
     this.world.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.region.id, weather.windK,
       this.camera.position.x, this.camera.position.z);
+    /* ---- SCALE: something moving in every frame ---- */
+    traffic.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.char.effort);
 
     /* ---- THE ROOMS (Session 23) -------------------------------------- *
      * Which room the walker is in and how far in, eased at a rate set
@@ -2257,6 +2369,7 @@ export class App {
         this.save.data.pos = { x: this.char.pos.x, z: this.char.pos.z };
         this.save.data.boat = { x: this.boat.pos.x, z: this.boat.pos.y };
         this.save.data.bicycle = { x: this.bicycle.pos.x, z: this.bicycle.pos.y };
+        this.save.data.horse = { x: this.horse.pos.x, z: this.horse.pos.y }; /* ---- SCALE ---- */
         this.save.data.hour = dayClock.hour;
         this.save.data.day = dayClock.day;
         this.save.persist();
