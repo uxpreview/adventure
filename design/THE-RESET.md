@@ -284,3 +284,77 @@ Each has a default so no session blocks on it.
 The cold playtest and the contact sheet that ground this review are
 recorded below, verbatim where they are quotes.
 
+### 7.1 The cold playtest
+
+An agent that had read none of the design documents, the README or the
+source played the Session 23 build from the title screen for about
+fifteen minutes with keys, mouse and touch only. The full report is
+`design/critiques/cold-play-1.md`. Its scores:
+
+| understandable | alive | fun | beautiful |
+|---|---|---|---|
+| 3 / 10 | 5 / 10 | 3 / 10 | 8 / 10 |
+
+What it said, in its own words:
+
+- On the goal: *"nothing in the game says this. There's no objective,
+  no 'go to X', no reward when a land counts."* It inferred the goal
+  from the map's footer and gave itself confidence 6 of 10.
+- On the prompts: *"PUSH THE CART names an action, gives no key, and no
+  key I tried did it."* *"LEAN ON THE STILE was actively misleading"*
+  because the hint had called the camera key "lean". It spent five
+  experiments on the stile before walking through it by accident.
+- On the wall: *"After the fence, the only direction is a long wall
+  with no visible opening. I ran west along it for a long time... then
+  could not get into the gate."* It ended the session outside Brim,
+  having read the card that says the gate is permanently open.
+- On the map: *"the most useful screen in the game: the only place the
+  goal is implied. But the wall that blocked me for 5 minutes is not
+  drawn on it."*
+- On what worked: *"the cow walking up to stand beside me while I did
+  nothing: the first thing the world did unprompted, and it was
+  funny."* *"Reading cards was the only reliably rewarding action and
+  there were two of them."*
+- To a friend: *"It's a gorgeous ink-on-paper walking game... Right now
+  it doesn't tell you what to do or how, so I spent most of my time
+  walking into a fence and then a wall and never actually got into the
+  town on the box art."*
+
+Two things in that report are worth more than the scores. The bull did
+not charge (it stood beside the walker like a cow), so the one scripted
+beat in the opening did not fire in the sandbox and nobody knew,
+because every check that guards it passes. And the player never found
+the crossroads from the title screen, so the four lures, the signpost
+and the whole "where do I go" answer were never seen. R3 and R7 are
+that report.
+
+### 7.2 The contact sheet
+
+`tools/shoot.mjs` at noon, both rigs, standing still and facing north
+in each of the twelve lands. What it shows, land by land, is the same
+thing: a beautifully drawn place with a pea-sized figure in the middle
+of a lot of empty ground and a prompt floating in a corner away from
+the thing it names. Specific defects visible without playing:
+
+- Brim Square: the walker stands inside the fountain's drawing and the
+  prompt "LISTEN TO THE FOUNTAIN" sits in the bottom-right corner.
+- The Common: three labels ("THE OLD WELL", "the common", "THE WELL")
+  stack over the keep in the background rather than over the well.
+- The Downs: the mill fills the frame from the walker's feet to the top
+  edge; the camera cannot back off or look up because it cannot turn.
+- The Cubicle Mile and Greyline: a car park and a crossing, empty at
+  noon, with the cast that Sessions 19 to 20 authored not in frame.
+- The Penwood's tarn is the one frame that holds a mood on its own,
+  and it is the land the owner singled out as good.
+
+The desktop sheet and the first-minute sheet are reproducible with
+`OUT=<dir> node tools/shoot.mjs` and `node tools/shoot-first-minute.mjs`.
+
+## 8. What this session did not do
+
+- It did not change game code. Every finding above is a finding; the
+  fixes are Session 24's and later.
+- It did not archive `design/`. That is destructive and the owner's
+  call; §6 records the default.
+- It did not run the ear gate or the feel gate. Nothing in a sandbox
+  with no speaker and no GPU can.
