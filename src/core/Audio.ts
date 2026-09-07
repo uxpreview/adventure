@@ -2102,6 +2102,182 @@ export class Audio {
         this.surge(1.0, 1.4, 240, 90, 0.005, 0.2, 'lowpass');
         break;
       }
+
+      /* ---- PEN: sound answers every verb ------------------------ *
+       * The vocabulary the other pillars call: a bubble, a toast, the
+       * notebook, a pin, a score, a horse, traffic, a crowd, monsters,
+       * the lamps, and the 8:15. Every one is a function of the land's
+       * own voice and scale where it can be, so a fanfare in the
+       * Penwood is a fanfare on the Penwood's string. Peaks are kept
+       * under −3 dBFS in the listening pack (tools/render-wavs.mjs).
+       * An unknown event name falls through the switch and is ignored. */
+      case 'speech': {
+        // a pen scribbling one line: 120 ms of nib on tooth, two or
+        // three skips of the ball, never the same scribble twice
+        const j = 0.85 + Math.random() * 0.3;
+        this.surge(0.012, 0.10, 2600 * j, 1500 * j, 0.022, 0, 'bandpass');
+        const n = 2 + Math.floor(Math.random() * 2);
+        for (let i = 0; i < n; i++) this.knock(2600 + Math.random() * 1400, 0.006, 0.02 + Math.random() * 0.09);
+        break;
+      }
+      case 'chatter': {
+        // an NPC speaking: three to five syllable blips on the land's
+        // own instrument, up an octave, stepping about its scale
+        const land = this.land;
+        const lv = LAND_VOICE[land];
+        const mood = MOODS[land];
+        const n = Math.max(3, Math.min(5, Math.round(_data ?? 4)));
+        const ctx = this.ctx;
+        const t0 = ctx.currentTime;
+        let deg = Math.floor(Math.random() * mood.scale.length);
+        for (let i = 0; i < n; i++) {
+          deg = Math.max(0, Math.min(mood.scale.length - 1, deg + Math.round((Math.random() - 0.5) * 3)));
+          const f = mood.scale[deg] * lv.reg * 2 * (0.99 + Math.random() * 0.02);
+          VOICES[lv.voice](ctx, this.master!, f, t0 + i * (0.085 + Math.random() * 0.03),
+            { gain: mood.level * lv.gain * 1.5, dur: 0.14, tone: toneAt(this.nightness()) });
+        }
+        break;
+      }
+      case 'toast': {
+        // one soft ink tick: the pen set down on the corner of the page
+        this.knock(1900, 0.018);
+        this.tone(1320, 0.015, 0.09, 0.008);
+        break;
+      }
+      case 'learned': {
+        // two notes, rising: written down
+        this.tone(523, 0, 0.16, 0.03);
+        this.tone(784, 0.12, 0.34, 0.028);
+        break;
+      }
+      case 'found': {
+        // a small bell
+        const j = 0.98 + Math.random() * 0.04;
+        VOICES.bell(this.ctx, this.master!, 1568 * j, this.ctx.currentTime, { gain: 0.05, dur: 0.9 });
+        break;
+      }
+      case 'done': {
+        // three notes up the land's own scale on its own instrument;
+        // dry, and short — a job is closed, not a dragon slain
+        const land = this.land;
+        const lv = LAND_VOICE[land];
+        const mood = MOODS[land];
+        const ctx = this.ctx;
+        const t0 = ctx.currentTime;
+        const degs = [0, 2, 4].map((d) => Math.min(mood.scale.length - 1, d));
+        degs.forEach((d, i) => {
+          VOICES[lv.voice](ctx, this.master!, mood.scale[d] * lv.reg, t0 + i * 0.16,
+            { gain: mood.level * lv.gain * 1.6, dur: i === 2 ? 0.9 : 0.35, tone: toneAt(this.nightness()) });
+        });
+        break;
+      }
+      case 'score': {
+        // a little arpeggio on the music box, longer the better you did
+        const k = Math.max(0, Math.min(1, _data ?? 0.5));
+        const n = 2 + Math.round(k * 4);
+        const mood = MOODS[this.land];
+        const ctx = this.ctx;
+        const t0 = ctx.currentTime;
+        for (let i = 0; i < n; i++) {
+          const f = mood.scale[i % mood.scale.length] * (1 + Math.floor(i / mood.scale.length)) * 2;
+          VOICES.box(ctx, this.master!, f, t0 + i * 0.07, { gain: 0.04 + 0.02 * k, dur: 0.4 });
+        }
+        break;
+      }
+      case 'page': {
+        // a page turned: the lift, the flick, and the settle
+        const j = 0.9 + Math.random() * 0.2;
+        this.surge(0.05, 0.16, 900 * j, 1400 * j, 0.02, 0, 'bandpass');
+        this.knock(2200 * j, 0.008, 0.14);
+        this.surge(0.02, 0.22, 1600 * j, 300, 0.018, 0.17, 'lowpass');
+        break;
+      }
+      case 'pin': {
+        // a pencil tapped on the map
+        this.knock(900, 0.03);
+        this.knock(1500, 0.012, 0.028);
+        break;
+      }
+      case 'hooves': {
+        // one stride of a gallop, four beats: ta-ta-DUM-(rest). `data`
+        // is the pace, 0..1; call once per stride to keep it going
+        const k = Math.max(0, Math.min(1, _data ?? 0.5));
+        const stride = 0.42 - 0.2 * k;
+        const beats: [number, number, number][] = [[0, 0.018, 120], [0.19, 0.022, 105], [0.36, 0.036, 88], [0.5, 0.026, 96]];
+        for (const [at, vol, f] of beats) {
+          this.knock(f, vol * (0.9 + Math.random() * 0.2), at * stride * 2);
+          this.surge(0.004, 0.05, 700, 180, vol * 0.5, at * stride * 2, 'lowpass');
+        }
+        break;
+      }
+      case 'horn': {
+        // a car horn: two notes a third apart, twice
+        const j = 0.98 + Math.random() * 0.04;
+        for (const [at, dur] of [[0, 0.16], [0.24, 0.3]] as const) {
+          this.glide(440 * j, 436 * j, at, dur, 0.012, 'square');
+          this.glide(554 * j, 549 * j, at, dur, 0.010, 'square');
+        }
+        break;
+      }
+      case 'crowd': {
+        // a murmur that swells and settles, with a few voices in it
+        this.surge(0.6, 1.2, 420, 300, 0.028, 0, 'bandpass');
+        for (let i = 0; i < 6; i++) {
+          const f = 150 + Math.random() * 140;
+          this.glide(f, f * (0.9 + Math.random() * 0.2), 0.1 + Math.random() * 1.2, 0.12 + Math.random() * 0.1, 0.006, 'triangle');
+        }
+        break;
+      }
+      case 'growl': {
+        // a monster, low and breathy, and a bit funny: two saws beating
+        // against each other under a breath, and a yip at the end
+        const j = 0.92 + Math.random() * 0.16;
+        this.surge(0.06, 0.55, 320 * j, 110, 0.024, 0, 'lowpass');
+        this.glide(88 * j, 62 * j, 0, 0.6, 0.012, 'sawtooth');
+        this.glide(93 * j, 66 * j, 0, 0.6, 0.012, 'sawtooth');
+        this.glide(180 * j, 260 * j, 0.55, 0.12, 0.01, 'triangle');
+        break;
+      }
+      case 'roar': {
+        // the same animal, meaning it
+        const j = 0.94 + Math.random() * 0.12;
+        this.surge(0.08, 1.1, 460 * j, 140, 0.036, 0, 'lowpass');
+        this.glide(120 * j, 68 * j, 0, 1.0, 0.016, 'sawtooth');
+        this.glide(126 * j, 71 * j, 0, 1.0, 0.016, 'sawtooth');
+        this.glide(250 * j, 140 * j, 0.05, 0.7, 0.008, 'square');
+        break;
+      }
+      case 'chase': {
+        // tension, rising: a pulse that quickens under a climbing tone;
+        // one and a half seconds, so it can be struck again and again
+        this.glide(110, 200, 0, 1.4, 0.014, 'triangle');
+        let at = 0;
+        for (let i = 0; i < 7; i++) {
+          this.knock(140 + i * 12, 0.02, at);
+          at += 0.26 - i * 0.022;
+        }
+        this.surge(0.4, 0.9, 500, 900, 0.012, 0.2, 'bandpass');
+        break;
+      }
+      case 'night-falls': {
+        // the lamps come on: a low held chord, root, fifth, octave
+        const ctx = this.ctx;
+        const t0 = ctx.currentTime;
+        for (const [f, g, at] of [[110, 0.045, 0], [165, 0.035, 0.08], [220, 0.028, 0.16]] as const) {
+          VOICES.bowed(ctx, this.master!, f, t0 + at, { gain: g, dur: 2.8, tone: 0.3 });
+        }
+        break;
+      }
+      case 'fanfare-8-15': {
+        // the train: a two-note whistle chord, then three notes up on
+        // the music box. Brief, and dry
+        this.glide(311, 306, 0, 0.5, 0.012, 'triangle');
+        this.glide(415, 409, 0, 0.5, 0.010, 'triangle');
+        const ctx = this.ctx;
+        const t0 = ctx.currentTime + 0.55;
+        [523, 659, 784].forEach((f, i) => VOICES.box(ctx, this.master!, f, t0 + i * 0.14, { gain: 0.05, dur: i === 2 ? 0.8 : 0.3 }));
+        break;
+      }
     }
   }
 

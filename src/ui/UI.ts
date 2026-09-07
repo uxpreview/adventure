@@ -180,6 +180,11 @@ export class UI {
     letterEl(lt, 'INKLANDS', { ...S.display(30), px: 30 });
     const sub2 = el('loader-sub', this.loader);
     letterEl(sub2, 'inking the sheet…', S.quiet(11));
+    /* ---- PEN: the loader says what it is drawing ---- */
+    window.addEventListener('inklands:drawing', (e) => {
+      const d = (e as CustomEvent<{ name: string; done: number; total: number }>).detail;
+      letterEl(sub2, `inked ${d.name.toLowerCase()} — ${d.done} of ${d.total}`, S.quiet(11));
+    });
     const track = el('loader-track', this.loader);
     this.loaderBar = el('loader-bar', track);
 

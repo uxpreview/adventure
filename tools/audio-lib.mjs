@@ -177,7 +177,8 @@ window.__booth = (() => {
       a.master = g.master;
       a.muted = false;
       a.tacet = false;
-      a.event(spec.name);
+      a.land = spec.land ?? 'meadow'; /* PEN: the land's voice for chatter/done */
+      a.event(spec.name, spec.data);
     } else if (spec.kind === 'weather') {
       /* THE RAIN (Session 22): the patter bed and the drops, at one
        * intensity, from the same builders the game plays — nothing is

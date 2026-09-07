@@ -240,3 +240,19 @@ export const S = {
     px, color: PENCIL, alpha: 0.95, weightScale: 0.85,
   }),
 };
+
+/* ---- PEN: the bench — what a bubble and a notebook page cost ---- */
+export function letterBench(runs = 5): { line60: number; page40: number } {
+  const LINE = 'Nell: "That bull is mine. Get the gate shut and I\'ll owe you." 8:15?';
+  const PAGE = Array.from({ length: 40 }, (_, i) => `${i + 1}. ${LINE.slice(0, 40 + (i % 9))}`).join('\n');
+  const time = (f: (i: number) => void) => {
+    f(-1);
+    const t0 = performance.now();
+    for (let i = 0; i < runs; i++) f(i);
+    return (performance.now() - t0) / runs;
+  };
+  // a different string every run, so nothing above the glyph cache can cheat
+  const line60 = time((i) => letterCanvas(`${LINE.slice(0, 58)}${i}`, S.voice(12)));
+  const page40 = time((i) => letterCanvas(`${PAGE}\n${i}`, { px: 11, maxWidth: 520 }));
+  return { line60, page40 };
+}

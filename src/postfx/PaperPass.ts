@@ -11,8 +11,43 @@ export class PaperFX {
   composer: EffectComposer;
   private pass: ShaderPass;
 
+  /* ---- PEN: the render scale ------------------------------------ *
+   * The scene is drawn into a buffer of `scale` × the page's pixels and
+   * the paper pass reads it up to the full page, so the grain, the
+   * vignette and the lamp stay at device resolution whatever the scene
+   * costs. The scale starts at 1 and steps down (0.85, then 0.7) when a
+   * real player's frames average over 20 ms for two seconds, and steps
+   * back up after ten seconds of headroom. Never under the harness: its
+   * frames are stepped by hand and its milliseconds are a software
+   * rasteriser's. */
+  private static STEPS = [1, 0.85, 0.7];
+  private static SLOW_MS = 20;
+  private static FAST_MS = 14;
+  private scale = 1;
+  private forced: number | null = null;
+  private pageW = 1;
+  private pageH = 1;
+  private pageDpr = 1;
+  private adaptive = typeof location === 'undefined' || !location.search.includes('debug');
+  private lastAt = -1;
+  private winAt = 0;
+  private winMs = 0;
+  private winN = 0;
+  private roomSince = 0;
+
   constructor(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) {
-    this.composer = new EffectComposer(renderer);
+    /* An 8-bit buffer, not the composer's half-float default: the page
+     * is one multiply away from what the scene drew, and half-float is
+     * twice the bandwidth on a phone (and, under a software GL, a
+     * seven-second extension check on the first frame). */
+    const target = new THREE.WebGLRenderTarget(1, 1, {
+      type: THREE.UnsignedByteType,
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.LinearFilter,
+      depthBuffer: true,
+      stencilBuffer: false,
+    });
+    this.composer = new EffectComposer(renderer, target);
     this.composer.addPass(new RenderPass(scene, camera));
     this.pass = new ShaderPass({
       uniforms: {
@@ -266,14 +301,66 @@ export class PaperFX {
   }
 
   setSize(w: number, h: number, dpr: number) {
-    this.composer.setSize(w, h);
-    this.composer.setPixelRatio(dpr);
-    (this.pass.uniforms.uPixel.value as THREE.Vector2).set(1 / Math.max(1, w * dpr), 1 / Math.max(1, h * dpr));
+    this.pageW = w;
+    this.pageH = h;
+    this.pageDpr = dpr;
+    this.applyScale();
+  }
+
+  private applyScale() {
+    const k = this.pageDpr * (this.forced ?? this.scale);
+    this.composer.setPixelRatio(k);
+    this.composer.setSize(this.pageW, this.pageH);
+    (this.pass.uniforms.uPixel.value as THREE.Vector2).set(
+      1 / Math.max(1, this.pageW * k), 1 / Math.max(1, this.pageH * k));
+  }
+
+  /** The scene's render scale, 0.7..1 of the page's pixels. Pass a
+   *  number to pin it (the harness photographs each step); null unpins. */
+  renderScale(pin?: number | null): number {
+    if (pin !== undefined) {
+      this.forced = pin === null ? null : Math.max(0.3, Math.min(1, pin));
+      this.applyScale();
+    }
+    return this.forced ?? this.scale;
   }
 
   render(dt: number) {
     this.pass.uniforms.uTime.value += dt;
     this.composer.render();
+    if (dt > 0 && this.adaptive && this.forced === null) this.measure();
+  }
+
+  /** Wall-clock frame time, averaged over two seconds; decides the scale. */
+  private measure() {
+    const now = performance.now();
+    if (this.lastAt >= 0) {
+      const ms = now - this.lastAt;
+      // a hitch or a tab in the background is not a frame time
+      if (ms < 250) { this.winMs += ms; this.winN++; }
+    }
+    this.lastAt = now;
+    if (now - this.winAt < 2000) return;
+    const avg = this.winN ? this.winMs / this.winN : 0;
+    this.winAt = now;
+    this.winMs = 0;
+    this.winN = 0;
+    if (!avg) return;
+    const i = PaperFX.STEPS.indexOf(this.scale);
+    if (avg > PaperFX.SLOW_MS && i < PaperFX.STEPS.length - 1) {
+      this.scale = PaperFX.STEPS[i + 1];
+      this.roomSince = now;
+      this.applyScale();
+    } else if (avg < PaperFX.FAST_MS && i > 0) {
+      if (!this.roomSince) this.roomSince = now;
+      if (now - this.roomSince > 10000) {
+        this.scale = PaperFX.STEPS[i - 1];
+        this.roomSince = now;
+        this.applyScale();
+      }
+    } else {
+      this.roomSince = 0;
+    }
   }
 
   /** THE GRAIN IS A CLOCK. The pen-and-page shimmer and the hand-drawn

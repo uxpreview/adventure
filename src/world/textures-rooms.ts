@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {
-  makeTexture, stroke, line, scribbleCircle, hatch, type Ctx2D,
+  makeTexture, stroke, line, scribbleCircle, hatch, readPixels, type Ctx2D,
 } from '../engine/ink';
 import { INK, PENCIL, WASH } from '../engine/palette';
 
@@ -189,9 +189,11 @@ export function loftFloorDecal(seed: number): THREE.CanvasTexture {
  * ================================================================== */
 export function pencilGhostTexture(src: THREE.Texture): THREE.CanvasTexture {
   const img = src.image as HTMLCanvasElement;
-  const w = img.width;
-  const h = img.height;
-  const from = img.getContext('2d')!.getImageData(0, 0, w, h);
+  /* ---- PEN: read at half size through a CPU canvas — the GPU readback
+   * of three house fronts was 18 of the 42 seconds to the title ---- */
+  const from = readPixels(img, 0.5);
+  const w = from.width;
+  const h = from.height;
   const out = document.createElement('canvas');
   out.width = w;
   out.height = h;

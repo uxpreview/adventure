@@ -164,6 +164,34 @@ const VOICES = [
    * wet cloth hung on a peg. In the pack unheard like everything else. */
   ['the-interiors', ['latch', 'crate-down', 'cloth-hung']],
 ];
+/* ---- PEN: the verbs' answers. `node tools/render-wavs.mjs --only pen`
+ * renders just these, with `data` where a sound takes one, and asserts
+ * that none of them peaks over −3 dBFS in the listening pack. */
+const PEN = [
+  ['speech'], ['chatter', 3], ['chatter', 5], ['toast'], ['learned'], ['found'], ['done'],
+  ['score', 0.1], ['score', 1], ['page'], ['pin'], ['hooves', 0.2], ['hooves', 1], ['horn'],
+  ['crowd'], ['growl'], ['roar'], ['chase'], ['night-falls'], ['fanfare-8-15'],
+];
+const ONLY = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null;
+const CEILING = Math.pow(10, -3 / 20);
+let penFails = 0;
+for (const land of ONLY === 'pen' ? ['meadow', 'forest', 'kingdom'] : ['meadow']) {
+  for (const [name, data] of PEN) {
+    const file = `pen-${land}-${name}${data !== undefined ? '-' + data : ''}`;
+    const r = await booth.render({ kind: 'event', name, data, land, seconds: 4, silent: true, rate: RATE, samples: true, gain: LISTEN_GAIN });
+    writeFileSync(`out/sound/${file}.wav`, wav(r.pcm, RATE));
+    const peak = r.peak * LISTEN_GAIN;
+    const dbfs = 20 * Math.log10(Math.max(1e-9, peak));
+    const bad = peak > CEILING || r.peak < 0.002;
+    if (bad) penFails++;
+    notes.push(`${file}.wav  —  ${name} in the ${land}`);
+    console.log(`${String(++n).padStart(2)}. ${file}.wav  peak ${peak.toFixed(2)} (${dbfs.toFixed(1)} dBFS)  rms ${(20 * Math.log10(Math.max(1e-9, r.rms * LISTEN_GAIN))).toFixed(1)} dB  centroid ${r.centroid.toFixed(0)} Hz${bad ? '   ✗' : ''}`);
+  }
+}
+if (penFails) console.log(`✗ ${penFails} pen one-shots outside the level window (silent, or over −3 dBFS)`);
+else console.log('✓ every pen one-shot sounds and peaks under −3 dBFS');
+if (ONLY === 'pen') { await booth.close(); process.exit(penFails ? 1 : 0); }
+
 console.log('');
 for (const [land, names] of VOICES) {
   for (const name of names) {

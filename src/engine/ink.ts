@@ -442,6 +442,23 @@ export function makeCanvas(w: number, h: number) {
   return { canvas: c, ctx: c.getContext('2d')! };
 }
 
+/* ---- PEN: read a drawing's pixels without a GPU readback ---- *
+ * `getImageData` on an accelerated canvas is a readback of the whole
+ * surface (1.4 s per megapixel under a software GL; tens of ms on a
+ * phone). Copying the drawing into a CPU-backed canvas first makes the
+ * read a memcpy. `scale` < 1 reads a downsampled copy, which is all a
+ * faint under-drawing needs. */
+export function readPixels(src: HTMLCanvasElement, scale = 1): ImageData {
+  const w = Math.max(1, Math.round(src.width * scale));
+  const h = Math.max(1, Math.round(src.height * scale));
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext('2d', { willReadFrequently: true })!;
+  ctx.drawImage(src, 0, 0, w, h);
+  return ctx.getImageData(0, 0, w, h);
+}
+
 export function toTexture(canvas: HTMLCanvasElement): THREE.CanvasTexture {
   const t = new THREE.CanvasTexture(canvas);
   t.colorSpace = THREE.SRGBColorSpace;
