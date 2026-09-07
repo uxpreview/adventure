@@ -4,6 +4,7 @@ import { letterCanvas, S } from './lettering';
 import { WORLD, REGION_SPECS, ROADS, RIVER, BRIDGES, PONDS, SANDBAR, DISTRICTS } from '../world/layout';
 import { coastX } from '../world/terrain';
 import { knowledge } from '../world/knowledge';
+import { notebook } from '../world/notebook';
 
 /**
  * THE MAP — drawn, of course. Region borders in pencil, coast and
@@ -274,6 +275,49 @@ export function renderMap(state: {
     ctx.globalAlpha = 0.72;
     ctx.drawImage(dl, dx, dy, dw, dh);
     ctx.globalAlpha = 1;
+  }
+
+  /* ---- VOICE: PINS. Every place in the notebook — named by somebody,
+     or found — gets a pin and a small label kept clear of every name
+     already on the sheet; the active job's pin is drawn bolder. ---- */
+  {
+    const active = notebook.active();
+    const jobPin = active?.pin?.label ?? active?.pin?.label ?? null;
+    const pins = [...notebook.places];
+    // the job's pin last, so it is drawn on top and its label wins
+    pins.sort((a, b) => (a.label === jobPin ? 1 : 0) - (b.label === jobPin ? 1 : 0));
+    for (const p of pins) {
+      const bold = p.label === jobPin;
+      const px = X(p.x);
+      const pz = Z(p.z);
+      const rad = bold ? 5.2 : 3.4;
+      const col = p.seen || bold ? INK : PENCIL;
+      // the pin: a loop on a stem, the stem's foot on the place
+      scribbleCircle(ctx, px, pz - rad * 2.4, rad, r, { width: bold ? 2 : 1.4, alpha: bold ? 0.95 : 0.75, color: col, passes: 1 }, 1.1);
+      line(ctx, px, pz - rad * 1.4, px, pz, r, { width: bold ? 2 : 1.3, alpha: bold ? 0.95 : 0.75, color: col, passes: 1 });
+      if (bold) {
+        ctx.fillStyle = INK;
+        ctx.globalAlpha = 0.85;
+        ctx.beginPath();
+        ctx.arc(px, pz - rad * 2.4, rad * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      const lc = letterCanvas(p.label, {
+        ...S.quiet((bold ? 9 : 7.5) * ink), color: col, alpha: bold ? 0.95 : 0.8, weightScale: bold ? 1.2 : 0.9,
+      });
+      const lw = lc.width / 2;
+      const lh = lc.height / 2;
+      // right of the pin first, then left, then above
+      const tries: [number, number][] = [
+        [px + rad + 4, pz - rad * 2.4 - lh / 2], [px - rad - 4 - lw, pz - rad * 2.4 - lh / 2], [px - lw / 2, pz - rad * 3.6 - lh],
+      ];
+      const spot = tries.find(([lx, ly]) => clear({ l: lx, r: lx + lw, t: ly, b: ly + lh }));
+      if (!spot && !bold) continue;
+      const [lx, ly] = spot ?? tries[0];
+      placed.push({ l: lx, r: lx + lw, t: ly, b: ly + lh });
+      ctx.drawImage(lc, lx, ly, lw, lh);
+    }
   }
 
   // you are here

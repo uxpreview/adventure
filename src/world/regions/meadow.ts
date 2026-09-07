@@ -23,6 +23,7 @@ import { Follower } from '../company';
 import { knowledge } from '../knowledge';
 import { SPEC_BY_ID } from '../layout';
 import { platform } from '../../engine/Eight15';
+import { npcs } from '../npc'; /* VOICE */
 import type { RegionBuilder, WorldPOI } from './index';
 
 function say(name: string) {
@@ -531,6 +532,8 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   const NELL = { x: HEDGE_X - 2.4, z: 82.6 };
   const nellPoses = [0, 1, 2].map((p) =>
     ctx.standee(nellTexture(1630 + p, p as 0 | 1 | 2), 1.15, 1.9, NELL.x, NELL.z));
+  /* ---- VOICE: where Nell is drawn, for the talk prompt ---- */
+  npcs.track('nell', () => ({ x: nellPoses[common.nell.pose].position.x, z: NELL.z, present: platform.land !== 'meadow' }));
 
   /* THE BULL: four drawings, one showing, mirrored to face its way —
    * the fourth is the night's, lying down (Session 17). */

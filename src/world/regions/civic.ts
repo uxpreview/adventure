@@ -80,6 +80,7 @@ import { worn } from '../worn';
  * Nobody may be in two places at once: while the 8:15's doors are open
  * at a land's stop, that land's own person is the one standing on it. */
 import { platform } from '../../engine/Eight15';
+import { npcs } from '../npc'; /* VOICE */
 import { bell } from '../../engine/Bicycle';
 import type { RegionBuilder, WorldPOI } from './index';
 import type { StandeeField } from '../../engine/StandeeField';
@@ -406,6 +407,8 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   // reads as the person behind the counter and not as one more figure
   // standing about in a square that already has sixteen of them
   const marget = ctx.standee(margetTexture(1486), 1.45, 2.6, -43.1, -75.0);
+  /* ---- VOICE: where Marget is drawn ---- */
+  npcs.track('marget', () => ({ x: marget.position.x, z: marget.position.z, present: marget.visible && (marget.material as THREE.MeshBasicMaterial).opacity > 0.5 }));
   for (const m of [stallShut, stallOpen, marget]) {
     (m.material as THREE.MeshBasicMaterial).transparent = true;
   }
@@ -2003,6 +2006,8 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
   const val = [0, 1].map((p) =>
     ctx.standee(valTexture(8120 + p, p as 0 | 1), 1.15, 2.05, VAL.x + 3.4, VAL.z + 8.8));
   for (const m of val) (m.material as THREE.MeshBasicMaterial).transparent = true;
+  /* ---- VOICE: where Val is drawn (at the gate, or the bin) ---- */
+  npcs.track('val', () => { const m = val.find((v) => v.visible) ?? val[0]; return { x: m.position.x, z: m.position.z, present: !!val.find((v) => v.visible) }; });
 
   /* ================================================================ *
    * THE THREE CHAIRS AND THE HEDGE (`WORLD-SYSTEMS` §10's tableau).
@@ -2925,6 +2930,8 @@ export const buildCity: RegionBuilder = (ctx) => {
     ctx.standee(junctionManTexture(9410 + p, p as 0 | 1), 1.25, 2.15,
       p === 0 ? MAN.x : BENCH.x + 0.1, p === 0 ? MAN.z : BENCH.z + 0.55));
   for (const m of man) (m.material as THREE.MeshBasicMaterial).transparent = true;
+  /* ---- VOICE: where the man is drawn (the junction, or the bench) ---- */
+  npcs.track('the-man', () => { const m = man.find((v) => v.visible) ?? man[0]; return { x: m.position.x, z: m.position.z, present: !!man.find((v) => v.visible) }; });
 
   /* ================================================================ *
    * THE NORTH END, where the grid gives up: a hoarding round a lot that
@@ -3634,6 +3641,8 @@ export const buildOffice: RegionBuilder = (ctx) => {
     ctx.standee(dennisTexture(7220 + p, p as 0 | 1), 1.3, 2.15,
       p === 0 ? DENNIS.x : BOARD.x - 1.9, p === 0 ? DENNIS.z : BOARD.z + 1.1));
   for (const m of dennis) (m.material as THREE.MeshBasicMaterial).transparent = true;
+  /* ---- VOICE: where Dennis is drawn (the kerb, or the board) ---- */
+  npcs.track('dennis', () => { const m = dennis.find((v) => v.visible) ?? dennis[0]; return { x: m.position.x, z: m.position.z, present: !!dennis.find((v) => v.visible) }; });
 
   /* the near layer, and it is the only thing in this land at knee
    * height: two bollards at the kerb, one of which has been hit */
