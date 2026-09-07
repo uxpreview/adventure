@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { cameraYaw, crossing, towardLens } from './billboard';
 import { bicycleTexture } from '../world/textures-now';
 import { SPEC_BY_ID, type Rect } from '../world/layout';
 
@@ -96,12 +97,17 @@ export class Bicycle {
    */
   update(dt: number, y: number, heading: number, speed: number) {
     this.bobT += dt * (1 + speed * 0.6);
-    this.group.position.set(this.pos.x, y, this.pos.y + (this.aboard ? 0.55 : 0));
+    // CAMERA: toward the lens rather than south, and turned to face it
+    const [lx, lz] = towardLens();
+    const off = this.aboard ? 0.55 : 0;
+    this.group.position.set(this.pos.x + lx * off, y, this.pos.y + lz * off);
+    this.group.rotation.y = -cameraYaw();
     if (this.aboard) {
       this.group.rotation.z = Math.sin(this.bobT * 6.2) * 0.012 * Math.min(1, speed / 4);
       if (Math.abs(heading) > 0.001) {
-        const west = Math.sin(heading) < -0.15;
-        const east = Math.sin(heading) > 0.15;
+        const cross = crossing(Math.sin(heading), Math.cos(heading));
+        const west = cross < -0.15;
+        const east = cross > 0.15;
         if (west) this.lean = -1;
         else if (east) this.lean = 1;
       }

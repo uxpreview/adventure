@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { StandeeField, type StandeeFieldOpts } from '../../engine/StandeeField';
 import { makeStandee, makeDecal, disposeGroup } from '../../engine/props';
+import { billboard } from '../../engine/billboard';
 import { rng } from '../../engine/ink';
 import { Terrain } from '../terrain';
 import { WORLD, REGION_SPECS, BRIDGES, ROADS, type RegionId, type RegionSpec, type Rect } from '../layout';
@@ -53,7 +54,15 @@ export type BuildCtx = {
    *  (a gatehouse on a road). Fields — trees, grass, a crowd — stay
    *  walkable, and so does everything that does not ask. */
   standee: (tex: THREE.Texture, w: number, h: number, x: number, z: number,
-    opts?: { rotY?: number; opacity?: number; solid?: true | number | { hw?: number; gap?: number; keep?: boolean } }) => THREE.Mesh;
+    opts?: { rotY?: number; opacity?: number; solid?: true | number | { hw?: number; gap?: number; keep?: boolean };
+      /* ---- CAMERA: which way a cutout turns (engine/billboard.ts) ----
+       * 'camera' turns about its feet to face the lens (a tree, a
+       * house, a sign — the default); 'keep' does too but shows its
+       * back from behind, so a thing that faces east keeps facing
+       * east (a person, an animal); 'fixed' holds its authored rotY
+       * (a fence run, a wall). Unset: fixed if |rotY| is a wall's
+       * quarter-turn or more, camera otherwise. */
+      face?: 'camera' | 'keep' | 'fixed' }) => THREE.Mesh;
   /** Ground decal at (x, z), lying along the page's surface. */
   decal: (tex: THREE.Texture, w: number, h: number, x: number, z: number, rotY?: number, opacity?: number) => THREE.Mesh;
   /** The ground at (x, z) — for anything hung in the air over it. */
@@ -317,6 +326,9 @@ export class World {
         const m = makeStandee(tex, w, h, opts.opacity ?? 1);
         m.position.set(x, terrain.heightAt(x, z), z);
         if (opts.rotY) m.rotation.y = opts.rotY;
+        /* ---- CAMERA: the cutout faces the lens unless it is a wall ---- */
+        const face = opts.face ?? (Math.abs(opts.rotY ?? 0) >= 0.6 ? 'fixed' : 'camera');
+        if (face !== 'fixed') billboard(m, opts.rotY ?? 0, face === 'keep' ? 'keep' : 'front');
         group.add(m);
         this.raiseSkyline(x, z, w, m.position.y + h);
         this.feet.push({ x, z, hw: Math.max(0.5, w * 0.5), top: m.position.y + h, m, h });

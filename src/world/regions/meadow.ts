@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { towardLens, cameraRight } from '../../engine/billboard';
 import { ringTexture, loopsTexture, rng } from '../../engine/ink';
 import { hayBaleTexture, logTexture, wheatDecal } from '../textures';
 import {
@@ -530,12 +531,12 @@ export const buildMeadow: RegionBuilder = (ctx) => {
    * crossroads, because that is the road people come down. */
   const NELL = { x: HEDGE_X - 2.4, z: 82.6 };
   const nellPoses = [0, 1, 2].map((p) =>
-    ctx.standee(nellTexture(1630 + p, p as 0 | 1 | 2), 1.15, 1.9, NELL.x, NELL.z));
+    ctx.standee(nellTexture(1630 + p, p as 0 | 1 | 2), 1.15, 1.9, NELL.x, NELL.z, { face: 'keep' }));
 
   /* THE BULL: four drawings, one showing, mirrored to face its way —
    * the fourth is the night's, lying down (Session 17). */
   const bullPoses = [0, 1, 2, 3].map((p) =>
-    ctx.standee(bullTexture(1640 + p, p as 0 | 1 | 2 | 3), 3.6, 2.4, BULL_HOME.x, BULL_HOME.z));
+    ctx.standee(bullTexture(1640 + p, p as 0 | 1 | 2 | 3), 3.6, 2.4, BULL_HOME.x, BULL_HOME.z, { face: 'keep' }));
   // its own trodden ground, where it has stood the longest
   ctx.decal(wornGroundDecal(1643), 7, 6, BULL_HOME.x, BULL_HOME.z + 0.5, 0.6, 0.45);
 
@@ -543,7 +544,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
    * than a field, because a standee has no birth to get wrong
    * (`StandeeField.hide`'s note) and there is one of it. */
   const goatPoses = [0, 1, 2, 3].map((p) =>
-    ctx.standee(goatTexture(1650 + p, p as 0 | 1 | 2 | 3), 2.2, 1.65, goat.x, goat.z));
+    ctx.standee(goatTexture(1650 + p, p as 0 | 1 | 2 | 3), 2.2, 1.65, goat.x, goat.z, { face: 'keep' }));
 
   /* ---- THE UNNAMED, drawn (Session 17) ---------------------------- */
   const arguers = ARGUERS.map((d, i) => new Figure(ctx, d, (i % 3) as 0 | 1 | 2));
@@ -761,8 +762,13 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       const az = (pz - B.z) / Math.max(1e-3, bd);
       let sx = -az;
       let sz = ax;
-      if (sz > 0) { sx = -sx; sz = -sz; }
-      if (Math.abs(sz) < 0.3 && sx < 0) { sx = -sx; sz = -sz; }
+      /* ---- CAMERA: the shoulder the lens can see, from any yaw ----
+       * "north" is "away from the lens" and "east" is "the camera's
+       * right" now that the camera turns (engine/billboard.ts). */
+      const [lx, lz] = towardLens();
+      const [rx, rz] = cameraRight();
+      if (sx * lx + sz * lz > 0) { sx = -sx; sz = -sz; }
+      if (Math.abs(sx * lx + sz * lz) < 0.3 && sx * rx + sz * rz < 0) { sx = -sx; sz = -sz; }
       const tx = px + sx * BULL_SHOULDER;
       const tz = pz + sz * BULL_SHOULDER;
       const td = Math.hypot(tx - B.x, tz - B.z);

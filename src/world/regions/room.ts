@@ -72,7 +72,7 @@ export function buildRoom(
   const cz = (q.minZ + q.maxZ) / 2;
   const floor = ctx.decal(floorTex, w, d, cx, cz, 0, 0.9);
   floor.renderOrder = -5;
-  const wall = ctx.standee(wallTex, w, wallH, cx, q.minZ + 0.18, { solid: true });
+  const wall = ctx.standee(wallTex, w, wallH, cx, q.minZ + 0.18, { solid: true, face: 'fixed' });
   const sides = [q.minX + 0.16, q.maxX - 0.16].map((x, i) =>
     ctx.standee(sideWallTexture(seed + i, kind), d, wallH, x, cz, { rotY: Math.PI / 2, solid: true }));
   const things: THREE.Mesh[] = [];

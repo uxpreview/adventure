@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { yawUniform } from './billboard';
 
 export type StandeeFieldOpts = {
   /** World size of one quad. */
@@ -108,6 +109,12 @@ export class StandeeField {
         uWave: { value: new THREE.Vector3(wave?.amp ?? 0, wave?.speed ?? 0, wave?.len ?? 0) },
         uQuadH: { value: h },
         uPlayer: { value: new THREE.Vector2(1e6, 1e6) },
+        /* THE CAMERA'S YAW (the reset, pillar 1): one uniform object
+         * shared by every field, so a standing quad turns about its own
+         * feet to face the lens with no CPU work per instance. A decal
+         * lies on the page and does not turn. */
+        uYaw: yawUniform,
+        uFace: { value: decal ? 0 : 1 },
       },
       vertexShader: /* glsl */ `
         attribute float aBirth;
@@ -118,6 +125,8 @@ export class StandeeField {
         uniform vec3 uWave;
         uniform float uQuadH;
         uniform vec2 uPlayer;
+        uniform float uYaw;
+        uniform float uFace;
         varying vec2 vUv;
         varying float vWake;
         void main() {
@@ -128,6 +137,14 @@ export class StandeeField {
           float spring = t > 0.0 ? 1.0 + uOvershoot * exp(-t * 4.0) * sin(min(t, 1.2) * 9.0) : 1.0;
           vec3 p = position * spring;
           vec4 wp = instanceMatrix * modelMatrix * vec4(p, 1.0);
+          if (uFace > 0.5) {
+            // face the lens: turn the quad about its own feet by -yaw
+            vec3 o = (instanceMatrix * modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+            vec3 d = wp.xyz - o;
+            float ca = cos(uYaw);
+            float sa = -sin(uYaw);
+            wp.xyz = o + vec3(ca * d.x + sa * d.z, d.y, -sa * d.x + ca * d.z);
+          }
           if (uWind.x > 0.0) {
             // the wind, and the walker: both act on the top of the
             // blade, in world space so flips and rotations stay honest

@@ -267,7 +267,10 @@ export class Input {
     if (this.holdPeek !== null) want = this.holdPeek;
     else if (this.enabled) {
       const k = (this.keys.has('Period') ? 1 : 0) - (this.keys.has('Comma') ? 1 : 0);
-      want = k !== 0 ? k : this.peekRaw;
+      /* ---- CAMERA: the keys are a hold-to-TURN now (core/Look.ts reads
+       * `peek` as a rate); two fingers orbit through Look's own touch
+       * handling, so `peekRaw` no longer feeds a spring-back lean. */
+      want = k;
     }
     this.peek += (want - this.peek) * (1 - Math.exp(-dt * 6));
     if (want === 0 && Math.abs(this.peek) < 0.002) this.peek = 0;

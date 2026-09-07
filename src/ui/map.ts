@@ -56,6 +56,9 @@ export function renderMap(state: {
    * else is left alone.
    */
   width?: number;
+  /** CAMERA: which way the camera looks, radians east of north — drawn
+   *  as a small tick off the you-are-here mark. */
+  heading?: number;
 }): HTMLCanvasElement {
   const W = 940;
   const H = 760;
@@ -286,6 +289,19 @@ export function renderMap(state: {
     ctx.arc(X(hx), Z(hz), 2.2, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
+    if (state.heading !== undefined) {
+      // the heading tick: a short stroke from the dot the way the lens looks
+      const hx0 = X(hx) + Math.sin(state.heading) * 4;
+      const hy0 = Z(hz) - Math.cos(state.heading) * 4;
+      const hx1 = X(hx) + Math.sin(state.heading) * 16;
+      const hy1 = Z(hz) - Math.cos(state.heading) * 16;
+      stroke(ctx, [[hx0, hy0], [hx1, hy1]], r, { width: 2.0, alpha: 0.85 });
+      const bx = hx1 - Math.sin(state.heading) * 4;
+      const by = hy1 + Math.cos(state.heading) * 4;
+      const px = Math.cos(state.heading) * 3.2;
+      const py = Math.sin(state.heading) * 3.2;
+      stroke(ctx, [[bx + px, by + py], [hx1, hy1], [bx - px, by - py]], r, { width: 1.6, alpha: 0.85 });
+    }
     const you = letterCanvas('you', S.quiet(10 * ink));
     ctx.drawImage(you, X(hx) + 8, Z(hz) - 20, you.width / 2, you.height / 2);
   }

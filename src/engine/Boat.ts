@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { cameraYaw, crossing, towardLens } from './billboard';
 import { rowboatTexture } from '../world/textures';
 import { BOAT_HOME } from '../world/layout';
 
@@ -96,7 +97,12 @@ export class Boat {
      * the walker's legs — which is the whole of what makes somebody
      * read as sitting IN a boat rather than standing on one. Round 2 of
      * the gate had a figure balanced on a gunwale. */
-    this.group.position.set(this.pos.x, y, this.pos.y + (this.aboard ? 0.5 : 0));
+    /* CAMERA: "south" is "toward the lens" now that the camera turns,
+     * and the hull itself turns about its feet to face it. */
+    const [lx, lz] = towardLens();
+    const off = this.aboard ? 0.5 : 0;
+    this.group.position.set(this.pos.x + lx * off, y, this.pos.y + lz * off);
+    this.group.rotation.y = -cameraYaw();
     rowboat.x = this.pos.x;
     rowboat.z = this.pos.y;
     rowboat.aboard = this.aboard;
@@ -115,8 +121,10 @@ export class Boat {
     }
     // bow to the direction of travel
     if (Math.abs(heading) > 0.001 || this.aboard) {
-      const west = Math.sin(heading) < -0.15;
-      const east = Math.sin(heading) > 0.15;
+      // across the FRAME, not the world: the bow points where it goes
+      const cross = crossing(Math.sin(heading), Math.cos(heading));
+      const west = cross < -0.15;
+      const east = cross > 0.15;
       if (west) this.lean = -1;
       else if (east) this.lean = 1;
     }
