@@ -1,5 +1,12 @@
 # PLAN — the session ladder
 
+> **2026-09-07: this ladder is closed at Session 23.** The owner played
+> the world and said it is no longer fun or understandable. The review,
+> the six pillars that replace the laws, and the phases from Session 24
+> on are in **`design/THE-RESET.md`**, and the next session's brief is
+> **`PROMPT.md`**. Everything below is the record of how the world was
+> built and binds nothing.
+
 Session 1 built the sheet, the engine, and a scatter draft of all twelve
 lands. Every session from here builds it out or up under
 `design/QUALITY-BAR.md`, and `design/WORLD-SYSTEMS.md` is the standing
