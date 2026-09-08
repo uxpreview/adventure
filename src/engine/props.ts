@@ -19,10 +19,15 @@ export function makeStandee(
 ): THREE.Mesh {
   const geo = new THREE.PlaneGeometry(w, h);
   geo.translate(0, h / 2, 0);
+  /* PEN: a cutout seen from any side. alphaTest at 0.1 drops the
+   * mip-averaged fringe an oblique standee grows along its edge (the
+   * canvas's transparent texels are black under the ink), and the
+   * drawing is DoubleSide so a camera that has walked round it still
+   * sees a drawing and not a missing quad. */
   const mat = new THREE.MeshBasicMaterial({
     map: tex,
     transparent: true,
-    alphaTest: 0.08,
+    alphaTest: 0.1,
     opacity,
     side: THREE.DoubleSide,
   });

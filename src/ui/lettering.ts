@@ -1,5 +1,5 @@
 import { writeLine, measureLine, NATE_ADULT, type Hand } from '../engine/script';
-import { rng, legibleCaps } from '../engine/ink';
+import { rng, legibleCaps, stroke, scribbleCircle } from '../engine/ink';
 import { INK, PENCIL } from '../engine/palette';
 
 /**
@@ -255,4 +255,32 @@ export function letterBench(runs = 5): { line60: number; page40: number } {
   const line60 = time((i) => letterCanvas(`${LINE.slice(0, 58)}${i}`, S.voice(12)));
   const page40 = time((i) => letterCanvas(`${PAGE}\n${i}`, { px: 11, maxWidth: 520 }));
   return { line60, page40 };
+}
+
+/* ---- PEN: the tab's icon, drawn by the pen — a nib and a blot ---- */
+export function installFavicon() {
+  try {
+    const c = document.createElement('canvas');
+    c.width = 64;
+    c.height = 64;
+    const ctx = c.getContext('2d')!;
+    ctx.fillStyle = '#f5f2ea';
+    ctx.fillRect(0, 0, 64, 64);
+    const r = rng(1999);
+    // the nib: a tall wedge, drawn twice like everything else
+    stroke(ctx, [[14, 52], [26, 12], [38, 52], [14, 52]], r, { color: INK, width: 3.2, jitter: 1.2, alpha: 0.9 });
+    stroke(ctx, [[26, 20], [26, 44]], r, { color: INK, width: 2.4, jitter: 1, alpha: 0.7 });
+    // the blot
+    scribbleCircle(ctx, 48, 20, 8, r, { color: INK, width: 2.6, jitter: 1.4, alpha: 0.85 }, 1.3);
+    let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.type = 'image/png';
+    link.href = c.toDataURL('image/png');
+  } catch {
+    /* a page without an icon is still a page */
+  }
 }
