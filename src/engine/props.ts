@@ -31,7 +31,24 @@ export function makeStandee(
     opacity,
     side: THREE.DoubleSide,
   });
+  skipWhenClear(mat);
   return new THREE.Mesh(geo, mat);
+}
+
+/* ---- PEN: a drawing at opacity zero is not a draw call -------------- *
+ * three.js culls by `material.visible`, never by opacity, so a lit
+ * window by day, a shutter by night, a lamp's glow at noon, a room's
+ * pencil front from outside — every variant a land keeps at opacity 0
+ * until its hour — was a full draw call of nothing. The kingdom alone
+ * carried dozens. `visible` now reads false while the drawing is clear;
+ * lands that set `visible` themselves still get exactly what they set. */
+function skipWhenClear(mat: THREE.Material) {
+  let own = true;
+  Object.defineProperty(mat, 'visible', {
+    get: () => own && mat.opacity > 0.004,
+    set: (v: boolean) => { own = v; },
+    configurable: true,
+  });
 }
 
 export function makeDecal(
@@ -51,6 +68,7 @@ export function makeDecal(
     polygonOffsetFactor: -4,
     polygonOffsetUnits: -8,
   });
+  skipWhenClear(mat);
   const m = new THREE.Mesh(geo, mat);
   m.position.y = 0.01;
   m.renderOrder = -6;
