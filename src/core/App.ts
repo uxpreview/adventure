@@ -1422,12 +1422,14 @@ export class App {
     aheadNear: 34,
     aheadMid: 60,
     aheadFar: 88,
-    riseCap: 14,
+    /** Smaller than the old rig's 14: the camera can be turned to face a
+     *  scarp now, and a full retreat there made the walker a pea. */
+    riseCap: 8,
     /** Per unit of ground rising ahead: how far the camera retreats,
      *  how much it climbs, and how much its aim climbs. */
-    riseBack: 0.90,
-    riseUp: 0.52,
-    riseLook: 0.38,
+    riseBack: 0.55,
+    riseUp: 0.45,
+    riseLook: 0.32,
     /** Never let the camera end up inside a scarp it is climbing. */
     clearance: 2.8,
     /** The horizon, and what a climb adds to it. */
