@@ -86,24 +86,43 @@ function jitterPoints(
  * Long straights stop stair-stepping because they are no longer four
  * segments of a polygon; they are sampled at ~2 px.
  */
-function curvePoints(j: [number, number][]): [number, number][] {
-  if (j.length < 2) return j.slice();
-  const out: [number, number][] = [j[0]];
-  let start = j[0];
-  for (let i = 1; i < j.length; i++) {
-    const c = j[i - 1];
-    const end: [number, number] = [(j[i - 1][0] + j[i][0]) / 2, (j[i - 1][1] + j[i][1]) / 2];
-    const n = Math.max(2, Math.min(28, Math.round(Math.hypot(end[0] - start[0], end[1] - start[1]) / 2.0)));
-    for (let s = 1; s <= n; s++) {
-      const t = s / n, u = 1 - t;
-      out.push([
-        u * u * start[0] + 2 * u * t * c[0] + t * t * end[0],
-        u * u * start[1] + 2 * u * t * c[1] + t * t * end[1],
-      ]);
-    }
-    start = end;
+function curvePoints(j: [number, number][]): Float64Array {
+  /* PEN: a flat array of x,y pairs. The old array-of-pairs allocated
+   * one object per sample; a page of lettering is a hundred thousand
+   * samples, and the collector was a tenth of the page's cost. The
+   * curve is the same curve, sampled at ~2.4 px. */
+  const m = j.length;
+  if (m < 2) {
+    const o = new Float64Array(m * 2);
+    for (let i = 0; i < m; i++) { o[i * 2] = j[i][0]; o[i * 2 + 1] = j[i][1]; }
+    return o;
   }
-  out.push(j[j.length - 1]);
+  let cap = 2;
+  const ns: number[] = [];
+  let sx = j[0][0], sy = j[0][1];
+  for (let i = 1; i < m; i++) {
+    const ex = (j[i - 1][0] + j[i][0]) / 2, ey = (j[i - 1][1] + j[i][1]) / 2;
+    const n = Math.max(2, Math.min(28, Math.round(Math.hypot(ex - sx, ey - sy) / 2.4)));
+    ns.push(n);
+    cap += n;
+    sx = ex; sy = ey;
+  }
+  const out = new Float64Array(cap * 2);
+  let k = 0;
+  out[k++] = j[0][0]; out[k++] = j[0][1];
+  sx = j[0][0]; sy = j[0][1];
+  for (let i = 1; i < m; i++) {
+    const cx = j[i - 1][0], cy = j[i - 1][1];
+    const ex = (j[i - 1][0] + j[i][0]) / 2, ey = (j[i - 1][1] + j[i][1]) / 2;
+    const n = ns[i - 1];
+    for (let sI = 1; sI <= n; sI++) {
+      const t = sI / n, u = 1 - t;
+      out[k++] = u * u * sx + 2 * u * t * cx + t * t * ex;
+      out[k++] = u * u * sy + 2 * u * t * cy + t * t * ey;
+    }
+    sx = ex; sy = ey;
+  }
+  out[k++] = j[m - 1][0]; out[k++] = j[m - 1][1];
   return out;
 }
 
@@ -129,23 +148,26 @@ function bandNoise(r: () => number, harmonics = 3) {
  */
 function inkPass(
   ctx: Ctx2D,
-  cp: [number, number][],
+  cp: Float64Array,
   base: number,
   alpha: number,
   r: () => number,
   opts: { taper: boolean; skip: boolean }
 ) {
-  const n = cp.length;
+  const n = cp.length >> 1;
   if (n < 2) return;
   // arc length, so pressure and starve read in real distance and not in
   // however many points the caller happened to hand us
-  const s: number[] = [0];
-  for (let i = 1; i < n; i++) s.push(s[i - 1] + Math.hypot(cp[i][0] - cp[i - 1][0], cp[i][1] - cp[i - 1][1]));
+  const s = new Float64Array(n);
+  for (let i = 1; i < n; i++) {
+    const dx = cp[i * 2] - cp[i * 2 - 2], dy = cp[i * 2 + 1] - cp[i * 2 - 1];
+    s[i] = s[i - 1] + Math.sqrt(dx * dx + dy * dy);
+  }
   const L = s[n - 1];
   if (L < 0.6) {
     ctx.globalAlpha = alpha;
     ctx.beginPath();
-    ctx.arc(cp[0][0], cp[0][1], base * 0.5, 0, Math.PI * 2);
+    ctx.arc(cp[0], cp[1], base * 0.5, 0, Math.PI * 2);
     ctx.fill();
     return;
   }
@@ -156,9 +178,9 @@ function inkPass(
   // turn per unit length at each sample — where the ball slows and pools
   const turn = new Float32Array(n);
   for (let i = 1; i < n - 1; i++) {
-    const ax = cp[i][0] - cp[i - 1][0], ay = cp[i][1] - cp[i - 1][1];
-    const bx = cp[i + 1][0] - cp[i][0], by = cp[i + 1][1] - cp[i][1];
-    const la = Math.hypot(ax, ay) || 1e-4, lb = Math.hypot(bx, by) || 1e-4;
+    const ax = cp[i * 2] - cp[i * 2 - 2], ay = cp[i * 2 + 1] - cp[i * 2 - 1];
+    const bx = cp[i * 2 + 2] - cp[i * 2], by = cp[i * 2 + 3] - cp[i * 2 + 1];
+    const la = Math.sqrt(ax * ax + ay * ay) || 1e-4, lb = Math.sqrt(bx * bx + by * by) || 1e-4;
     const d = Math.max(-1, Math.min(1, (ax * bx + ay * by) / (la * lb)));
     turn[i] = Math.acos(d) / ((la + lb) * 0.5);
   }
@@ -180,21 +202,20 @@ function inkPass(
 
   const w = new Float32Array(n);
   const on = new Uint8Array(n);
-  // a starve threshold that only bites on strokes long enough to have
-  // outrun their own feed; short marks never skip
   // A ball starves when it is moving fast under a light hand. A bold
   // ruled border under real pressure does not dash, and dashing it
   // turns a panel edge into a dotted line — so the threshold backs
   // off as the stroke gets heavier, and short marks never skip.
   const skipT = opts.skip && L > 55 ? -(0.74 + Math.min(0.9, base * 0.085)) : -2;
+  const inSpan = Math.min(L * 0.5, base * 3.4 + 2);
+  const outSpan = Math.min(L * 0.5, base * 5.2 + 3);
   for (let i = 0; i < n; i++) {
     const t = s[i] / L;
     let k = 1 + pressure(t) * 0.22;
     if (opts.taper) {
       // the nib lands and lifts: thin in, thinner out
-      const inK = 0.52 + 0.48 * Math.min(1, (s[i] / Math.min(L * 0.5, base * 3.4 + 2)));
-      const rem = L - s[i];
-      const outK = 0.34 + 0.66 * Math.min(1, rem / Math.min(L * 0.5, base * 5.2 + 3));
+      const inK = 0.52 + 0.48 * Math.min(1, s[i] / inSpan);
+      const outK = 0.34 + 0.66 * Math.min(1, (L - s[i]) / outSpan);
       k *= inK * outK;
     }
     k *= 1 + pool[i] * 0.55;
@@ -216,25 +237,23 @@ function inkPass(
     ctx.beginPath();
     // one side out...
     for (let k = a; k <= b; k++) {
-      const px = k > a ? cp[k - 1] : cp[k], nx = k < b ? cp[k + 1] : cp[k];
-      let dx = nx[0] - px[0], dy = nx[1] - px[1];
-      const l = Math.hypot(dx, dy) || 1e-4; dx /= l; dy /= l;
-      const x = cp[k][0] - dy * w[k], y = cp[k][1] + dx * w[k];
+      const p = k > a ? k - 1 : k, q = k < b ? k + 1 : k;
+      let dx = cp[q * 2] - cp[p * 2], dy = cp[q * 2 + 1] - cp[p * 2 + 1];
+      const l = Math.sqrt(dx * dx + dy * dy) || 1e-4; dx /= l; dy /= l;
+      const x = cp[k * 2] - dy * w[k], y = cp[k * 2 + 1] + dx * w[k];
       if (k === a) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     // ...and the other side back
     for (let k = b; k >= a; k--) {
-      const px = k > a ? cp[k - 1] : cp[k], nx = k < b ? cp[k + 1] : cp[k];
-      let dx = nx[0] - px[0], dy = nx[1] - px[1];
-      const l = Math.hypot(dx, dy) || 1e-4; dx /= l; dy /= l;
-      ctx.lineTo(cp[k][0] + dy * w[k], cp[k][1] - dx * w[k]);
+      const p = k > a ? k - 1 : k, q = k < b ? k + 1 : k;
+      let dx = cp[q * 2] - cp[p * 2], dy = cp[q * 2 + 1] - cp[p * 2 + 1];
+      const l = Math.sqrt(dx * dx + dy * dy) || 1e-4; dx /= l; dy /= l;
+      ctx.lineTo(cp[k * 2] + dy * w[k], cp[k * 2 + 1] - dx * w[k]);
     }
     ctx.closePath();
     // round caps, the way a ball pen sets down and lifts
-    ctx.moveTo(cp[a][0] + w[a], cp[a][1]);
-    ctx.arc(cp[a][0], cp[a][1], w[a], 0, Math.PI * 2);
-    ctx.moveTo(cp[b][0] + w[b], cp[b][1]);
-    ctx.arc(cp[b][0], cp[b][1], w[b], 0, Math.PI * 2);
+    cap(ctx, cp[a * 2], cp[a * 2 + 1], w[a]);
+    cap(ctx, cp[b * 2], cp[b * 2 + 1], w[b]);
     ctx.fill();
   }
 
@@ -244,9 +263,25 @@ function inkPass(
     if (pool[k] < pool[k - 1] || pool[k] < pool[k + 1]) continue;
     ctx.globalAlpha = Math.min(1, alpha * 1.15);
     ctx.beginPath();
-    ctx.arc(cp[k][0], cp[k][1], w[k] * 1.10, 0, Math.PI * 2);
+    ctx.arc(cp[k * 2], cp[k * 2 + 1], w[k] * 1.10, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = alpha;
+  }
+}
+
+/** A round cap as a subpath: an octagon under two pixels of radius
+ *  (where a true arc costs ten times the geometry it draws), an arc
+ *  above it. */
+const OCT = Array.from({ length: 8 }, (_, i) => [Math.cos(i * Math.PI / 4), Math.sin(i * Math.PI / 4)]);
+function cap(ctx: Ctx2D, x: number, y: number, rad: number) {
+  if (rad < 2) {
+    const k = rad * 1.0824; // circumscribed, so the octagon covers the circle
+    ctx.moveTo(x + k, y);
+    for (let i = 1; i < 8; i++) ctx.lineTo(x + OCT[i][0] * k, y + OCT[i][1] * k);
+    ctx.closePath();
+  } else {
+    ctx.moveTo(x + rad, y);
+    ctx.arc(x, y, rad, 0, Math.PI * 2);
   }
 }
 
@@ -308,11 +343,13 @@ export function stroke(
       const ang = r() * Math.PI * 2;
       const amp = width * (0.26 + r() * 0.3);
       const swing = bandNoise(r, 2);
-      const n = cp.length;
+      const n = cp.length >> 1;
+      const ca = Math.cos(ang), sa = Math.sin(ang);
       for (let i = 0; i < n; i++) {
         const t = n > 1 ? i / (n - 1) : 0;
         const k = amp * (0.45 + 0.55 * swing(t));
-        cp[i] = [cp[i][0] + Math.cos(ang) * k, cp[i][1] + Math.sin(ang) * k];
+        cp[i * 2] += ca * k;
+        cp[i * 2 + 1] += sa * k;
       }
     }
     inkPass(ctx, cp, width * (p === 0 ? 1 : 0.72), alpha * (p === 0 ? 1 : 0.35), r, {

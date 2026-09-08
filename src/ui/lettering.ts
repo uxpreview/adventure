@@ -66,7 +66,7 @@ function wrapLines(text: string, hand: Hand, maxUnits: number, tracking: number)
  * Render one run of handwriting to a canvas sized for the text.
  * Returns the canvas with CSS size set (device pixels inside).
  */
-export function letterCanvas(text: string, style: LetterStyle = {}): HTMLCanvasElement {
+export function letterCanvas(text: string, style: LetterStyle = {}, into?: HTMLCanvasElement | null): HTMLCanvasElement {
   const hand = style.hand ?? NATE_ADULT;
   const px = style.px ?? 16;
   const tracking = style.tracking ?? 1;
@@ -86,10 +86,15 @@ export function letterCanvas(text: string, style: LetterStyle = {}): HTMLCanvasE
   const w = Math.ceil(widest * xh + padX * 2);
   const h = Math.ceil(padY * 2 + box * xh + (lines.length - 1) * leading * xh);
 
-  const canvas = document.createElement('canvas');
+  /* PEN: a re-lettered element draws into the canvas it already has
+   * when the size has not changed — a count that ticks every second
+   * would otherwise allocate a fresh surface each time. */
+  const reuse = into && into.width === Math.max(2, w) && into.height === Math.max(2, h);
+  const canvas = reuse ? into : document.createElement('canvas');
   canvas.width = Math.max(2, w);
   canvas.height = Math.max(2, h);
   const ctx = canvas.getContext('2d')!;
+  if (reuse) ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // one deterministic wobble per string, so re-renders don't shimmer
   let seed = style.seed ?? 4211;
@@ -130,10 +135,12 @@ export function letterEl(el: HTMLElement, text: string, style: LetterStyle = {})
   const key = `${text}|${style.px}|${style.color}|${style.hand === undefined ? 'book' : 'x'}|${style.alpha}`;
   if ((el as HTMLElement & { __letterKey?: string }).__letterKey === key) return;
   (el as HTMLElement & { __letterKey?: string }).__letterKey = key;
-  el.textContent = '';
+  const old = el.firstElementChild instanceof HTMLCanvasElement && el.childElementCount === 1 ? el.firstElementChild : null;
   el.setAttribute('aria-label', text);
   el.classList.add('lettered');
-  if (text.trim()) el.appendChild(letterCanvas(text, style));
+  if (!text.trim()) { el.textContent = ''; return; }
+  const c = letterCanvas(text, style, old);
+  if (c !== old) { el.textContent = ''; el.appendChild(c); }
 }
 
 /**

@@ -166,7 +166,7 @@ async function run(cmd) {
 // ---- load, to the title, as a player would --------------------------
 const t0 = Date.now();
 await page.goto(URL, { waitUntil: 'domcontentloaded' });
-await page.waitForSelector('.title-veil:not(.gone)', { timeout: 120000 }).catch(() => console.log('!! title never appeared'));
+await page.waitForSelector('.title-veil:not(.gone)', { timeout: Number(process.env.PLAY_TITLE_TIMEOUT ?? 120000) }) /* PEN: a loaded box needs longer */.catch(() => console.log('!! title never appeared'));
 await page.waitForTimeout(800);
 console.log(`loaded to title in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 // hold the clock from here on: nothing advances unless a command says so
