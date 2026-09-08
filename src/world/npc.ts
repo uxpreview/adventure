@@ -116,8 +116,11 @@ class Npcs {
     const dx = this.walker.x - p.x;
     const dz = this.walker.z - p.z;
     const d = Math.hypot(dx, dz);
-    if (d < 0.05 || d > 8) return p[axis];
-    const k = Math.min(0.9, d * 0.5) / d;
+    // in reach, the place is a third of a stride from the walker's
+    // feet, whichever way the person really stands; out of reach it is
+    // the person, so the name is written over their head
+    if (d < 0.05 || d >= TALK_R) return p[axis];
+    const k = Math.max(0, d - 0.3) / d;
     return axis === 'x' ? p.x + dx * k : p.z + dz * k;
   }
 
@@ -130,7 +133,10 @@ class Npcs {
       label: n.def.name,
       labelHeight: 2.5,
       prompt: `TALK TO ${n.def.name}`,
-      get enabled() { return self.positionOf(n.def.id)?.present ?? false; },
+      get enabled() {
+        const p = self.positionOf(n.def.id);
+        return !!p && p.present;
+      },
       set enabled(_v: boolean) { /* the drawing decides */ },
       onInteract: () => self.talk(n.def.id),
       npc: true,
@@ -225,6 +231,15 @@ class Npcs {
   talk(id: string) {
     const n = this.map.get(id);
     if (!n) return;
+    /* A CARD IN THE CONVERSATION: if the person's own place offers a
+     * choice not yet taken, talking to them opens it — the talk prompt
+     * stands in front of the place's, so the card comes through the
+     * person rather than being shadowed by them. */
+    const card = this.cardNear(id);
+    if (card) {
+      card.def.onInteract?.();
+      return;
+    }
     const s = this.state(id);
     const lines = n.def.lines(s);
     if (!lines.length) return;
@@ -246,6 +261,21 @@ class Npcs {
     if (n.def.want && line.includes(n.def.want)) this.pin(n.def.want);
     notebook.dirty = true;
     n.def.onTalk?.(s);
+  }
+
+  /** A place within four units of a person with a choice still open. */
+  private cardNear(id: string) {
+    const p = this.positionOf(id);
+    if (!p || !this.poiMan) return null;
+    for (const q of this.poiMan.pois) {
+      const d = q.def as POIDef & { npc?: boolean; choice?: { options: { door: string }[] } };
+      if (d.npc || !q.enabled) continue;
+      if (Math.hypot(d.x - p.x, d.z - p.z) > 4) continue;
+      const c = d.choice;
+      if (!c || c.options.some((o) => knowledge.has(o.door))) continue;
+      return q;
+    }
+    return null;
   }
 
   /** Pin a place a person named, by its POI label. */

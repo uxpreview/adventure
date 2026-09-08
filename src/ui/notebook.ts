@@ -180,7 +180,8 @@ export class NotebookPage {
         notebook.heardList.forEach((h, i) => {
           const wrap = document.createElement('div');
           wrap.className = 'nb-heard';
-          wrap.appendChild(this.lineEl(`who|${h.who}`, h.who, 'quiet', w));
+          // keyed by the line it heads, so two of Nell's get two NELLs
+          wrap.appendChild(this.lineEl(`who|${h.who}|${h.line}`, h.who, 'quiet', w));
           wrap.appendChild(this.lineEl(`said|${h.who}|${h.line}`, `“${h.line}”`, 'line', w));
           wrap.dataset.i = String(i);
           push(wrap);

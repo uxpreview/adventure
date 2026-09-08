@@ -304,7 +304,7 @@ export function renderMap(state: {
         ctx.globalAlpha = 1;
       }
       const lc = letterCanvas(p.label, {
-        ...S.quiet((bold ? 9 : 7.5) * ink), color: col, alpha: bold ? 0.95 : 0.8, weightScale: bold ? 1.2 : 0.9,
+        ...S.quiet((bold ? 10.5 : 9) * ink), color: col, alpha: bold ? 0.95 : 0.85, weightScale: bold ? 1.2 : 1,
       });
       const lw = lc.width / 2;
       const lh = lc.height / 2;
