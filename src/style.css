@@ -516,12 +516,14 @@ body {
   justify-content: center;
   background: rgba(60, 56, 46, 0.2);
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
   z-index: 57;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, visibility 0.3s;
 }
 .nb-veil.show {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 .nb-page {

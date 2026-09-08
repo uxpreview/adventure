@@ -145,6 +145,8 @@ export class Voice {
 
   /** A named place whose label has come into range is found. */
   private scanPlaces() {
+    // eyes shut: the walker is between two places and has found neither
+    if (this.ctx.ui.blinking) return;
     for (const p of this.ctx.poi.pois) {
       const d = p.def as WorldPOI & { npc?: boolean };
       if (!d.label || d.npc || !p.enabled) continue;

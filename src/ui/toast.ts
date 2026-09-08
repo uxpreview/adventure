@@ -99,8 +99,9 @@ export function toast(text: string, kind: ToastKind = 'plain') {
   t.className = 'toast-text';
   el.appendChild(t);
   host.appendChild(el);
-  // a frame later, so the transition runs
-  requestAnimationFrame(() => el.classList.add('show'));
+  // this frame, not the next: the answer is on screen before the
+  // frame that asked for it is done
+  el.classList.add('show');
   live.push({ el, t: 0 });
   while (live.length > MAX) drop(live.shift()!);
 }

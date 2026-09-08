@@ -107,11 +107,25 @@ class Npcs {
     if (n) n.tracked = getter;
   }
 
+  /** The talk POI stands a step in front of the person, toward the
+   *  walker, so it beats a seat or a gate drawn at the same spot: the
+   *  nearest place wins the prompt, and the person leans in. */
+  private lean(id: string, axis: 'x' | 'z'): number {
+    const p = this.positionOf(id);
+    if (!p) return 0;
+    const dx = this.walker.x - p.x;
+    const dz = this.walker.z - p.z;
+    const d = Math.hypot(dx, dz);
+    if (d < 0.05 || d > 8) return p[axis];
+    const k = Math.min(0.9, d * 0.5) / d;
+    return axis === 'x' ? p.x + dx * k : p.z + dz * k;
+  }
+
   private addPoi(n: Npc) {
     const self = this;
     const def = {
-      get x() { return self.positionOf(n.def.id)?.x ?? 0; },
-      get z() { return self.positionOf(n.def.id)?.z ?? 0; },
+      get x() { return self.lean(n.def.id, 'x'); },
+      get z() { return self.lean(n.def.id, 'z'); },
       radius: TALK_R,
       label: n.def.name,
       labelHeight: 2.5,

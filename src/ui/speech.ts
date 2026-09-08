@@ -143,7 +143,9 @@ function open(who: Speaker, text: string, opts: { hold?: number; then?: () => vo
   const b: Bubble = { key, who, text, hold: opts.hold ?? holdFor(text), t: 0, el, w: d.w, h: d.h, then: opts.then, out: false };
   live.set(key, b);
   place(b);
-  requestAnimationFrame(() => el.classList.add('show'));
+  // shown THIS frame, not the next: a line that waits for a frame at
+  // four frames a second is a line the harness photographs as blank
+  el.classList.add('show');
   // the pen scratches: PEN's sound for a line being written
   try {
     window.dispatchEvent(new CustomEvent('inklands:event', { detail: 'speech' }));
