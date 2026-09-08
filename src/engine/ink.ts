@@ -202,7 +202,9 @@ function inkPass(
     on[i] = starve(t) < skipT ? 0 : 1;
   }
 
-  // contiguous inked runs, one fill each
+  // contiguous inked runs, ONE fill each: the ribbon and its two round
+  // caps are subpaths of one path (PEN — three fills a pass was most of
+  // what a page of lettering cost, and the mark is the same mark)
   ctx.globalAlpha = alpha;
   let i = 0;
   while (i < n) {
@@ -228,12 +230,10 @@ function inkPass(
       ctx.lineTo(cp[k][0] + dy * w[k], cp[k][1] - dx * w[k]);
     }
     ctx.closePath();
-    ctx.fill();
     // round caps, the way a ball pen sets down and lifts
-    ctx.beginPath();
+    ctx.moveTo(cp[a][0] + w[a], cp[a][1]);
     ctx.arc(cp[a][0], cp[a][1], w[a], 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
+    ctx.moveTo(cp[b][0] + w[b], cp[b][1]);
     ctx.arc(cp[b][0], cp[b][1], w[b], 0, Math.PI * 2);
     ctx.fill();
   }

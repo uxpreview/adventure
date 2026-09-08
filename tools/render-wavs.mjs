@@ -169,7 +169,7 @@ const VOICES = [
  * that none of them peaks over −3 dBFS in the listening pack. */
 const PEN = [
   ['speech'], ['chatter', 3], ['chatter', 5], ['toast'], ['learned'], ['found'], ['done'],
-  ['score', 0.1], ['score', 1], ['page'], ['pin'], ['hooves', 0.2], ['hooves', 1], ['horn'],
+  ['score', 0.1], ['score', 1], ['page'], ['pin'], ['hooves', 0.2], ['hooves', 1], ['car-horn'],
   ['crowd'], ['growl'], ['roar'], ['chase'], ['night-falls'], ['fanfare-8-15'],
 ];
 const ONLY = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null;

@@ -2153,7 +2153,7 @@ export class Audio {
       case 'found': {
         // a small bell
         const j = 0.98 + Math.random() * 0.04;
-        VOICES.bell(this.ctx, this.master!, 1568 * j, this.ctx.currentTime, { gain: 0.05, dur: 0.9 });
+        VOICES.bell(this.ctx, this.master!, 1568 * j, this.ctx.currentTime, { gain: 0.042, dur: 0.9 });
         break;
       }
       case 'done': {
@@ -2180,7 +2180,7 @@ export class Audio {
         const t0 = ctx.currentTime;
         for (let i = 0; i < n; i++) {
           const f = mood.scale[i % mood.scale.length] * (1 + Math.floor(i / mood.scale.length)) * 2;
-          VOICES.box(ctx, this.master!, f, t0 + i * 0.07, { gain: 0.04 + 0.02 * k, dur: 0.4 });
+          VOICES.box(ctx, this.master!, f, t0 + i * 0.07, { gain: 0.012 + 0.006 * k, dur: 0.4 });
         }
         break;
       }
@@ -2210,12 +2210,13 @@ export class Audio {
         }
         break;
       }
-      case 'horn': {
-        // a car horn: two notes a third apart, twice
+      case 'car-horn': {
+        // a car horn, two notes a third apart, twice. (`horn` is taken:
+        // it is the horn on the point that the Vikings answer)
         const j = 0.98 + Math.random() * 0.04;
         for (const [at, dur] of [[0, 0.16], [0.24, 0.3]] as const) {
-          this.glide(440 * j, 436 * j, at, dur, 0.012, 'square');
-          this.glide(554 * j, 549 * j, at, dur, 0.010, 'square');
+          this.glide(440 * j, 436 * j, at, dur, 0.0052, 'square');
+          this.glide(554 * j, 549 * j, at, dur, 0.0042, 'square');
         }
         break;
       }
@@ -2275,7 +2276,7 @@ export class Audio {
         this.glide(415, 409, 0, 0.5, 0.010, 'triangle');
         const ctx = this.ctx;
         const t0 = ctx.currentTime + 0.55;
-        [523, 659, 784].forEach((f, i) => VOICES.box(ctx, this.master!, f, t0 + i * 0.14, { gain: 0.05, dur: i === 2 ? 0.8 : 0.3 }));
+        [523, 659, 784].forEach((f, i) => VOICES.box(ctx, this.master!, f, t0 + i * 0.14, { gain: 0.022, dur: i === 2 ? 0.8 : 0.3 }));
         break;
       }
     }
