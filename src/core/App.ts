@@ -145,6 +145,7 @@ export class App {
   /* ---- the harness's clock (see __inklands.step) ------------------- *
    * Null in the shipping game: `held` is only ever set from `?debug`. */
   private held = false;
+  private framed = false; /* PEN: the first frame has been drawn */
   private forceDt = 0;
   private noRender = false;
 
@@ -844,10 +845,16 @@ export class App {
         /* ---- PEN: the lettering bench and the render scale ---- */
         letterBench: (runs?: number) => letterBench(runs),
         renderScale: (pin?: number | null) => this.fx.renderScale(pin),
+        /* the road to the title, in ms since navigation: script, app,
+         * first frame, title (`tools/check-load.mjs` reads it) */
+        loadMarks: () => Object.fromEntries(performance.getEntriesByType('mark')
+          .filter((m) => m.name.startsWith('inklands:'))
+          .map((m) => [m.name.slice(9), Math.round(m.startTime)])),
       };
     }
 
     this.bootLoader();
+    performance.mark('inklands:app'); /* ---- PEN ---- */
   }
 
   private bootLoader() {
@@ -1741,6 +1748,8 @@ export class App {
     const dt = this.forceDt > 0 ? this.forceDt : real;
     this.forceDt = 0;
     this.elapsed += dt;
+    /* ---- PEN: the first frame is a mark on the road to the title ---- */
+    if (!this.framed) { this.framed = true; performance.mark('inklands:first-frame'); }
 
     /* ---- THE HOUR --------------------------------------------------- *
      * One advance, one grade, one fog. Everything else in the game that
