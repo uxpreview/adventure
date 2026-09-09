@@ -683,14 +683,16 @@ body {
      top-left, clear of the stick and the pinned prompt ---- */
   .toasts {
     left: max(12px, env(safe-area-inset-left));
-    top: max(48px, calc(env(safe-area-inset-top) + 40px));
+    top: max(118px, calc(env(safe-area-inset-top) + 110px));
     bottom: auto;
     transform: none;
     align-items: flex-start;
   }
+  /* the HUD's three buttons span a phone's whole top edge, so the
+     objective goes under them, and the answer line under that */
   .objective {
-    top: max(12px, env(safe-area-inset-top));
-    max-width: 58vw;
+    top: max(60px, calc(env(safe-area-inset-top) + 52px));
+    max-width: 88vw;
   }
   .nb-page {
     height: min(640px, 82vh);

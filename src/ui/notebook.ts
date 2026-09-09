@@ -267,7 +267,8 @@ export class NotebookPage {
       this.objective.classList.remove('show');
       return;
     }
-    letterEl(this.objective, text, { ...S.voice(11), maxWidth: Math.max(160, Math.min(360, window.innerWidth * 0.55)), color: INK });
+    const tall = window.innerWidth / window.innerHeight < 0.8;
+    letterEl(this.objective, text, { ...S.voice(11), maxWidth: tall ? Math.max(160, window.innerWidth - 48) : Math.max(160, Math.min(360, window.innerWidth * 0.55)), color: INK });
     this.objective.classList.add('show');
     this.objective.classList.remove('flash');
     void this.objective.offsetWidth;

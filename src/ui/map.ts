@@ -303,18 +303,21 @@ export function renderMap(state: {
         ctx.fill();
         ctx.globalAlpha = 1;
       }
+      // a small map gets a smaller hand, or the pins become the map
       const lc = letterCanvas(p.label, {
-        ...S.quiet((bold ? 10.5 : 9) * ink), color: col, alpha: bold ? 0.95 : 0.85, weightScale: bold ? 1.2 : 1,
+        ...S.quiet((bold ? 9.5 : 8) * (smallMap ? Math.min(ink, 1.7) : ink)), color: col, alpha: bold ? 0.95 : 0.85, weightScale: bold ? 1.2 : 1,
       });
       const lw = lc.width / 2;
       const lh = lc.height / 2;
-      // right of the pin first, then left, then above
+      // right of the pin first, then left, then above, then below
+      const py = pz - rad * 2.4;
       const tries: [number, number][] = [
-        [px + rad + 4, pz - rad * 2.4 - lh / 2], [px - rad - 4 - lw, pz - rad * 2.4 - lh / 2], [px - lw / 2, pz - rad * 3.6 - lh],
+        [px + rad + 4, py - lh / 2], [px - rad - 4 - lw, py - lh / 2], [px - lw / 2, py - rad - lh - 2],
+        [px - lw / 2, pz + 3], [px + rad + 4, pz + 3], [px - rad - 4 - lw, pz + 3],
       ];
       const spot = tries.find(([lx, ly]) => clear({ l: lx, r: lx + lw, t: ly, b: ly + lh }));
       if (!spot && !bold) continue;
-      const [lx, ly] = spot ?? tries[0];
+      const [lx, ly] = spot ?? tries[3];
       placed.push({ l: lx, r: lx + lw, t: ly, b: ly + lh });
       ctx.drawImage(lc, lx, ly, lw, lh);
     }
