@@ -1,5 +1,5 @@
 import { writeLine, measureLine, NATE_ADULT, type Hand } from '../engine/script';
-import { rng, legibleCaps } from '../engine/ink';
+import { rng, legibleCaps, stroke, scribbleCircle } from '../engine/ink';
 import { INK, PENCIL } from '../engine/palette';
 
 /**
@@ -66,7 +66,7 @@ function wrapLines(text: string, hand: Hand, maxUnits: number, tracking: number)
  * Render one run of handwriting to a canvas sized for the text.
  * Returns the canvas with CSS size set (device pixels inside).
  */
-export function letterCanvas(text: string, style: LetterStyle = {}): HTMLCanvasElement {
+export function letterCanvas(text: string, style: LetterStyle = {}, into?: HTMLCanvasElement | null): HTMLCanvasElement {
   const hand = style.hand ?? NATE_ADULT;
   const px = style.px ?? 16;
   const tracking = style.tracking ?? 1;
@@ -86,10 +86,15 @@ export function letterCanvas(text: string, style: LetterStyle = {}): HTMLCanvasE
   const w = Math.ceil(widest * xh + padX * 2);
   const h = Math.ceil(padY * 2 + box * xh + (lines.length - 1) * leading * xh);
 
-  const canvas = document.createElement('canvas');
+  /* PEN: a re-lettered element draws into the canvas it already has
+   * when the size has not changed — a count that ticks every second
+   * would otherwise allocate a fresh surface each time. */
+  const reuse = into && into.width === Math.max(2, w) && into.height === Math.max(2, h);
+  const canvas = reuse ? into : document.createElement('canvas');
   canvas.width = Math.max(2, w);
   canvas.height = Math.max(2, h);
   const ctx = canvas.getContext('2d')!;
+  if (reuse) ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // one deterministic wobble per string, so re-renders don't shimmer
   let seed = style.seed ?? 4211;
@@ -130,10 +135,12 @@ export function letterEl(el: HTMLElement, text: string, style: LetterStyle = {})
   const key = `${text}|${style.px}|${style.color}|${style.hand === undefined ? 'book' : 'x'}|${style.alpha}`;
   if ((el as HTMLElement & { __letterKey?: string }).__letterKey === key) return;
   (el as HTMLElement & { __letterKey?: string }).__letterKey = key;
-  el.textContent = '';
+  const old = el.firstElementChild instanceof HTMLCanvasElement && el.childElementCount === 1 ? el.firstElementChild : null;
   el.setAttribute('aria-label', text);
   el.classList.add('lettered');
-  if (text.trim()) el.appendChild(letterCanvas(text, style));
+  if (!text.trim()) { el.textContent = ''; return; }
+  const c = letterCanvas(text, style, old);
+  if (c !== old) { el.textContent = ''; el.appendChild(c); }
 }
 
 /**
@@ -240,3 +247,54 @@ export const S = {
     px, color: PENCIL, alpha: 0.95, weightScale: 0.85,
   }),
 };
+
+/* ---- PEN: the bench — what a bubble and a notebook page cost ---- */
+export function letterBench(runs = 5): { line60: number; page40: number } {
+  const LINE = 'Nell: "That bull is mine. Get the gate shut and I\'ll owe you." 8:15?';
+  const PAGE = Array.from({ length: 40 }, (_, i) => `${i + 1}. ${LINE.slice(0, 40 + (i % 9))}`).join('\n');
+  const time = (f: (i: number) => void) => {
+    f(-1);
+    const t0 = performance.now();
+    for (let i = 0; i < runs; i++) f(i);
+    return (performance.now() - t0) / runs;
+  };
+  // a different string every run, so nothing above the glyph cache can cheat
+  const line60 = time((i) => letterCanvas(`${LINE.slice(0, 58)}${i}`, S.voice(12)));
+  const page40 = time((i) => letterCanvas(`${PAGE}\n${i}`, { px: 11, maxWidth: 520 }));
+  return { line60, page40 };
+}
+
+/* ---- PEN: the tab's icon, drawn by the pen — a nib and a blot ---- */
+export function installFavicon() {
+  // after the page has its first frames: a tab icon is not on the way
+  // to the title
+  const later = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
+  if (later) later(drawFavicon, { timeout: 4000 }); else setTimeout(drawFavicon, 1500);
+}
+function drawFavicon() {
+  try {
+    const c = document.createElement('canvas');
+    c.width = 64;
+    c.height = 64;
+    // a CPU canvas: toDataURL on a GPU surface is a readback
+    const ctx = c.getContext('2d', { willReadFrequently: true })!;
+    ctx.fillStyle = '#f5f2ea';
+    ctx.fillRect(0, 0, 64, 64);
+    const r = rng(1999);
+    // the nib: a tall wedge, drawn twice like everything else
+    stroke(ctx, [[14, 52], [26, 12], [38, 52], [14, 52]], r, { color: INK, width: 3.2, jitter: 1.2, alpha: 0.9 });
+    stroke(ctx, [[26, 20], [26, 44]], r, { color: INK, width: 2.4, jitter: 1, alpha: 0.7 });
+    // the blot
+    scribbleCircle(ctx, 48, 20, 8, r, { color: INK, width: 2.6, jitter: 1.4, alpha: 0.85 }, 1.3);
+    let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.type = 'image/png';
+    link.href = c.toDataURL('image/png');
+  } catch {
+    /* a page without an icon is still a page */
+  }
+}

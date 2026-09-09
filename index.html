@@ -8,17 +8,19 @@
     />
     <meta name="theme-color" content="#f5f2ea" />
     <title>INKLANDS</title>
-    <link
-      rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 24 L12 8 L20 24 Z' fill='none' stroke='%23232633' stroke-width='2'/%3E%3Ccircle cx='24' cy='12' r='5' fill='none' stroke='%23232633' stroke-width='2'/%3E%3C/svg%3E"
-    />
-    <!-- No web fonts: every word the player reads is hand-lettered by
-         the stroke library at runtime. The font stacks in style.css are
-         an accessibility fallback only. -->
+    <!-- No web fonts, no images: every word the player reads is
+         hand-lettered by the stroke library at runtime, and even the
+         tab's icon is drawn by the pen when the page opens (see
+         installFavicon in src/ui/lettering.ts). The font stacks in
+         style.css are an accessibility fallback only. -->
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
+    <script type="module">
+      import { installFavicon } from '/src/ui/lettering.ts';
+      installFavicon();
+    </script>
   </body>
 </html>

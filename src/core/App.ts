@@ -56,6 +56,7 @@ import { npcs } from '../world/npc';
 import { say, shout } from '../ui/speech';
 import { toast } from '../ui/toast';
 import { withHint } from '../world/lines';
+import { letterBench } from '../ui/lettering'; /* ---- PEN ---- */
 
 const ALL_POIS: WorldPOI[] = [
   ...MEADOW_POIS, ...FOREST_POIS, ...CANYON_POIS, ...DESERT_POIS, ...DOWNS_POIS,
@@ -840,6 +841,9 @@ export class App {
         openNotebook: () => this.voice.page.open(),
         closeNotebook: () => this.voice.close(),
         talk: (id: string) => npcs.talk(id),
+        /* ---- PEN: the lettering bench and the render scale ---- */
+        letterBench: (runs?: number) => letterBench(runs),
+        renderScale: (pin?: number | null) => this.fx.renderScale(pin),
       };
     }
 
@@ -1453,7 +1457,11 @@ export class App {
   private resize() {
     const w = window.innerWidth;
     const h = window.innerHeight;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    /* ---- PEN: dpr ≤ 2, and ≤ 1.5 on a phone — a 3× phone screen is
+     * nine times the pixels of the page the art was drawn for, and the
+     * paper pass keeps the grain crisp at any scale ---- */
+    const phone = 'ontouchstart' in window && Math.min(w, h) < 700;
+    const dpr = Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 2);
     this.renderer.setPixelRatio(dpr);
     this.renderer.setSize(w, h);
     this.fx.setSize(w, h, dpr);

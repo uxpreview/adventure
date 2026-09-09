@@ -96,10 +96,11 @@ export class Terrain {
      * One plane, subdivided at exactly the height field's pitch so mesh
      * vertices land on field nodes and the geometry can never disagree
      * with what the walker stands on. */
-    const segX = Math.round((H_MAX_X - H_MIN_X) / H_STEP);
-    const segZ = Math.round((H_MAX_Z - H_MIN_Z) / H_STEP);
-    const geo = new THREE.PlaneGeometry(H_MAX_X - H_MIN_X, H_MAX_Z - H_MIN_Z, segX, segZ);
-    geo.rotateX(-Math.PI / 2);
+    /* ---- PEN: the sheet at H_STEP, the desk at eight times it. Beyond
+     * the page's rim the field is exactly DESK_Y, so the 74% of the
+     * old plane that lay on the desk was 140k triangles drawing a flat
+     * table — in every land, every frame. ---- */
+    const geo = pageGrid();
     const pos = geo.attributes.position as THREE.BufferAttribute;
     const n = pos.count;
     const shade = new Float32Array(n * 4);
@@ -784,4 +785,54 @@ function paintWorld(): { data: Uint8Array; water: Uint8Array; road: Uint8Array }
     data[i * 4 + 3] = water[i];
   }
   return { data, water, road };
+}
+
+/* ---- PEN: the page's mesh ----------------------------------------- *
+ * A rectilinear grid whose columns and rows are H_STEP apart across the
+ * world and its rim (the curl, the torn edge, the drop to the desk) and
+ * eight steps apart over the flat desk beyond. Every fine vertex sits on
+ * a height-field node, exactly as the old uniform plane's did, so the
+ * mesh still cannot disagree with what the walker stands on; the coarse
+ * quads span ground that is one constant height. */
+function pageGrid(): THREE.BufferGeometry {
+  const M = SHEET_PAD + 14;
+  const COARSE = H_STEP * 8;
+  const axis = (lo: number, hi: number, wlo: number, whi: number): number[] => {
+    // snap the fine band onto the field's lattice
+    const fineLo = lo + Math.floor((wlo - M - lo) / H_STEP) * H_STEP;
+    const fineHi = lo + Math.ceil((whi + M - lo) / H_STEP) * H_STEP;
+    const out: number[] = [];
+    for (let v = fineLo - COARSE; v > lo + 1e-6; v -= COARSE) out.unshift(v);
+    out.unshift(lo);
+    for (let v = fineLo; v <= fineHi + 1e-6; v += H_STEP) out.push(v);
+    for (let v = fineHi + COARSE; v < hi - 1e-6; v += COARSE) out.push(v);
+    out.push(hi);
+    return out;
+  };
+  const xs = axis(H_MIN_X, H_MAX_X, WORLD.minX, WORLD.maxX);
+  const zs = axis(H_MIN_Z, H_MAX_Z, WORLD.minZ, WORLD.maxZ);
+  const nx = xs.length, nz = zs.length;
+  const position = new Float32Array(nx * nz * 3);
+  for (let iz = 0; iz < nz; iz++) {
+    for (let ix = 0; ix < nx; ix++) {
+      const k = (iz * nx + ix) * 3;
+      position[k] = xs[ix];
+      position[k + 1] = 0;
+      position[k + 2] = zs[iz];
+    }
+  }
+  const index = new Uint32Array((nx - 1) * (nz - 1) * 6);
+  let q = 0;
+  for (let iz = 0; iz < nz - 1; iz++) {
+    for (let ix = 0; ix < nx - 1; ix++) {
+      // the same winding the rotated plane had
+      const a = ix + nx * iz, b = ix + nx * (iz + 1), c = ix + 1 + nx * (iz + 1), d = ix + 1 + nx * iz;
+      index[q++] = a; index[q++] = b; index[q++] = d;
+      index[q++] = b; index[q++] = c; index[q++] = d;
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(position, 3));
+  geo.setIndex(new THREE.BufferAttribute(index, 1));
+  return geo;
 }

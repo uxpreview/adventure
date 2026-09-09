@@ -444,7 +444,7 @@ class Traffic {
       if (c.horn <= 0) {
         c.horn = 16 + ((t * 7 + i * 13) % 30);
         const p = pathAt(c.path, c.s);
-        if (on > 0.5 && c.wait <= 0 && near(p.x, p.z, 80)) say('horn');
+        if (on > 0.5 && c.wait <= 0 && near(p.x, p.z, 80)) say('car-horn');
       }
     });
     for (const d of this.dogs) run(d, during(h, 7, 21, 0.4), [WHEELS.dogA, WHEELS.dogB], 1.7, 1.19, 0.5, this.wheels);

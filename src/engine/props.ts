@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { PENCIL } from './palette';
 
 /**
  * Props are paper stand-ups and ground decals: flat planes carrying ink
@@ -15,18 +16,144 @@ export function makeStandee(
   tex: THREE.Texture,
   w: number,
   h: number,
-  opacity = 1
+  opacity = 1,
+  opts: { ghost?: boolean } = {}
 ): THREE.Mesh {
   const geo = new THREE.PlaneGeometry(w, h);
   geo.translate(0, h / 2, 0);
+  /* PEN: a cutout seen from any side. alphaTest at 0.1 drops the
+   * filtered fringe an oblique standee grows along its edge, the
+   * drawing is DoubleSide so a camera that has walked round it still
+   * sees a drawing and not a missing quad, and the ink blend below
+   * keeps the edge clean at every mip. */
   const mat = new THREE.MeshBasicMaterial({
     map: tex,
     transparent: true,
-    alphaTest: 0.08,
+    alphaTest: 0.1,
     opacity,
     side: THREE.DoubleSide,
   });
-  return new THREE.Mesh(geo, mat);
+  inkBlend(mat, opts.ghost);
+  const m = new THREE.Mesh(geo, mat);
+  skipWhenClear(mat, m, h);
+  return m;
+}
+
+/* ---- PEN: what the lens cannot see is not a draw call --------------- *
+ * Every drawing in reach is a draw call whether it is a house in the
+ * foreground or a signpost two hundred units off, four pixels tall and
+ * ninety per cent paper-coloured under the fog. The paper pass tells
+ * this module where the lens is each frame (`setLens`), and a standee
+ * or decal reports itself invisible when it would be under CULL_PX tall
+ * on screen, with the bar rising as the fog closes over it. Nothing is
+ * moved or disposed — a drawing the lens turns back toward is drawn
+ * again. The far silhouettes that pull the walker (a castle, a mill, a
+ * tower) are tens of units tall and are never near the bar. */
+const LENS = { x: 0, y: 0, z: 0, pxPerRad: 900, fogNear: 50, fogFar: 175, fog: false };
+const CULL_PX = 5;
+const CULL_FOG = 0.94;
+export function setLens(cam: THREE.Camera, fog: THREE.Fog | null, pageHeightPx: number) {
+  const e = cam.matrixWorld.elements;
+  LENS.x = e[12]; LENS.y = e[13]; LENS.z = e[14];
+  const fov = (cam as THREE.PerspectiveCamera).fov ?? 42;
+  LENS.pxPerRad = pageHeightPx / (2 * Math.tan((fov * Math.PI) / 360));
+  if (fog && (fog as THREE.Fog).isFog) { LENS.fog = true; LENS.fogNear = fog.near; LENS.fogFar = fog.far; } else LENS.fog = false;
+}
+function seen(m: THREE.Mesh, size: number, fogged: boolean): boolean {
+  const e = m.matrixWorld.elements;
+  const dx = e[12] - LENS.x, dy = e[13] - LENS.y, dz = e[14] - LENS.z;
+  const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  if (d < 1) return true;
+  const sy = Math.sqrt(e[4] * e[4] + e[5] * e[5] + e[6] * e[6]);
+  const px = (size * sy * LENS.pxPerRad) / d;
+  let bar = CULL_PX;
+  if (fogged && LENS.fog) {
+    const f = Math.max(0, Math.min(1, (d - LENS.fogNear) / Math.max(1e-3, LENS.fogFar - LENS.fogNear)));
+    const ff = f * f * (3 - 2 * f);
+    if (ff > CULL_FOG) return false;
+    bar += 24 * ff * ff;
+  }
+  return px >= bar;
+}
+
+/* ---- PEN: the ink blend --------------------------------------------- *
+ * A drawing's canvas is stored premultiplied by the browser. Uploaded
+ * as straight alpha (three's default) every transparent texel comes out
+ * black, and the GPU's filtering blends that black into every edge and
+ * every mip: the dark rim round a wash on a far or oblique standee, the
+ * one a free camera sees from every side. So a drawing shown by one of
+ * these materials is uploaded premultiplied — the filter is honest, and
+ * the upload is a copy instead of a per-texel divide — and the material
+ * blends ONE / ONE_MINUS_SRC_ALPHA to match. three's own premultiplied
+ * path multiplies by alpha a second time in the shader and fogs as if
+ * the colour were straight, so both chunks are replaced: the opacity is
+ * folded into the colour, and fog pulls toward fogColor × alpha.
+ * `ghost` is the pencil plan of a house front: the same drawing, read
+ * through the same rule the CPU used to bake it with (dark ink survives,
+ * a wash drops out) — on the GPU, so no pixels are ever read back.
+ * A texture assigned to `map` later (a figure changing pose) is flagged
+ * the same way. Same look up close; clean edges from every side. */
+const GHOST_MAP = /* glsl */ `
+#ifdef USE_MAP
+  vec4 tx = texture2D( map, vMapUv );
+  vec3 cs = pow( tx.rgb / max( tx.a, 1e-4 ), vec3( 1.0 / 2.2 ) );
+  float lum = dot( cs, vec3( 0.299, 0.587, 0.114 ) );
+  float ink = clamp( ( ( 1.0 - lum ) * tx.a - 0.38 ) / 0.3, 0.0, 1.0 );
+  diffuseColor *= ink;
+#endif
+`;
+const FOG_PREMULT = /* glsl */ `
+#ifdef USE_FOG
+  #ifdef FOG_EXP2
+    float fogFactor = 1.0 - exp( - fogDensity * fogDensity * vFogDepth * vFogDepth );
+  #else
+    float fogFactor = smoothstep( fogNear, fogFar, vFogDepth );
+  #endif
+  gl_FragColor.rgb = mix( gl_FragColor.rgb, fogColor * gl_FragColor.a, fogFactor );
+#endif
+`;
+function premultiply(t: THREE.Texture | null) {
+  if (t && !t.premultiplyAlpha) {
+    t.premultiplyAlpha = true;
+    t.needsUpdate = true;
+  }
+}
+/* ---- PEN: a drawing at opacity zero is not a draw call -------------- *
+ * three.js culls by `material.visible`, never by opacity, so a lit
+ * window by day, a shutter by night, a lamp's glow at noon, a room's
+ * pencil front from outside — every variant a land keeps at opacity 0
+ * until its hour — was a full draw call of nothing. The kingdom alone
+ * carried dozens. `visible` now reads false while the drawing is clear;
+ * lands that set `visible` themselves still get exactly what they set. */
+function skipWhenClear(mat: THREE.MeshBasicMaterial, mesh: THREE.Mesh, size: number) {
+  let own = true;
+  Object.defineProperty(mat, 'visible', {
+    get: () => own && mat.opacity > 0.004 && seen(mesh, size, mat.fog),
+    set: (v: boolean) => { own = v; },
+    configurable: true,
+  });
+}
+
+export function inkBlend(mat: THREE.MeshBasicMaterial, ghost = false) {
+  let map = mat.map;
+  premultiply(map);
+  Object.defineProperty(mat, 'map', {
+    get: () => map,
+    set: (t: THREE.Texture | null) => { premultiply(t); map = t; },
+    configurable: true,
+    enumerable: true,
+  });
+  mat.premultipliedAlpha = true;
+  if (ghost) mat.color.set(PENCIL);
+  mat.onBeforeCompile = (shader) => {
+    let f = shader.fragmentShader;
+    if (ghost) f = f.replace('#include <map_fragment>', GHOST_MAP);
+    f = f.replace('#include <opaque_fragment>', '#include <opaque_fragment>\n\tgl_FragColor.rgb *= opacity;');
+    f = f.replace('#include <fog_fragment>', FOG_PREMULT);
+    f = f.replace('#include <premultiplied_alpha_fragment>', '');
+    shader.fragmentShader = f;
+  };
+  mat.customProgramCacheKey = () => (ghost ? 'pen-ghost' : 'pen-ink');
 }
 
 export function makeDecal(
@@ -46,7 +173,9 @@ export function makeDecal(
     polygonOffsetFactor: -4,
     polygonOffsetUnits: -8,
   });
+  inkBlend(mat);
   const m = new THREE.Mesh(geo, mat);
+  skipWhenClear(mat, m, Math.max(w, h));
   m.position.y = 0.01;
   m.renderOrder = -6;
   return m;

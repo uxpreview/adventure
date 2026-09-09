@@ -86,25 +86,87 @@ function jitterPoints(
  * Long straights stop stair-stepping because they are no longer four
  * segments of a polygon; they are sampled at ~2 px.
  */
-function curvePoints(j: [number, number][]): [number, number][] {
-  if (j.length < 2) return j.slice();
-  const out: [number, number][] = [j[0]];
-  let start = j[0];
-  for (let i = 1; i < j.length; i++) {
-    const c = j[i - 1];
-    const end: [number, number] = [(j[i - 1][0] + j[i][0]) / 2, (j[i - 1][1] + j[i][1]) / 2];
-    const n = Math.max(2, Math.min(28, Math.round(Math.hypot(end[0] - start[0], end[1] - start[1]) / 2.0)));
-    for (let s = 1; s <= n; s++) {
-      const t = s / n, u = 1 - t;
-      out.push([
-        u * u * start[0] + 2 * u * t * c[0] + t * t * end[0],
-        u * u * start[1] + 2 * u * t * c[1] + t * t * end[1],
-      ]);
-    }
-    start = end;
+/* ---- PEN: scratch for the pen ---------------------------------- *
+ * A page of lettering is forty thousand strokes. Every stroke used to
+ * allocate seven arrays (the jittered points, the samples, the arc
+ * lengths, the turn, the pool, the widths, the on/off mask) and the
+ * collector's share of a page was a fifth of its cost. The pen now
+ * writes into module-level buffers that grow to the longest stroke
+ * ever drawn and are never freed — a stroke is drawn to completion
+ * before the next begins, so nothing ever aliases. */
+let SCR_J = new Float64Array(512);     // jittered control points, x,y pairs
+let SCR_CP = new Float64Array(4096);   // curve samples, x,y pairs
+let SCR_NS = new Int32Array(256);      // samples per curve segment
+let SCR_S = new Float64Array(2048);    // arc length per sample
+let SCR_N = new Float32Array(4096);    // unit normal per sample, x,y pairs
+let SCR_TURN = new Float32Array(2048);
+let SCR_POOL = new Float32Array(2048);
+let SCR_W = new Float32Array(2048);
+let SCR_ON = new Uint8Array(2048);
+function scratchSamples(n: number) {
+  if (SCR_S.length >= n) return;
+  let m = SCR_S.length;
+  while (m < n) m *= 2;
+  SCR_S = new Float64Array(m);
+  SCR_N = new Float32Array(m * 2);
+  SCR_TURN = new Float32Array(m);
+  SCR_POOL = new Float32Array(m);
+  SCR_W = new Float32Array(m);
+  SCR_ON = new Uint8Array(m);
+}
+
+/** The control points, jittered, as a flat view into scratch. */
+function jitterFlat(pts: [number, number][], amt: number, r: () => number): Float64Array {
+  const m = pts.length;
+  if (SCR_J.length < m * 2) SCR_J = new Float64Array(Math.max(m * 2, SCR_J.length * 2));
+  if (SCR_NS.length < m) SCR_NS = new Int32Array(Math.max(m, SCR_NS.length * 2));
+  const j = SCR_J;
+  for (let i = 0; i < m; i++) {
+    j[i * 2] = pts[i][0] + (r() - 0.5) * amt;
+    j[i * 2 + 1] = pts[i][1] + (r() - 0.5) * amt;
   }
-  out.push(j[j.length - 1]);
-  return out;
+  return j.subarray(0, m * 2);
+}
+
+function curvePoints(j: Float64Array): Float64Array {
+  /* A flat array of x,y pairs, a view into scratch. The curve is the
+   * same curve stroke() has always drawn, sampled at ~2.4 px. */
+  const m = j.length >> 1;
+  if (m < 2) {
+    if (SCR_CP.length < m * 2) SCR_CP = new Float64Array(m * 2);
+    for (let i = 0; i < m * 2; i++) SCR_CP[i] = j[i];
+    return SCR_CP.subarray(0, m * 2);
+  }
+  let cap = 2;
+  const ns = SCR_NS;
+  let sx = j[0], sy = j[1];
+  for (let i = 1; i < m; i++) {
+    const ex = (j[i * 2 - 2] + j[i * 2]) / 2, ey = (j[i * 2 - 1] + j[i * 2 + 1]) / 2;
+    const dx = ex - sx, dy = ey - sy;
+    const n = Math.max(2, Math.min(28, Math.round(Math.sqrt(dx * dx + dy * dy) / 2.4)));
+    ns[i - 1] = n;
+    cap += n;
+    sx = ex; sy = ey;
+  }
+  if (SCR_CP.length < cap * 2) SCR_CP = new Float64Array(Math.max(cap * 2, SCR_CP.length * 2));
+  scratchSamples(cap);
+  const out = SCR_CP;
+  let k = 0;
+  out[k++] = j[0]; out[k++] = j[1];
+  sx = j[0]; sy = j[1];
+  for (let i = 1; i < m; i++) {
+    const cx = j[i * 2 - 2], cy = j[i * 2 - 1];
+    const ex = (cx + j[i * 2]) / 2, ey = (cy + j[i * 2 + 1]) / 2;
+    const n = ns[i - 1];
+    for (let sI = 1; sI <= n; sI++) {
+      const t = sI / n, u = 1 - t;
+      out[k++] = u * u * sx + 2 * u * t * cx + t * t * ex;
+      out[k++] = u * u * sy + 2 * u * t * cy + t * t * ey;
+    }
+    sx = ex; sy = ey;
+  }
+  out[k++] = j[m * 2 - 2]; out[k++] = j[m * 2 - 1];
+  return out.subarray(0, k);
 }
 
 /** Smooth seeded 1/f wobble along the length of a stroke, in [-1, 1]. */
@@ -129,23 +191,28 @@ function bandNoise(r: () => number, harmonics = 3) {
  */
 function inkPass(
   ctx: Ctx2D,
-  cp: [number, number][],
+  cp: Float64Array,
   base: number,
   alpha: number,
   r: () => number,
   opts: { taper: boolean; skip: boolean }
 ) {
-  const n = cp.length;
+  const n = cp.length >> 1;
   if (n < 2) return;
   // arc length, so pressure and starve read in real distance and not in
   // however many points the caller happened to hand us
-  const s: number[] = [0];
-  for (let i = 1; i < n; i++) s.push(s[i - 1] + Math.hypot(cp[i][0] - cp[i - 1][0], cp[i][1] - cp[i - 1][1]));
+  scratchSamples(n);
+  const s = SCR_S;
+  s[0] = 0;
+  for (let i = 1; i < n; i++) {
+    const dx = cp[i * 2] - cp[i * 2 - 2], dy = cp[i * 2 + 1] - cp[i * 2 - 1];
+    s[i] = s[i - 1] + Math.sqrt(dx * dx + dy * dy);
+  }
   const L = s[n - 1];
   if (L < 0.6) {
     ctx.globalAlpha = alpha;
     ctx.beginPath();
-    ctx.arc(cp[0][0], cp[0][1], base * 0.5, 0, Math.PI * 2);
+    ctx.arc(cp[0], cp[1], base * 0.5, 0, Math.PI * 2);
     ctx.fill();
     return;
   }
@@ -154,11 +221,12 @@ function inkPass(
   const half = base * 0.5;
 
   // turn per unit length at each sample — where the ball slows and pools
-  const turn = new Float32Array(n);
+  const turn = SCR_TURN;
+  turn[0] = 0; turn[n - 1] = 0;
   for (let i = 1; i < n - 1; i++) {
-    const ax = cp[i][0] - cp[i - 1][0], ay = cp[i][1] - cp[i - 1][1];
-    const bx = cp[i + 1][0] - cp[i][0], by = cp[i + 1][1] - cp[i][1];
-    const la = Math.hypot(ax, ay) || 1e-4, lb = Math.hypot(bx, by) || 1e-4;
+    const ax = cp[i * 2] - cp[i * 2 - 2], ay = cp[i * 2 + 1] - cp[i * 2 - 1];
+    const bx = cp[i * 2 + 2] - cp[i * 2], by = cp[i * 2 + 3] - cp[i * 2 + 1];
+    const la = Math.sqrt(ax * ax + ay * ay) || 1e-4, lb = Math.sqrt(bx * bx + by * by) || 1e-4;
     const d = Math.max(-1, Math.min(1, (ax * bx + ay * by) / (la * lb)));
     turn[i] = Math.acos(d) / ((la + lb) * 0.5);
   }
@@ -167,7 +235,7 @@ function inkPass(
   // slowed relative to the rest of this stroke; without the subtraction
   // every uniformly-curved mark (a grass tuft, a loop) comes out
   // uniformly fatter, which is not pooling, it is just a thicker pen.
-  const pool = new Float32Array(n);
+  const pool = SCR_POOL;
   let mean = 0;
   for (let i = 0; i < n; i++) {
     let acc = 0, cnt = 0;
@@ -178,31 +246,34 @@ function inkPass(
   mean /= n;
   for (let i = 0; i < n; i++) pool[i] = Math.max(-0.35, pool[i] - mean);
 
-  const w = new Float32Array(n);
-  const on = new Uint8Array(n);
-  // a starve threshold that only bites on strokes long enough to have
-  // outrun their own feed; short marks never skip
+  const w = SCR_W;
+  const on = SCR_ON;
   // A ball starves when it is moving fast under a light hand. A bold
   // ruled border under real pressure does not dash, and dashing it
   // turns a panel edge into a dotted line — so the threshold backs
   // off as the stroke gets heavier, and short marks never skip.
   const skipT = opts.skip && L > 55 ? -(0.74 + Math.min(0.9, base * 0.085)) : -2;
+  const inSpan = Math.min(L * 0.5, base * 3.4 + 2);
+  const outSpan = Math.min(L * 0.5, base * 5.2 + 3);
   for (let i = 0; i < n; i++) {
     const t = s[i] / L;
     let k = 1 + pressure(t) * 0.22;
     if (opts.taper) {
       // the nib lands and lifts: thin in, thinner out
-      const inK = 0.52 + 0.48 * Math.min(1, (s[i] / Math.min(L * 0.5, base * 3.4 + 2)));
-      const rem = L - s[i];
-      const outK = 0.34 + 0.66 * Math.min(1, rem / Math.min(L * 0.5, base * 5.2 + 3));
+      const inK = 0.52 + 0.48 * Math.min(1, s[i] / inSpan);
+      const outK = 0.34 + 0.66 * Math.min(1, (L - s[i]) / outSpan);
       k *= inK * outK;
     }
     k *= 1 + pool[i] * 0.55;
     w[i] = Math.max(0.34, half * Math.min(1.55, k));
-    on[i] = starve(t) < skipT ? 0 : 1;
+    // the starve noise is only read when the threshold can bite; it is
+    // still built above so the seeded wobble consumes what it always did
+    on[i] = skipT > -1.5 && starve(t) < skipT ? 0 : 1;
   }
 
-  // contiguous inked runs, one fill each
+  // contiguous inked runs, ONE fill each: the ribbon and its two round
+  // caps are subpaths of one path (PEN — three fills a pass was most of
+  // what a page of lettering cost, and the mark is the same mark)
   ctx.globalAlpha = alpha;
   let i = 0;
   while (i < n) {
@@ -211,30 +282,24 @@ function inkPass(
     while (i < n && on[i]) i++;
     const b = i - 1;
     if (b - a < 1) continue;
+    // the unit normal at each sample, once for both sides
+    const nrm = SCR_N;
+    for (let k = a; k <= b; k++) {
+      const p = k > a ? k - 1 : k, q = k < b ? k + 1 : k;
+      let dx = cp[q * 2] - cp[p * 2], dy = cp[q * 2 + 1] - cp[p * 2 + 1];
+      const l = Math.sqrt(dx * dx + dy * dy) || 1e-4; dx /= l; dy /= l;
+      nrm[k * 2] = -dy * w[k]; nrm[k * 2 + 1] = dx * w[k];
+    }
     ctx.beginPath();
     // one side out...
-    for (let k = a; k <= b; k++) {
-      const px = k > a ? cp[k - 1] : cp[k], nx = k < b ? cp[k + 1] : cp[k];
-      let dx = nx[0] - px[0], dy = nx[1] - px[1];
-      const l = Math.hypot(dx, dy) || 1e-4; dx /= l; dy /= l;
-      const x = cp[k][0] - dy * w[k], y = cp[k][1] + dx * w[k];
-      if (k === a) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    }
+    ctx.moveTo(cp[a * 2] + nrm[a * 2], cp[a * 2 + 1] + nrm[a * 2 + 1]);
+    for (let k = a + 1; k <= b; k++) ctx.lineTo(cp[k * 2] + nrm[k * 2], cp[k * 2 + 1] + nrm[k * 2 + 1]);
     // ...and the other side back
-    for (let k = b; k >= a; k--) {
-      const px = k > a ? cp[k - 1] : cp[k], nx = k < b ? cp[k + 1] : cp[k];
-      let dx = nx[0] - px[0], dy = nx[1] - px[1];
-      const l = Math.hypot(dx, dy) || 1e-4; dx /= l; dy /= l;
-      ctx.lineTo(cp[k][0] + dy * w[k], cp[k][1] - dx * w[k]);
-    }
+    for (let k = b; k >= a; k--) ctx.lineTo(cp[k * 2] - nrm[k * 2], cp[k * 2 + 1] - nrm[k * 2 + 1]);
     ctx.closePath();
-    ctx.fill();
     // round caps, the way a ball pen sets down and lifts
-    ctx.beginPath();
-    ctx.arc(cp[a][0], cp[a][1], w[a], 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cp[b][0], cp[b][1], w[b], 0, Math.PI * 2);
+    cap(ctx, cp[a * 2], cp[a * 2 + 1], w[a]);
+    cap(ctx, cp[b * 2], cp[b * 2 + 1], w[b]);
     ctx.fill();
   }
 
@@ -244,9 +309,34 @@ function inkPass(
     if (pool[k] < pool[k - 1] || pool[k] < pool[k + 1]) continue;
     ctx.globalAlpha = Math.min(1, alpha * 1.15);
     ctx.beginPath();
-    ctx.arc(cp[k][0], cp[k][1], w[k] * 1.10, 0, Math.PI * 2);
+    ctx.arc(cp[k * 2], cp[k * 2 + 1], w[k] * 1.10, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = alpha;
+  }
+}
+
+/** A round cap as a subpath: an octagon under two pixels of radius
+ *  (where a true arc costs ten times the geometry it draws), an arc
+ *  above it. */
+const OCT = Array.from({ length: 8 }, (_, i) => [Math.cos(i * Math.PI / 4), Math.sin(i * Math.PI / 4)]);
+function cap(ctx: Ctx2D, x: number, y: number, rad: number) {
+  if (rad < 1.1) {
+    // sub-pixel: a diamond round the circle is the same blob for a
+    // third of the path
+    const k = rad * 1.4143;
+    ctx.moveTo(x + k, y);
+    ctx.lineTo(x, y + k);
+    ctx.lineTo(x - k, y);
+    ctx.lineTo(x, y - k);
+    ctx.closePath();
+  } else if (rad < 2) {
+    const k = rad * 1.0824; // circumscribed, so the octagon covers the circle
+    ctx.moveTo(x + k, y);
+    for (let i = 1; i < 8; i++) ctx.lineTo(x + OCT[i][0] * k, y + OCT[i][1] * k);
+    ctx.closePath();
+  } else {
+    ctx.moveTo(x + rad, y);
+    ctx.arc(x, y, rad, 0, Math.PI * 2);
   }
 }
 
@@ -293,7 +383,7 @@ export function stroke(
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
   for (let p = 0; p < passes; p++) {
-    const j = jitterPoints(pts, jitter * (p === 0 ? 1 : 1.8), r);
+    const j = jitterFlat(pts, jitter * (p === 0 ? 1 : 1.8), r);
     const cp = curvePoints(j);
     if (p > 0) {
       /*
@@ -308,11 +398,13 @@ export function stroke(
       const ang = r() * Math.PI * 2;
       const amp = width * (0.26 + r() * 0.3);
       const swing = bandNoise(r, 2);
-      const n = cp.length;
+      const n = cp.length >> 1;
+      const ca = Math.cos(ang), sa = Math.sin(ang);
       for (let i = 0; i < n; i++) {
         const t = n > 1 ? i / (n - 1) : 0;
         const k = amp * (0.45 + 0.55 * swing(t));
-        cp[i] = [cp[i][0] + Math.cos(ang) * k, cp[i][1] + Math.sin(ang) * k];
+        cp[i * 2] += ca * k;
+        cp[i * 2 + 1] += sa * k;
       }
     }
     inkPass(ctx, cp, width * (p === 0 ? 1 : 0.72), alpha * (p === 0 ? 1 : 0.35), r, {

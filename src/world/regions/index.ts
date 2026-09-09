@@ -425,6 +425,10 @@ export class World {
         if (!builtOne && d < BUILD_REACH) {
           this.build(spec);
           builtOne = true;
+          /* ---- PEN: tell the loader what was just drawn ---- */
+          const total = REGION_SPECS.filter((s) => rectDist(s.rect, x, z) < BUILD_REACH).length;
+          window.dispatchEvent(new CustomEvent('inklands:drawing', {
+            detail: { name: spec.name, done: this.built.size, total } }));
         }
         continue;
       }
