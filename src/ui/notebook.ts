@@ -149,7 +149,7 @@ export class NotebookPage {
     let e = this.cache.get(k);
     if (!e) {
       e = document.createElement('div');
-      e.className = `nb-line nb-${style}`;
+      e.className = `nb-line nb-l-${style}`;
       this.cache.set(k, e);
     }
     const st = style === 'head' ? { ...S.display(13), px: 13, align: 'left' as const, maxWidth: w }

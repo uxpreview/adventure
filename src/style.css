@@ -439,8 +439,8 @@ body {
   transition: opacity 0.25s ease;
   padding: 4px 18px;
   border-radius: 40% 46% 44% 42% / 50% 48% 52% 46%;
-  background: rgba(247, 244, 235, 0.55);
-  box-shadow: 0 0 18px 12px rgba(247, 244, 235, 0.55);
+  background: rgba(247, 244, 235, 0.72);
+  box-shadow: 0 0 18px 14px rgba(247, 244, 235, 0.72);
 }
 .shout.show {
   opacity: 1;
@@ -590,8 +590,7 @@ body {
   max-width: 100%;
   height: auto;
 }
-.nb-head .nb-line,
-.nb-body > .nb-head {
+.nb-body > .nb-l-head {
   margin-top: 6px;
 }
 .nb-heard {

@@ -292,6 +292,14 @@ export function renderMap(state: {
     // the job's pin last, so it is drawn on top and its label wins
     pins.sort((a, b) => (a.label === jobPin ? 1 : 0) - (b.label === jobPin ? 1 : 0));
     const pinInk = smallMap ? Math.min(ink, 1.7) : ink;
+    // the you-are-here scribble is drawn after the pins; keep the
+    // labels off it all the same
+    if (state.here) {
+      const hx = X(state.here[0]);
+      const hz = Z(state.here[1]);
+      const hr = 9 * ink;
+      placed.push({ l: hx - hr, r: hx + hr + 22 * ink, t: hz - hr, b: hz + hr });
+    }
     for (const p of pins) {
       const bold = p.label === jobPin;
       const px = X(p.x);
