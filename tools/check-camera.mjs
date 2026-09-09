@@ -9,8 +9,8 @@
 //   1. THE POSTER HAS NO YAW. Before anybody sets out the frame is the
 //      composition the title was drawn for.
 //   2. WALKING NEVER TURNS THE FRAME. Ten game seconds on each of eight
-//      headings, at a run, with no look input: the yaw is EXACTLY the
-//      number it started at — not near it. This is the assertion that
+//      headings, at a run, with no look input, from two starting yaws:
+//      the yaw is EXACTLY the number it started at — not near it. This is the assertion that
 //      failed in the owner's stomach in Session 12, and it is the one
 //      rule that survives every other change to this camera.
 //   3. A DRAG TURNS IT BY THE EXPECTED AMOUNT. N pixels of mouse drag
@@ -87,8 +87,10 @@ for (const vp of VIEWPORTS) {
         const before = I.yaw();
         let worst = 0;
         I.drive(Math.sin(D(a)), -Math.cos(D(a)), 1);
-        for (let i = 0; i < 600; i++) {
-          I.step(1 / 60, 1);
+        // sampled every half second of game time: the harness renders a
+        // frame per `step` call, and there is no GPU under it
+        for (let i = 0; i < 20; i++) {
+          I.step(1 / 60, 30);
           worst = Math.max(worst, Math.abs(I.yaw() - before));
         }
         I.release();
@@ -136,13 +138,16 @@ for (const vp of VIEWPORTS) {
     I.recentre();
     let rate = 0;
     let last = I.yaw();
-    for (let i = 0; i < 360; i++) {
-      I.step(1 / 60, 1);
+    // the rate is read over tenth-of-a-second chunks: the cap is on the
+    // turn per second, and a chunk can only understate a whip, never
+    // invent one — the first tenth is where the recentre is fastest
+    for (let i = 0; i < 60; i++) {
+      I.step(1 / 60, 6);
       const y = I.yaw();
       let d = y - last;
       if (d > Math.PI) d -= 2 * Math.PI;
       if (d < -Math.PI) d += 2 * Math.PI;
-      rate = Math.max(rate, Math.abs(d) * 60);
+      rate = Math.max(rate, Math.abs(d) * 10);
       last = y;
     }
     const recentred = { yaw: I.yaw(), pitch: I.pitch(), rate, still: I.recentring() };

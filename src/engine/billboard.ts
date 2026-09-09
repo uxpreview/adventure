@@ -106,6 +106,17 @@ export function billboard(m: THREE.Object3D, base = 0, mode: BillboardMode = 'fr
   return m;
 }
 
+/** Register a mesh that turns exactly as another registered one does
+ *  (a pencil ghost over a house). Falls back to facing the lens from
+ *  `base` if the other is not registered. */
+export function billboardLike(m: THREE.Object3D, of: THREE.Object3D, base = 0) {
+  const src = list.find((x) => x.m === of);
+  const e = src ? { m, base: src.base, keep: src.keep, run: src.run } : { m, base, keep: false, run: false };
+  list.push(e);
+  orient(e);
+  return m;
+}
+
 /** Take a mesh out of the list (a disposed drawing). */
 export function unbillboard(m: THREE.Object3D) {
   const i = list.findIndex((e) => e.m === m);
