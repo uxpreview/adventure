@@ -45,6 +45,13 @@ import {
   KINGDOM_POIS, CASTLE_POIS, NEIGHBORHOOD_POIS, CITY_POIS, OFFICE_POIS,
 } from '../world/regions/civic';
 import type { WorldPOI } from '../world/regions';
+/* ---- VOICE: the voice of the world (`src/world/voice.ts`) ---- */
+import { Voice } from '../world/voice';
+import { notebook } from '../world/notebook';
+import { npcs } from '../world/npc';
+import { say, shout } from '../ui/speech';
+import { toast } from '../ui/toast';
+import { withHint } from '../world/lines';
 
 const ALL_POIS: WorldPOI[] = [
   ...MEADOW_POIS, ...FOREST_POIS, ...CANYON_POIS, ...DESERT_POIS, ...DOWNS_POIS,
@@ -82,6 +89,8 @@ export class App {
   private train = new Eight15();
   private input: Input;
   private poi: POIManager;
+  /* ---- VOICE ---- */
+  private voice: Voice;
 
   private region: RegionSpec;
   /** THE DISTRICT the walker is in, if any (Session 16), so a crossing
@@ -281,7 +290,25 @@ export class App {
       onInteract: () => this.toggleTrain(),
     } as unknown as WorldPOI);
 
+    /* ---- VOICE: bubbles, toasts, the notebook, the people ---- */
+    this.voice = new Voice({
+      ui: this.ui, poi: this.poi, camera: this.camera,
+      groundAt: (x, z) => this.terrain.heightAt(x, z),
+      waterAt: (x, z) => this.terrain.waterAt(x, z),
+      walker: () => this.char.pos,
+      boat: this.boat, bicycle: this.bicycle, train: this.train,
+      seated: () => this.seat !== null,
+      regionId: () => this.region.id,
+      started: () => this.started,
+    });
+    this.ui.onCloseNotebook = () => this.voice.close();
+
     this.input.onInteract(() => {
+      /* ---- VOICE: the key closes the notebook first ---- */
+      if (this.voice.open) {
+        this.voice.close();
+        return;
+      }
       if (this.ui.noteOpen) {
         this.ui.closeNote();
         return;
@@ -366,6 +393,8 @@ export class App {
     /* AND WHAT IS ON THEIR HEAD (Session 22): one id, honoured only if
      * the save also knows it was earned. */
     worn.load(this.save.data.worn ?? null);
+    /* ---- VOICE: and what is written in the notebook ---- */
+    notebook.load(this.save.data.notebook);
 
     /* Stand the walker under the title: where the last walk left them,
      * or — on a fresh page — at THE POSTER, which is the composition the
@@ -770,6 +799,15 @@ export class App {
         orbitBy: (px: number, py: number) => this.look.orbitBy(px, py),
         zoomBy: (d: number) => this.look.zoomBy(d),
         billboards: () => billboardCount(),
+        /* ---- VOICE: the notebook, the people, the bubbles, the line ---- */
+        notebook,
+        npcs,
+        say,
+        shout,
+        toast,
+        openNotebook: () => this.voice.page.open(),
+        closeNotebook: () => this.voice.close(),
+        talk: (id: string) => npcs.talk(id),
       };
     }
 
@@ -877,7 +915,7 @@ export class App {
         this.audio.note();
         this.ui.openChoice(
           def.note?.title ?? c.title ?? (def.label ?? '').toLowerCase(), c.body,
-          c.options.map((o) => o.label),
+          c.options.map((o) => withHint(o.label, o.door)) /* VOICE: the card says what happens */,
           (i) => {
             /* THE DOOR IS A PIECE OF KNOWLEDGE and nothing else: one id,
              * readable, permanent, read back by the land every frame.
@@ -885,6 +923,8 @@ export class App {
             knowledge.learn(c.options[i].door);
             for (const id of c.learns ?? []) knowledge.learn(id);
             this.save.readNote(def.label ?? '');
+            /* ---- VOICE: the choice is read back ---- */
+            this.voice.chose(def, c.options[i]);
             /* A DOOR THAT IS SITTING DOWN (Session 21): the Downs'
              * first door is the sit itself, and a card that said SIT
              * DOWN and then asked for a second press would be a card
@@ -905,12 +945,14 @@ export class App {
        * written there in pencil. */
       for (const id of note.learns ?? []) knowledge.learn(id);
       this.ui.openNote(note.title, typeof note.body === 'function' ? note.body() : note.body);
+      this.voice.read(note.title); /* VOICE */
       return;
     }
     if (def.touch) {
       // seen as well as heard: the figure rocks back on every touch
       this.char.recoil();
       def.touch(this.char.pos.x, this.char.pos.z);
+      this.voice.touched(def); /* VOICE */
       return;
     }
     if (def.sit) this.sitDown(def);
@@ -1637,6 +1679,7 @@ export class App {
     this.lookTick(dt);
     this.char.frozen = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen || !this.started
       || this.ui.blinking;
+    if (this.voice.open) this.char.frozen = true; /* VOICE: the notebook has the screen */
     // a step stands you up; the prompt says so, and so does a thumb
     if (this.seat && Math.hypot(this.input.move.x, this.input.move.y) > 0.3) {
       this.standUp();
@@ -2136,7 +2179,15 @@ export class App {
     if (this.started) {
       // a card is up: the world's own writing stays behind it
       this.poi.suppressed = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen;
+      if (this.voice.open) this.poi.suppressed = true; /* VOICE */
       this.activePoi = this.poi.update(this.char.pos);
+      /* ---- VOICE: bubbles follow, toasts time out, the world answers ---- */
+      this.voice.tick(dt);
+      if (notebook.dirty) {
+        notebook.dirty = false;
+        this.save.data.notebook = notebook.saved;
+        this.save.persist();
+      }
       /* THE ROUTES, WALKED (WORLD-SYSTEMS §6). A route is the one kind
        * of knowledge nobody in this world could tell you, because they
        * cannot cross a border and the line crosses eleven. So it is

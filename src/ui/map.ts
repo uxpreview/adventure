@@ -4,6 +4,7 @@ import { letterCanvas, S } from './lettering';
 import { WORLD, REGION_SPECS, ROADS, RIVER, BRIDGES, PONDS, SANDBAR, DISTRICTS } from '../world/layout';
 import { coastX } from '../world/terrain';
 import { knowledge } from '../world/knowledge';
+import { notebook } from '../world/notebook';
 
 /**
  * THE MAP — drawn, of course. Region borders in pencil, coast and
@@ -277,6 +278,65 @@ export function renderMap(state: {
     ctx.globalAlpha = 0.72;
     ctx.drawImage(dl, dx, dy, dw, dh);
     ctx.globalAlpha = 1;
+  }
+
+  /* ---- VOICE: PINS. Every place in the notebook — named by somebody,
+     or found — gets a pin and a small label kept clear of every name
+     already on the sheet; the active job's pin is drawn bolder. A pin
+     always gets its name: the label tries six clear spots and then
+     takes the one below, because a nameless pin is a smudge. ---- */
+  {
+    // the lettering canvas is drawn at the device ratio (capped at 2);
+    // its CSS size is that many times smaller
+    const dpr = Math.min(2, (typeof devicePixelRatio === 'number' ? devicePixelRatio : 1) || 1);
+    const active = notebook.active();
+    const jobPin = active?.pin?.label ?? null;
+    const pins = [...notebook.places];
+    // the job's pin last, so it is drawn on top and its label wins
+    pins.sort((a, b) => (a.label === jobPin ? 1 : 0) - (b.label === jobPin ? 1 : 0));
+    const pinInk = smallMap ? Math.min(ink, 1.7) : ink;
+    // the you-are-here scribble is drawn after the pins; keep the
+    // labels off it all the same
+    if (state.here) {
+      const hx = X(state.here[0]);
+      const hz = Z(state.here[1]);
+      const hr = 9 * ink;
+      placed.push({ l: hx - hr, r: hx + hr + 22 * ink, t: hz - hr, b: hz + hr });
+    }
+    for (const p of pins) {
+      const bold = p.label === jobPin;
+      const px = X(p.x);
+      const pz = Z(p.z);
+      const rad = (bold ? 5.6 : 4.2) * Math.max(1, pinInk * 0.8);
+      const col = p.seen || bold ? INK : PENCIL;
+      const alpha = bold ? 0.95 : p.seen ? 0.85 : 0.8;
+      // the pin: a loop on a stem, the stem's foot on the place
+      const py = pz - rad * 2.4;
+      scribbleCircle(ctx, px, py, rad, r, { width: bold ? 2.2 : 1.6, alpha, color: col, passes: 1 }, 1.1);
+      line(ctx, px, py + rad, px, pz, r, { width: bold ? 2.2 : 1.5, alpha, color: col, passes: 1 });
+      if (bold) {
+        ctx.fillStyle = INK;
+        ctx.globalAlpha = 0.85;
+        ctx.beginPath();
+        ctx.arc(px, py, rad * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      const lc = letterCanvas(p.label, {
+        ...S.quiet((bold ? 10.5 : 9.5) * pinInk), color: col, alpha: bold ? 0.95 : 0.88, weightScale: bold ? 1.25 : 1.05,
+      });
+      const lw = lc.width / dpr;
+      const lh = lc.height / dpr;
+      // right of the loop first, then left, then above, then under the foot
+      const tries: [number, number][] = [
+        [px + rad + 4, py - lh / 2], [px - rad - 4 - lw, py - lh / 2], [px - lw / 2, py - rad - lh - 2],
+        [px - lw / 2, pz + 3], [px + rad + 4, pz + 3], [px - rad - 4 - lw, pz + 3],
+      ];
+      const spot = tries.find(([lx, ly]) => clear({ l: lx, r: lx + lw, t: ly, b: ly + lh })) ?? tries[3];
+      const [lx, ly] = spot;
+      placed.push({ l: lx, r: lx + lw, t: ly, b: ly + lh });
+      ctx.drawImage(lc, lx, ly, lw, lh);
+    }
   }
 
   // you are here

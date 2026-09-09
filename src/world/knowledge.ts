@@ -362,8 +362,13 @@ class Knowledge {
     if (this.set.has(id)) return false;
     this.set.add(id);
     this.dirty = true;
+    /* ---- VOICE: a thing learned is said on screen ---- */
+    this.onLearn?.(id);
     return true;
   }
+
+  /* ---- VOICE: the one listener, set by `world/voice.ts` ---- */
+  onLearn: ((id: Known) => void) | null = null;
 
   /**
    * WHAT THE MAP DRAWS A LAND IN.

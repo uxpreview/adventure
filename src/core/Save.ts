@@ -1,3 +1,5 @@
+import type { NotebookSave } from '../world/notebook';
+
 export type SkinId = 'pip' | 'b';
 
 export type SaveData = {
@@ -86,6 +88,8 @@ export type SaveData = {
    * as nothing, which is what an older walker was wearing.
    */
   worn?: string | null;
+  /* ---- VOICE: the notebook, whole (`src/world/notebook.ts`) ---- */
+  notebook?: NotebookSave | null;
 };
 
 const KEY = 'inklands-save-v1';
@@ -105,6 +109,7 @@ const DEFAULTS: SaveData = {
   taughtRun: false,
   things: {},
   worn: null,
+  notebook: null,
 };
 
 export class Save {
