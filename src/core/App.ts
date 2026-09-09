@@ -60,12 +60,16 @@ import { letterBench } from '../ui/lettering'; /* ---- PEN ---- */
 /* ---- FIRST HOUR: the scripted opening (`src/world/opening.ts`) ---- */
 import { opening, OPENING_POIS } from '../world/opening';
 import { nellsCapTexture } from '../world/textures-opening';
+/* ---- THINGS: jobs, stamps, toys, monsters (`src/world/jobs.ts`) ---- */
+import { jobs, THINGS_POIS } from '../world/jobs';
+import { redScarfTexture, postmasterCapTexture } from '../world/textures-monsters';
 
 const ALL_POIS: WorldPOI[] = [
   ...MEADOW_POIS, ...FOREST_POIS, ...CANYON_POIS, ...DESERT_POIS, ...DOWNS_POIS,
   ...OCEAN_POIS, ...BEACH_POIS, ...KINGDOM_POIS, ...CASTLE_POIS,
   ...NEIGHBORHOOD_POIS, ...CITY_POIS, ...OFFICE_POIS,
   ...OPENING_POIS, /* ---- FIRST HOUR: the milestone ---- */
+  ...THINGS_POIS, /* ---- THINGS: the stamps, the toys, the belfry bench ---- */
 ];
 
 /**
@@ -341,6 +345,23 @@ export class App {
       common,
       data: () => this.save.data,
       persist: () => this.save.persist(),
+    });
+    /* ---- THINGS: the jobs, the stamps, the toys, the monsters ---- */
+    jobs.init({
+      scene: this.scene, root: this.ui.root,
+      groundAt: (x, z) => this.terrain.heightAt(x, z),
+      waterAt: (x, z) => this.terrain.waterAt(x, z),
+      walker: () => this.char.pos,
+      bicycle: this.bicycle,
+      mounted: () => this.boat.aboard || this.bicycle.aboard || this.train.aboard || this.horse.aboard,
+      wake: (x, z) => {
+        this.standUp();
+        this.char.teleport(x, z);
+        this.char.setGround(this.terrain.heightAt(x, z), this.terrain.normalAt(x, z));
+        this.snapCamera();
+      },
+      blink: (cut) => this.ui.blink(cut),
+      started: () => this.started,
     });
 
     this.input.onInteract(() => {
@@ -859,6 +880,8 @@ export class App {
         closeNotebook: () => this.voice.close(),
         talk: (id: string) => npcs.talk(id),
         opening, /* ---- FIRST HOUR ---- */
+        /* ---- THINGS: the jobs, the stamps, the toys, the monsters, for the harness ---- */
+        todo: jobs.debug,
         /* ---- PEN: the lettering bench and the render scale ---- */
         letterBench: (runs?: number) => letterBench(runs),
         renderScale: (pin?: number | null) => this.fx.renderScale(pin),
@@ -1080,6 +1103,9 @@ export class App {
       case 'the-hat': return wornHatTexture(2202);
       case 'the-lanyard': return lanyardTexture(2203);
       case 'nells-cap': return nellsCapTexture(2205); /* ---- FIRST HOUR ---- */
+      /* ---- THINGS: the scarf and the cap ---- */
+      case 'the-red-scarf': return redScarfTexture(2205);
+      case 'the-postmaster-cap': return postmasterCapTexture(2206);
       default: return helmTexture(2204);
     }
   }
@@ -2361,6 +2387,7 @@ export class App {
       /* ---- VOICE: bubbles follow, toasts time out, the world answers ---- */
       this.voice.tick(dt);
       opening.tick(dt); /* ---- FIRST HOUR: the opening, after the voice ---- */
+      jobs.tick(dt); /* ---- THINGS: jobs, stamps, toys, monsters ---- */
       if (notebook.dirty) {
         notebook.dirty = false;
         this.save.data.notebook = notebook.saved;

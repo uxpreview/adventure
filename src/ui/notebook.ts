@@ -5,6 +5,10 @@ import { glyph } from './toast';
 import { notebook, type Job } from '../world/notebook';
 import { npcs, type NpcState } from '../world/npc';
 import { UI } from './UI';
+/* ---- THINGS: the finale's count and the stamps' impressions ---- */
+import { landsDone, LANDS_TOTAL } from '../world/jobs';
+import { STAMP_COLLECTION } from '../world/stamps';
+import { stampImpression } from '../world/textures-monsters';
 
 /**
  * THE NOTEBOOK PAGE (VOICE) — the walker's own book, opened with N or
@@ -187,6 +191,8 @@ export class NotebookPage {
       case 'JOBS': {
         const jobs = notebook.list();
         const asks = asked();
+        /* ---- THINGS: the finale's count, at the top of the page ---- */
+        push(this.lineEl(`eight15|${landsDone()}`, `THE 8:15 WILL STOP FOR ${landsDone()} OF ${LANDS_TOTAL}`, 'head', w));
         if (!jobs.length && !asks.length) push(this.lineEl('none', 'nothing yet. talk to somebody.', 'quiet', w));
         const active = notebook.active();
         for (const j of [...jobs.filter((x) => !x.complete), ...jobs.filter((x) => x.complete)]) {
@@ -229,7 +235,11 @@ export class NotebookPage {
         if (!counts.length && !notebook.learned.length) push(this.lineEl('none', 'nothing found yet.', 'quiet', w));
         for (const [name, c] of counts) {
           push(this.lineEl(`count|${name}|${c.have}|${c.of}`, `${name} — ${c.have} of ${c.of}`, 'head', w));
-          for (const item of notebook.foundMap[name].items) push(this.lineEl(`item|${name}|${item}`, item, 'line', w));
+          for (const item of notebook.foundMap[name].items) {
+            /* ---- THINGS: a stamp is drawn as its impression ---- */
+            if (name === STAMP_COLLECTION) { push(this.stampEl(name, item, w)); continue; }
+            push(this.lineEl(`item|${name}|${item}`, item, 'line', w));
+          }
         }
         if (notebook.learned.length) {
           push(this.lineEl('learned-head', 'LEARNED', 'head', w));
@@ -248,6 +258,20 @@ export class NotebookPage {
     }
     this.body.textContent = '';
     for (const e of out) this.body.appendChild(e);
+  }
+
+  /* ---- THINGS: the FOUND page draws each stamp as an ink rubber-stamp ---- */
+  private stampEl(collection: string, item: string, w: number): HTMLElement {
+    const key = `stamp|${collection}|${item}`;
+    let row = this.cache.get(key);
+    if (row) return row;
+    row = document.createElement('div');
+    row.className = 'nb-stamp-row';
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;margin:2px 0;';
+    row.appendChild(stampImpression(item, 26, Math.min(2, window.devicePixelRatio || 1)));
+    row.appendChild(this.lineEl(`item|${collection}|${item}`, item, 'line', w - 80));
+    this.cache.set(key, row);
+    return row;
   }
 
   private jobEl(j: Job, active: boolean, w: number): HTMLElement {
