@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { StandeeField, type StandeeFieldOpts } from '../../engine/StandeeField';
 import { makeStandee, makeDecal, disposeGroup } from '../../engine/props';
+import { billboard } from '../../engine/billboard';
 import { rng } from '../../engine/ink';
 import { Terrain } from '../terrain';
 import { WORLD, REGION_SPECS, BRIDGES, ROADS, type RegionId, type RegionSpec, type Rect } from '../layout';
@@ -53,7 +54,17 @@ export type BuildCtx = {
    *  (a gatehouse on a road). Fields — trees, grass, a crowd — stay
    *  walkable, and so does everything that does not ask. */
   standee: (tex: THREE.Texture, w: number, h: number, x: number, z: number,
-    opts?: { rotY?: number; opacity?: number; solid?: true | number | { hw?: number; gap?: number; keep?: boolean } }) => THREE.Mesh;
+    opts?: { rotY?: number; opacity?: number; solid?: true | number | { hw?: number; gap?: number; keep?: boolean };
+      /* ---- CAMERA: which way a cutout turns (engine/billboard.ts) ----
+       * 'camera' turns about its feet to face the lens (a tree, a
+       * house, a sign — the default); 'keep' does too but shows its
+       * back from behind, so a thing that faces east keeps facing
+       * east (a person, an animal); 'run' turns at most fifty degrees
+       * off its authored line (a fence, a wall, a hedge, bunting);
+       * 'fixed' holds its authored rotY (a room's section walls).
+       * Unset: 'run' if it is wide and low (w ≥ 5 and h < ¾ w),
+       * 'camera' otherwise. */
+      face?: 'camera' | 'keep' | 'run' | 'fixed' }) => THREE.Mesh;
   /** Ground decal at (x, z), lying along the page's surface. */
   decal: (tex: THREE.Texture, w: number, h: number, x: number, z: number, rotY?: number, opacity?: number) => THREE.Mesh;
   /** The ground at (x, z) — for anything hung in the air over it. */
@@ -317,6 +328,9 @@ export class World {
         const m = makeStandee(tex, w, h, opts.opacity ?? 1);
         m.position.set(x, terrain.heightAt(x, z), z);
         if (opts.rotY) m.rotation.y = opts.rotY;
+        /* ---- CAMERA: the cutout faces the lens; a long low one leans ---- */
+        const face = opts.face ?? (w >= 5 && h < w * 0.75 ? 'run' : 'camera');
+        if (face !== 'fixed') billboard(m, opts.rotY ?? 0, face === 'keep' ? 'keep' : face === 'run' ? 'run' : 'front');
         group.add(m);
         this.raiseSkyline(x, z, w, m.position.y + h);
         this.feet.push({ x, z, hw: Math.max(0.5, w * 0.5), top: m.position.y + h, m, h });
@@ -427,7 +441,7 @@ export class World {
         for (const f of b.fields) f.cascadeFrom(x, z, 34, t, 0.3);
       }
     }
-    if (camX !== undefined && camZ !== undefined) this.nearFade(camX, camZ);
+    if (camX !== undefined && camZ !== undefined) this.nearFade(camX, camZ, x, z);
   }
 
   /**
@@ -447,24 +461,81 @@ export class World {
    */
   private static NEAR = 4.5;
   private static NEAR_IN = 1.4;
-  private nearFade(cx: number, cz: number) {
+  /* ---- CAMERA: AND ANYTHING STANDING BETWEEN THE LENS AND THE WALKER.
+   * The camera orbits now, so a cottage, a wall or the mill can end
+   * up square between the lens and the walker it is aimed at, and the
+   * walker is gone behind a drawing. A cutout whose foot line crosses
+   * the line from the lens to the walker fades to the same floor as
+   * one the lens is inside of, softly over its last unit at each end
+   * and over the last stretch before the walker (something standing
+   * right beside them is beside them, not in the way). The footprint
+   * test reads each mesh's own rotation, since a cutout turns about
+   * its feet now and a run leans. */
+  private static FLOOR = 0.22;
+  /** Lower still for a drawing square between the lens and the walker. */
+  private static BETWEEN = 0.14;
+  private nearFade(cx: number, cz: number, px: number, pz: number) {
     const N = World.NEAR;
     const touched = new Set<THREE.Mesh>();
+    // lens → walker, in XZ
+    const lx = px - cx;
+    const lz = pz - cz;
+    const ll = Math.hypot(lx, lz);
+    const bx0 = Math.min(cx, px);
+    const bx1 = Math.max(cx, px);
+    const bz0 = Math.min(cz, pz);
+    const bz1 = Math.max(cz, pz);
     for (const f of this.feet) {
       if (f.h < 1.2) continue;
-      const dz = Math.abs(f.z - cz);
-      if (dz > N) continue;
-      const dx = Math.max(0, Math.abs(f.x - cx) - f.hw);
-      const d = Math.hypot(dx, dz);
-      if (d >= N) continue;
+      // coarse reject: not near the lens and not near the lens→walker box
+      const reach = f.hw + N;
+      if (f.x < bx0 - reach || f.x > bx1 + reach || f.z < bz0 - reach || f.z > bz1 + reach) continue;
       const m = f.m;
       if (!m.visible) continue;
+      const ry = m.rotation.y;
+      const c = Math.cos(ry);
+      const sn = Math.sin(ry);
+      // the foot line: centre f, direction u (local x), half-length hw
+      const ux = c;
+      const uz = -sn;
+      let k = 1;
+      // 1. the lens inside or nearly inside the drawing
+      {
+        const wx = cx - f.x;
+        const wz = cz - f.z;
+        const along = wx * ux + wz * uz;
+        const across = wx * sn + wz * c;
+        const d = Math.hypot(Math.max(0, Math.abs(along) - f.hw), across);
+        if (d < N) {
+          const u = Math.max(0, Math.min(1, (d - World.NEAR_IN) / (N - World.NEAR_IN)));
+          k = World.FLOOR + (1 - World.FLOOR) * u * u * (3 - 2 * u);
+        }
+      }
+      // 2. the drawing standing across the line from the lens to the walker
+      if (ll > 1e-3) {
+        const den = lx * uz - lz * ux;
+        if (Math.abs(den) > 1e-6) {
+          const qx = f.x - cx;
+          const qz = f.z - cz;
+          const t = (qx * uz - qz * ux) / den;   // 0 at the lens, 1 at the walker
+          const s = (qx * lz - qz * lx) / den;   // along the foot line from its centre
+          if (t > 0 && t < 1) {
+            const endK = Math.max(0, Math.min(1, (f.hw + 0.8 - Math.abs(s)) / 1.2));
+            const nearWalker = Math.max(0, Math.min(1, (1 - t) * ll / 1.6));
+            const w = endK * nearWalker;
+            const k2 = 1 - (1 - World.BETWEEN) * w * w * (3 - 2 * w);
+            if (k2 < k) k = k2;
+          }
+        }
+      }
+      if (k >= 0.999) continue;
       const mat = m.material as THREE.MeshBasicMaterial;
-      const ud = m.userData as { fadeSet?: number; fadeBase?: number };
+      const ud = m.userData as { fadeSet?: number; fadeBase?: number; fadeDW?: boolean };
       const base = ud.fadeSet !== undefined && mat.opacity === ud.fadeSet ? ud.fadeBase! : mat.opacity;
-      const u = Math.max(0, Math.min(1, (d - World.NEAR_IN) / (N - World.NEAR_IN)));
-      const k = 0.22 + 0.78 * u * u * (3 - 2 * u);
       mat.opacity = base * k;
+      // a faded drawing must not hide what is behind it either: its
+      // wash would still write depth over the walker it is in front of
+      if (mat.depthWrite) { mat.depthWrite = false; ud.fadeDW = true; }
       ud.fadeBase = base;
       ud.fadeSet = mat.opacity;
       touched.add(m);
@@ -473,8 +544,9 @@ export class World {
     for (const m of this.faded) {
       if (touched.has(m)) continue;
       const mat = m.material as THREE.MeshBasicMaterial;
-      const ud = m.userData as { fadeSet?: number; fadeBase?: number };
+      const ud = m.userData as { fadeSet?: number; fadeBase?: number; fadeDW?: boolean };
       if (ud.fadeSet !== undefined && mat.opacity === ud.fadeSet) mat.opacity = ud.fadeBase!;
+      if (ud.fadeDW) { mat.depthWrite = true; ud.fadeDW = undefined; }
       ud.fadeSet = undefined;
       this.faded.delete(m);
     }
@@ -529,9 +601,20 @@ export class World {
   nearTopAt(x: number, z: number, r: number, depth = 1.6): number {
     let top = -Infinity;
     for (const f of this.feet) {
-      const dz = Math.abs(z - f.z);
+      const wx = x - f.x;
+      const wz = z - f.z;
+      // coarse first: the line's reach is its half-width whichever way
+      // it has turned (CAMERA: a cutout turns about its feet now)
+      if (Math.abs(wx) > f.hw + depth + r || Math.abs(wz) > f.hw + depth + r) continue;
+      const ry = f.m.rotation.y;
+      const c = Math.cos(ry);
+      const sn = Math.sin(ry);
+      // along the line (its local x) and across it (its local z)
+      const along = wx * c - wz * sn;
+      const across = wx * sn + wz * c;
+      const dz = Math.abs(across);
       if (dz > depth + r) continue;
-      const dx = Math.max(0, Math.abs(x - f.x) - f.hw);
+      const dx = Math.max(0, Math.abs(along) - f.hw);
       if (dx > r) continue;
       const d = Math.hypot(dx, Math.max(0, dz - depth));
       if (d < r && f.top > top) top = f.top;

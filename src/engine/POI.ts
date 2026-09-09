@@ -397,8 +397,11 @@ export class POIManager {
    */
   private place(el: HTMLElement, x: number, y: number, z: number, nudge = 0) {
     this.v.set(x, y, z).project(this.camera);
+    /* CAMERA: tighter than it was (1.12 / 1.2) — the camera orbits now,
+     * so a place slides off the side of the frame far more often, and
+     * a name clamped to the corner is a caption on nothing. */
     const inFrame =
-      this.v.z < 1 && Math.abs(this.v.x) < 1.12 && Math.abs(this.v.y) < 1.2;
+      this.v.z < 1 && Math.abs(this.v.x) < 1.0 && Math.abs(this.v.y) < 1.08;
     let sx = (this.v.x * 0.5 + 0.5) * window.innerWidth + nudge;
     let sy = (-this.v.y * 0.5 + 0.5) * window.innerHeight;
     // Clamp into the viewport (juror Fix 2: world labels clipped at the
