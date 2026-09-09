@@ -57,11 +57,15 @@ import { say, shout } from '../ui/speech';
 import { toast } from '../ui/toast';
 import { withHint } from '../world/lines';
 import { letterBench } from '../ui/lettering'; /* ---- PEN ---- */
+/* ---- THINGS: jobs, stamps, toys, monsters (`src/world/jobs.ts`) ---- */
+import { jobs, THINGS_POIS } from '../world/jobs';
+import { redScarfTexture, postmasterCapTexture } from '../world/textures-monsters';
 
 const ALL_POIS: WorldPOI[] = [
   ...MEADOW_POIS, ...FOREST_POIS, ...CANYON_POIS, ...DESERT_POIS, ...DOWNS_POIS,
   ...OCEAN_POIS, ...BEACH_POIS, ...KINGDOM_POIS, ...CASTLE_POIS,
   ...NEIGHBORHOOD_POIS, ...CITY_POIS, ...OFFICE_POIS,
+  ...THINGS_POIS, /* ---- THINGS: the stamps, the toys, the belfry bench ---- */
 ];
 
 /**
@@ -325,6 +329,23 @@ export class App {
       started: () => this.started,
     });
     this.ui.onCloseNotebook = () => this.voice.close();
+    /* ---- THINGS: the jobs, the stamps, the toys, the monsters ---- */
+    jobs.init({
+      scene: this.scene, root: this.ui.root,
+      groundAt: (x, z) => this.terrain.heightAt(x, z),
+      waterAt: (x, z) => this.terrain.waterAt(x, z),
+      walker: () => this.char.pos,
+      bicycle: this.bicycle,
+      mounted: () => this.boat.aboard || this.bicycle.aboard || this.train.aboard || this.horse.aboard,
+      wake: (x, z) => {
+        this.standUp();
+        this.char.teleport(x, z);
+        this.char.setGround(this.terrain.heightAt(x, z), this.terrain.normalAt(x, z));
+        this.snapCamera();
+      },
+      blink: (cut) => this.ui.blink(cut),
+      started: () => this.started,
+    });
 
     this.input.onInteract(() => {
       /* ---- VOICE: the key closes the notebook first ---- */
@@ -841,6 +862,8 @@ export class App {
         openNotebook: () => this.voice.page.open(),
         closeNotebook: () => this.voice.close(),
         talk: (id: string) => npcs.talk(id),
+        /* ---- THINGS: the jobs, the stamps, the toys, the monsters, for the harness ---- */
+        todo: jobs.debug,
         /* ---- PEN: the lettering bench and the render scale ---- */
         letterBench: (runs?: number) => letterBench(runs),
         renderScale: (pin?: number | null) => this.fx.renderScale(pin),
@@ -1028,6 +1051,9 @@ export class App {
       case 'the-crown': return crownTexture(2201);
       case 'the-hat': return wornHatTexture(2202);
       case 'the-lanyard': return lanyardTexture(2203);
+      /* ---- THINGS: the scarf and the cap ---- */
+      case 'the-red-scarf': return redScarfTexture(2205);
+      case 'the-postmaster-cap': return postmasterCapTexture(2206);
       default: return helmTexture(2204);
     }
   }
@@ -2306,6 +2332,7 @@ export class App {
       this.activePoi = this.poi.update(this.char.pos);
       /* ---- VOICE: bubbles follow, toasts time out, the world answers ---- */
       this.voice.tick(dt);
+      jobs.tick(dt); /* ---- THINGS: jobs, stamps, toys, monsters ---- */
       if (notebook.dirty) {
         notebook.dirty = false;
         this.save.data.notebook = notebook.saved;

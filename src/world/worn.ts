@@ -62,6 +62,9 @@ export const WORN: WornDef[] = [
   { id: 'the-hat', name: 'THE HAT', land: 'beach', slot: 'head', w: 0.62, h: 0.42, dy: -0.1 },
   { id: 'the-lanyard', name: 'THE LANYARD', land: 'office', slot: 'neck', w: 0.34, h: 0.42, dy: -0.36 },
   { id: 'the-helm', name: 'THE HELM', land: 'ocean', slot: 'head', w: 0.5, h: 0.4, dy: -0.12 },
+  /* ---- THINGS: Marget's scarf for her job; the cap for all twelve stamps ---- */
+  { id: 'the-red-scarf', name: 'THE RED SCARF', land: 'kingdom', slot: 'neck', w: 0.4, h: 0.44, dy: -0.4 },
+  { id: 'the-postmaster-cap', name: 'THE POSTMASTER\'S CAP', land: 'office', slot: 'head', w: 0.56, h: 0.4, dy: -0.1 },
 ];
 
 export const wearId = (id: string) => `wear:${id}`;
