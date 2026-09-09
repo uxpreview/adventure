@@ -3,6 +3,7 @@ import type { BuildCtx } from './index';
 import { rooms, type RoomDef } from '../rooms';
 import { sideWallTexture, pencilGhostTexture } from '../textures-rooms';
 import { makeStandee } from '../../engine/props';
+import { billboard, cameraYaw } from '../../engine/billboard';
 
 /**
  * ONE ROOM, BUILT (Session 23, `rooms.ts`, `WORLD-SYSTEMS` §11).
@@ -103,6 +104,9 @@ export function buildRoom(
       ghost.position.copy(house.position);
       ghost.position.z += 0.02;
       ghost.rotation.copy(house.rotation);
+      // CAMERA: the house turns to face the lens, so its pencil ghost
+      // turns with it, from the same authored tilt
+      billboard(ghost, house.rotation.y + cameraYaw());
       (ghost.material as THREE.MeshBasicMaterial).depthWrite = false;
       // pencil is faint by nature; the cutout's alpha test would eat it
       (ghost.material as THREE.MeshBasicMaterial).alphaTest = 0.01;
