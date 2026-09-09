@@ -26,7 +26,20 @@ import * as THREE from 'three';
  * drawing mirrored — so a figure facing east keeps facing east from
  * every side. Plain mode (a tree, a house, a sign) always shows its
  * front, which is what a sign wants.
+ *
+ * `'run'` mode is for a LONG, LOW drawing that stands for a line on
+ * the ground — a fence, a wall, a hedge, a rail, a string of bunting.
+ * Turned fully to the lens a run of them stacks up as a row of cards
+ * with the walker standing inside one; held fixed they vanish edge-on
+ * and the barrier they draw becomes an invisible wall. So a run turns
+ * toward the lens by at most `RUN_TURN` from its authored line: seen
+ * along its length it leans forty degrees off the lens and reads as a
+ * fence receding, and it is never narrower than three quarters of
+ * itself. Seen from behind it shows its back (the same drawing
+ * mirrored), which is what the back of a fence looks like.
  */
+/** How far a run may turn off its authored line toward the lens. */
+export const RUN_TURN = (50 * Math.PI) / 180;
 let yaw = 0;
 let cosYaw = 1;
 let sinYaw = 0;
@@ -34,7 +47,15 @@ let sinYaw = 0;
 /** One uniform object shared by every StandeeField material. */
 export const yawUniform = { value: 0 };
 
-type Entry = { m: THREE.Object3D; base: number; keep: boolean };
+export type BillboardMode = 'front' | 'keep' | 'run';
+type Entry = { m: THREE.Object3D; base: number; keep: boolean; run: boolean };
+
+const wrapPi = (a: number) => {
+  a = a % (Math.PI * 2);
+  if (a > Math.PI) a -= Math.PI * 2;
+  if (a <= -Math.PI) a += Math.PI * 2;
+  return a;
+};
 const list: Entry[] = [];
 
 export function cameraYaw() {
@@ -64,13 +85,22 @@ export function crossing(vx: number, vz: number) {
 }
 
 function orient(e: Entry) {
+  if (e.run) {
+    // a plane is the same plane turned by π, so fold the turn into a
+    // half circle and clamp it; past a right angle it shows its back
+    let d = wrapPi(-yaw - e.base);
+    if (d > Math.PI / 2) d -= Math.PI;
+    else if (d <= -Math.PI / 2) d += Math.PI;
+    e.m.rotation.y = e.base + Math.max(-RUN_TURN, Math.min(RUN_TURN, d));
+    return;
+  }
   e.m.rotation.y = e.keep && cosYaw < 0 ? e.base + Math.PI - yaw : e.base - yaw;
 }
 
 /** Register a mesh that faces the camera. `base` is an authored tilt
- *  kept relative to the lens. */
-export function billboard(m: THREE.Object3D, base = 0, mode: 'front' | 'keep' = 'front') {
-  const e = { m, base, keep: mode === 'keep' };
+ *  kept relative to the lens (or, for a run, the line it stands on). */
+export function billboard(m: THREE.Object3D, base = 0, mode: BillboardMode = 'front') {
+  const e = { m, base, keep: mode === 'keep', run: mode === 'run' };
   list.push(e);
   orient(e);
   return m;
@@ -83,10 +113,11 @@ export function unbillboard(m: THREE.Object3D) {
 }
 
 /** Switch a registered mesh's mode (a figure that faces a way). */
-export function billboardMode(m: THREE.Object3D, mode: 'front' | 'keep') {
+export function billboardMode(m: THREE.Object3D, mode: BillboardMode) {
   const e = list.find((x) => x.m === m);
   if (!e) return;
   e.keep = mode === 'keep';
+  e.run = mode === 'run';
   orient(e);
 }
 

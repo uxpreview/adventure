@@ -845,7 +845,7 @@ export class App {
       this.ui.showHint(
         'ontouchstart' in window
           ? 'drag low to walk — drag high or two fingers to look around — tap to look'
-          : 'wasd to walk — drag to look around — R to recentre — E to look — M for the map',
+          : 'wasd to walk — drag to look around — R to recentre — E to act — M for the map',
         6000
       );
     }
@@ -1412,8 +1412,8 @@ export class App {
      * so the walker reads as a person and not a pea, with the ground
      * ahead laid out and the horizon still in frame at rest.
      * ================================================================ */
-    desktop: { dist: 10.0, pitch: (15 * Math.PI) / 180, look: 2.4, fov: 42, lead: 3.2 },
-    portrait: { dist: 12.4, pitch: (17 * Math.PI) / 180, look: 3.0, fov: 54, lead: 1.6 },
+    desktop: { dist: 9.2, pitch: (14 * Math.PI) / 180, look: 2.3, fov: 42, lead: 3.0 },
+    portrait: { dist: 11.4, pitch: (15.5 * Math.PI) / 180, look: 2.9, fov: 54, lead: 1.6 },
     /** The poster, before you set out: a composition, nobody walking. */
     posterDesktop: { dist: 15.3, pitch: (8 * Math.PI) / 180, look: 4.8, fov: 42, lead: 0 },
     posterPortrait: { dist: 16.7, pitch: (8 * Math.PI) / 180, look: 5.6, fov: 54, lead: 0 },
