@@ -266,11 +266,18 @@ export function letterBench(runs = 5): { line60: number; page40: number } {
 
 /* ---- PEN: the tab's icon, drawn by the pen — a nib and a blot ---- */
 export function installFavicon() {
+  // after the page has its first frames: a tab icon is not on the way
+  // to the title
+  const later = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
+  if (later) later(drawFavicon, { timeout: 4000 }); else setTimeout(drawFavicon, 1500);
+}
+function drawFavicon() {
   try {
     const c = document.createElement('canvas');
     c.width = 64;
     c.height = 64;
-    const ctx = c.getContext('2d')!;
+    // a CPU canvas: toDataURL on a GPU surface is a readback
+    const ctx = c.getContext('2d', { willReadFrequently: true })!;
     ctx.fillStyle = '#f5f2ea';
     ctx.fillRect(0, 0, 64, 64);
     const r = rng(1999);

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { BuildCtx } from './index';
 import { rooms, type RoomDef } from '../rooms';
-import { sideWallTexture, pencilGhostTexture } from '../textures-rooms';
+import { sideWallTexture } from '../textures-rooms';
 import { makeStandee } from '../../engine/props';
 
 /**
@@ -99,7 +99,8 @@ export function buildRoom(
       mat.transparent = true;
       const geo = house.geometry as THREE.PlaneGeometry;
       const p = geo.parameters;
-      const ghost = makeStandee(pencilGhostTexture(mat.map!), p.width, p.height, 0);
+      /* ---- PEN: the pencil plan is the same drawing read through a shader; nothing is read back ---- */
+      const ghost = makeStandee(mat.map!, p.width, p.height, 0, { ghost: true });
       ghost.position.copy(house.position);
       ghost.position.z += 0.02;
       ghost.rotation.copy(house.rotation);

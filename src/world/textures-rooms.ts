@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {
-  makeTexture, stroke, line, scribbleCircle, hatch, readPixels, type Ctx2D,
+  makeTexture, stroke, line, scribbleCircle, hatch, type Ctx2D,
 } from '../engine/ink';
 import { INK, PENCIL, WASH } from '../engine/palette';
 
@@ -174,57 +174,6 @@ export function loftFloorDecal(seed: number): THREE.CanvasTexture {
   });
 }
 
-/* ================================================================== *
- * THE CUT WALL — a house's own ink, and nothing else.
- *
- * The front of a house is the wall the section cuts, and a section
- * draws a cut wall as LINE: the outline survives, the wash does not.
- * Rather than draw a second front for every house (and every house a
- * later session gives a door), this reads the house's own drawing back
- * and keeps only what the pen put there — every pixel dark enough to
- * be ink comes through as pencil, every wash and every fill drops out.
- * The result is the under-drawing a draughtsman would have left on the
- * page before the wash went on, which is exactly what a cut wall on a
- * plan should look like, and it is the same drawing as the house.
- * ================================================================== */
-export function pencilGhostTexture(src: THREE.Texture): THREE.CanvasTexture {
-  const img = src.image as HTMLCanvasElement;
-  /* ---- PEN: read at half size through a CPU canvas — the GPU readback
-   * of three house fronts was 18 of the 42 seconds to the title ---- */
-  const from = readPixels(img, 0.5);
-  const w = from.width;
-  const h = from.height;
-  const out = document.createElement('canvas');
-  out.width = w;
-  out.height = h;
-  const ctx = out.getContext('2d')!;
-  const to = ctx.createImageData(w, h);
-  const pr = parseInt(PENCIL.slice(1, 3), 16);
-  const pg = parseInt(PENCIL.slice(3, 5), 16);
-  const pb = parseInt(PENCIL.slice(5, 7), 16);
-  const d = from.data;
-  const o = to.data;
-  for (let i = 0; i < d.length; i += 4) {
-    const a = d[i + 3] / 255;
-    if (a < 0.05) continue;
-    const lum = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255;
-    // ink is dark; a wash is light. The threshold sits where the
-    // darkest wash in the game (Greyweather's stone at 0.6) still
-    // drops out and the lightest pen mark (a hatch at 0.3) survives.
-    const ink = Math.max(0, Math.min(1, ((1 - lum) * a - 0.38) / 0.3));
-    if (ink <= 0) continue;
-    o[i] = pr; o[i + 1] = pg; o[i + 2] = pb; o[i + 3] = Math.round(ink * 255);
-  }
-  ctx.putImageData(to, 0, 0);
-  const tex = new THREE.CanvasTexture(out);
-  tex.colorSpace = src.colorSpace;
-  tex.minFilter = src.minFilter;
-  tex.magFilter = src.magFilter;
-  tex.generateMipmaps = src.generateMipmaps;
-  tex.anisotropy = src.anisotropy;
-  tex.needsUpdate = true;
-  return tex;
-}
 
 /* ================================================================== *
  * THE WALLS — elevations. The far wall face-on; a side wall is the

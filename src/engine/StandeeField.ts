@@ -91,6 +91,8 @@ export class StandeeField {
     this.birth = new THREE.InstancedBufferAttribute(births, 1);
     geo.setAttribute('aBirth', this.birth);
 
+    /* ---- PEN: premultiplied, so the filtered edge is never black ---- */
+    if (!tex.premultiplyAlpha) { tex.premultiplyAlpha = true; tex.needsUpdate = true; }
     this.mat = new THREE.ShaderMaterial({
       uniforms: {
         uMap: { value: tex },
@@ -164,10 +166,12 @@ export class StandeeField {
           vec4 tex = texture2D(uMap, vUv);
           float alpha = tex.a * mix(uGhost, uBase, vWake);
           if (alpha < 0.012) discard;
-          gl_FragColor = vec4(tex.rgb * uColor, alpha);
+          /* PEN: the drawing is uploaded premultiplied (see props.inkBlend) */
+          gl_FragColor = vec4(tex.rgb * uColor * mix(uGhost, uBase, vWake), alpha);
         }
       `,
       transparent: true,
+      premultipliedAlpha: true, /* PEN */
       depthWrite: false,
       side: THREE.DoubleSide,
     });
