@@ -2102,6 +2102,28 @@ export class Audio {
         this.surge(1.0, 1.4, 240, 90, 0.005, 0.2, 'lowpass');
         break;
       }
+
+      /* ---- SCALE: the horse ---- */
+      case 'hooves': {
+        /* Four feet, lighter and quicker than the bull's: two heavy,
+         * two light, on the horse's own stride. `data` is the effort,
+         * so a gallop lands harder than a trot. */
+        const k = 0.6 + 0.4 * (_data ?? 0.5);
+        const j = 0.95 + Math.random() * 0.1;
+        this.knock(92 * j, 0.03 * k, 0);
+        this.knock(84 * j, 0.022 * k, 0.07);
+        this.knock(104 * j, 0.016 * k, 0.16);
+        this.knock(96 * j, 0.012 * k, 0.21);
+        this.surge(0.01, 0.09, 900, 300, 0.004 * k, 0.02, 'lowpass');
+        break;
+      }
+      case 'whistle': {
+        /* Two fingers: a rising note and a held one. */
+        if (!this.ctx) break;
+        this.glide(1500, 2100, 0, 0.14, 0.03, 'sine');
+        this.glide(2100, 1900, 0.16, 0.3, 0.03, 'sine');
+        break;
+      }
     }
   }
 

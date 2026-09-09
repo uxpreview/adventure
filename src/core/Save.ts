@@ -24,6 +24,8 @@ export type SaveData = {
    *  yours is where you left it. Absent in an older save, which reads
    *  as the verge at the mouth of the court. */
   bicycle?: { x: number; z: number } | null;
+  /* ---- SCALE: WHERE THE HORSE IS — the same promise as the bicycle. ---- */
+  horse?: { x: number; z: number } | null;
   /**
    * WHAT TIME IT IS. The day cycle runs while you play and stops when
    * you stop, so coming back tomorrow morning does not mean coming back
@@ -103,6 +105,7 @@ const DEFAULTS: SaveData = {
   walked: 0,
   boat: null,
   bicycle: null,
+  horse: null,
   hour: null,
   known: [],
   passed: [],

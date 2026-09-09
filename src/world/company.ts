@@ -1,4 +1,4 @@
-import type { Rect } from './layout';
+import { WORLD, type Rect } from './layout';
 
 /**
  * COMPANY — anybody who travels near the walker, and the one rule they
@@ -86,17 +86,19 @@ export class Follower {
 
   /** Inside its own land, with the margin. Everything that moves it
    *  goes through here first. */
+  /* ---- SCALE: a companion crosses borders now; only the sheet's edge
+   * and its keep-out ground hold it. ---- */
   private clampX(x: number) {
-    return Math.max(this.def.rect.minX + this.margin, Math.min(this.def.rect.maxX - this.margin, x));
+    return Math.max(WORLD.minX + this.margin, Math.min(WORLD.maxX - this.margin, x));
   }
   private clampZ(z: number) {
-    return Math.max(this.def.rect.minZ + this.margin, Math.min(this.def.rect.maxZ - this.margin, z));
+    return Math.max(WORLD.minZ + this.margin, Math.min(WORLD.maxZ - this.margin, z));
   }
 
   /** Whether (x, z) is inside its land — and not on ground it keeps
    *  out of. */
   inLand(x: number, z: number) {
-    const r = this.def.rect;
+    const r = WORLD;
     if (!(x >= r.minX && x < r.maxX && z >= r.minZ && z < r.maxZ)) return false;
     const k = this.def.keepOut;
     if (k && x >= k.minX && x < k.maxX && z >= k.minZ && z < k.maxZ) return false;
@@ -155,8 +157,8 @@ export class Follower {
      * and then sees themself keep going. */
     const held = Math.hypot(nx - this.x, nz - this.z) < step * 0.35 && d > want + 1;
     const edge = Math.min(
-      this.x - this.def.rect.minX, this.def.rect.maxX - this.x,
-      this.z - this.def.rect.minZ, this.def.rect.maxZ - this.z
+      this.x - WORLD.minX, WORLD.maxX - this.x,
+      this.z - WORLD.minZ, WORLD.maxZ - this.z
     ) <= this.margin + 0.05;
     if (held && (edge || !walkerIn)) {
       if (!this.atBorder) {

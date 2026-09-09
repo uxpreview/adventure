@@ -177,8 +177,13 @@ class Weather {
   pinned: WeatherState | null = null;
 
   /** Once a frame, after the clock has advanced. */
+  /* ---- SCALE: THE FORECAST. The rain a third of an hour on, so the
+   * traffic can stand a curtain at the horizon before it arrives, and
+   * the fields can gust before it. ---- */
+  ahead = 0;
   tick() {
     this.state = this.pinned ?? weatherAt(clock.day, clock.hour);
+    this.ahead = this.pinned ? this.pinned.rain : weatherAt(clock.day, (clock.hour + 0.35) % 24).rain;
   }
 
   pin(kind: WeatherKind | WeatherState | null) {
@@ -189,7 +194,10 @@ class Weather {
   /** The multiplier every field's sway takes: exactly one at the
    *  shipped page's half. */
   get windK(): number {
-    return 0.45 + this.state.wind * 1.1;
+    /* ---- SCALE: gusts you can see in the fields before the rain ---- */
+    const pre = Math.max(0, Math.min(1, (this.ahead - this.state.rain) * 3));
+    const pulse = Math.pow(Math.max(0, Math.sin(clock.hour * 100 * 0.9)), 2);
+    return 0.45 + this.state.wind * 1.1 + pre * pulse * 0.9;
   }
 }
 
