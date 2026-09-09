@@ -22,6 +22,8 @@ import { events } from '../events';
 import { barriers } from '../barriers';
 import { Follower } from '../company';
 import { knowledge } from '../knowledge';
+import { opening, MILESTONE } from '../opening'; /* FIRST HOUR */
+import { borderStoneTexture } from '../textures-opening'; /* FIRST HOUR */
 import { SPEC_BY_ID } from '../layout';
 import { platform } from '../../engine/Eight15';
 import { npcs } from '../npc'; /* VOICE */
@@ -224,6 +226,12 @@ export const common = {
     barriers.gap('the-field-gate')!.open = true;
     this.nell.pose = 0; this.nell.t = 0;
     goat.reset();
+  },
+  /** FIRST HOUR: SET OUT. The bull has already seen you: it charges
+   *  inside the first second whatever the hour, every time. */
+  wake() {
+    this.reset();
+    this.bull.state = 'watch'; this.bull.t = 0.6; this.bull.face = -1;
   },
 };
 
@@ -487,6 +495,10 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   const gateOpen = ctx.standee(fieldGateTexture(1610, false), 2.6, 2.6, GATE.x, GATE.z + 0.35);
   const gateShut = ctx.standee(fieldGateTexture(1611, true), 2.6, 2.6, GATE.x, GATE.z + 0.35);
   gateShut.visible = false;
+  /* FIRST HOUR: THE MILESTONE at the south border, on the verge of the
+   * king's road, a stride short of Maple Court. The place that reads it
+   * (`opening.ts` OPENING_POIS) stands over the border. */
+  ctx.standee(borderStoneTexture(1612), 1.3, 1.95, MILESTONE.x, MILESTONE.z);
   // the fence dies out east of the gate: one leaning post, then nothing
   ctx.standee(milestoneTexture(449), 1.1, 1.5, 45, 66);
   ctx.decal(wornGroundDecal(450), 5, 4, 9.5, 62.5, 0.4, 0.5);
@@ -1176,7 +1188,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
  *  wait's answer; door two is the cart, yours, and Nell has a cart at
  *  a border. The card is offered once. */
 const NELL_CARD: NonNullable<WorldPOI['choice']> = {
-  body: 'you came back up the road with the fourth name, and for once she does not settle. the cart is behind her. it has been almost loaded for years, and it was only ever waiting on which way it was going.',
+  body: 'you came back up the road with the fourth name: 8:15, and an arrow pointing north. for once she does not settle. the cart is behind her. it has been almost loaded for years, and it was only ever waiting on which way it was going.',
   options: [
     { label: 'TELL HER THE FOURTH NAME', door: 'door:the-cart-turned-north' },
     { label: 'KEEP IT, AND PUSH THE CART YOURSELF', door: 'door:the-cart-pushed' },
@@ -1189,12 +1201,12 @@ export const MEADOW_POIS: WorldPOI[] = [
     prompt: 'READ THE SIGNPOST',
     note: {
       title: 'the crossroads',
-      body: 'brim, to the north. the sea, west. the downs, east. and one that says 8:15, which is not a place. every road in the world starts here, which is another way of saying you are nowhere in particular.',
+      body: 'brim, to the north. the sea, west. the downs, east. maple court, south. and one that says 8:15, which is not a place. every road in the world starts here, which is another way of saying you are nowhere in particular.',
       /* THREE LANDS GO INTO PENCIL ON THE MAP FROM THE FIRST NOTE IN
        * THE GAME. The signpost has named them since Session 1 and it
        * has never been worth anything, because the map had nothing to
        * do with what the walker had been told. Now it has. */
-      learns: ['name:kingdom', 'name:beach', 'name:downs'],
+      learns: ['name:kingdom', 'name:beach', 'name:downs', 'name:neighborhood'],
     },
   },
   {
@@ -1305,11 +1317,11 @@ export const MEADOW_POIS: WorldPOI[] = [
     x: HEDGE_X - 1.2, z: 82.2, radius: 6, label: 'THE FIELD GATE',
     get prompt() {
       const done = knowledge.has('door:the-cart-turned-north') || knowledge.has('door:the-cart-pushed');
-      if (!done && knowledge.has('fact:the-timetable')) return 'TELL HER THE FOURTH NAME';
+      if (!done && opening.hasTheName()) return 'TELL HER THE FOURTH NAME'; /* FIRST HOUR */
       return 'LEAN ON THE GATE WITH HER';
     },
     get choice() {
-      if (!knowledge.has('fact:the-timetable')) return undefined;
+      if (!opening.hasTheName()) return undefined; /* FIRST HOUR: the milestone, or the Mile's timetable */
       return NELL_CARD;
     },
     note: {

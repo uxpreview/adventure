@@ -68,6 +68,9 @@ function asked(): { name: string; want: string; line: string | null }[] {
   return out;
 }
 
+/* ---- FIRST HOUR: with no job, the opening may name the nearest ask ---- */
+export const fallbackAsk: { get: (() => { name: string; want: string } | null) | null; refresh: () => void } = { get: null, refresh: () => {} };
+
 export class NotebookPage {
   private veil: HTMLElement;
   private page: HTMLElement;
@@ -115,6 +118,7 @@ export class NotebookPage {
       else this.dirtyWhileOpen = true;
     });
     this.objectiveTick();
+    fallbackAsk.refresh = () => this.objectiveTick(); /* ---- FIRST HOUR ---- */
     window.addEventListener('resize', () => { if (this.isOpen) this.render(); });
   }
 
@@ -285,7 +289,7 @@ export class NotebookPage {
   private objectiveTick() {
     const j = notebook.active();
     // no job: the line falls back to the last thing somebody asked for
-    const a = j ? null : asked()[0];
+    const a = j ? null : (fallbackAsk.get?.() ?? asked()[0]); /* ---- FIRST HOUR: the nearest ask ---- */
     const text = j ? `${j.giver} — ${j.steps[j.done] ?? j.name}`.toUpperCase()
       : a ? `${a.name} — ${a.want}`.toUpperCase() : '';
     if (text === this.objectiveText) return;

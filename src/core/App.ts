@@ -57,11 +57,15 @@ import { say, shout } from '../ui/speech';
 import { toast } from '../ui/toast';
 import { withHint } from '../world/lines';
 import { letterBench } from '../ui/lettering'; /* ---- PEN ---- */
+/* ---- FIRST HOUR: the scripted opening (`src/world/opening.ts`) ---- */
+import { opening, OPENING_POIS } from '../world/opening';
+import { nellsCapTexture } from '../world/textures-opening';
 
 const ALL_POIS: WorldPOI[] = [
   ...MEADOW_POIS, ...FOREST_POIS, ...CANYON_POIS, ...DESERT_POIS, ...DOWNS_POIS,
   ...OCEAN_POIS, ...BEACH_POIS, ...KINGDOM_POIS, ...CASTLE_POIS,
   ...NEIGHBORHOOD_POIS, ...CITY_POIS, ...OFFICE_POIS,
+  ...OPENING_POIS, /* ---- FIRST HOUR: the milestone ---- */
 ];
 
 /**
@@ -325,6 +329,18 @@ export class App {
       started: () => this.started,
     });
     this.ui.onCloseNotebook = () => this.voice.close();
+    /* ---- FIRST HOUR: the opening reads the world and drives Nell ---- */
+    opening.install({
+      walker: () => this.char.pos,
+      regionId: () => this.region.id,
+      started: () => this.started,
+      readNotes: () => this.save.data.readNotes,
+      showHint: (t, ms) => this.ui.showHint(t, ms),
+      touch: 'ontouchstart' in window,
+      common,
+      data: () => this.save.data,
+      persist: () => this.save.persist(),
+    });
 
     this.input.onInteract(() => {
       /* ---- VOICE: the key closes the notebook first ---- */
@@ -841,6 +857,7 @@ export class App {
         openNotebook: () => this.voice.page.open(),
         closeNotebook: () => this.voice.close(),
         talk: (id: string) => npcs.talk(id),
+        opening, /* ---- FIRST HOUR ---- */
         /* ---- PEN: the lettering bench and the render scale ---- */
         letterBench: (runs?: number) => letterBench(runs),
         renderScale: (pin?: number | null) => this.fx.renderScale(pin),
@@ -907,7 +924,10 @@ export class App {
     knowledge.learn(`name:${this.region.id}`);
     this.ui.showRegionCard(this.region.kicker, this.region.name,
       { sub: this.district?.name.toLowerCase() });
-    if (fresh || newLand) {
+    /* ---- FIRST HOUR: SET OUT begins the opening; it prints the one
+     * control line itself, after the gate, and never again. ---- */
+    if (fresh) opening.begin();
+    if ((fresh || newLand) && !opening.handlesHint) {
       /* THE HINT IS THE CONTROL LIST AND IT WAS TOO LONG TO BE ONE.
        * Session 12 took the run out of it: five items fired once for
        * six seconds on the frame a player walks into a new land is a
@@ -1028,6 +1048,7 @@ export class App {
       case 'the-crown': return crownTexture(2201);
       case 'the-hat': return wornHatTexture(2202);
       case 'the-lanyard': return lanyardTexture(2203);
+      case 'nells-cap': return nellsCapTexture(2205); /* ---- FIRST HOUR ---- */
       default: return helmTexture(2204);
     }
   }
@@ -2306,6 +2327,7 @@ export class App {
       this.activePoi = this.poi.update(this.char.pos);
       /* ---- VOICE: bubbles follow, toasts time out, the world answers ---- */
       this.voice.tick(dt);
+      opening.tick(dt); /* ---- FIRST HOUR: the opening, after the voice ---- */
       if (notebook.dirty) {
         notebook.dirty = false;
         this.save.data.notebook = notebook.saved;

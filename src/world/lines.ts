@@ -36,18 +36,21 @@ export type PersonDef = {
 export const PEOPLE: PersonDef[] = [
   {
     id: 'nell', name: 'NELL', land: 'meadow', want: 'THE CROSSROADS',
+    /* FIRST HOUR: while the opening runs, Nell's lines come from
+     * `opening.ts` by stage. These are what she says before it starts
+     * (an old save) and after it is done. */
     lines: {
       idle: ['That bull is mine. It went for you because you looked at it. It does that.'],
       met: [
-        'Three of the four names on that signpost I could go to tomorrow. It\'s the fourth one I want.',
+        'Three names on that signpost I could go to tomorrow. It\'s the fourth I want.',
         'The cart\'s been nearly loaded since the fence was a fence.',
         'Mind the bull. He minds you.',
       ],
       asked: [
-        'Go and read the signpost at THE CROSSROADS. There\'s a fourth name on it, and it isn\'t a place. Bring it back.',
-        '8:15 isn\'t a place. It\'s a time. There\'s a man at the Mile who keeps a timetable. Ask him what it\'s the time of.',
+        'Read the signpost at THE CROSSROADS. There\'s a fourth name on it, and it isn\'t a place. Bring it back.',
+        'A time, not a place. The milestone on the south road is older than the signpost. See what it says about it.',
       ],
-      done: ['North, then. I\'d have said north.', 'You can push the cart yourself if you like. It\'s your back.'],
+      done: ['North, then. I\'d have said north.', 'Keep the cap. I\'ve a hood in the cart.', 'Three roads, three people. I\'m not going to pick for you.'],
       'chose:door:the-cart-turned-north': ['8:15. Not a place. A time. Well — the cart goes north, then, and I go with it.'],
       'chose:door:the-cart-pushed': ['You pushed my cart to the edge of the world. Fine. It\'s a cart at a border now. That\'s a kind of answer.'],
     },
