@@ -34,8 +34,46 @@ export function makeStandee(
     side: THREE.DoubleSide,
   });
   inkBlend(mat, opts.ghost);
-  skipWhenClear(mat);
-  return new THREE.Mesh(geo, mat);
+  const m = new THREE.Mesh(geo, mat);
+  skipWhenClear(mat, m, h);
+  return m;
+}
+
+/* ---- PEN: what the lens cannot see is not a draw call --------------- *
+ * Every drawing in reach is a draw call whether it is a house in the
+ * foreground or a signpost two hundred units off, four pixels tall and
+ * ninety per cent paper-coloured under the fog. The paper pass tells
+ * this module where the lens is each frame (`setLens`), and a standee
+ * or decal reports itself invisible when it would be under CULL_PX tall
+ * on screen, with the bar rising as the fog closes over it. Nothing is
+ * moved or disposed — a drawing the lens turns back toward is drawn
+ * again. The far silhouettes that pull the walker (a castle, a mill, a
+ * tower) are tens of units tall and are never near the bar. */
+const LENS = { x: 0, y: 0, z: 0, pxPerRad: 900, fogNear: 50, fogFar: 175, fog: false };
+const CULL_PX = 5;
+const CULL_FOG = 0.94;
+export function setLens(cam: THREE.Camera, fog: THREE.Fog | null, pageHeightPx: number) {
+  const e = cam.matrixWorld.elements;
+  LENS.x = e[12]; LENS.y = e[13]; LENS.z = e[14];
+  const fov = (cam as THREE.PerspectiveCamera).fov ?? 42;
+  LENS.pxPerRad = pageHeightPx / (2 * Math.tan((fov * Math.PI) / 360));
+  if (fog && (fog as THREE.Fog).isFog) { LENS.fog = true; LENS.fogNear = fog.near; LENS.fogFar = fog.far; } else LENS.fog = false;
+}
+function seen(m: THREE.Mesh, size: number, fogged: boolean): boolean {
+  const e = m.matrixWorld.elements;
+  const dx = e[12] - LENS.x, dy = e[13] - LENS.y, dz = e[14] - LENS.z;
+  const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  if (d < 1) return true;
+  const sy = Math.sqrt(e[4] * e[4] + e[5] * e[5] + e[6] * e[6]);
+  const px = (size * sy * LENS.pxPerRad) / d;
+  let bar = CULL_PX;
+  if (fogged && LENS.fog) {
+    const f = Math.max(0, Math.min(1, (d - LENS.fogNear) / Math.max(1e-3, LENS.fogFar - LENS.fogNear)));
+    const ff = f * f * (3 - 2 * f);
+    if (ff > CULL_FOG) return false;
+    bar += 24 * ff * ff;
+  }
+  return px >= bar;
 }
 
 /* ---- PEN: the ink blend --------------------------------------------- *
@@ -87,10 +125,10 @@ function premultiply(t: THREE.Texture | null) {
  * until its hour — was a full draw call of nothing. The kingdom alone
  * carried dozens. `visible` now reads false while the drawing is clear;
  * lands that set `visible` themselves still get exactly what they set. */
-function skipWhenClear(mat: THREE.Material) {
+function skipWhenClear(mat: THREE.MeshBasicMaterial, mesh: THREE.Mesh, size: number) {
   let own = true;
   Object.defineProperty(mat, 'visible', {
-    get: () => own && mat.opacity > 0.004,
+    get: () => own && mat.opacity > 0.004 && seen(mesh, size, mat.fog),
     set: (v: boolean) => { own = v; },
     configurable: true,
   });
@@ -136,8 +174,8 @@ export function makeDecal(
     polygonOffsetUnits: -8,
   });
   inkBlend(mat);
-  skipWhenClear(mat);
   const m = new THREE.Mesh(geo, mat);
+  skipWhenClear(mat, m, Math.max(w, h));
   m.position.y = 0.01;
   m.renderOrder = -6;
   return m;

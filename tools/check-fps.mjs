@@ -1,6 +1,6 @@
 // THE FRAME BUDGET, per land, per hour, per rig.
 //
-//   node tools/check-fps.mjs [--url http://localhost:4173/] [--json out.json] [--lands meadow,city]
+//   node tools/check-fps.mjs [--url http://localhost:4173/] [--json out.json] [--lands meadow,city] [--frames 30]
 //   node tools/check-fps.mjs --play 4383 --rig desktop     # through a running play-server
 //
 // `--play` drives a page a play-server (tools/play-server.mjs) already has
@@ -29,6 +29,7 @@ const JSON_OUT = arg('json', null);
 const ONLY = arg('lands', null)?.split(',');
 const PLAY = arg('play', null);
 const PLAY_RIG = arg('rig', 'desktop');
+const FRAMES = Number(arg('frames', 30)); // fewer frames = a faster run; ms get noisier, the gate does not
 
 export const BUDGET = { calls: 180, tris: 350_000 };
 const HOURS = [12, 19.5];
@@ -63,7 +64,7 @@ async function measureRig(rig, evalJs) {
       // settle: two seconds on the harness clock (builds the lands in
       // reach, one per frame, and lets the cascade and cards finish)
       await evalJs('window.__inklands.step(1 / 30, 60), 1');
-      const c = await evalJs(`(() => { const I = window.__inklands; I.quiet?.(); const c = I.frameCost(30);
+      const c = await evalJs(`(() => { const I = window.__inklands; I.quiet?.(); const c = I.frameCost(${FRAMES});
         return { ...c, lettered: document.querySelectorAll('.lettered canvas').length }; })()`);
       const over = c.calls > BUDGET.calls || c.tris > BUDGET.tris;
       if (over) fails++;

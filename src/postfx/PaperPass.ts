@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { setLens } from '../engine/props';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
@@ -34,8 +35,12 @@ export class PaperFX {
   private winMs = 0;
   private winN = 0;
   private roomSince = 0;
+  private scene: THREE.Scene;
+  private camera: THREE.Camera;
 
   constructor(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) {
+    this.scene = scene;
+    this.camera = camera;
     /* An 8-bit buffer, not the composer's half-float default: the page
      * is one multiply away from what the scene drew, and half-float is
      * twice the bandwidth on a phone (and, under a software GL, a
@@ -327,6 +332,9 @@ export class PaperFX {
 
   render(dt: number) {
     this.pass.uniforms.uTime.value += dt;
+    // where the lens is this frame, for the drawings' own culling
+    this.camera.updateMatrixWorld();
+    setLens(this.camera, this.scene.fog as THREE.Fog | null, this.pageH);
     this.composer.render();
     if (dt > 0 && this.adaptive && this.forced === null) this.measure();
   }
