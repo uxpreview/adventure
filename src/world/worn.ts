@@ -62,6 +62,8 @@ export const WORN: WornDef[] = [
   { id: 'the-hat', name: 'THE HAT', land: 'beach', slot: 'head', w: 0.62, h: 0.42, dy: -0.1 },
   { id: 'the-lanyard', name: 'THE LANYARD', land: 'office', slot: 'neck', w: 0.34, h: 0.42, dy: -0.36 },
   { id: 'the-helm', name: 'THE HELM', land: 'ocean', slot: 'head', w: 0.5, h: 0.4, dy: -0.12 },
+  /* ---- FIRST HOUR: Nell's cap, the first job's reward (`textures-opening.ts`) ---- */
+  { id: 'nells-cap', name: 'NELL\'S CAP', land: 'meadow', slot: 'head', w: 0.5, h: 0.3, dy: -0.08 },
 ];
 
 export const wearId = (id: string) => `wear:${id}`;

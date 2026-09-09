@@ -1,4 +1,5 @@
 import type { NotebookSave } from '../world/notebook';
+import type { OpeningSave } from '../world/opening'; /* ---- FIRST HOUR ---- */
 
 export type SkinId = 'pip' | 'b';
 
@@ -92,6 +93,8 @@ export type SaveData = {
   worn?: string | null;
   /* ---- VOICE: the notebook, whole (`src/world/notebook.ts`) ---- */
   notebook?: NotebookSave | null;
+  /* ---- FIRST HOUR: where the scripted opening got to (`src/world/opening.ts`) ---- */
+  opening?: OpeningSave | null;
 };
 
 const KEY = 'inklands-save-v1';
@@ -113,6 +116,7 @@ const DEFAULTS: SaveData = {
   things: {},
   worn: null,
   notebook: null,
+  opening: null, /* ---- FIRST HOUR ---- */
 };
 
 export class Save {
