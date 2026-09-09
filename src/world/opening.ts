@@ -47,7 +47,7 @@ const STEPS = [
 ];
 
 const PIN_CROSSROADS = { x: -42, z: 52, label: 'THE CROSSROADS' };
-const PIN_MILESTONE = { x: -45, z: 123, label: 'THE MILESTONE' };
+const PIN_MILESTONE = { x: -44.5, z: 123, label: 'THE MILESTONE' };
 const PIN_GATE = { x: -13.2, z: 82.2, label: 'THE FIELD GATE' };
 const PIN_SOUTH_GATE = { x: -45, z: -14, label: 'THE SOUTH GATE' };
 
@@ -59,7 +59,7 @@ export const MILESTONE = { x: -46.6, z: 119.2 };
  *  reach stops a unit inside the Common, so reading it means crossing. */
 export const OPENING_POIS: WorldPOI[] = [
   {
-    x: PIN_MILESTONE.x, z: PIN_MILESTONE.z, radius: 4.5, label: 'THE MILESTONE',
+    x: PIN_MILESTONE.x, z: PIN_MILESTONE.z, radius: 5.5, label: 'THE MILESTONE',
     prompt: 'READ THE MILESTONE',
     note: {
       title: 'the milestone',
@@ -86,7 +86,7 @@ export type OpeningCtx = {
   showHint: (text: string, holdMs?: number) => void;
   touch: boolean;
   /** The meadow's opening state (`regions/meadow.ts` `common`). */
-  common: { bull: { state: string }; gate: { shut: boolean }; wake(): void };
+  common: { bull: { state: string; t: number; face: number }; gate: { shut: boolean }; wake(): void };
   data: () => { opening?: OpeningSave | null };
   persist: () => void;
 };
@@ -364,7 +364,15 @@ class Opening {
     const land = c.regionId();
     const read = c.readNotes();
     switch (this.stage) {
-      case 'wake':
+      case 'wake': {
+        /* THE BULL, EVERY TIME. The title's blink teleports the walker a
+         * beat after SET OUT, and a bull that watched an empty field
+         * went back to grazing (or lying down, at night). The moment
+         * the walker is in the field, it is watching, and it charges
+         * inside the second. */
+        const b = c.common.bull;
+        const inField = w.x >= -10 && w.x < 46 && w.z >= 65.6 && w.z < 112;
+        if (inField && (b.state === 'graze' || b.state === 'lying')) { b.state = 'watch'; b.t = 0.7; b.face = -1; }
         if (c.common.bull.state === 'charge' && !this.saidRun) {
           this.saidRun = true;
           this.nellSays('RUN. THE GATE. NOW.', 3.2);
@@ -378,6 +386,7 @@ class Opening {
           ));
         }
         break;
+      }
       case 'signpost':
         if (read.includes(PIN_CROSSROADS.label)) this.readTheSignpost();
         break;
