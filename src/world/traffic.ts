@@ -5,6 +5,7 @@ import { weather } from './weather';
 import { barriers } from './barriers';
 import { coastX } from './layout';
 import { rng } from '../engine/ink';
+import { cameraYaw } from '../engine/billboard'; /* ---- CAMERA ---- */
 import {
   folkAtlas, wheelsAtlas, birdsAtlas, marksAtlas, folkCell, WHEELS, BIRDS, MARKS, type Atlas,
 } from './textures-traffic';
@@ -95,6 +96,11 @@ class SpriteField {
   }
 
   set(i: number, x: number, y: number, z: number, w: number, h: number, frame: number, flip: boolean, alpha: number, rotY = 0) {
+    /* ---- CAMERA: a sprite turned past a right angle shows its back,
+     * which is the same drawing mirrored — so a cart going east would
+     * face west from behind. Mirror it back, so a mover keeps facing
+     * the way it goes from every side (billboard.ts 'keep'). ---- */
+    if (Math.cos(rotY) < 0) flip = !flip;
     this.dummy.position.set(x, y, z);
     this.dummy.rotation.set(0, rotY, 0);
     this.dummy.scale.set(flip ? -w : w, h, 1);
@@ -398,7 +404,12 @@ class Traffic {
   tick(dt: number, t: number, px: number, pz: number, effort = 0, camX = px, camZ = pz + 1) {
     if (!this.ready) return;
     // every sprite squares up to the lens, whichever way it has been turned
-    this.yaw = Math.atan2(camX - px, camZ - pz);
+    /* ---- CAMERA: the lens's own yaw, the number every other drawing
+     * turns by (engine/billboard.ts), rather than the walker→camera
+     * bearing, which the aim's lead skews by up to thirty degrees
+     * close in. `camX`/`camZ` are kept for the call's shape. ---- */
+    void camX; void camZ;
+    this.yaw = -cameraYaw();
     const h = clock.hour;
     const near = (x: number, z: number, r: number) => Math.hypot(px - x, pz - z) < r;
     const ground = (x: number, z: number) => this.terrain.heightAt(x, z);

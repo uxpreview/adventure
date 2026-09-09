@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { horseSheet, hitchingPostTexture, HORSE_FRAMES, HORSE_FW, HORSE_FH } from '../world/textures-mounts';
 import { makeStandee } from './props';
+/* ---- CAMERA: the horse turns about its feet to face the lens ---- */
+import { billboard, cameraYaw, mirrorFor, towardLens } from './billboard';
 
 /**
  * THE HORSE (SCALE pillar) — the reason the world is big.
@@ -66,6 +68,7 @@ export class Horse {
     this.group.add(this.sprite);
     this.post = makeStandee(hitchingPostTexture(9150), 1.0, 2.0);
     this.post.position.set(HITCHING_POST.x, 0, HITCHING_POST.z);
+    billboard(this.post); /* ---- CAMERA: the post faces the lens too ---- */
     this.group.add(this.post);
     this.setFrame(0);
   }
@@ -154,9 +157,16 @@ export class Horse {
     } else if (going < 7.5) this.setFrame(1 + (Math.floor(this.phase / 0.75) % 2));
     else this.setFrame(3 + (Math.floor(this.phase / 1.5) % 2));
 
-    this.sprite.position.set(this.pos.x, y, this.pos.y + (this.aboard ? 0.55 : 0));
+    /* ---- CAMERA: the camera turns now — the horse faces the lens from
+     * any yaw, draws a stride TOWARD the lens (not south) when ridden so
+     * its body covers the rider's legs, and keeps facing the way it
+     * goes when seen from behind (the mirror, like every 'keep' cutout). */
+    const [lx, lz] = towardLens();
+    const off = this.aboard ? 0.55 : 0;
+    this.sprite.position.set(this.pos.x + lx * off, y, this.pos.y + lz * off);
+    this.sprite.rotation.y = -cameraYaw();
     this.sprite.rotation.z = going > 7.5 ? Math.sin(this.phase * 2.1) * 0.03 : 0;
-    this.sprite.scale.x = this.face;
+    this.sprite.scale.x = mirrorFor(this.face);
   }
 
   dispose() {
