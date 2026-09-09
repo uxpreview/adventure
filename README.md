@@ -4,10 +4,10 @@
 
 **Walk it: [adventure.ryankm.com](https://adventure.ryankm.com)**
 
-> **2026-09-07 — the reset.** The owner played the world and said it is
-> no longer fun or understandable. The review and the plan from here are
-> in `design/THE-RESET.md`; the next session's brief is `PROMPT.md`.
-> Everything below describes what was built, not what binds.
+> **2026-09-09 — the reset, built.** Free camera, people who talk, a
+> notebook, a first job in the first minute, a horse, traffic, twelve jobs,
+> stamps, toys, monsters. Read `GAME.md`; the notes are in `CHANGELOG.md`.
+> Everything below describes what was built before the reset.
 
 An open-world adventure drawn entirely in procedural ballpoint, built on
 the engine from [margins](https://github.com/uxpreview/margins). The
