@@ -1165,9 +1165,10 @@ export class App {
    * invisible walls anywhere.
    */
   private bicycleRefuses(x: number, z: number): boolean {
-    /* ---- SCALE: the bicycle goes anywhere flat and dry; sand slows it ---- */
+    /* ---- SCALE: the bicycle goes anywhere flat and dry; sand slows it.
+     * Wet to the hub is fine (a bridge's approach, a ford); deeper is not. ---- */
     if (this.terrain.blockedAt(x, z) || barriers.blocks(x, z)) return true;
-    if (this.terrain.waterAt(x, z) > 0.3 && !this.terrain.onPlanks(x, z)) return true;
+    if (this.terrain.waterAt(x, z) > 0.5 && !this.terrain.onPlanks(x, z, 2)) return true;
     for (const s of App.STAIRS) {
       if (x >= s.minX && x < s.maxX && z >= s.minZ && z < s.maxZ) return true;
     }
@@ -1420,7 +1421,7 @@ export class App {
    * two and a half units a second, a run a shade over four: the
    * Common takes a minute and a half to cross on foot and the mounts
    * are the reason the world is big. ---- */
-  private static WALK = { max: 2.5, run: 1.72 };
+  private static WALK = { max: 2.3, run: 1.9 };
   private static ROW = { max: 3.6, run: 1.3 };
   /* THE BICYCLE (Session 18): a shade under twice the walk on the flat
    * — faster than the run, which is the point of a bicycle — and the
@@ -2074,7 +2075,8 @@ export class App {
     this.world.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.region.id, weather.windK,
       this.camera.position.x, this.camera.position.z);
     /* ---- SCALE: something moving in every frame ---- */
-    traffic.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.char.effort);
+    traffic.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.char.effort,
+      this.camera.position.x, this.camera.position.z);
 
     /* ---- THE ROOMS (Session 23) -------------------------------------- *
      * Which room the walker is in and how far in, eased at a rate set

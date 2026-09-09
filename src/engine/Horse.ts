@@ -13,8 +13,8 @@ import { makeStandee } from './props';
  * crossroads, and a whistle (the H key) calls it from anywhere within
  * earshot: it trots over, and stands, and waits.
  *
- * It is drawn broadside from a five-frame sheet — standing, two trot
- * frames, two gallop frames — and mirrored with the direction of
+ * It is drawn broadside from a seven-frame sheet — standing, two trot
+ * frames, two gallop frames, two grazing — and mirrored with the direction of
  * travel so the head leads. The rider is the walker, lifted onto the
  * saddle; the horse draws half a unit nearer the lens so its body
  * covers the rider's legs, the bicycle's trick for the bicycle's reason.
@@ -46,6 +46,8 @@ export class Horse {
   private face = 1;
   private phase = 0;
   private frame = 0;
+  /** How long it has stood: it grazes after a moment, and swishes. */
+  private idle = 0;
 
   constructor() {
     const w = 3.0;
@@ -137,6 +139,7 @@ export class Horse {
     }
     this.phase += moved;
     this.hoofAcc += moved;
+    if (going >= 0.3) this.idle = 0;
     const stride = going > 7.5 ? 2.4 : 1.35;
     if (going > 0.3 && this.hoofAcc > stride) {
       this.hoofAcc = 0;
@@ -144,8 +147,11 @@ export class Horse {
     }
     // the frame: standing, a trot swapping every three quarters of a
     // unit, a gallop swapping every unit and a half
-    if (going < 0.3) this.setFrame(0);
-    else if (going < 7.5) this.setFrame(1 + (Math.floor(this.phase / 0.75) % 2));
+    if (going < 0.3) {
+      this.idle += dt;
+      const c = this.idle % 11;
+      this.setFrame(this.aboard || c < 3.5 ? 0 : Math.floor(c / 1.1) % 2 ? 5 : 6);
+    } else if (going < 7.5) this.setFrame(1 + (Math.floor(this.phase / 0.75) % 2));
     else this.setFrame(3 + (Math.floor(this.phase / 1.5) % 2));
 
     this.sprite.position.set(this.pos.x, y, this.pos.y + (this.aboard ? 0.55 : 0));

@@ -15,7 +15,7 @@ import { INK } from '../engine/palette';
 const DUN = '#b9a888';
 const SADDLE = '#7a5a48';
 
-export const HORSE_FRAMES = 5;
+export const HORSE_FRAMES = 7;
 export const HORSE_FW = 192;
 export const HORSE_FH = 144;
 
@@ -39,11 +39,14 @@ function leg(ctx: Ctx2D, r: () => number, hx: number, hy: number, kx: number, ky
 
 /**
  * The frames: 0 standing · 1 trot A · 2 trot B · 3 gallop A (legs
- * stretched) · 4 gallop B (legs gathered). Drawn facing EAST; the
- * mount mirrors it to go west, exactly as the bicycle does.
+ * stretched) · 4 gallop B (legs gathered) · 5 grazing · 6 grazing,
+ * head lower and the tail up. Drawn facing EAST; the mount mirrors
+ * it to go west, exactly as the bicycle does.
  */
 function drawHorse(ctx: Ctx2D, r: () => number, frame: number) {
-  const gallop = frame >= 3;
+  const gallop = frame >= 3 && frame <= 4;
+  const graze = frame >= 5;
+  const dip = frame === 6 ? 4 : 0;
   const bob = frame === 4 ? -4 : frame === 3 ? 3 : 0;
   // the body: a long oval, low at the belly, with the withers up
   const body: [number, number][] = [];
@@ -55,39 +58,66 @@ function drawHorse(ctx: Ctx2D, r: () => number, frame: number) {
   }
   fillPoly(ctx, body, DUN, 0.3);
   stroke(ctx, body, r, { width: 2.6, alpha: 0.88, jitter: 1.4 });
-  // the neck rises from the withers to the head
-  const neck: [number, number][] = [[136, 56 + bob], [156, 34 + bob], [168, 26 + bob]];
-  const throat: [number, number][] = [[146, 74 + bob], [162, 52 + bob], [172, 40 + bob]];
-  fillPoly(ctx, [...neck, [176, 32 + bob], ...throat.slice().reverse()], DUN, 0.3);
-  stroke(ctx, neck, r, { width: 2.6, alpha: 0.86 });
-  stroke(ctx, throat, r, { width: 2.4, alpha: 0.82 });
-  // the head: long, the muzzle forward, one ear, one eye
-  const head: [number, number][] = [[164, 22 + bob], [178, 20 + bob], [190, 36 + bob], [186, 46 + bob], [174, 44 + bob], [166, 34 + bob]];
-  fillPoly(ctx, head, DUN, 0.3);
-  stroke(ctx, [...head, head[0]], r, { width: 2.4, alpha: 0.88 });
-  line(ctx, 170, 22 + bob, 166, 10 + bob, r, { width: 2, alpha: 0.85 });
-  line(ctx, 166, 10 + bob, 174, 21 + bob, r, { width: 2, alpha: 0.85 });
-  scribbleCircle(ctx, 176, 30 + bob, 2.2, r, { width: 1.4, alpha: 0.9 });
-  // the mane: short hatch down the neck
-  for (let i = 0; i < 7; i++) {
-    const t = i / 6;
-    const x = 138 + t * 26;
-    const y = 54 + bob - t * 26;
-    line(ctx, x, y, x - 6 - r() * 4, y + 8 + r() * 4, r, { width: 1.6, alpha: 0.7, passes: 1 });
+  if (!graze) {
+    // the neck rises from the withers to the head
+    const neck: [number, number][] = [[136, 56 + bob], [156, 34 + bob], [168, 26 + bob]];
+    const throat: [number, number][] = [[146, 74 + bob], [162, 52 + bob], [172, 40 + bob]];
+    fillPoly(ctx, [...neck, [176, 32 + bob], ...throat.slice().reverse()], DUN, 0.3);
+    stroke(ctx, neck, r, { width: 2.6, alpha: 0.86 });
+    stroke(ctx, throat, r, { width: 2.4, alpha: 0.82 });
+    // the head: long, the muzzle forward, one ear, one eye
+    const head: [number, number][] = [[164, 22 + bob], [178, 20 + bob], [190, 36 + bob], [186, 46 + bob], [174, 44 + bob], [166, 34 + bob]];
+    fillPoly(ctx, head, DUN, 0.3);
+    stroke(ctx, [...head, head[0]], r, { width: 2.4, alpha: 0.88 });
+    line(ctx, 170, 22 + bob, 166, 10 + bob, r, { width: 2, alpha: 0.85 });
+    line(ctx, 166, 10 + bob, 174, 21 + bob, r, { width: 2, alpha: 0.85 });
+    scribbleCircle(ctx, 176, 30 + bob, 2.2, r, { width: 1.4, alpha: 0.9 });
+    // the mane: short hatch down the neck
+    for (let i = 0; i < 7; i++) {
+      const t = i / 6;
+      const x = 138 + t * 26;
+      const y = 54 + bob - t * 26;
+      line(ctx, x, y, x - 6 - r() * 4, y + 8 + r() * 4, r, { width: 1.6, alpha: 0.7, passes: 1 });
+    }
+    // the reins, from the bit back to the saddle
+    stroke(ctx, [[184, 42 + bob], [150, 56 + bob], [118, 54 + bob]], r, { width: 1.2, alpha: 0.6, passes: 1 });
+  } else {
+    // grazing: the neck goes down and forward, the muzzle to the grass
+    const neck: [number, number][] = [[136, 56], [154, 74], [164, 100 + dip]];
+    const throat: [number, number][] = [[146, 74], [160, 90], [172, 110 + dip]];
+    fillPoly(ctx, [...neck, [170, 106 + dip], ...throat.slice().reverse()], DUN, 0.3);
+    stroke(ctx, neck, r, { width: 2.6, alpha: 0.86 });
+    stroke(ctx, throat, r, { width: 2.4, alpha: 0.82 });
+    const head: [number, number][] = [[158, 98 + dip], [172, 96 + dip], [186, 112 + dip], [182, 126 + dip], [170, 126 + dip], [160, 112 + dip]];
+    fillPoly(ctx, head, DUN, 0.3);
+    stroke(ctx, [...head, head[0]], r, { width: 2.4, alpha: 0.88 });
+    line(ctx, 162, 98 + dip, 154, 88 + dip, r, { width: 2, alpha: 0.85 });
+    line(ctx, 154, 88 + dip, 166, 96 + dip, r, { width: 2, alpha: 0.85 });
+    scribbleCircle(ctx, 168, 106 + dip, 2.2, r, { width: 1.4, alpha: 0.9 });
+    for (let i = 0; i < 7; i++) {
+      const t = i / 6;
+      const x = 138 + t * 22;
+      const y = 56 + t * 34;
+      line(ctx, x, y, x - 8 - r() * 4, y + 2 + r() * 4, r, { width: 1.6, alpha: 0.7, passes: 1 });
+    }
+    stroke(ctx, [[178, 118 + dip], [150, 76], [118, 54]], r, { width: 1.2, alpha: 0.6, passes: 1 });
   }
-  // the tail
-  stroke(ctx, [[50, 62 + bob], [38, 78 + bob], [34, 100 + bob], [40, 112 + bob]], r, { width: 2.2, alpha: 0.8, jitter: 2.4 });
-  stroke(ctx, [[50, 64 + bob], [34, 84 + bob], [30, 106 + bob]], r, { width: 1.6, alpha: 0.6, jitter: 2.8 });
+  // the tail: hanging, or swished up while it grazes
+  if (frame === 6) {
+    stroke(ctx, [[50, 62], [40, 56], [30, 62], [24, 80]], r, { width: 2.2, alpha: 0.8, jitter: 2.4 });
+    stroke(ctx, [[50, 64], [38, 62], [28, 74]], r, { width: 1.6, alpha: 0.6, jitter: 2.8 });
+  } else {
+    stroke(ctx, [[50, 62 + bob], [38, 78 + bob], [34, 100 + bob], [40, 112 + bob]], r, { width: 2.2, alpha: 0.8, jitter: 2.4 });
+    stroke(ctx, [[50, 64 + bob], [34, 84 + bob], [30, 106 + bob]], r, { width: 1.6, alpha: 0.6, jitter: 2.8 });
+  }
   // the saddle, and a girth line under it
   fillPoly(ctx, [[86, 52 + bob], [116, 50 + bob], [120, 60 + bob], [84, 62 + bob]], SADDLE, 0.45);
   stroke(ctx, [[84, 62 + bob], [86, 52 + bob], [116, 50 + bob], [120, 60 + bob]], r, { width: 2, alpha: 0.85 });
   line(ctx, 100, 62 + bob, 98, 96 + bob, r, { width: 1.6, alpha: 0.55, passes: 1 });
-  // the reins, from the bit back to the saddle
-  stroke(ctx, [[184, 42 + bob], [150, 56 + bob], [118, 54 + bob]], r, { width: 1.2, alpha: 0.6, passes: 1 });
   // the legs, by the frame
   const g = 96 + bob; // where the belly ends and a leg begins
   const F = 136;      // the ground line
-  if (frame === 0) {
+  if (frame === 0 || graze) {
     leg(ctx, r, 66, g, 62, 116, 60, F);
     leg(ctx, r, 80, g, 80, 116, 82, F, 2.2);
     leg(ctx, r, 124, g, 126, 116, 126, F);
@@ -119,7 +149,7 @@ function drawHorse(ctx: Ctx2D, r: () => number, frame: number) {
 
 let HORSE_SHEET: THREE.CanvasTexture | null = null;
 
-/** The five-frame sheet, made once. `repeat.x` is one frame wide; the
+/** The seven-frame sheet, made once. `repeat.x` is one frame wide; the
  *  mount sets `offset.x` to choose a frame. */
 export function horseSheet(): THREE.CanvasTexture {
   if (HORSE_SHEET) return HORSE_SHEET;

@@ -175,6 +175,12 @@ const MOTOR_ROAD = mkPath([
   [210, 208], [268, 205], [330, 202],
 ]);
 const MAIN_STREET = mkPath([[-40, 200], [-8, 202], [40, 198], [90, 200], [144, 205]]);
+/** Maple Court's pavement: the king's road through the neighbourhood. */
+const MAPLE_WALK = mkPath([[-42, 132], [-45, 200], [-45, 258]]);
+/** The Penwood's track, from the Downs' edge to the ring. */
+const FOREST_TRACK = mkPath([[55, -110], [78, -122], [101, -134], [120, -148], [129, -158.6]]);
+/** The sentry's beat across the castle gate. */
+const GATE_WALK = mkPath([[-58, -191], [-32, -191]]);
 
 /** Brim square's open ground: the fronts of the stalls, the cross,
  *  the fountain's sides. */
@@ -185,6 +191,8 @@ const SQUARE_SPOTS: [number, number][] = [
 const FOUNTAIN = { x: -45, z: -81, r: 3.8 };
 const MARGET = { x: -43.1, z: -75, r: 1.6 };
 const SHEEP_RECT = { minX: 170, maxX: 204, minZ: 46, maxZ: 78 };
+/** Where the shepherd stands about, on the sheep's side of the field. */
+const SHEPHERD_SPOTS: [number, number][] = [[176, 44], [200, 50], [206, 70], [188, 82], [172, 80], [168, 60]];
 const MILL_CHIMNEY = { x: 147.4, z: -8.8, lift: 13.2 };
 const KEEP_FLAG = { x: -45.5, z: -250.6, lift: 17.0 };
 const TOWER_LAMPS: [number, number, number][] = [[132, 194, 28.5], [161, 194, 28.8], [124, 194, 20.5], [137, 172, 19.2]];
@@ -204,9 +212,12 @@ type Bird = {
   tx?: number; tz?: number; x?: number; z?: number; rest?: number;
 };
 
-type Walker = { idx: number; kind: 0 | 1 | 2; x: number; z: number; tx: number; tz: number; wait: number; stride: number; face: 1 | -1 };
+type Walker = {
+  idx: number; kind: 0 | 1 | 2; x: number; z: number; tx: number; tz: number; wait: number; stride: number; face: 1 | -1;
+  spots: [number, number][]; speed: number; hours: [number, number]; round: boolean; reach: number;
+};
 type Sheep = { idx: number; x: number; z: number; tx: number; tz: number; wait: number; stride: number; face: 1 | -1; ok: boolean };
-type Sail = { idx: number; x: number; z: number; ax: number; az: number; heading: number; tack: number; ph: number; minZ: number; maxZ: number };
+type Sail = { idx: number; x: number; z: number; ax: number; az: number; heading: number; tack: number; ph: number; minZ: number; maxZ: number; maxX: number };
 type Tumble = { idx: number; x: number; z: number; ph: number };
 
 class Traffic {
@@ -216,12 +227,14 @@ class Traffic {
   private marks!: SpriteField;
   private terrain!: Terrain;
   private ready = false;
-  /** For the camera, later: every ground mover's rotation about y. */
+  /** Every mover's rotation about y: the bearing from the walker to the lens. */
   yaw = 0;
 
   private carts: Runner[] = [];
   private cars: Runner[] = [];
-  private dog!: Runner;
+  private dogs: Runner[] = [];
+  /** Folk who walk a road: the strollers, the rambler, the sentry. */
+  private strollers: { m: Runner; kind: 0 | 1 | 2; hours: [number, number] }[] = [];
   private crowd: Walker[] = [];
   private sheep: Sheep[] = [];
   private sails: Sail[] = [];
@@ -234,56 +247,81 @@ class Traffic {
   private rainDir = -1;
   private sounds = { cart: 0, sheep: 0, murmur: 0, gull: 0 };
 
-  /** Draw calls this module adds. */
+  /** Draw calls this module adds: one per field, whatever is on screen. */
   get calls() { return 4; }
 
   init(scene: THREE.Scene, terrain: Terrain) {
     this.terrain = terrain;
-    this.folk = new SpriteField(folkAtlas(), 16);
-    this.wheels = new SpriteField(wheelsAtlas(), 24);
-    this.birds = new SpriteField(birdsAtlas(), 72);
+    this.folk = new SpriteField(folkAtlas(), 24);
+    this.wheels = new SpriteField(wheelsAtlas(), 32);
+    this.birds = new SpriteField(birdsAtlas(), 80);
     this.marks = new SpriteField(marksAtlas(), 32, true);
     for (const f of [this.folk, this.wheels, this.birds, this.marks]) scene.add(f.mesh);
     const r = rng(4242);
 
-    // the wheels field: carts 0-2, cars 3-6, the dog 7, sheep 8-15, sails 16-17, tumbleweeds 18-19
-    this.carts = [0, 1, 2].map((i) => ({
-      idx: i, path: KINGS_ROAD, s: KINGS_ROAD.len * (0.12 + i * 0.31), dir: (i % 2 ? -1 : 1) as 1 | -1,
-      speed: 2.0 + i * 0.15, side: 0, wait: 0, ph: r() * 6, horn: 0,
+    // the wheels field: carts 0-3, cars 4-9 (four on the whole motor road,
+    // two that only work main street), dogs 10-11, sheep 12-19, sails
+    // 20-22, tumbleweeds 23-24
+    this.carts = [0, 1, 2, 3].map((i) => ({
+      idx: i, path: KINGS_ROAD, s: KINGS_ROAD.len * (0.08 + i * 0.24), dir: (i % 2 ? -1 : 1) as 1 | -1,
+      speed: 2.3 + i * 0.15, side: 0, wait: 0, ph: r() * 6, horn: 0,
     }));
     this.cars = [0, 1, 2, 3].map((i) => ({
-      idx: 3 + i, path: MOTOR_ROAD, s: MOTOR_ROAD.len * (0.1 + i * 0.22), dir: (i % 2 ? -1 : 1) as 1 | -1,
+      idx: 4 + i, path: MOTOR_ROAD, s: MOTOR_ROAD.len * (0.1 + i * 0.22), dir: (i % 2 ? -1 : 1) as 1 | -1,
       speed: 8.5 + i * 0.7, side: 1.3, wait: 0, ph: r() * 6, horn: 12 + r() * 30,
     }));
-    this.dog = { idx: 7, path: MAIN_STREET, s: 20, dir: 1, speed: 3.1, side: -2.6, wait: 0, ph: 0, horn: 0 };
+    this.cars.push(
+      { idx: 8, path: MAIN_STREET, s: 30, dir: 1, speed: 7.2, side: 1.3, wait: 0, ph: 1, horn: 20 },
+      { idx: 9, path: MAIN_STREET, s: 140, dir: -1, speed: 7.8, side: 1.3, wait: 0, ph: 2, horn: 33 },
+    );
+    // the dogs: one on main street, one running the tideline
+    const tide = mkPath([-40, 10, 60, 110, 150].map((z) => [coastX(z) + 4, z] as [number, number]));
+    this.dogs = [
+      { idx: 10, path: MAIN_STREET, s: 20, dir: 1, speed: 3.1, side: -2.6, wait: 0, ph: 0, horn: 0 },
+      { idx: 11, path: tide, s: 40, dir: 1, speed: 3.6, side: 0, wait: 0, ph: 0, horn: 0 },
+    ];
     for (let i = 0; i < 8; i++) {
       const x = SHEEP_RECT.minX + r() * (SHEEP_RECT.maxX - SHEEP_RECT.minX);
       const z = SHEEP_RECT.minZ + r() * (SHEEP_RECT.maxZ - SHEEP_RECT.minZ);
       const ok = !terrain.blockedAt(x, z) && terrain.waterAt(x, z) < 0.2;
-      this.sheep.push({ idx: 8 + i, x, z, tx: x, tz: z, wait: r() * 8, stride: 0, face: r() > 0.5 ? 1 : -1, ok });
+      this.sheep.push({ idx: 12 + i, x, z, tx: x, tz: z, wait: r() * 8, stride: 0, face: r() > 0.5 ? 1 : -1, ok });
     }
     this.sails = [
-      { idx: 16, x: -312, z: -196, ax: -312, az: -196, heading: 0.9, tack: 1, ph: 0, minZ: -240, maxZ: -140 },
-      { idx: 17, x: -300, z: 118, ax: -300, az: 118, heading: 2.2, tack: -1, ph: 3, minZ: 60, maxZ: 190 },
+      { idx: 20, x: -312, z: -196, ax: -312, az: -196, heading: 0.9, tack: 1, ph: 0, minZ: -240, maxZ: -140, maxX: -290 },
+      { idx: 21, x: -300, z: 118, ax: -300, az: 118, heading: 2.2, tack: -1, ph: 3, minZ: 60, maxZ: 190, maxX: -280 },
+      // the third works the deep water west of the bar, in sight of anyone on it
+      { idx: 22, x: -336, z: -10, ax: -336, az: -10, heading: 1.4, tack: 1, ph: 8, minZ: -70, maxZ: 46, maxX: -322 },
     ];
     this.tumbles = [
-      { idx: 18, x: 250, z: 40, ph: 0 },
-      { idx: 19, x: 300, z: 90, ph: 2 },
+      { idx: 23, x: 250, z: 40, ph: 0 },
+      { idx: 24, x: 300, z: 90, ph: 2 },
     ];
 
-    // the folk field: cart drivers 0-2, the crowd 3-10
+    // the folk field: cart drivers 0-3, the crowd 4-11, the shepherd 12,
+    // two strollers in Maple Court 13-14, the rambler 15, the sentry 16
+    const DAY: [number, number] = [5.6, 20.4];
     for (let i = 0; i < 8; i++) {
       const spot = SQUARE_SPOTS[(i * 5) % SQUARE_SPOTS.length];
       this.crowd.push({
-        idx: 3 + i, kind: (i % 3) as 0 | 1 | 2, x: spot[0], z: spot[1], tx: spot[0], tz: spot[1],
+        idx: 4 + i, kind: (i % 3) as 0 | 1 | 2, x: spot[0], z: spot[1], tx: spot[0], tz: spot[1],
         wait: 2 + r() * 6, stride: 0, face: i % 2 ? 1 : -1,
+        spots: SQUARE_SPOTS, speed: 1.3, hours: [8.5, 17.5], round: true, reach: 200,
       });
     }
+    this.crowd.push({
+      idx: 12, kind: 2, x: 176, z: 44, tx: 176, tz: 44, wait: 4, stride: 0, face: 1,
+      spots: SHEPHERD_SPOTS, speed: 0.8, hours: [6.5, 19.5], round: false, reach: 220,
+    });
+    this.strollers = [
+      { m: { idx: 13, path: MAPLE_WALK, s: 20, dir: 1, speed: 1.25, side: 2.8, wait: 0, ph: 0, horn: 0 }, kind: 0, hours: [7, 21] },
+      { m: { idx: 14, path: MAPLE_WALK, s: 90, dir: -1, speed: 1.1, side: -2.8, wait: 0, ph: 0, horn: 0 }, kind: 1, hours: [7, 21] },
+      { m: { idx: 15, path: FOREST_TRACK, s: 30, dir: 1, speed: 1.3, side: 1.4, wait: 0, ph: 0, horn: 0 }, kind: 1, hours: DAY },
+      { m: { idx: 16, path: GATE_WALK, s: 5, dir: 1, speed: 0.8, side: 0, wait: 0, ph: 0, horn: 0 }, kind: 2, hours: [0, 24] },
+    ];
 
     // the birds
     let b = 0;
     const bird = (o: Omit<Bird, 'idx'>) => { this.birdList.push({ idx: b++, ...o }); };
-    const DAY: [number, number] = [5.6, 20.4];
     const NIGHT: [number, number] = [19.9, 5.4];
     const gull = (cx: number, cz: number, rx: number, rz: number, lift: number, ph: number, w = 0.3) =>
       bird({ kind: 'orbit', cx, cz, rx, rz, w, ph, lift, amp: 2, up: BIRDS.gullUp, down: BIRDS.gullDown, flap: 2.6, size: 2.2, hours: DAY });
@@ -292,14 +330,22 @@ class Traffic {
     gull(-230, 90, 15, 11, 12, 4.1); gull(-234, 170, 17, 13, 9, 5.2, -0.32); gull(-226, 230, 14, 10, 10, 0.9);
     gull(-300, -40, 24, 16, 13, 2.2, 0.22); gull(-290, 140, 26, 18, 12, 3.7, -0.2);
     gull(-70, -240, 22, 14, 24, 1.1, 0.24); gull(-20, -230, 20, 12, 22, 3.3, -0.26);
+    // and over the bar itself, low, where a walker out on it looks
+    gull(-280, 20, 14, 10, 7, 0.6, 0.34); gull(-262, -26, 12, 9, 6, 2.8, -0.3);
+    // rooks round the keep, all day; they roost at dusk
+    const rook = (cx: number, cz: number, ph: number, w: number) =>
+      bird({ kind: 'orbit', cx, cz, rx: 12, rz: 9, w, ph, lift: 27, amp: 3, up: BIRDS.smallUp, down: BIRDS.smallDown, flap: 3.2, size: 1.5, hours: [6.2, 19.2] });
+    rook(-52, -246, 0, 0.36); rook(-38, -252, 2.4, -0.31);
     // larks over the Common and the Downs: up, hang, and down
     const lark = (cx: number, cz: number, ph: number) =>
-      bird({ kind: 'lark', cx, cz, rx: 6, rz: 4, w: 0.35, ph, lift: 9, amp: 6, up: BIRDS.smallUp, down: BIRDS.smallDown, flap: 7, size: 1.0, hours: DAY });
+      bird({ kind: 'lark', cx, cz, rx: 6, rz: 4, w: 0.35, ph, lift: 7, amp: 5, up: BIRDS.smallUp, down: BIRDS.smallDown, flap: 7, size: 1.4, hours: DAY });
     lark(-80, 30, 0); lark(-20, 20, 2); lark(20, 90, 4); lark(-110, 90, 1); lark(120, 60, 3); lark(190, 20, 5);
     // small birds flitting garden to garden in Maple Court, and in the office park's shrubs
     const flit = (cx: number, cz: number, rx: number, rz: number, ph: number) =>
       bird({ kind: 'flit', cx, cz, rx, rz, w: 0, ph, lift: 1.4, amp: 0, up: BIRDS.smallUp, down: BIRDS.smallDown, flap: 9, size: 0.9, hours: DAY, x: cx, z: cz, tx: cx, tz: cz, rest: ph });
     flit(-70, 150, 22, 14, 1); flit(-30, 180, 20, 16, 2.5); flit(-90, 230, 24, 18, 0.4); flit(300, 240, 26, 20, 1.7); flit(-120, 60, 20, 20, 3.3);
+    // in the pines along the track, and the wrens in the cut
+    flit(84, -126, 18, 14, 0.9); flit(104, -140, 16, 12, 2.1); flit(300, -158, 12, 14, 1.3);
     // crows over the pines, kites over the canyon and the flats, pigeons over the city
     const cross = (cx: number, cz: number, rx: number, rz: number, w: number, ph: number, up: number, down: number, size: number, lift: number, flap: number) =>
       bird({ kind: 'cross', cx, cz, rx, rz, w, ph, lift, amp: 3, up, down, flap, size, hours: DAY });
@@ -309,6 +355,8 @@ class Traffic {
     bird({ kind: 'orbit', cx: 270, cz: -130, rx: 26, rz: 20, w: -0.12, ph: 2, lift: 26, amp: 3, up: BIRDS.kite, down: BIRDS.kite, flap: 0, size: 2.4, hours: [6, 19] });
     bird({ kind: 'orbit', cx: 310, cz: 20, rx: 36, rz: 28, w: 0.1, ph: 1, lift: 32, amp: 5, up: BIRDS.kite, down: BIRDS.kite, flap: 0, size: 2.6, hours: [6, 19] });
     bird({ kind: 'orbit', cx: 280, cz: 90, rx: 30, rz: 24, w: -0.13, ph: 4, lift: 28, amp: 4, up: BIRDS.kite, down: BIRDS.kite, flap: 0, size: 2.4, hours: [6, 19] });
+    // one low over the cut, so it reads from the floor of the canyon
+    bird({ kind: 'orbit', cx: 302, cz: -168, rx: 18, rz: 14, w: 0.17, ph: 3, lift: 16, amp: 3, up: BIRDS.kite, down: BIRDS.kite, flap: 0, size: 2.2, hours: [6, 19] });
     const pigeon = (cx: number, cz: number, rx: number, rz: number, lift: number, ph: number, w: number) =>
       bird({ kind: 'orbit', cx, cz, rx, rz, w, ph, lift, amp: 1.5, up: BIRDS.pigeonUp, down: BIRDS.pigeonDown, flap: 4, size: 1.1, hours: DAY });
     pigeon(146, 200, 14, 10, 9, 0, 0.5); pigeon(150, 204, 12, 9, 12, 2, 0.46); pigeon(120, 230, 16, 12, 10, 4, -0.44);
@@ -334,8 +382,10 @@ class Traffic {
     if (this.flockUp <= 0) { this.flockUp = 9; say('pigeons-lift'); }
   }
 
-  tick(dt: number, t: number, px: number, pz: number, effort = 0) {
+  tick(dt: number, t: number, px: number, pz: number, effort = 0, camX = px, camZ = pz + 1) {
     if (!this.ready) return;
+    // every sprite squares up to the lens, whichever way it has been turned
+    this.yaw = Math.atan2(camX - px, camZ - pz);
     const h = clock.hour;
     const near = (x: number, z: number, r: number) => Math.hypot(px - x, pz - z) < r;
     const ground = (x: number, z: number) => this.terrain.heightAt(x, z);
@@ -343,7 +393,7 @@ class Traffic {
     for (const k of Object.keys(this.sounds) as (keyof typeof this.sounds)[]) this.sounds[k] = Math.max(0, this.sounds[k] - dt);
 
     /* ---- the roads ---------------------------------------------- */
-    const run = (m: Runner, present: number, frames: [number, number], w: number, hh: number, stridePer: number, field: SpriteField) => {
+    const run = (m: Runner, present: number, frames: [number, number], w: number, hh: number, stridePer: number, field: SpriteField, stand = -1) => {
       if (present <= 0.01 || !near(pathAt(m.path, m.s).x, pathAt(m.path, m.s).z, 260)) {
         field.hide(m.idx);
         if (present > 0.01) this.advance(m, dt);
@@ -353,9 +403,12 @@ class Traffic {
       const p = pathAt(m.path, m.s);
       const x = p.x - p.tz * m.side * m.dir;
       const z = p.z + p.tx * m.side * m.dir;
-      const f = Math.floor(m.s / stridePer) % 2 ? frames[1] : frames[0];
+      const waiting = m.wait > 0;
+      const f = waiting && stand >= 0 ? stand : Math.floor(m.s / stridePer) % 2 ? frames[1] : frames[0];
       const flip = p.tx * m.dir < -0.05 || (Math.abs(p.tx) < 0.05 && p.tz * m.dir > 0);
-      field.set(m.idx, x, ground(x, z), z, w, hh, f, flip, m.wait > 0 ? 0 : present, this.yaw);
+      // a vehicle that has reached the end of its road is out of sight;
+      // a person waiting at the end of theirs just stands there
+      field.set(m.idx, x, ground(x, z), z, w, hh, f, flip, waiting && stand < 0 ? 0 : present, this.yaw);
     };
     const cartsOn = during(h, 6.8, 19.6, 0.4);
     for (const c of this.carts) {
@@ -381,12 +434,17 @@ class Traffic {
         if (on > 0.5 && c.wait <= 0 && near(p.x, p.z, 80)) say('horn');
       }
     });
-    run(this.dog, during(h, 7, 21, 0.4), [WHEELS.dogA, WHEELS.dogB], 1.7, 1.19, 0.5, this.wheels);
+    for (const d of this.dogs) run(d, during(h, 7, 21, 0.4), [WHEELS.dogA, WHEELS.dogB], 1.7, 1.19, 0.5, this.wheels);
+    // the folk on the roads: strollers, a rambler, the sentry
+    for (const s of this.strollers) {
+      run(s.m, during(h, s.hours[0], s.hours[1], 0.4), [folkCell(s.kind, 1), folkCell(s.kind, 2)], 1.15, 1.9, 0.55, this.folk, folkCell(s.kind, 0));
+    }
 
-    /* ---- the crowd in Brim's square ------------------------------- */
+    /* ---- the crowd in Brim's square, and the shepherd in the Downs -- */
     const market = during(h, 8.5, 17.5, 0.35);
     for (const w of this.crowd) {
-      if (market <= 0.01 || !near(w.x, w.z, 200)) { this.folk.hide(w.idx); continue; }
+      const on = during(h, w.hours[0], w.hours[1], 0.35);
+      if (on <= 0.01 || !near(w.x, w.z, w.reach)) { this.folk.hide(w.idx); continue; }
       let moving = false;
       if (w.wait > 0) w.wait -= dt;
       else {
@@ -395,15 +453,15 @@ class Traffic {
         const d = Math.hypot(dx, dz);
         if (d < 0.3) {
           w.wait = 3 + ((t * 3.7 + w.idx * 11) % 7);
-          const s = SQUARE_SPOTS[Math.floor((t * 1.3 + w.idx * 7) % SQUARE_SPOTS.length)];
+          const s = w.spots[Math.floor((t * 1.3 + w.idx * 7) % w.spots.length)];
           w.tx = s[0] + Math.sin(t + w.idx) * 1.2;
           w.tz = s[1] + Math.cos(t * 0.7 + w.idx) * 1.2;
         } else {
-          const step = Math.min(d, 1.3 * dt);
+          const step = Math.min(d, w.speed * dt);
           let nx = w.x + (dx / d) * step;
           let nz = w.z + (dz / d) * step;
           // round the fountain and Marget's counter, not through them
-          for (const o of [FOUNTAIN, MARGET]) {
+          if (w.round) for (const o of [FOUNTAIN, MARGET]) {
             const ox = nx - o.x;
             const oz = nz - o.z;
             const od = Math.hypot(ox, oz);
@@ -418,7 +476,7 @@ class Traffic {
         }
       }
       const f = folkCell(w.kind, moving ? (Math.floor(w.stride / 0.55) % 2 ? 1 : 2) : 0);
-      this.folk.set(w.idx, w.x, ground(w.x, w.z), w.z, 1.15, 1.9, f, w.face < 0, market, this.yaw);
+      this.folk.set(w.idx, w.x, ground(w.x, w.z), w.z, 1.15, 1.9, f, w.face < 0, on, this.yaw);
     }
     if (market > 0.5 && near(-45, -81, 32) && this.sounds.murmur <= 0) { this.sounds.murmur = 8 + (t % 4); say('market-murmur'); }
 
@@ -470,7 +528,7 @@ class Traffic {
       s.z += along * 2.0 * dt;
       if (s.z > s.maxZ) { s.z = s.maxZ; s.tack = -1; s.ph = 0; }
       if (s.z < s.minZ) { s.z = s.minZ; s.tack = 1; s.ph = 0; }
-      s.x = Math.max(-360, Math.min(coastX(s.z) - 34, s.x));
+      s.x = Math.max(-360, Math.min(coastX(s.z) - 34, s.maxX, s.x));
       if (!near(s.x, s.z, 260)) { this.wheels.hide(s.idx); continue; }
       const heel = Math.sin(t * 0.9 + s.idx) * 0.03;
       this.wheels.set(s.idx, s.x, ground(s.x, s.z) + 0.1 + Math.sin(t * 1.1 + s.idx) * 0.08, s.z, 5.4, 3.78, s.tack > 0 ? WHEELS.sailR : WHEELS.sailL, false, 0.96, this.yaw + heel);
