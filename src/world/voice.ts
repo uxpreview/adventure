@@ -56,6 +56,8 @@ export class Voice {
   private bicycle = false;
   private train = false;
   private seated = false;
+  /** Lands heard of this frame, said together at the end of it. */
+  private namesPending: string[] = [];
 
   constructor(private ctx: VoiceCtx) {
     installSpeech({ root: ctx.ui.root, camera: ctx.camera, groundAt: ctx.groundAt, walker: ctx.walker });
@@ -107,7 +109,8 @@ export class Voice {
     if (id.startsWith('name:')) {
       // standing in a land is the region card's job, not a toast's
       if (id === `name:${this.ctx.regionId()}`) return;
-      toast(`YOU HEARD OF: ${notebook.landName(id.slice(5))}`, 'learned');
+      // one signpost names three lands: one line, not three
+      this.namesPending.push(notebook.landName(id.slice(5)));
       return;
     }
     if (id.startsWith('wear:')) {
@@ -136,11 +139,20 @@ export class Voice {
       npcs.scanFolk();
       this.scanPlaces();
     }
+    this.flushNames();
     this.diffHand();
     this.diffPushables(dt);
     this.diffMounts();
     this.diffTouch(dt);
     this.fireReactions();
+  }
+
+  /** "YOU HEARD OF: BRIM, LONGSHORE AND THE HARROW DOWNS" — one toast. */
+  private flushNames() {
+    if (!this.namesPending.length) return;
+    const n = this.namesPending.splice(0);
+    const list = n.length === 1 ? n[0] : `${n.slice(0, -1).join(', ')} AND ${n[n.length - 1]}`;
+    toast(`YOU HEARD OF: ${list}`, 'learned');
   }
 
   /** A named place whose label has come into range is found. */

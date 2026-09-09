@@ -436,7 +436,7 @@ body {
   opacity: 0;
   pointer-events: none;
   z-index: 34;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.25s ease;
   padding: 4px 18px;
   border-radius: 40% 46% 44% 42% / 50% 48% 52% 46%;
   background: rgba(247, 244, 235, 0.55);

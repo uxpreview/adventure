@@ -3,6 +3,7 @@ import { INK, PENCIL } from '../engine/palette';
 import { letterEl, panelPageURL, S } from './lettering';
 import { glyph } from './toast';
 import { notebook, type Job } from '../world/notebook';
+import { npcs, type NpcState } from '../world/npc';
 import { UI } from './UI';
 
 /**
@@ -52,6 +53,19 @@ function rule(w: number): HTMLCanvasElement {
   c.style.width = `${w}px`;
   c.style.height = '6px';
   return c;
+}
+
+/** Everybody in the `asked` phase with a want, newest ask last. */
+function asked(): { name: string; want: string; line: string | null }[] {
+  const out: { name: string; want: string; line: string | null }[] = [];
+  const store = notebook.npcs as Record<string, NpcState | undefined>;
+  for (const n of npcs.list()) {
+    const s = store[n.def.id];
+    if (!s || s.phase !== 'asked' || !s.want) continue;
+    const lines = n.def.lines(s);
+    out.push({ name: n.def.name, want: s.want, line: lines[0] ?? null });
+  }
+  return out;
 }
 
 export class NotebookPage {
@@ -168,10 +182,20 @@ export class NotebookPage {
     switch (this.tab) {
       case 'JOBS': {
         const jobs = notebook.list();
-        if (!jobs.length) push(this.lineEl('none', 'nothing yet. talk to somebody.', 'quiet', w));
+        const asks = asked();
+        if (!jobs.length && !asks.length) push(this.lineEl('none', 'nothing yet. talk to somebody.', 'quiet', w));
         const active = notebook.active();
         for (const j of [...jobs.filter((x) => !x.complete), ...jobs.filter((x) => x.complete)]) {
           push(this.jobEl(j, j === active, w));
+        }
+        /* what people have asked for and where — the errands that are
+         * not yet jobs, so the page is never blank after a conversation */
+        if (asks.length) {
+          push(this.lineEl('asked-head', 'ASKED', 'head', w));
+          for (const a of asks) {
+            push(this.lineEl(`ask|${a.name}|${a.want}`, `${a.name} — ${a.want}`, 'line', w));
+            if (a.line) push(this.lineEl(`askline|${a.name}|${a.line}`, `“${a.line}”`, 'pencil', w));
+          }
         }
         break;
       }
@@ -260,7 +284,10 @@ export class NotebookPage {
   /* ---- the objective line ------------------------------------------ */
   private objectiveTick() {
     const j = notebook.active();
-    const text = j ? `${j.giver} — ${j.steps[j.done] ?? j.name}`.toUpperCase() : '';
+    // no job: the line falls back to the last thing somebody asked for
+    const a = j ? null : asked()[0];
+    const text = j ? `${j.giver} — ${j.steps[j.done] ?? j.name}`.toUpperCase()
+      : a ? `${a.name} — ${a.want}`.toUpperCase() : '';
     if (text === this.objectiveText) return;
     this.objectiveText = text;
     if (!text) {

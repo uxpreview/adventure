@@ -43,7 +43,10 @@ export const PEOPLE: PersonDef[] = [
         'The cart\'s been nearly loaded since the fence was a fence.',
         'Mind the bull. He minds you.',
       ],
-      asked: ['Go and read the signpost at THE CROSSROADS. There\'s a fourth name on it, and it isn\'t a place. Bring it back.'],
+      asked: [
+        'Go and read the signpost at THE CROSSROADS. There\'s a fourth name on it, and it isn\'t a place. Bring it back.',
+        '8:15 isn\'t a place. It\'s a time. There\'s a man at the Mile who keeps a timetable. Ask him what it\'s the time of.',
+      ],
       done: ['North, then. I\'d have said north.', 'You can push the cart yourself if you like. It\'s your back.'],
       'chose:door:the-cart-turned-north': ['8:15. Not a place. A time. Well — the cart goes north, then, and I go with it.'],
       'chose:door:the-cart-pushed': ['You pushed my cart to the edge of the world. Fine. It\'s a cart at a border now. That\'s a kind of answer.'],

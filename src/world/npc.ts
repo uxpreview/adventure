@@ -58,8 +58,8 @@ export type Npc = {
 
 type Pos = { x: number; z: number; present: boolean };
 
-const TALK_R = 3.5;
-const FOLK_R = 3.0;
+const TALK_R = 4.0;
+const FOLK_R = 3.6;
 
 function figOf(d: { report(): unknown }): Figure | null {
   return d instanceof Figure ? d : null;
