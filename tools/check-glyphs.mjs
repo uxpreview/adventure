@@ -31,7 +31,7 @@ await build({
 });
 
 const REQUIRED = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' +
-  '!?,.\'":;-–—…()/&+=%#*_@<>[]~°';
+  '!?,.\'":;-–—…()/&+=%#*_@<>[]~°£¼½';
 
 const LINES = [
   ['the quick brown fox jumps over the lazy dog', 14],
@@ -65,6 +65,11 @@ const report = await page.evaluate(([lines, required]) => {
   // the whole table, packed
   const c = window.LET.letterCanvas(window.SCRIPT.GLYPH_CHARS, { px: 13, alpha: 0.9, maxWidth: 1000 });
   document.body.appendChild(c);
+  // and the bench (PEN spec: a 60-char line under 4 ms, a 40-line page
+  // under 60 ms) — the median of three runs of five, on this CPU
+  const runs = [0, 1, 2].map(() => window.LET.letterBench(5));
+  const med = (k) => runs.map((r) => r[k]).sort((a, b) => a - b)[1];
+  out.bench = { line60: med('line60'), page40: med('page40') };
   return out;
 }, [LINES, REQUIRED]);
 
@@ -72,6 +77,7 @@ await page.screenshot({ path: OUT, fullPage: true });
 await browser.close();
 
 console.log(`glyph sheet → ${OUT}  (${report.glyphs} skeletons)`);
+console.log(`  bench: 60-char line ${report.bench.line60.toFixed(2)} ms, 40-line page ${report.bench.page40.toFixed(1)} ms (median of 3×5; budget 4 / 60)`);
 let fails = 0;
 if (report.missing.length) { console.log(`  ✗ no glyph for: ${report.missing.join(' ')}`); fails++; }
 if (report.threw.length) { console.log(`  ✗ lettering threw: ${report.threw.join(' | ')}`); fails++; }

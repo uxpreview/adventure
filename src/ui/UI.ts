@@ -245,6 +245,7 @@ export class UI {
 
   showTitle(hasSave: boolean) {
     if (this.begun) return;
+    performance.mark('inklands:title'); /* ---- PEN ---- */
     this.continueBtn.style.display = hasSave ? '' : 'none';
     this.title.classList.remove('gone');
     this.hud.classList.remove('show');

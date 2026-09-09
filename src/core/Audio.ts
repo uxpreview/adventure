@@ -2139,6 +2139,10 @@ export class Audio {
         this.surge(0.012, 0.10, 2600 * j, 1500 * j, 0.022, 0, 'bandpass');
         const n = 2 + Math.floor(Math.random() * 2);
         for (let i = 0; i < n; i++) this.knock(2600 + Math.random() * 1400, 0.006, 0.02 + Math.random() * 0.09);
+        // and the person: a bubble is a scratch AND three to five
+        // syllables in the land's own voice (VOICE fires 'speech' on
+        // every bubble; nothing fires 'chatter' on its own)
+        this.event('chatter', _data ?? 3 + Math.floor(Math.random() * 3));
         break;
       }
       case 'chatter': {

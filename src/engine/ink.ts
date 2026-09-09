@@ -43,7 +43,47 @@ type StrokeOpts = {
    * which is what this pass is really for here (WORLD-SYSTEMS §7).
    */
   smudge?: boolean | SmudgeOpts;
+  /* ---- PEN: a corner is a corner. The curve through a polyline
+   * rounds every interior point (a quadratic through the midpoints
+   * never reaches the point itself), so the apex of an A or the top
+   * of an N stopped at three quarters of its height and a capital
+   * read as a lowercase letter. Where the pen turns by more than
+   * `sharp` radians it now goes THROUGH the point; the bowls, which
+   * turn gently, are the same curves they always were. Unset, the
+   * stroke is byte-identical to what every drawing was built from. */
+  sharp?: number;
+  /* ---- PEN: a line of lettering is one fill per pass, not one per
+   * stroke. The ribbons are added to the batch's paths and filled when
+   * the caller flushes it; only the colour and alpha of the batch are
+   * honoured, so a caller flushes before changing either. */
+  batch?: InkBatch;
 };
+
+/** Where a batched stroke's ribbons go: one path per pass, one for the
+ *  pooled dots (which sit a shade darker). See `flushBatch`. */
+export class InkBatch {
+  paths: Path2D[];
+  pools = new Path2D();
+  constructor(passes: number, public color: string, public alpha: number) {
+    this.paths = Array.from({ length: passes }, () => new Path2D());
+  }
+}
+
+/** Fill everything a batch collected, in the batch's colour and alpha
+ *  (the second pass is the lighter track, as in `stroke`). */
+export function flushBatch(ctx: Ctx2D, b: InkBatch) {
+  ctx.fillStyle = b.color;
+  b.paths.forEach((p, i) => {
+    ctx.globalAlpha = b.alpha * (i === 0 ? 1 : 0.35);
+    ctx.fill(p);
+  });
+  ctx.globalAlpha = Math.min(1, b.alpha * 1.15);
+  ctx.fill(b.pools);
+  ctx.globalAlpha = 1;
+}
+
+/** What a ribbon is drawn into: the context itself, or a batch's path. */
+type PathSink = Pick<Path2D, 'moveTo' | 'lineTo' | 'closePath' | 'arc'>;
 
 export type SmudgeOpts = {
   /** Multiplies the base down-left drag vector. */
@@ -128,20 +168,36 @@ function jitterFlat(pts: [number, number][], amt: number, r: () => number): Floa
   return j.subarray(0, m * 2);
 }
 
-function curvePoints(j: Float64Array): Float64Array {
+let SCR_HARD = new Uint8Array(256);   // PEN: which control points are corners
+function curvePoints(j: Float64Array, sharp = Infinity): Float64Array {
   /* A flat array of x,y pairs, a view into scratch. The curve is the
-   * same curve stroke() has always drawn, sampled at ~2.4 px. */
+   * same curve stroke() has always drawn, sampled at ~2.4 px — except
+   * at a corner sharper than `sharp`, where it passes through the
+   * point (PEN; see StrokeOpts.sharp). */
   const m = j.length >> 1;
   if (m < 2) {
     if (SCR_CP.length < m * 2) SCR_CP = new Float64Array(m * 2);
     for (let i = 0; i < m * 2; i++) SCR_CP[i] = j[i];
     return SCR_CP.subarray(0, m * 2);
   }
+  if (SCR_HARD.length < m) SCR_HARD = new Uint8Array(Math.max(m, SCR_HARD.length * 2));
+  const hard = SCR_HARD;
+  hard[0] = 1; hard[m - 1] = 1;
+  for (let i = 1; i < m - 1; i++) {
+    hard[i] = 0;
+    if (sharp === Infinity) continue;
+    const ax = j[i * 2] - j[i * 2 - 2], ay = j[i * 2 + 1] - j[i * 2 - 1];
+    const bx = j[i * 2 + 2] - j[i * 2], by = j[i * 2 + 3] - j[i * 2 + 1];
+    const la = Math.sqrt(ax * ax + ay * ay) || 1e-4, lb = Math.sqrt(bx * bx + by * by) || 1e-4;
+    const d = Math.max(-1, Math.min(1, (ax * bx + ay * by) / (la * lb)));
+    if (Math.acos(d) >= sharp) hard[i] = 1;
+  }
   let cap = 2;
   const ns = SCR_NS;
   let sx = j[0], sy = j[1];
   for (let i = 1; i < m; i++) {
-    const ex = (j[i * 2 - 2] + j[i * 2]) / 2, ey = (j[i * 2 - 1] + j[i * 2 + 1]) / 2;
+    const ex = hard[i] ? j[i * 2] : (j[i * 2 - 2] + j[i * 2]) / 2;
+    const ey = hard[i] ? j[i * 2 + 1] : (j[i * 2 - 1] + j[i * 2 + 1]) / 2;
     const dx = ex - sx, dy = ey - sy;
     const n = Math.max(2, Math.min(28, Math.round(Math.sqrt(dx * dx + dy * dy) / 2.4)));
     ns[i - 1] = n;
@@ -156,7 +212,8 @@ function curvePoints(j: Float64Array): Float64Array {
   sx = j[0]; sy = j[1];
   for (let i = 1; i < m; i++) {
     const cx = j[i * 2 - 2], cy = j[i * 2 - 1];
-    const ex = (cx + j[i * 2]) / 2, ey = (cy + j[i * 2 + 1]) / 2;
+    const ex = hard[i] ? j[i * 2] : (cx + j[i * 2]) / 2;
+    const ey = hard[i] ? j[i * 2 + 1] : (cy + j[i * 2 + 1]) / 2;
     const n = ns[i - 1];
     for (let sI = 1; sI <= n; sI++) {
       const t = sI / n, u = 1 - t;
@@ -169,21 +226,32 @@ function curvePoints(j: Float64Array): Float64Array {
   return out.subarray(0, k);
 }
 
-/** Smooth seeded 1/f wobble along the length of a stroke, in [-1, 1]. */
-function bandNoise(r: () => number, harmonics = 3) {
-  const f: number[] = [], p: number[] = [], a: number[] = [];
+/** Smooth seeded 1/f wobble along the length of a stroke, in [-1, 1].
+ *  PEN: three slots of scratch (pressure, starve, swing) instead of a
+ *  closure and three arrays per stroke — the collector's share of a
+ *  page of lettering was a seventh of its cost. Same draws from `r`,
+ *  in the same order, so the marks are the marks. */
+const BN_F = new Float64Array(9), BN_P = new Float64Array(9), BN_A = new Float64Array(9);
+const BN_N = new Int32Array(3), BN_NORM = new Float64Array(3);
+function bandSeed(slot: number, r: () => number, harmonics = 3) {
+  let norm = 0;
   for (let i = 0; i < harmonics; i++) {
-    f.push((1.1 + r() * 1.6) * (i + 1) * 1.7);
-    p.push(r() * Math.PI * 2);
-    a.push(1 / (i + 1.35));
+    const k = slot * 3 + i;
+    BN_F[k] = (1.1 + r() * 1.6) * (i + 1) * 1.7 * Math.PI * 2;
+    BN_P[k] = r() * Math.PI * 2;
+    BN_A[k] = 1 / (i + 1.35);
+    norm += BN_A[k];
   }
-  const norm = a.reduce((s, v) => s + v, 0);
-  return (t: number) => {
-    let v = 0;
-    for (let i = 0; i < harmonics; i++) v += Math.sin(t * f[i] * Math.PI * 2 + p[i]) * a[i];
-    return v / norm;
-  };
+  BN_N[slot] = harmonics;
+  BN_NORM[slot] = norm;
 }
+function bandAt(slot: number, t: number): number {
+  let v = 0;
+  const n = BN_N[slot], o = slot * 3;
+  for (let i = 0; i < n; i++) v += Math.sin(t * BN_F[o + i] + BN_P[o + i]) * BN_A[o + i];
+  return v / BN_NORM[slot];
+}
+const BN_PRESSURE = 0, BN_STARVE = 1, BN_SWING = 2;
 
 /**
  * One inked pass: a variable-width ribbon along `cp`, broken where the
@@ -195,7 +263,8 @@ function inkPass(
   base: number,
   alpha: number,
   r: () => number,
-  opts: { taper: boolean; skip: boolean }
+  opts: { taper: boolean; skip: boolean; pass: number },
+  batch: InkBatch | null = null
 ) {
   const n = cp.length >> 1;
   if (n < 2) return;
@@ -210,14 +279,20 @@ function inkPass(
   }
   const L = s[n - 1];
   if (L < 0.6) {
+    if (batch) {
+      const p = batch.paths[0];
+      p.moveTo(cp[0] + base * 0.5, cp[1]);
+      p.arc(cp[0], cp[1], base * 0.5, 0, Math.PI * 2);
+      return;
+    }
     ctx.globalAlpha = alpha;
     ctx.beginPath();
     ctx.arc(cp[0], cp[1], base * 0.5, 0, Math.PI * 2);
     ctx.fill();
     return;
   }
-  const pressure = bandNoise(r, 3);
-  const starve = bandNoise(r, 2);
+  bandSeed(BN_PRESSURE, r, 3);
+  bandSeed(BN_STARVE, r, 2);
   const half = base * 0.5;
 
   // turn per unit length at each sample — where the ball slows and pools
@@ -257,7 +332,7 @@ function inkPass(
   const outSpan = Math.min(L * 0.5, base * 5.2 + 3);
   for (let i = 0; i < n; i++) {
     const t = s[i] / L;
-    let k = 1 + pressure(t) * 0.22;
+    let k = 1 + bandAt(BN_PRESSURE, t) * 0.22;
     if (opts.taper) {
       // the nib lands and lifts: thin in, thinner out
       const inK = 0.52 + 0.48 * Math.min(1, s[i] / inSpan);
@@ -268,13 +343,16 @@ function inkPass(
     w[i] = Math.max(0.34, half * Math.min(1.55, k));
     // the starve noise is only read when the threshold can bite; it is
     // still built above so the seeded wobble consumes what it always did
-    on[i] = skipT > -1.5 && starve(t) < skipT ? 0 : 1;
+    on[i] = skipT > -1.5 && bandAt(BN_STARVE, t) < skipT ? 0 : 1;
   }
 
   // contiguous inked runs, ONE fill each: the ribbon and its two round
   // caps are subpaths of one path (PEN — three fills a pass was most of
   // what a page of lettering cost, and the mark is the same mark)
-  ctx.globalAlpha = alpha;
+  // batched: the ribbon goes into the pass's path, filled by the
+  // caller once for the whole line (PEN)
+  const sink: PathSink = batch ? batch.paths[opts.pass] : ctx;
+  if (!batch) ctx.globalAlpha = alpha;
   let i = 0;
   while (i < n) {
     while (i < n && !on[i]) i++;
@@ -290,23 +368,28 @@ function inkPass(
       const l = Math.sqrt(dx * dx + dy * dy) || 1e-4; dx /= l; dy /= l;
       nrm[k * 2] = -dy * w[k]; nrm[k * 2 + 1] = dx * w[k];
     }
-    ctx.beginPath();
+    if (!batch) ctx.beginPath();
     // one side out...
-    ctx.moveTo(cp[a * 2] + nrm[a * 2], cp[a * 2 + 1] + nrm[a * 2 + 1]);
-    for (let k = a + 1; k <= b; k++) ctx.lineTo(cp[k * 2] + nrm[k * 2], cp[k * 2 + 1] + nrm[k * 2 + 1]);
+    sink.moveTo(cp[a * 2] + nrm[a * 2], cp[a * 2 + 1] + nrm[a * 2 + 1]);
+    for (let k = a + 1; k <= b; k++) sink.lineTo(cp[k * 2] + nrm[k * 2], cp[k * 2 + 1] + nrm[k * 2 + 1]);
     // ...and the other side back
-    for (let k = b; k >= a; k--) ctx.lineTo(cp[k * 2] - nrm[k * 2], cp[k * 2 + 1] - nrm[k * 2 + 1]);
-    ctx.closePath();
+    for (let k = b; k >= a; k--) sink.lineTo(cp[k * 2] - nrm[k * 2], cp[k * 2 + 1] - nrm[k * 2 + 1]);
+    sink.closePath();
     // round caps, the way a ball pen sets down and lifts
-    cap(ctx, cp[a * 2], cp[a * 2 + 1], w[a]);
-    cap(ctx, cp[b * 2], cp[b * 2 + 1], w[b]);
-    ctx.fill();
+    cap(sink, cp[a * 2], cp[a * 2 + 1], w[a]);
+    cap(sink, cp[b * 2], cp[b * 2 + 1], w[b]);
+    if (!batch) ctx.fill();
   }
 
   // the pools themselves: a heavier dot at each local maximum of turning
   for (let k = 2; k < n - 2; k++) {
     if (!on[k] || pool[k] < 0.34) continue;
     if (pool[k] < pool[k - 1] || pool[k] < pool[k + 1]) continue;
+    if (batch) {
+      batch.pools.moveTo(cp[k * 2] + w[k] * 1.10, cp[k * 2 + 1]);
+      batch.pools.arc(cp[k * 2], cp[k * 2 + 1], w[k] * 1.10, 0, Math.PI * 2);
+      continue;
+    }
     ctx.globalAlpha = Math.min(1, alpha * 1.15);
     ctx.beginPath();
     ctx.arc(cp[k * 2], cp[k * 2 + 1], w[k] * 1.10, 0, Math.PI * 2);
@@ -319,7 +402,7 @@ function inkPass(
  *  (where a true arc costs ten times the geometry it draws), an arc
  *  above it. */
 const OCT = Array.from({ length: 8 }, (_, i) => [Math.cos(i * Math.PI / 4), Math.sin(i * Math.PI / 4)]);
-function cap(ctx: Ctx2D, x: number, y: number, rad: number) {
+function cap(ctx: PathSink, x: number, y: number, rad: number) {
   if (rad < 1.1) {
     // sub-pixel: a diamond round the circle is the same blob for a
     // third of the path
@@ -384,7 +467,7 @@ export function stroke(
   ctx.fillStyle = color;
   for (let p = 0; p < passes; p++) {
     const j = jitterFlat(pts, jitter * (p === 0 ? 1 : 1.8), r);
-    const cp = curvePoints(j);
+    const cp = curvePoints(j, o.sharp);
     if (p > 0) {
       /*
        * MIS-REGISTRATION. A second pass over a line you have already
@@ -397,12 +480,12 @@ export function stroke(
        */
       const ang = r() * Math.PI * 2;
       const amp = width * (0.26 + r() * 0.3);
-      const swing = bandNoise(r, 2);
+      bandSeed(BN_SWING, r, 2);
       const n = cp.length >> 1;
       const ca = Math.cos(ang), sa = Math.sin(ang);
       for (let i = 0; i < n; i++) {
         const t = n > 1 ? i / (n - 1) : 0;
-        const k = amp * (0.45 + 0.55 * swing(t));
+        const k = amp * (0.45 + 0.55 * bandAt(BN_SWING, t));
         cp[i * 2] += ca * k;
         cp[i * 2 + 1] += sa * k;
       }
@@ -410,7 +493,8 @@ export function stroke(
     inkPass(ctx, cp, width * (p === 0 ? 1 : 0.72), alpha * (p === 0 ? 1 : 0.35), r, {
       taper: true,
       skip: p === 0,
-    });
+      pass: p,
+    }, o.batch ?? null);
   }
   ctx.globalAlpha = 1;
 }

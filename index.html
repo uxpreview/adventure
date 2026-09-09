@@ -13,7 +13,9 @@
          tab's icon is drawn by the pen when the page opens (see
          installFavicon in src/ui/lettering.ts). The font stacks in
          style.css are an accessibility fallback only. -->
-    <link rel="icon" href="data:," /><!-- CAMERA: no /favicon.ico request; installFavicon replaces the href -->
+    <!-- PEN: an empty icon, so the browser never asks for /favicon.ico
+         (a 404 on every load) before the pen has drawn the real one -->
+    <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
