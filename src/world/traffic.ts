@@ -181,6 +181,11 @@ const MAPLE_WALK = mkPath([[-42, 132], [-45, 200], [-45, 258]]);
 const FOREST_TRACK = mkPath([[55, -110], [78, -122], [101, -134], [120, -148], [129, -158.6]]);
 /** The sentry's beat across the castle gate. */
 const GATE_WALK = mkPath([[-58, -191], [-32, -191]]);
+/** The canyon's dry bed, which the wind blows things along. */
+const CANYON_BED = mkPath([
+  [292, -132], [290.1, -136], [288.8, -144], [291.9, -152], [296.2, -160], [297.8, -168], [299.3, -176],
+  [303.8, -184], [303.5, -192], [308.4, -200], [309.6, -208], [309.6, -216], [306.8, -224], [305.7, -232], [305.8, -240],
+]);
 
 /** Brim square's open ground: the fronts of the stalls, the cross,
  *  the fountain's sides. */
@@ -239,6 +244,7 @@ class Traffic {
   private sheep: Sheep[] = [];
   private sails: Sail[] = [];
   private tumbles: Tumble[] = [];
+  private bedTumbles: Runner[] = [];
   private flock: Bird[] = [];
   private flockUp = 0;
   private flockNext = 30;
@@ -295,6 +301,11 @@ class Traffic {
     this.tumbles = [
       { idx: 23, x: 250, z: 40, ph: 0 },
       { idx: 24, x: 300, z: 90, ph: 2 },
+    ];
+    // and two that bowl up and down the canyon's dry bed on the wind
+    this.bedTumbles = [
+      { idx: 25, path: CANYON_BED, s: 20, dir: 1, speed: 3.4, side: 0.6, wait: 0, ph: 0, horn: 0 },
+      { idx: 26, path: CANYON_BED, s: 70, dir: -1, speed: 2.9, side: -0.8, wait: 0, ph: 0, horn: 0 },
     ];
 
     // the folk field: cart drivers 0-3, the crowd 4-11, the shepherd 12,
@@ -534,7 +545,11 @@ class Traffic {
       this.wheels.set(s.idx, s.x, ground(s.x, s.z) + 0.1 + Math.sin(t * 1.1 + s.idx) * 0.08, s.z, 5.4, 3.78, s.tack > 0 ? WHEELS.sailR : WHEELS.sailL, false, 0.96, this.yaw + heel);
     }
 
-    /* ---- tumbleweed across the flats ------------------------------- */
+    /* ---- tumbleweed across the flats, and up the canyon's bed ------ */
+    for (const tw of this.bedTumbles) {
+      tw.speed = (tw.idx === 25 ? 2.6 : 2.1) + windK * 1.6;
+      run(tw, 1, [WHEELS.tumbleA, WHEELS.tumbleB], 2.0, 1.4, 0.9, this.wheels);
+    }
     for (const tw of this.tumbles) {
       const v = 3 + windK * 4;
       tw.x += v * dt;

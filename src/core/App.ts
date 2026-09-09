@@ -17,6 +17,7 @@ import { Bicycle, BICYCLE_HOME } from '../engine/Bicycle';
 /* ---- SCALE: the horse and the traffic ---- */
 import { Horse, HORSE_HOME, HITCHING_POST } from '../engine/Horse';
 import { traffic } from '../world/traffic';
+import { fordAt } from '../world/layout';
 import { Eight15, onPlatform } from '../engine/Eight15';
 import {
   SPAWN, POSTER, regionAt, districtAt, coastX, barDist, roadCarryAt, rowableAt, BOAT_HOME,
@@ -1168,7 +1169,7 @@ export class App {
     /* ---- SCALE: the bicycle goes anywhere flat and dry; sand slows it.
      * Wet to the hub is fine (a bridge's approach, a ford); deeper is not. ---- */
     if (this.terrain.blockedAt(x, z) || barriers.blocks(x, z)) return true;
-    if (this.terrain.waterAt(x, z) > 0.5 && !this.terrain.onPlanks(x, z, 2)) return true;
+    if (this.terrain.waterAt(x, z) > 0.5 && !this.terrain.onPlanks(x, z, 2) && fordAt(x, z) < 0.45) return true;
     for (const s of App.STAIRS) {
       if (x >= s.minX && x < s.maxX && z >= s.minZ && z < s.maxZ) return true;
     }
