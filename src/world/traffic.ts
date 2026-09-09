@@ -367,7 +367,9 @@ class Traffic {
     bird({ kind: 'orbit', cx: 310, cz: 20, rx: 36, rz: 28, w: 0.1, ph: 1, lift: 32, amp: 5, up: BIRDS.kite, down: BIRDS.kite, flap: 0, size: 2.6, hours: [6, 19] });
     bird({ kind: 'orbit', cx: 280, cz: 90, rx: 30, rz: 24, w: -0.13, ph: 4, lift: 28, amp: 4, up: BIRDS.kite, down: BIRDS.kite, flap: 0, size: 2.4, hours: [6, 19] });
     // one low over the cut, so it reads from the floor of the canyon
-    bird({ kind: 'orbit', cx: 302, cz: -168, rx: 18, rz: 14, w: 0.17, ph: 3, lift: 16, amp: 3, up: BIRDS.kite, down: BIRDS.kite, flap: 0, size: 2.2, hours: [6, 19] });
+    bird({ kind: 'orbit', cx: 302, cz: -168, rx: 18, rz: 14, w: 0.24, ph: 3, lift: 16, amp: 3, up: BIRDS.kite, down: BIRDS.kite, flap: 0, size: 3.0, hours: [6, 19] });
+    // and one that crosses the sky gap over the canyon's mouth, wall to wall
+    cross(300, -150, 30, 5, 0.12, 1, BIRDS.kite, BIRDS.kite, 2.6, 20, 0);
     const pigeon = (cx: number, cz: number, rx: number, rz: number, lift: number, ph: number, w: number) =>
       bird({ kind: 'orbit', cx, cz, rx, rz, w, ph, lift, amp: 1.5, up: BIRDS.pigeonUp, down: BIRDS.pigeonDown, flap: 4, size: 1.1, hours: DAY });
     pigeon(146, 200, 14, 10, 9, 0, 0.5); pigeon(150, 204, 12, 9, 12, 2, 0.46); pigeon(120, 230, 16, 12, 10, 4, -0.44);
@@ -548,7 +550,7 @@ class Traffic {
     /* ---- tumbleweed across the flats, and up the canyon's bed ------ */
     for (const tw of this.bedTumbles) {
       tw.speed = (tw.idx === 25 ? 2.6 : 2.1) + windK * 1.6;
-      run(tw, 1, [WHEELS.tumbleA, WHEELS.tumbleB], 2.0, 1.4, 0.9, this.wheels);
+      run(tw, 1, [WHEELS.tumbleA, WHEELS.tumbleB], 2.8, 1.96, 0.9, this.wheels);
     }
     for (const tw of this.tumbles) {
       const v = 3 + windK * 4;
