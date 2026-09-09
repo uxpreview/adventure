@@ -86,34 +86,77 @@ function jitterPoints(
  * Long straights stop stair-stepping because they are no longer four
  * segments of a polygon; they are sampled at ~2 px.
  */
-function curvePoints(j: [number, number][]): Float64Array {
-  /* PEN: a flat array of x,y pairs. The old array-of-pairs allocated
-   * one object per sample; a page of lettering is a hundred thousand
-   * samples, and the collector was a tenth of the page's cost. The
-   * curve is the same curve, sampled at ~2.4 px. */
-  const m = j.length;
+/* ---- PEN: scratch for the pen ---------------------------------- *
+ * A page of lettering is forty thousand strokes. Every stroke used to
+ * allocate seven arrays (the jittered points, the samples, the arc
+ * lengths, the turn, the pool, the widths, the on/off mask) and the
+ * collector's share of a page was a fifth of its cost. The pen now
+ * writes into module-level buffers that grow to the longest stroke
+ * ever drawn and are never freed — a stroke is drawn to completion
+ * before the next begins, so nothing ever aliases. */
+let SCR_J = new Float64Array(512);     // jittered control points, x,y pairs
+let SCR_CP = new Float64Array(4096);   // curve samples, x,y pairs
+let SCR_NS = new Int32Array(256);      // samples per curve segment
+let SCR_S = new Float64Array(2048);    // arc length per sample
+let SCR_N = new Float32Array(4096);    // unit normal per sample, x,y pairs
+let SCR_TURN = new Float32Array(2048);
+let SCR_POOL = new Float32Array(2048);
+let SCR_W = new Float32Array(2048);
+let SCR_ON = new Uint8Array(2048);
+function scratchSamples(n: number) {
+  if (SCR_S.length >= n) return;
+  let m = SCR_S.length;
+  while (m < n) m *= 2;
+  SCR_S = new Float64Array(m);
+  SCR_N = new Float32Array(m * 2);
+  SCR_TURN = new Float32Array(m);
+  SCR_POOL = new Float32Array(m);
+  SCR_W = new Float32Array(m);
+  SCR_ON = new Uint8Array(m);
+}
+
+/** The control points, jittered, as a flat view into scratch. */
+function jitterFlat(pts: [number, number][], amt: number, r: () => number): Float64Array {
+  const m = pts.length;
+  if (SCR_J.length < m * 2) SCR_J = new Float64Array(Math.max(m * 2, SCR_J.length * 2));
+  if (SCR_NS.length < m) SCR_NS = new Int32Array(Math.max(m, SCR_NS.length * 2));
+  const j = SCR_J;
+  for (let i = 0; i < m; i++) {
+    j[i * 2] = pts[i][0] + (r() - 0.5) * amt;
+    j[i * 2 + 1] = pts[i][1] + (r() - 0.5) * amt;
+  }
+  return j.subarray(0, m * 2);
+}
+
+function curvePoints(j: Float64Array): Float64Array {
+  /* A flat array of x,y pairs, a view into scratch. The curve is the
+   * same curve stroke() has always drawn, sampled at ~2.4 px. */
+  const m = j.length >> 1;
   if (m < 2) {
-    const o = new Float64Array(m * 2);
-    for (let i = 0; i < m; i++) { o[i * 2] = j[i][0]; o[i * 2 + 1] = j[i][1]; }
-    return o;
+    if (SCR_CP.length < m * 2) SCR_CP = new Float64Array(m * 2);
+    for (let i = 0; i < m * 2; i++) SCR_CP[i] = j[i];
+    return SCR_CP.subarray(0, m * 2);
   }
   let cap = 2;
-  const ns: number[] = [];
-  let sx = j[0][0], sy = j[0][1];
+  const ns = SCR_NS;
+  let sx = j[0], sy = j[1];
   for (let i = 1; i < m; i++) {
-    const ex = (j[i - 1][0] + j[i][0]) / 2, ey = (j[i - 1][1] + j[i][1]) / 2;
-    const n = Math.max(2, Math.min(28, Math.round(Math.hypot(ex - sx, ey - sy) / 2.4)));
-    ns.push(n);
+    const ex = (j[i * 2 - 2] + j[i * 2]) / 2, ey = (j[i * 2 - 1] + j[i * 2 + 1]) / 2;
+    const dx = ex - sx, dy = ey - sy;
+    const n = Math.max(2, Math.min(28, Math.round(Math.sqrt(dx * dx + dy * dy) / 2.4)));
+    ns[i - 1] = n;
     cap += n;
     sx = ex; sy = ey;
   }
-  const out = new Float64Array(cap * 2);
+  if (SCR_CP.length < cap * 2) SCR_CP = new Float64Array(Math.max(cap * 2, SCR_CP.length * 2));
+  scratchSamples(cap);
+  const out = SCR_CP;
   let k = 0;
-  out[k++] = j[0][0]; out[k++] = j[0][1];
-  sx = j[0][0]; sy = j[0][1];
+  out[k++] = j[0]; out[k++] = j[1];
+  sx = j[0]; sy = j[1];
   for (let i = 1; i < m; i++) {
-    const cx = j[i - 1][0], cy = j[i - 1][1];
-    const ex = (j[i - 1][0] + j[i][0]) / 2, ey = (j[i - 1][1] + j[i][1]) / 2;
+    const cx = j[i * 2 - 2], cy = j[i * 2 - 1];
+    const ex = (cx + j[i * 2]) / 2, ey = (cy + j[i * 2 + 1]) / 2;
     const n = ns[i - 1];
     for (let sI = 1; sI <= n; sI++) {
       const t = sI / n, u = 1 - t;
@@ -122,8 +165,8 @@ function curvePoints(j: [number, number][]): Float64Array {
     }
     sx = ex; sy = ey;
   }
-  out[k++] = j[m - 1][0]; out[k++] = j[m - 1][1];
-  return out;
+  out[k++] = j[m * 2 - 2]; out[k++] = j[m * 2 - 1];
+  return out.subarray(0, k);
 }
 
 /** Smooth seeded 1/f wobble along the length of a stroke, in [-1, 1]. */
@@ -158,7 +201,9 @@ function inkPass(
   if (n < 2) return;
   // arc length, so pressure and starve read in real distance and not in
   // however many points the caller happened to hand us
-  const s = new Float64Array(n);
+  scratchSamples(n);
+  const s = SCR_S;
+  s[0] = 0;
   for (let i = 1; i < n; i++) {
     const dx = cp[i * 2] - cp[i * 2 - 2], dy = cp[i * 2 + 1] - cp[i * 2 - 1];
     s[i] = s[i - 1] + Math.sqrt(dx * dx + dy * dy);
@@ -176,7 +221,8 @@ function inkPass(
   const half = base * 0.5;
 
   // turn per unit length at each sample — where the ball slows and pools
-  const turn = new Float32Array(n);
+  const turn = SCR_TURN;
+  turn[0] = 0; turn[n - 1] = 0;
   for (let i = 1; i < n - 1; i++) {
     const ax = cp[i * 2] - cp[i * 2 - 2], ay = cp[i * 2 + 1] - cp[i * 2 - 1];
     const bx = cp[i * 2 + 2] - cp[i * 2], by = cp[i * 2 + 3] - cp[i * 2 + 1];
@@ -189,7 +235,7 @@ function inkPass(
   // slowed relative to the rest of this stroke; without the subtraction
   // every uniformly-curved mark (a grass tuft, a loop) comes out
   // uniformly fatter, which is not pooling, it is just a thicker pen.
-  const pool = new Float32Array(n);
+  const pool = SCR_POOL;
   let mean = 0;
   for (let i = 0; i < n; i++) {
     let acc = 0, cnt = 0;
@@ -200,8 +246,8 @@ function inkPass(
   mean /= n;
   for (let i = 0; i < n; i++) pool[i] = Math.max(-0.35, pool[i] - mean);
 
-  const w = new Float32Array(n);
-  const on = new Uint8Array(n);
+  const w = SCR_W;
+  const on = SCR_ON;
   // A ball starves when it is moving fast under a light hand. A bold
   // ruled border under real pressure does not dash, and dashing it
   // turns a panel edge into a dotted line — so the threshold backs
@@ -220,7 +266,9 @@ function inkPass(
     }
     k *= 1 + pool[i] * 0.55;
     w[i] = Math.max(0.34, half * Math.min(1.55, k));
-    on[i] = starve(t) < skipT ? 0 : 1;
+    // the starve noise is only read when the threshold can bite; it is
+    // still built above so the seeded wobble consumes what it always did
+    on[i] = skipT > -1.5 && starve(t) < skipT ? 0 : 1;
   }
 
   // contiguous inked runs, ONE fill each: the ribbon and its two round
@@ -234,22 +282,20 @@ function inkPass(
     while (i < n && on[i]) i++;
     const b = i - 1;
     if (b - a < 1) continue;
-    ctx.beginPath();
-    // one side out...
+    // the unit normal at each sample, once for both sides
+    const nrm = SCR_N;
     for (let k = a; k <= b; k++) {
       const p = k > a ? k - 1 : k, q = k < b ? k + 1 : k;
       let dx = cp[q * 2] - cp[p * 2], dy = cp[q * 2 + 1] - cp[p * 2 + 1];
       const l = Math.sqrt(dx * dx + dy * dy) || 1e-4; dx /= l; dy /= l;
-      const x = cp[k * 2] - dy * w[k], y = cp[k * 2 + 1] + dx * w[k];
-      if (k === a) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      nrm[k * 2] = -dy * w[k]; nrm[k * 2 + 1] = dx * w[k];
     }
+    ctx.beginPath();
+    // one side out...
+    ctx.moveTo(cp[a * 2] + nrm[a * 2], cp[a * 2 + 1] + nrm[a * 2 + 1]);
+    for (let k = a + 1; k <= b; k++) ctx.lineTo(cp[k * 2] + nrm[k * 2], cp[k * 2 + 1] + nrm[k * 2 + 1]);
     // ...and the other side back
-    for (let k = b; k >= a; k--) {
-      const p = k > a ? k - 1 : k, q = k < b ? k + 1 : k;
-      let dx = cp[q * 2] - cp[p * 2], dy = cp[q * 2 + 1] - cp[p * 2 + 1];
-      const l = Math.sqrt(dx * dx + dy * dy) || 1e-4; dx /= l; dy /= l;
-      ctx.lineTo(cp[k * 2] + dy * w[k], cp[k * 2 + 1] - dx * w[k]);
-    }
+    for (let k = b; k >= a; k--) ctx.lineTo(cp[k * 2] - nrm[k * 2], cp[k * 2 + 1] - nrm[k * 2 + 1]);
     ctx.closePath();
     // round caps, the way a ball pen sets down and lifts
     cap(ctx, cp[a * 2], cp[a * 2 + 1], w[a]);
@@ -274,7 +320,16 @@ function inkPass(
  *  above it. */
 const OCT = Array.from({ length: 8 }, (_, i) => [Math.cos(i * Math.PI / 4), Math.sin(i * Math.PI / 4)]);
 function cap(ctx: Ctx2D, x: number, y: number, rad: number) {
-  if (rad < 2) {
+  if (rad < 1.1) {
+    // sub-pixel: a diamond round the circle is the same blob for a
+    // third of the path
+    const k = rad * 1.4143;
+    ctx.moveTo(x + k, y);
+    ctx.lineTo(x, y + k);
+    ctx.lineTo(x - k, y);
+    ctx.lineTo(x, y - k);
+    ctx.closePath();
+  } else if (rad < 2) {
     const k = rad * 1.0824; // circumscribed, so the octagon covers the circle
     ctx.moveTo(x + k, y);
     for (let i = 1; i < 8; i++) ctx.lineTo(x + OCT[i][0] * k, y + OCT[i][1] * k);
@@ -328,7 +383,7 @@ export function stroke(
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
   for (let p = 0; p < passes; p++) {
-    const j = jitterPoints(pts, jitter * (p === 0 ? 1 : 1.8), r);
+    const j = jitterFlat(pts, jitter * (p === 0 ? 1 : 1.8), r);
     const cp = curvePoints(j);
     if (p > 0) {
       /*
@@ -477,23 +532,6 @@ export function makeCanvas(w: number, h: number) {
   c.width = w;
   c.height = h;
   return { canvas: c, ctx: c.getContext('2d')! };
-}
-
-/* ---- PEN: read a drawing's pixels without a GPU readback ---- *
- * `getImageData` on an accelerated canvas is a readback of the whole
- * surface (1.4 s per megapixel under a software GL; tens of ms on a
- * phone). Copying the drawing into a CPU-backed canvas first makes the
- * read a memcpy. `scale` < 1 reads a downsampled copy, which is all a
- * faint under-drawing needs. */
-export function readPixels(src: HTMLCanvasElement, scale = 1): ImageData {
-  const w = Math.max(1, Math.round(src.width * scale));
-  const h = Math.max(1, Math.round(src.height * scale));
-  const c = document.createElement('canvas');
-  c.width = w;
-  c.height = h;
-  const ctx = c.getContext('2d', { willReadFrequently: true })!;
-  ctx.drawImage(src, 0, 0, w, h);
-  return ctx.getImageData(0, 0, w, h);
 }
 
 export function toTexture(canvas: HTMLCanvasElement): THREE.CanvasTexture {
