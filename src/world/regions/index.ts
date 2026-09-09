@@ -293,6 +293,14 @@ export class World {
     scene.add(this.bridges);
   }
 
+  /* ---- PEN: how many lands in reach of (x, z) are still to be drawn
+   * (the loader waits for zero) ---- */
+  pending(x: number, z: number): number {
+    let n = 0;
+    for (const spec of REGION_SPECS) if (!this.built.has(spec.id) && rectDist(spec.rect, x, z) < BUILD_REACH) n++;
+    return n;
+  }
+
   /** Build one region synchronously (used for the spawn's surroundings). */
   ensure(id: RegionId) {
     if (this.built.has(id)) return;

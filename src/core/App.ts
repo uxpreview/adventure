@@ -859,16 +859,40 @@ export class App {
 
   private bootLoader() {
     const state = { t: 0 };
+    /* ---- PEN: the bar is the lands being drawn, not a timer. The
+     * world builds one land a frame inside reach (regions/index.ts
+     * reports each as 'inklands:drawing'); the bar is whichever is
+     * further, that count or the tween, and the title waits for the
+     * last land in reach — capped at four seconds past the tween, so a
+     * land that never reports cannot hold the page. */
+    const drawn = { done: 0, total: 0 };
+    const onDrawn = (e: Event) => {
+      const d = (e as CustomEvent<{ done: number; total: number }>).detail;
+      drawn.done = d.done; drawn.total = d.total;
+      this.ui.setProgress(Math.max(state.t, d.done / Math.max(1, d.total)));
+    };
+    window.addEventListener('inklands:drawing', onDrawn);
+    const title = () => {
+      window.removeEventListener('inklands:drawing', onDrawn);
+      this.ui.setProgress(1);
+      // sequence, don't overlap: the loader lets go of the page
+      // completely before the title is lettered onto it
+      this.ui.hideLoader();
+      gsap.delayedCall(0.75, () => this.ui.showTitle(this.save.data.pos !== null));
+    };
     gsap.to(state, {
       t: 1,
       duration: 1.9,
       ease: 'power2.inOut',
-      onUpdate: () => this.ui.setProgress(state.t),
+      onUpdate: () => this.ui.setProgress(Math.max(state.t, drawn.total ? drawn.done / drawn.total : 0)),
       onComplete: () => {
-        // sequence, don't overlap: the loader lets go of the page
-        // completely before the title is lettered onto it
-        this.ui.hideLoader();
-        gsap.delayedCall(0.75, () => this.ui.showTitle(this.save.data.pos !== null));
+        if (this.world.pending(this.char.pos.x, this.char.pos.z) === 0) { title(); return; }
+        const t0 = performance.now();
+        const wait = () => {
+          if (this.world.pending(this.char.pos.x, this.char.pos.z) === 0 || performance.now() - t0 > 4000) title();
+          else requestAnimationFrame(wait);
+        };
+        wait();
       },
     });
   }
