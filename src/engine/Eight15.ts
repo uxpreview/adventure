@@ -1,9 +1,11 @@
 import * as THREE from 'three';
+import { cameraYaw, cameraRight, towardLens } from './billboard';
 import {
   railcarSideTexture, railcarFrontTexture, platformFigureTexture, platformThingTexture,
 } from '../world/textures-office';
 import { LINE_STOPS, LINE_STOP_S, LINE_LENGTH, lineAt } from '../world/layout';
 import { knowledge, WAITS_FOR_THE_LINE } from '../world/knowledge';
+import { landsDone } from '../world/jobs'; /* ---- THINGS ---- */
 import { clock } from '../world/daylight';
 import { events } from '../world/events';
 
@@ -397,8 +399,9 @@ export class Eight15 {
    *  Session 21 the second is waits DECIDED, either door, because the
    *  ending reads the doors and cannot read a door it never comes for. */
   static qualified(): boolean {
+    /* ---- THINGS: qualification reads jobs done (a land's job complete, or its wait decided) ---- */
     return knowledge.has('route:the-line') &&
-      knowledge.decidedWaits() >= WAITS_FOR_THE_LINE;
+      landsDone() >= WAITS_FOR_THE_LINE;
   }
 
   /** The platforms the residue stands on, for the harness: which stops
@@ -600,18 +603,26 @@ export class Eight15 {
   private place(groundAt: (x: number, z: number) => number, stopped: boolean) {
     const p = lineAt(this.s);
     const y = groundAt(p.x, p.z);
-    this.group.position.set(p.x, y, p.z + (this.aboard ? 0.9 : 0));
-    /* THE ASPECT. Broadside on the east–west legs, at every stop and
-     * whenever you are in it; front on when it is coming down a road
-     * you are looking along. */
-    const broadside = stopped || this.aboard || Math.abs(p.tx) > Math.abs(p.tz);
+    /* CAMERA: the carriage sits a stride toward the LENS of whoever is
+     * in it and turns to face the lens, whichever way the camera looks. */
+    const [lx, lz] = towardLens();
+    const off = this.aboard ? 0.9 : 0;
+    this.group.position.set(p.x + lx * off, y, p.z + lz * off);
+    this.group.rotation.y = -cameraYaw();
+    /* THE ASPECT. Broadside when its track runs ACROSS the frame, at
+     * every stop and whenever you are in it; front on when it is coming
+     * down a road you are looking along. */
+    const [rx, rz] = cameraRight();
+    const across = p.tx * rx + p.tz * rz;
+    const along = p.tx * -lx + p.tz * -lz;
+    const broadside = stopped || this.aboard || Math.abs(across) > Math.abs(along);
     this.side.visible = broadside;
     this.front.visible = !broadside;
     /* Going away from you rather than toward you is the same drawing
      * mirrored, which is how the walker and the rowboat have always
      * done it. */
-    this.front.scale.x = p.tz < 0 ? -1 : 1;
-    this.side.scale.x = p.tx < 0 ? -1 : 1;
+    this.front.scale.x = along > 0 ? -1 : 1;
+    this.side.scale.x = across < 0 ? -1 : 1;
   }
 
   /** Can the walker get on from where they are standing? */

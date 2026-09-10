@@ -1,5 +1,56 @@
 # SESSIONS — the handoff log
 
+## Sessions 24–27 — 2026-09-07 → 2026-09-09 — THE RESET, BUILT
+
+*The owner's brief (verbatim in `PROMPT.md` §1): make it an open world that
+is alive, keep the ballpoint, throw out every other rule, one agent per
+pillar, a cold player and a blind critic at the end of every loop. Six
+pillars were built by six engineers on six branches and merged by hand
+(camera → voice → scale → pen → first hour → things), PR #23, branch
+`claude/inklands-open-world-va3lgx`, 136 files, +9,818 / −917, build green
+at every merge. `design/` is archived under `design/archive/`. The notes
+are `CHANGELOG.md`; the game is `GAME.md`; the loop is
+`design/reset/THE-GATE.md`.*
+
+### THE ONE THING TO KNOW
+
+**THE GATE HAS NOT BEEN RUN ON THE MERGED BUILD.** Every session that would
+have run the cold player and the critics hit the account's five-hour usage
+limit first — four parallel sessions empty it in about an hour, and that
+happened three times. The owner's amendment: one session, one agent, one
+item at a time from here. The next session's first job is
+`design/reset/THE-GATE.md`, round 1.
+
+### What was built (see `CHANGELOG.md` for the page)
+Free orbit camera with everything facing the lens and the walk relative to
+it; hand-lettered speech, an answer line for every verb, a notebook on N, an
+objective line, choices read back, map pins; the bull every time and Nell's
+THE FOURTH NAME in the first minute; the walker's pace scaled to the sheet,
+a horse, mounts anywhere, traffic and birds and crowds and weather you can
+see coming; twelve jobs, twelve stamps, four scored toys, three monsters,
+night falls; digits and punctuation in the hand, lettering at 2.5 ms a line,
+a draw-call budget (Common ~390 → ~135), adaptive render scale, the verbs'
+sounds; and `tools/play-server.mjs`, a stepped Playwright session so an
+agent can play in game-time without a GPU.
+
+### What the sessions learned, for the next one
+- Parallel sub-agents and sibling sessions all draw on one usage window.
+  Sequential is the only shape that finishes.
+- A cloud session cannot message its parent; the report file on the branch
+  is the channel. `design/reset/reports/<PILLAR>.md`, committed and pushed.
+- The harness reads the screen through `aria-label`; anything lettered
+  without one is invisible to the cold player.
+- Merge conflicts across pillars were all additive (imports, the debug
+  object, the audio switch, `worn.ts`, one `install({…})` that lost its
+  closing brace). Keep insertions labelled and the merges stay cheap.
+- Two engineers built the same thing twice (the favicon fix, a `hooves`
+  sound). Cheap. A shared brief with named owners prevents most of it.
+
+### Not done
+The gate (rounds 0). Mobile portrait cold. Four pillar reports (CAMERA,
+PEN, FIRST HOUR, THINGS). Coast-to-coast pace decision. The east road
+through the river. The canyon's stillness. Every sound, unheard.
+
 ## Session 23 — 2026-09-06 — the interiors
 
 *`THE-FUN-PASS` §14 row 23: **the roofless cutaway (`WORLD-SYSTEMS`

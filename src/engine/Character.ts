@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { cameraYaw, crossing } from './billboard';
 import { characterSheet, blobShadowTexture } from './ink';
 import { INK, BLUE, WHITE_INK } from './palette';
 import { Footprints } from './Footprints';
@@ -351,6 +352,12 @@ export class Character {
   }
 
   update(dt: number, move: THREE.Vector2, bounds?: { minX: number; maxX: number; minZ: number; maxZ: number }) {
+    /* THE CUTOUT FACES THE LENS (the reset, pillar 1): the camera can
+     * orbit now, so the sprite turns about its feet to keep square to
+     * it. The mirror and the lean below read the CROSSING of the frame,
+     * not world x, so a walker going screen-left faces screen-left from
+     * every bearing. */
+    this.sprite.rotation.y = -cameraYaw();
     if (this.frozen || this.sitting) {
       this.vel.multiplyScalar(Math.max(0, 1 - dt * 10));
       if (this.sitting) {
@@ -419,8 +426,8 @@ export class Character {
 
     if (speed > 0.25) {
       this.heading = Math.atan2(this.vel.x, this.vel.z);
-      // mirror the sprite by travel direction; keep it facing the camera plane
-      this.sprite.scale.x = this.vel.x < -0.15 ? -1 : 1;
+      // mirror the sprite by travel across the frame; it faces the lens
+      this.sprite.scale.x = crossing(this.vel.x, this.vel.z) < -0.15 ? -1 : 1;
 
       /* CADENCE. The walk cycle already ran off distance travelled, so
        * it speeds up on its own — but a run is not a walk played back
@@ -469,7 +476,7 @@ export class Character {
          * scale and the rotation is applied after it, so a lean to
          * screen-right is a lean to screen-right whichever way the
          * walker is facing. */
-        const cross = Math.max(-1, Math.min(1, this.vel.x / this.maxSpeed));
+        const cross = Math.max(-1, Math.min(1, crossing(this.vel.x, this.vel.z) / this.maxSpeed));
         this.sprite.rotation.z = -Character.LEAN * this.effort * cross;
       }
 

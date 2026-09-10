@@ -64,7 +64,9 @@ export class Footprints {
   onStamp: ((pos: THREE.Vector3, heading: number) => void) | null = null;
 
   constructor(opts: FootprintOpts = {}) {
-    const { color = 0x232633, fade = 70, capacity = 700, size = 0.3, map } = opts;
+    /* PEN: 520 prints is ninety seconds of running; the old 700 was never
+     * reached before the oldest had faded */
+    const { color = 0x232633, fade = 70, capacity = 520, size = 0.3, map } = opts;
     this.capacity = capacity;
 
     const geo = new THREE.PlaneGeometry(size * 0.68, size);

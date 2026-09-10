@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import type { BuildCtx } from './index';
 import { rooms, type RoomDef } from '../rooms';
-import { sideWallTexture, pencilGhostTexture } from '../textures-rooms';
+import { sideWallTexture } from '../textures-rooms';
 import { makeStandee } from '../../engine/props';
+import { billboardLike } from '../../engine/billboard';
 
 /**
  * ONE ROOM, BUILT (Session 23, `rooms.ts`, `WORLD-SYSTEMS` §11).
@@ -72,9 +73,9 @@ export function buildRoom(
   const cz = (q.minZ + q.maxZ) / 2;
   const floor = ctx.decal(floorTex, w, d, cx, cz, 0, 0.9);
   floor.renderOrder = -5;
-  const wall = ctx.standee(wallTex, w, wallH, cx, q.minZ + 0.18, { solid: true });
+  const wall = ctx.standee(wallTex, w, wallH, cx, q.minZ + 0.18, { solid: true, face: 'fixed' });
   const sides = [q.minX + 0.16, q.maxX - 0.16].map((x, i) =>
-    ctx.standee(sideWallTexture(seed + i, kind), d, wallH, x, cz, { rotY: Math.PI / 2, solid: true }));
+    ctx.standee(sideWallTexture(seed + i, kind), d, wallH, x, cz, { rotY: Math.PI / 2, solid: true, face: 'fixed' }));
   const things: THREE.Mesh[] = [];
   const fronts: { house: THREE.Mesh; ghost: THREE.Mesh }[] = [];
   const all = () => [floor, wall, ...sides, ...things];
@@ -99,10 +100,14 @@ export function buildRoom(
       mat.transparent = true;
       const geo = house.geometry as THREE.PlaneGeometry;
       const p = geo.parameters;
-      const ghost = makeStandee(pencilGhostTexture(mat.map!), p.width, p.height, 0);
+      /* ---- PEN: the pencil plan is the same drawing read through a shader; nothing is read back ---- */
+      const ghost = makeStandee(mat.map!, p.width, p.height, 0, { ghost: true });
       ghost.position.copy(house.position);
       ghost.position.z += 0.02;
       ghost.rotation.copy(house.rotation);
+      // CAMERA: the house turns about its feet now, so its pencil ghost
+      // turns exactly as the house does (engine/billboard.ts)
+      billboardLike(ghost, house, house.rotation.y);
       (ghost.material as THREE.MeshBasicMaterial).depthWrite = false;
       // pencil is faint by nature; the cutout's alpha test would eat it
       (ghost.material as THREE.MeshBasicMaterial).alphaTest = 0.01;

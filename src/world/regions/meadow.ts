@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { towardLens, cameraRight } from '../../engine/billboard';
 import { ringTexture, loopsTexture, rng } from '../../engine/ink';
 import { hayBaleTexture, logTexture, wheatDecal } from '../textures';
 import {
@@ -21,8 +22,11 @@ import { events } from '../events';
 import { barriers } from '../barriers';
 import { Follower } from '../company';
 import { knowledge } from '../knowledge';
+import { opening, MILESTONE } from '../opening'; /* FIRST HOUR */
+import { borderStoneTexture } from '../textures-opening'; /* FIRST HOUR */
 import { SPEC_BY_ID } from '../layout';
 import { platform } from '../../engine/Eight15';
+import { npcs } from '../npc'; /* VOICE */
 import type { RegionBuilder, WorldPOI } from './index';
 
 function say(name: string) {
@@ -163,7 +167,7 @@ barriers.register({
  *  a goat gets out. This is the one that did.) */
 const goat = new Follower({
   id: 'the-common-goat', rect: SPEC_BY_ID.meadow.rect, home: { x: -22, z: 72 },
-  gap: 3.2, notice: 18, walk: 3.6, trot: 8.6, margin: 2,
+  gap: 3.2, notice: 18, walk: 2.2, trot: 5.4, margin: 2, /* ---- SCALE ---- */
   // it will not go in with the bull, and it does not follow you in
   keepOut: { minX: -14, maxX: 46, minZ: 63, maxZ: 112 },
 });
@@ -182,7 +186,7 @@ const goat = new Follower({
  *  happened and cannot say why the line is there. Nobody says. */
 const dawnDog = new Follower({
   id: 'the-dawn-dog', rect: { minX: -150, maxX: -28, minZ: -10, maxZ: 120 }, home: { x: -122, z: 64 },
-  gap: 2.4, notice: 13, walk: 4.0, trot: 9.0, margin: 2,
+  gap: 2.4, notice: 13, walk: 2.5, trot: 5.6, margin: 2, /* ---- SCALE ---- */
 });
 events.register({ id: 'the-dawn-dog', land: 'meadow', at: 5.4, hours: 2.1 });
 
@@ -222,6 +226,12 @@ export const common = {
     barriers.gap('the-field-gate')!.open = true;
     this.nell.pose = 0; this.nell.t = 0;
     goat.reset();
+  },
+  /** FIRST HOUR: SET OUT. The bull has already seen you: it charges
+   *  inside the first second whatever the hour, every time. */
+  wake() {
+    this.reset();
+    this.bull.state = 'watch'; this.bull.t = 0.6; this.bull.face = -1;
   },
 };
 
@@ -485,6 +495,10 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   const gateOpen = ctx.standee(fieldGateTexture(1610, false), 2.6, 2.6, GATE.x, GATE.z + 0.35);
   const gateShut = ctx.standee(fieldGateTexture(1611, true), 2.6, 2.6, GATE.x, GATE.z + 0.35);
   gateShut.visible = false;
+  /* FIRST HOUR: THE MILESTONE at the south border, on the verge of the
+   * king's road, a stride short of Maple Court. The place that reads it
+   * (`opening.ts` OPENING_POIS) stands over the border. */
+  ctx.standee(borderStoneTexture(1612), 1.3, 1.95, MILESTONE.x, MILESTONE.z);
   // the fence dies out east of the gate: one leaning post, then nothing
   ctx.standee(milestoneTexture(449), 1.1, 1.5, 45, 66);
   ctx.decal(wornGroundDecal(450), 5, 4, 9.5, 62.5, 0.4, 0.5);
@@ -530,12 +544,14 @@ export const buildMeadow: RegionBuilder = (ctx) => {
    * crossroads, because that is the road people come down. */
   const NELL = { x: HEDGE_X - 2.4, z: 82.6 };
   const nellPoses = [0, 1, 2].map((p) =>
-    ctx.standee(nellTexture(1630 + p, p as 0 | 1 | 2), 1.15, 1.9, NELL.x, NELL.z));
+    ctx.standee(nellTexture(1630 + p, p as 0 | 1 | 2), 1.15, 1.9, NELL.x, NELL.z, { face: 'keep' }));
+  /* ---- VOICE: where Nell is drawn, for the talk prompt ---- */
+  npcs.track('nell', () => ({ x: nellPoses[common.nell.pose].position.x, z: NELL.z, present: platform.land !== 'meadow' }));
 
   /* THE BULL: four drawings, one showing, mirrored to face its way —
    * the fourth is the night's, lying down (Session 17). */
   const bullPoses = [0, 1, 2, 3].map((p) =>
-    ctx.standee(bullTexture(1640 + p, p as 0 | 1 | 2 | 3), 3.6, 2.4, BULL_HOME.x, BULL_HOME.z));
+    ctx.standee(bullTexture(1640 + p, p as 0 | 1 | 2 | 3), 3.6, 2.4, BULL_HOME.x, BULL_HOME.z, { face: 'keep' }));
   // its own trodden ground, where it has stood the longest
   ctx.decal(wornGroundDecal(1643), 7, 6, BULL_HOME.x, BULL_HOME.z + 0.5, 0.6, 0.45);
 
@@ -543,7 +559,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
    * than a field, because a standee has no birth to get wrong
    * (`StandeeField.hide`'s note) and there is one of it. */
   const goatPoses = [0, 1, 2, 3].map((p) =>
-    ctx.standee(goatTexture(1650 + p, p as 0 | 1 | 2 | 3), 2.2, 1.65, goat.x, goat.z));
+    ctx.standee(goatTexture(1650 + p, p as 0 | 1 | 2 | 3), 2.2, 1.65, goat.x, goat.z, { face: 'keep' }));
 
   /* ---- THE UNNAMED, drawn (Session 17) ---------------------------- */
   const arguers = ARGUERS.map((d, i) => new Figure(ctx, d, (i % 3) as 0 | 1 | 2));
@@ -748,7 +764,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
         window.dispatchEvent(new CustomEvent('inklands:run-now'));
       }
     } else if (B.state === 'charge') {
-      const speed = 8.4;
+      const speed = 5.6; /* ---- SCALE: retuned to the run (4.3) ---- */
       /* IT RUNS AT YOUR SHOULDER, NOT AT YOU — and at the shoulder the
        * camera can see. The line of approach is walker-minus-bull; the
        * bull aims a stride and a half off that line on the NORTH side
@@ -761,8 +777,13 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       const az = (pz - B.z) / Math.max(1e-3, bd);
       let sx = -az;
       let sz = ax;
-      if (sz > 0) { sx = -sx; sz = -sz; }
-      if (Math.abs(sz) < 0.3 && sx < 0) { sx = -sx; sz = -sz; }
+      /* ---- CAMERA: the shoulder the lens can see, from any yaw ----
+       * "north" is "away from the lens" and "east" is "the camera's
+       * right" now that the camera turns (engine/billboard.ts). */
+      const [lx, lz] = towardLens();
+      const [rx, rz] = cameraRight();
+      if (sx * lx + sz * lz > 0) { sx = -sx; sz = -sz; }
+      if (Math.abs(sx * lx + sz * lz) < 0.3 && sx * rx + sz * rz < 0) { sx = -sx; sz = -sz; }
       const tx = px + sx * BULL_SHOULDER;
       const tz = pz + sz * BULL_SHOULDER;
       const td = Math.hypot(tx - B.x, tz - B.z);
@@ -1167,7 +1188,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
  *  wait's answer; door two is the cart, yours, and Nell has a cart at
  *  a border. The card is offered once. */
 const NELL_CARD: NonNullable<WorldPOI['choice']> = {
-  body: 'you came back up the road with the fourth name, and for once she does not settle. the cart is behind her. it has been almost loaded for years, and it was only ever waiting on which way it was going.',
+  body: 'you came back up the road with the fourth name: 8:15, and an arrow pointing north. for once she does not settle. the cart is behind her. it has been almost loaded for years, and it was only ever waiting on which way it was going.',
   options: [
     { label: 'TELL HER THE FOURTH NAME', door: 'door:the-cart-turned-north' },
     { label: 'KEEP IT, AND PUSH THE CART YOURSELF', door: 'door:the-cart-pushed' },
@@ -1180,12 +1201,12 @@ export const MEADOW_POIS: WorldPOI[] = [
     prompt: 'READ THE SIGNPOST',
     note: {
       title: 'the crossroads',
-      body: 'brim, to the north. the sea, west. the downs, east. and one that says 8:15, which is not a place. every road in the world starts here, which is another way of saying you are nowhere in particular.',
+      body: 'brim, to the north. the sea, west. the downs, east. maple court, south. and one that says 8:15, which is not a place. every road in the world starts here, which is another way of saying you are nowhere in particular.',
       /* THREE LANDS GO INTO PENCIL ON THE MAP FROM THE FIRST NOTE IN
        * THE GAME. The signpost has named them since Session 1 and it
        * has never been worth anything, because the map had nothing to
        * do with what the walker had been told. Now it has. */
-      learns: ['name:kingdom', 'name:beach', 'name:downs'],
+      learns: ['name:kingdom', 'name:beach', 'name:downs', 'name:neighborhood'],
     },
   },
   {
@@ -1296,11 +1317,11 @@ export const MEADOW_POIS: WorldPOI[] = [
     x: HEDGE_X - 1.2, z: 82.2, radius: 6, label: 'THE FIELD GATE',
     get prompt() {
       const done = knowledge.has('door:the-cart-turned-north') || knowledge.has('door:the-cart-pushed');
-      if (!done && knowledge.has('fact:the-timetable')) return 'TELL HER THE FOURTH NAME';
+      if (!done && opening.hasTheName()) return 'TELL HER THE FOURTH NAME'; /* FIRST HOUR */
       return 'LEAN ON THE GATE WITH HER';
     },
     get choice() {
-      if (!knowledge.has('fact:the-timetable')) return undefined;
+      if (!opening.hasTheName()) return undefined; /* FIRST HOUR: the milestone, or the Mile's timetable */
       return NELL_CARD;
     },
     note: {

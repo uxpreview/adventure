@@ -3,10 +3,12 @@ import gsap from 'gsap';
 import { Terrain } from '../world/terrain';
 import { World } from '../world/regions';
 import { Character } from '../engine/Character';
+import { setCameraYaw, towardLens, billboardCount } from '../engine/billboard';
 import { Footprints } from '../engine/Footprints';
 import { POIManager } from '../engine/POI';
 import { PaperFX } from '../postfx/PaperPass';
 import { Input } from './Input';
+import { Look } from './Look';
 import { Save } from './Save';
 import { Audio, type StepZone } from './Audio';
 import { UI } from '../ui/UI';
@@ -14,6 +16,10 @@ import { renderMap } from '../ui/map';
 import { PAPER_HEX, INK_HEX } from '../engine/palette';
 import { Boat } from '../engine/Boat';
 import { Bicycle, BICYCLE_HOME } from '../engine/Bicycle';
+/* ---- SCALE: the horse and the traffic ---- */
+import { Horse, HORSE_HOME, HITCHING_POST } from '../engine/Horse';
+import { traffic } from '../world/traffic';
+import { fordAt } from '../world/layout';
 import { Eight15, onPlatform } from '../engine/Eight15';
 import {
   SPAWN, POSTER, regionAt, districtAt, coastX, barDist, roadCarryAt, rowableAt, BOAT_HOME,
@@ -43,11 +49,27 @@ import {
   KINGDOM_POIS, CASTLE_POIS, NEIGHBORHOOD_POIS, CITY_POIS, OFFICE_POIS,
 } from '../world/regions/civic';
 import type { WorldPOI } from '../world/regions';
+/* ---- VOICE: the voice of the world (`src/world/voice.ts`) ---- */
+import { Voice } from '../world/voice';
+import { notebook } from '../world/notebook';
+import { npcs } from '../world/npc';
+import { say, shout } from '../ui/speech';
+import { toast } from '../ui/toast';
+import { withHint } from '../world/lines';
+import { letterBench } from '../ui/lettering'; /* ---- PEN ---- */
+/* ---- FIRST HOUR: the scripted opening (`src/world/opening.ts`) ---- */
+import { opening, OPENING_POIS } from '../world/opening';
+import { nellsCapTexture } from '../world/textures-opening';
+/* ---- THINGS: jobs, stamps, toys, monsters (`src/world/jobs.ts`) ---- */
+import { jobs, THINGS_POIS } from '../world/jobs';
+import { redScarfTexture, postmasterCapTexture } from '../world/textures-monsters';
 
 const ALL_POIS: WorldPOI[] = [
   ...MEADOW_POIS, ...FOREST_POIS, ...CANYON_POIS, ...DESERT_POIS, ...DOWNS_POIS,
   ...OCEAN_POIS, ...BEACH_POIS, ...KINGDOM_POIS, ...CASTLE_POIS,
   ...NEIGHBORHOOD_POIS, ...CITY_POIS, ...OFFICE_POIS,
+  ...OPENING_POIS, /* ---- FIRST HOUR: the milestone ---- */
+  ...THINGS_POIS, /* ---- THINGS: the stamps, the toys, the belfry bench ---- */
 ];
 
 /**
@@ -73,6 +95,8 @@ export class App {
   private char: Character;
   private boat = new Boat();
   private bicycle = new Bicycle();
+  /* ---- SCALE: the horse ---- */
+  private horse = new Horse();
   /* THE 8:15 (Session 14, `THE-LINE` §4). It exists from the first
    * frame, standing in a car park at the end of the world with its
    * doors shut, and it does not move until the walker has walked the
@@ -80,6 +104,8 @@ export class App {
   private train = new Eight15();
   private input: Input;
   private poi: POIManager;
+  /* ---- VOICE ---- */
+  private voice: Voice;
 
   private region: RegionSpec;
   /** THE DISTRICT the walker is in, if any (Session 16), so a crossing
@@ -117,9 +143,17 @@ export class App {
   private camYaw = 0;
   private camAstern = 0;
   private bearingOn = true;
+  /* ---- CAMERA: the look under the hand (core/Look.ts) ------------- *
+   * Yaw, pitch and zoom are the player's; `camYaw` above is a copy of
+   * `look.yaw` taken once a frame in `lookTick`. */
+  private look: Look;
+  private moveWorld = new THREE.Vector2();
+  /** The last heading the walker actually walked, for the recentre. */
+  private walkHeading = Math.PI;
   /* ---- the harness's clock (see __inklands.step) ------------------- *
    * Null in the shipping game: `held` is only ever set from `?debug`. */
   private held = false;
+  private framed = false; /* PEN: the first frame has been drawn */
   private forceDt = 0;
   private noRender = false;
 
@@ -166,11 +200,19 @@ export class App {
     const bk = this.save.data.bicycle ?? BICYCLE_HOME;
     this.bicycle.setAt(bk.x, bk.z);
     this.scene.add(this.bicycle.group);
+    /* ---- SCALE: the horse at the crossroads, and the traffic ---- */
+    const hk = this.save.data.horse ?? HORSE_HOME;
+    this.horse.setAt(hk.x, hk.z);
+    this.horse.groundPost(this.terrain.heightAt(HITCHING_POST.x, HITCHING_POST.z));
+    this.scene.add(this.horse.group);
+    traffic.init(this.scene, this.terrain);
     this.scene.add(this.train.group);
 
     this.fx = new PaperFX(this.renderer, this.scene, this.camera);
     this.fx.setPaperSeed(3);
     this.input = new Input(this.renderer.domElement, this.ui.joyEl);
+    /* ---- CAMERA: the look ---- */
+    this.look = new Look(this.renderer.domElement);
     this.poi = new POIManager(this.camera, this.ui.labelRoot, this.ui.promptEl);
     // a label is written over the place it names, and the place has a
     // height now
@@ -251,6 +293,16 @@ export class App {
         : Math.hypot(this.char.vel.x, this.char.vel.z) > 0.8 ? 'RING THE BELL' : 'GET OFF',
       onInteract: () => this.bicycleKey(),
     } as unknown as WorldPOI);
+    /* ---- SCALE: the horse — GET ON / WHOA / GET OFF, one prompt ---- */
+    this.poi.add({
+      get x() { return self.horse.pos.x; },
+      get z() { return self.horse.pos.y; },
+      get enabled() { return !self.bicycle.aboard && !self.boat.aboard && !self.train.aboard; },
+      radius: 4.6,
+      prompt: () => !this.horse.aboard ? 'GET ON THE HORSE'
+        : Math.hypot(this.char.vel.x, this.char.vel.z) > 0.8 ? 'WHOA' : 'GET OFF',
+      onInteract: () => this.horseKey(),
+    } as unknown as WorldPOI);
 
     /* THE SEAT. The whole of the last mount's interface, and it is one
      * prompt at an open door — the same sentence the rowboat has been
@@ -270,7 +322,54 @@ export class App {
       onInteract: () => this.toggleTrain(),
     } as unknown as WorldPOI);
 
+    /* ---- VOICE: bubbles, toasts, the notebook, the people ---- */
+    this.voice = new Voice({
+      ui: this.ui, poi: this.poi, camera: this.camera,
+      groundAt: (x, z) => this.terrain.heightAt(x, z),
+      waterAt: (x, z) => this.terrain.waterAt(x, z),
+      walker: () => this.char.pos,
+      boat: this.boat, bicycle: this.bicycle, train: this.train,
+      seated: () => this.seat !== null,
+      regionId: () => this.region.id,
+      started: () => this.started,
+    });
+    this.ui.onCloseNotebook = () => this.voice.close();
+    /* ---- FIRST HOUR: the opening reads the world and drives Nell ---- */
+    opening.install({
+      walker: () => this.char.pos,
+      regionId: () => this.region.id,
+      started: () => this.started,
+      readNotes: () => this.save.data.readNotes,
+      showHint: (t, ms) => this.ui.showHint(t, ms),
+      touch: 'ontouchstart' in window,
+      common,
+      data: () => this.save.data,
+      persist: () => this.save.persist(),
+    });
+    /* ---- THINGS: the jobs, the stamps, the toys, the monsters ---- */
+    jobs.init({
+      scene: this.scene, root: this.ui.root,
+      groundAt: (x, z) => this.terrain.heightAt(x, z),
+      waterAt: (x, z) => this.terrain.waterAt(x, z),
+      walker: () => this.char.pos,
+      bicycle: this.bicycle,
+      mounted: () => this.boat.aboard || this.bicycle.aboard || this.train.aboard || this.horse.aboard,
+      wake: (x, z) => {
+        this.standUp();
+        this.char.teleport(x, z);
+        this.char.setGround(this.terrain.heightAt(x, z), this.terrain.normalAt(x, z));
+        this.snapCamera();
+      },
+      blink: (cut) => this.ui.blink(cut),
+      started: () => this.started,
+    });
+
     this.input.onInteract(() => {
+      /* ---- VOICE: the key closes the notebook first ---- */
+      if (this.voice.open) {
+        this.voice.close();
+        return;
+      }
       if (this.ui.noteOpen) {
         this.ui.closeNote();
         return;
@@ -313,6 +412,8 @@ export class App {
         here: this.started ? [this.char.pos.x, this.char.pos.z] : null,
         walked: this.save.data.walked,
         width,
+        /* ---- CAMERA: the heading tick ---- */
+        heading: this.camYaw,
       });
 
     this.ui.onBegin = () => this.start(true);
@@ -353,6 +454,8 @@ export class App {
     /* AND WHAT IS ON THEIR HEAD (Session 22): one id, honoured only if
      * the save also knows it was earned. */
     worn.load(this.save.data.worn ?? null);
+    /* ---- VOICE: and what is written in the notebook ---- */
+    notebook.load(this.save.data.notebook);
 
     /* Stand the walker under the title: where the last walk left them,
      * or — on a fresh page — at THE POSTER, which is the composition the
@@ -372,6 +475,10 @@ export class App {
     window.addEventListener('inklands:event', (e) => {
       if (this.started) this.audio.event((e as CustomEvent<string>).detail);
     });
+    /* ---- SCALE: H whistles the horse ---- */
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'KeyH' && !e.repeat) this.whistle();
+    });
 
     /* THE RUN, TAUGHT BY NECESSITY (Session 16). The bull's charge is
      * the first time the game asks the walker to run somewhere
@@ -388,6 +495,8 @@ export class App {
 
     window.addEventListener('resize', () => this.resize());
     this.resize();
+    /* ---- CAMERA: the resting pitch is the rig's ---- */
+    this.look.pitch = (this.camera.aspect < 0.8 ? App.CAM.portrait : App.CAM.desktop).pitch;
     this.renderer.setAnimationLoop(() => this.tick());
 
     if (location.search.includes('debug')) {
@@ -557,6 +666,12 @@ export class App {
         /* THE OPENING (Session 16): the bull, the gate, Nell and the
          * goat, for `check-verbs` and the proofs sheet. */
         common,
+        /* ---- SCALE: the horse and the traffic, for the harness ---- */
+        horse: this.horse,
+        traffic,
+        takeHorse: () => { if (!this.horse.aboard) this.horseKey(); },
+        putHorse: (x: number, z: number) => { this.horse.setAt(x, z); },
+        whistle: () => this.whistle(),
         /* THE COMPANY (Session 17): every follower, for the same tests. */
         company: { goat: common.goat, dog: downsDog },
         barriers,
@@ -655,8 +770,12 @@ export class App {
          * exists, whatever a later session does to the camera. */
         setBearing: (on: boolean) => {
           this.bearingOn = on;
+          /* ---- CAMERA: false pins the look to due north ---- */
+          this.look.enabled = on;
           if (!on) {
+            this.look.setYaw(0);
             this.camYaw = 0;
+            setCameraYaw(0);
             this.camAstern = 0;
           }
         },
@@ -728,25 +847,92 @@ export class App {
            * `rig.back` plus the rise retreat plus the astern retreat —
            * which is the dolly and nothing but. */
           back: this.camBack,
+          pitch: this.look.pitch,
+          dist: this.camBack,
         }),
+        /* ---- CAMERA: the look, for the harness and the other pillars ---- *
+         * Radians east of north; `setYaw` is instant (a harness cut),
+         * `recentre` is the R key — eased, and capped in rate. */
+        yaw: () => this.look.yaw,
+        setYaw: (rad: number) => {
+          this.look.setYaw(rad);
+          this.camYaw = this.look.yaw;
+          setCameraYaw(this.camYaw);
+          this.snapCamera();
+        },
+        pitch: () => this.look.pitch,
+        setPitch: (rad: number) => this.look.setPitch(rad),
+        recentre: () => this.recentre(),
+        recentring: () => this.look.recentring,
+        dist: () => this.camRig().dist * this.look.zoom,
+        setDist: (u: number) => this.look.setZoom(u / this.camRig().dist),
+        /** A drag of (px, py) pixels, exactly as the mouse would. */
+        orbitBy: (px: number, py: number) => this.look.orbitBy(px, py),
+        zoomBy: (d: number) => this.look.zoomBy(d),
+        billboards: () => billboardCount(),
+        /* ---- VOICE: the notebook, the people, the bubbles, the line ---- */
+        notebook,
+        npcs,
+        say,
+        shout,
+        toast,
+        openNotebook: () => this.voice.page.open(),
+        closeNotebook: () => this.voice.close(),
+        talk: (id: string) => npcs.talk(id),
+        opening, /* ---- FIRST HOUR ---- */
+        /* ---- THINGS: the jobs, the stamps, the toys, the monsters, for the harness ---- */
+        todo: jobs.debug,
+        /* ---- PEN: the lettering bench and the render scale ---- */
+        letterBench: (runs?: number) => letterBench(runs),
+        renderScale: (pin?: number | null) => this.fx.renderScale(pin),
+        /* the road to the title, in ms since navigation: script, app,
+         * first frame, title (`tools/check-load.mjs` reads it) */
+        loadMarks: () => Object.fromEntries(performance.getEntriesByType('mark')
+          .filter((m) => m.name.startsWith('inklands:'))
+          .map((m) => [m.name.slice(9), Math.round(m.startTime)])),
       };
     }
 
     this.bootLoader();
+    performance.mark('inklands:app'); /* ---- PEN ---- */
   }
 
   private bootLoader() {
     const state = { t: 0 };
+    /* ---- PEN: the bar is the lands being drawn, not a timer. The
+     * world builds one land a frame inside reach (regions/index.ts
+     * reports each as 'inklands:drawing'); the bar is whichever is
+     * further, that count or the tween, and the title waits for the
+     * last land in reach — capped at four seconds past the tween, so a
+     * land that never reports cannot hold the page. */
+    const drawn = { done: 0, total: 0 };
+    const onDrawn = (e: Event) => {
+      const d = (e as CustomEvent<{ done: number; total: number }>).detail;
+      drawn.done = d.done; drawn.total = d.total;
+      this.ui.setProgress(Math.max(state.t, d.done / Math.max(1, d.total)));
+    };
+    window.addEventListener('inklands:drawing', onDrawn);
+    const title = () => {
+      window.removeEventListener('inklands:drawing', onDrawn);
+      this.ui.setProgress(1);
+      // sequence, don't overlap: the loader lets go of the page
+      // completely before the title is lettered onto it
+      this.ui.hideLoader();
+      gsap.delayedCall(0.75, () => this.ui.showTitle(this.save.data.pos !== null));
+    };
     gsap.to(state, {
       t: 1,
       duration: 1.9,
       ease: 'power2.inOut',
-      onUpdate: () => this.ui.setProgress(state.t),
+      onUpdate: () => this.ui.setProgress(Math.max(state.t, drawn.total ? drawn.done / drawn.total : 0)),
       onComplete: () => {
-        // sequence, don't overlap: the loader lets go of the page
-        // completely before the title is lettered onto it
-        this.ui.hideLoader();
-        gsap.delayedCall(0.75, () => this.ui.showTitle(this.save.data.pos !== null));
+        if (this.world.pending(this.char.pos.x, this.char.pos.z) === 0) { title(); return; }
+        const t0 = performance.now();
+        const wait = () => {
+          if (this.world.pending(this.char.pos.x, this.char.pos.z) === 0 || performance.now() - t0 > 4000) title();
+          else requestAnimationFrame(wait);
+        };
+        wait();
       },
     });
   }
@@ -792,7 +978,10 @@ export class App {
     knowledge.learn(`name:${this.region.id}`);
     this.ui.showRegionCard(this.region.kicker, this.region.name,
       { sub: this.district?.name.toLowerCase() });
-    if (fresh || newLand) {
+    /* ---- FIRST HOUR: SET OUT begins the opening; it prints the one
+     * control line itself, after the gate, and never again. ---- */
+    if (fresh) opening.begin();
+    if ((fresh || newLand) && !opening.handlesHint) {
       /* THE HINT IS THE CONTROL LIST AND IT WAS TOO LONG TO BE ONE.
        * Session 12 took the run out of it: five items fired once for
        * six seconds on the frame a player walks into a new land is a
@@ -803,8 +992,8 @@ export class App {
        * things instead of five. */
       this.ui.showHint(
         'ontouchstart' in window
-          ? 'drag to walk — two fingers to lean — tap to look'
-          : 'wasd to walk — E to look — , . to lean — M for the map',
+          ? 'drag low to walk — drag high or two fingers to look around — tap to look'
+          : 'wasd to walk — drag to look around — R to recentre — E to act — M for the map',
         6000
       );
     }
@@ -836,7 +1025,7 @@ export class App {
         this.audio.note();
         this.ui.openChoice(
           def.note?.title ?? c.title ?? (def.label ?? '').toLowerCase(), c.body,
-          c.options.map((o) => o.label),
+          c.options.map((o) => withHint(o.label, o.door)) /* VOICE: the card says what happens */,
           (i) => {
             /* THE DOOR IS A PIECE OF KNOWLEDGE and nothing else: one id,
              * readable, permanent, read back by the land every frame.
@@ -844,6 +1033,8 @@ export class App {
             knowledge.learn(c.options[i].door);
             for (const id of c.learns ?? []) knowledge.learn(id);
             this.save.readNote(def.label ?? '');
+            /* ---- VOICE: the choice is read back ---- */
+            this.voice.chose(def, c.options[i]);
             /* A DOOR THAT IS SITTING DOWN (Session 21): the Downs'
              * first door is the sit itself, and a card that said SIT
              * DOWN and then asked for a second press would be a card
@@ -864,12 +1055,14 @@ export class App {
        * written there in pencil. */
       for (const id of note.learns ?? []) knowledge.learn(id);
       this.ui.openNote(note.title, typeof note.body === 'function' ? note.body() : note.body);
+      this.voice.read(note.title); /* VOICE */
       return;
     }
     if (def.touch) {
       // seen as well as heard: the figure rocks back on every touch
       this.char.recoil();
       def.touch(this.char.pos.x, this.char.pos.z);
+      this.voice.touched(def); /* VOICE */
       return;
     }
     if (def.sit) this.sitDown(def);
@@ -909,6 +1102,10 @@ export class App {
       case 'the-crown': return crownTexture(2201);
       case 'the-hat': return wornHatTexture(2202);
       case 'the-lanyard': return lanyardTexture(2203);
+      case 'nells-cap': return nellsCapTexture(2205); /* ---- FIRST HOUR ---- */
+      /* ---- THINGS: the scarf and the cap ---- */
+      case 'the-red-scarf': return redScarfTexture(2205);
+      case 'the-postmaster-cap': return postmasterCapTexture(2206);
       default: return helmTexture(2204);
     }
   }
@@ -1000,7 +1197,7 @@ export class App {
      * on a bicycle is six seconds of not walking, and *hold shift to
      * run* printed on a rider is a hint about a thing they are not
      * doing. The boat and the train are the same. */
-    if (this.bicycle.aboard || this.boat.aboard || this.train.aboard) { this.walkHeld = 0; return; }
+    if (this.bicycle.aboard || this.boat.aboard || this.train.aboard || this.horse.aboard) { this.walkHeld = 0; return; }
     if (this.input.run > 0.15) {
       // they found it on their own. Nothing is printed, ever.
       this.save.data.taughtRun = true;
@@ -1091,6 +1288,7 @@ export class App {
    * ================================================================ */
   private bicycleKey() {
     this.audio.init();
+    if (this.horse.aboard) return; /* ---- SCALE: one mount at a time ---- */
     if (!this.bicycle.aboard) {
       if (this.seat) this.standUp();
       this.bicycle.aboard = true;
@@ -1133,10 +1331,10 @@ export class App {
    * invisible walls anywhere.
    */
   private bicycleRefuses(x: number, z: number): boolean {
-    const here = regionAt(x, z);
-    if (here.id !== 'neighborhood' || here.step === 'sand') return true;
+    /* ---- SCALE: the bicycle goes anywhere flat and dry; sand slows it.
+     * Wet to the hub is fine (a bridge's approach, a ford); deeper is not. ---- */
     if (this.terrain.blockedAt(x, z) || barriers.blocks(x, z)) return true;
-    if (this.terrain.waterAt(x, z) > 0.3 && !this.terrain.onPlanks(x, z)) return true;
+    if (this.terrain.waterAt(x, z) > 0.5 && !this.terrain.onPlanks(x, z, 2) && fordAt(x, z) < 0.45) return true;
     for (const s of App.STAIRS) {
       if (x >= s.minX && x < s.maxX && z >= s.minZ && z < s.maxZ) return true;
     }
@@ -1144,6 +1342,58 @@ export class App {
   }
   /** Val's porch steps: the one flight of stairs in the neighbourhood. */
   private static STAIRS = [{ minX: -82, maxX: -74, minZ: 128.5, maxZ: 131.8 }];
+
+  /* ---- SCALE: THE HORSE ------------------------------------------- *
+   * The bicycle's key, on a horse: parked, you get on; moving, WHOA
+   * stops it; stopped, you get off onto the verge and it stays where
+   * it is, saved. It refuses only what a foot refuses. */
+  private horseKey() {
+    this.audio.init();
+    if (this.bicycle.aboard || this.boat.aboard || this.train.aboard) return;
+    if (!this.horse.aboard) {
+      if (this.seat) this.standUp();
+      this.horse.aboard = true;
+      this.horse.coming = null;
+      this.char.rowing = true;
+      this.char.maxSpeed = App.HORSE.max;
+      this.char.runMult = App.HORSE.run;
+      this.char.teleport(this.horse.pos.x, this.horse.pos.y, this.char.heading);
+      this.snapCamera();
+      return;
+    }
+    const sp = Math.hypot(this.char.vel.x, this.char.vel.z);
+    if (sp > 0.8) {
+      this.char.vel.set(0, 0, 0);
+      this.char.recoil();
+      return;
+    }
+    const verge = this.stepOffNear(this.horse.pos.x, this.horse.pos.y);
+    if (!verge) return;
+    this.horse.aboard = false;
+    this.char.rowing = false;
+    this.char.maxSpeed = App.WALK.max;
+    this.char.runMult = App.WALK.run;
+    this.char.teleport(verge[0], verge[1], this.char.heading);
+    this.char.setGround(
+      this.terrain.heightAt(verge[0], verge[1]),
+      this.terrain.normalAt(verge[0], verge[1])
+    );
+    this.snapCamera();
+    this.save.data.horse = { x: this.horse.pos.x, z: this.horse.pos.y };
+    this.save.persist();
+  }
+  private horseRefuses(x: number, z: number): boolean {
+    return this.terrain.blockedAt(x, z) || barriers.blocks(x, z);
+  }
+  /** The whistle: the horse comes if it can hear you. */
+  private whistle() {
+    if (!this.started || this.char.frozen || this.horse.aboard) return;
+    this.audio.init();
+    this.audio.event('whistle');
+    if (!this.horse.call(this.char.pos.x, this.char.pos.z)) {
+      this.ui.showHint('the horse is too far to hear you', 2600);
+    }
+  }
 
   /* ================================================================ *
    * GETTING ON, AND GETTING OFF.
@@ -1190,13 +1440,19 @@ export class App {
     this.snapCamera();
   }
 
+  /* ---- CAMERA: the ring searches below start toward the lens ---- */
+  private lensAngle() {
+    const [lx, lz] = towardLens();
+    return Math.atan2(lz, lx);
+  }
+
   /** The nearest place a foot can go, stepping down onto a verge. */
   private stepOffNear(x: number, z: number): [number, number] | null {
     for (let rad = 3.4; rad <= 14; rad += 1.1) {
       for (let k = 0; k < 24; k++) {
-        // south first: the camera looks north, so the ground the player
-        // can see themselves stepping onto is behind them
-        const a = Math.PI / 2 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (Math.PI / 12);
+        // toward the lens first (CAMERA: the camera turns now), so the
+        // ground the player can see themselves stepping onto is nearest
+        const a = this.lensAngle() + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (Math.PI / 12);
         const px = x + Math.cos(a) * rad;
         const pz = z + Math.sin(a) * rad;
         if (this.terrain.waterAt(px, pz) > 0.3) continue;
@@ -1212,9 +1468,9 @@ export class App {
   private landingNear(x: number, z: number): [number, number] | null {
     for (let rad = 2.4; rad <= 15; rad += 1.2) {
       for (let k = 0; k < 24; k++) {
-        // start looking south — the camera looks north, so the bank the
-        // player can actually SEE themselves stepping onto is behind
-        const a = Math.PI / 2 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (Math.PI / 12);
+        // start looking toward the lens (CAMERA: the camera turns now),
+        // so the bank the player can SEE themselves stepping onto is first
+        const a = this.lensAngle() + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (Math.PI / 12);
         const px = x + Math.cos(a) * rad;
         const pz = z + Math.sin(a) * rad;
         if (this.terrain.waterAt(px, pz) > 0.3) continue;
@@ -1229,7 +1485,8 @@ export class App {
   private launchNear(x: number, z: number): [number, number] | null {
     for (let rad = 1.5; rad <= 16; rad += 1.0) {
       for (let k = 0; k < 28; k++) {
-        const a = (k / 28) * Math.PI * 2;
+        // toward the lens first, so she shoves off into water in the picture
+        const a = this.lensAngle() + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (Math.PI / 14);
         const px = x + Math.cos(a) * rad;
         const pz = z + Math.sin(a) * rad;
         if (rowableAt(px, pz)) return [px, pz];
@@ -1278,7 +1535,11 @@ export class App {
   private resize() {
     const w = window.innerWidth;
     const h = window.innerHeight;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    /* ---- PEN: dpr ≤ 2, and ≤ 1.5 on a phone — a 3× phone screen is
+     * nine times the pixels of the page the art was drawn for, and the
+     * paper pass keeps the grain crisp at any scale ---- */
+    const phone = 'ontouchstart' in window && Math.min(w, h) < 700;
+    const dpr = Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 2);
     this.renderer.setPixelRatio(dpr);
     this.renderer.setSize(w, h);
     this.fx.setSize(w, h, dpr);
@@ -1333,257 +1594,74 @@ export class App {
    * a third again — because the point of the boat is that it opens a
    * route, not that it shortens one, and because the camera's follow
    * is what caps every speed in this game. */
-  private static WALK = { max: 4.1, run: 1.5 };
-  private static ROW = { max: 5.4, run: 1.3 };
+  /* ---- SCALE: the walker's pace, scaled to the world. A walk is
+   * two and a half units a second, a run a shade over four: the
+   * Common takes a minute and a half to cross on foot and the mounts
+   * are the reason the world is big. ---- */
+  private static WALK = { max: 2.3, run: 1.9 };
+  private static ROW = { max: 3.6, run: 1.3 };
   /* THE BICYCLE (Session 18): a shade under twice the walk on the flat
    * — faster than the run, which is the point of a bicycle — and the
    * grade paid back downhill, up to half again. It is not faster than
    * that because the camera's follow caps every speed in this game,
    * and because a bicycle is FUN before it is quick (`THE-FUN-PASS`
    * §8). */
-  private static BIKE = { max: 7.4, run: 1.2 };
+  private static BIKE = { max: 6.4, run: 1.2 };
+  /* ---- SCALE: the horse — a trot on the key, a gallop on shift ---- */
+  private static HORSE = { max: 5.6, run: 1.8 };
 
   private static CAM = {
-    /** Resting framing: how far back, how high, and what height it aims
-     *  at over the walker's own ground. Portrait is NOT desktop with a
-     *  wider lens — a tall frame wants the camera further back and its
-     *  aim higher, or a vista arrives as a strip of ground and haze.
+    /* ================================================================ *
+     * THE RIG (the reset, pillar 1 — THE CAMERA).
      *
-     *  `yaw` and `lead` are Session 9's, and they are per-rig for the
-     *  same reason everything else here is: see THE BEARING below. */
-    desktop: { back: 13.0, up: 6.0, look: 3.4, fov: 42, peekYaw: 26, lead: 4.2 },
-    portrait: { back: 14.4, up: 6.9, look: 4.0, fov: 54, peekYaw: 12, lead: 2.0 },
-    /** The poster, before you set out. The bearing is dead here: nobody
-     *  is walking, and the poster is a composition. */
-    posterDesktop: { back: 15.2, up: 6.4, look: 5.0, fov: 42, peekYaw: 0, lead: 0 },
-    posterPortrait: { back: 16.6, up: 7.0, look: 5.8, fov: 54, peekYaw: 0, lead: 0 },
-    /** Where the camera looks for ground worth revealing. */
+     * The camera orbits the AIM POINT under the player's hand
+     * (`core/Look.ts`): yaw and pitch are the player's, the distance is
+     * the rig's resting `dist` times the player's zoom, and NOTHING here
+     * turns the frame on its own — the automatic bearing of Session 9
+     * and the astern retreat are gone, and so is the spring-back peek.
+     * What is left is the comfort work: the eased follow, the damped
+     * ground, the rise ahead, the floor clearance, the room blend, the
+     * fog.
+     *
+     * Per rig: `dist` from the aim point, `pitch` (radians above
+     * horizontal at rest; the player tips it between Look's PITCH_MIN
+     * and PITCH_MAX), `look` the aim height over the walker's ground,
+     * `fov`, and `lead` — how far the aim runs ahead of the walker, in
+     * units, capped by `leadSec`. Closer than the old thirteen-back rig
+     * so the walker reads as a person and not a pea, with the ground
+     * ahead laid out and the horizon still in frame at rest.
+     * ================================================================ */
+    desktop: { dist: 9.2, pitch: (14 * Math.PI) / 180, look: 2.3, fov: 42, lead: 3.0 },
+    portrait: { dist: 11.4, pitch: (15.5 * Math.PI) / 180, look: 2.9, fov: 54, lead: 1.6 },
+    /** The poster, before you set out: a composition, nobody walking. */
+    posterDesktop: { dist: 15.3, pitch: (8 * Math.PI) / 180, look: 4.8, fov: 42, lead: 0 },
+    posterPortrait: { dist: 16.7, pitch: (8 * Math.PI) / 180, look: 5.6, fov: 54, lead: 0 },
+    /** Where the camera looks for ground worth revealing — three probes
+     *  up the lens's own bearing (`riseAhead`). */
     aheadNear: 34,
     aheadMid: 60,
     aheadFar: 88,
-    riseCap: 14,
+    /** Smaller than the old rig's 14: the camera can be turned to face a
+     *  scarp now, and a full retreat there made the walker a pea. */
+    riseCap: 8,
     /** Per unit of ground rising ahead: how far the camera retreats,
-     *  how much it climbs, and how much its aim climbs. Solved, not
-     *  guessed — see design/critiques/critique-art-3.md: they put the
-     *  walker a quarter up the frame and Greyweather's keep two-thirds
-     *  up it from the foot of the banner avenue. */
-    riseBack: 0.90,
-    riseUp: 0.52,
-    riseLook: 0.38,
+     *  how much it climbs, and how much its aim climbs. */
+    riseBack: 0.55,
+    riseUp: 0.45,
+    riseLook: 0.32,
     /** Never let the camera end up inside a scarp it is climbing. */
     clearance: 2.8,
     /** The horizon, and what a climb adds to it. */
     fogNear: 50,
     fogFar: 175,
     fogPerUnit: 3.6,
-
-    /* ================================================================ *
-     * THE BEARING (Session 9) — and the whole of it is two numbers and
-     * one sentence:
-     *
-     *   THE PART OF YOUR TRAVEL THAT CROSSES THE FRAME TURNS THE CAMERA.
-     *   THE PART THAT COMES AT THE LENS OPENS THE GROUND AT YOUR FEET.
-     *
-     * The owner's complaint was exact: the camera only ever looks north,
-     * so walking east or west you cross the frame, and walking SOUTH you
-     * walk backwards out of it into ground you cannot see — and the
-     * king's road runs north–south for four hundred and eighty units.
-     *
-     * ---- 1. WHY THE ENVELOPE IS A NUMBER AND NOT A TUNING KNOB ------
-     *
-     * STANDEES ARE NOT BILLBOARDS. `makeStandee` builds a plane with a
-     * fixed rotation.y and nothing in this engine turns to face the
-     * camera; at the shipped bearing every cutout is square to the lens,
-     * and that is the entire reason the paper metaphor reads. Turn the
-     * camera and a cutout narrows by its cosine:
-     *
-     *   yaw    apparent width   verdict
-     *    0°        100%         the shipped page
-     *   12°         98%         PORTRAIT'S ENVELOPE
-     *   20°         94%         free
-     *   26°         90%         DESKTOP'S ENVELOPE
-     *   30°         87%         survivable
-     *   35°         82%         the wall — past here the paper metaphor
-     *                           does not degrade, it FAILS, and it fails
-     *                           looking exactly like a bug
-     *   45°         71%         the world is a stack of card seen sideways
-     *
-     * So a free orbit is fatal and a bounded one is not, and 26° is nine
-     * degrees clear of the wall.
-     *
-     * ---- 2. WHY PORTRAIT'S IS HALF OF IT ----------------------------
-     *
-     * Not for the standees — 12° costs nothing there. Because the two
-     * viewports do not have the same frame to spend a turn in. Desktop
-     * is 42° vertical at 16:9, which is 68.6° ACROSS. Portrait is 54°
-     * vertical at 390×844, which is 26.5° across — a third of it. A yaw
-     * of φ slides a distant thing across the page by tan φ / tan(½ hfov):
-     *
-     *   desktop, 26°:   36% of the frame's width
-     *   portrait, 26°:  the whole of it, and out the side
-     *   portrait, 12°:  45% of the frame's width
-     *
-     * And WORLD-SYSTEMS §8: the joystick must never sit under the thing
-     * the player is steering toward. A tall screen's lower band belongs
-     * to the thumb and its top band is the vista; a turn that carries
-     * the subject off the page has taken the vista away to show you the
-     * turn.
-     *
-     * ---- 3. WHAT ANSWERS THE WALK SOUTH, WHICH IS NOT THE YAW -------
-     *
-     * WORLD-SYSTEMS §2 said a bounded yaw would let you "see what is
-     * coming" walking south. IT CANNOT, and the geometry is not close.
-     * The camera trails the walker on the +Z side; yawing the rig 26°
-     * about the walker leaves it on the +Z side. Southward travel is
-     * travel AT THE LENS, and no bounded rotation puts a lens behind
-     * itself.
-     *
-     * What you can actually see ahead of you walking south is the strip
-     * of page between the walker and the bottom of the frame, and it is
-     * measurable: with the camera 6 up and 13 back aiming at 3.4, the
-     * frame's bottom edge meets the ground 9.5 units in front of the
-     * lens — THREE AND A HALF UNITS in front of the walker. At walking
-     * pace that is eight tenths of a second of warning. THAT is the
-     * defect, stated as a number.
-     *
-     * So the answer is not a rotation, it is a RETREAT AND A DROP: when
-     * travel is toward the lens the camera gives ground — it trails
-     * further back and lowers its aim, which pitches the page up and
-     * puts the walker high in the frame with the road they are walking
-     * into laid out below them. It is the same trick as `riseBack`
-     * (reveal by distance, never by pitching the subject out of frame)
-     * pointed the other way. With the terms below: 9.5 units of visible
-     * page ahead on desktop, 11.6 in portrait, against 3.5 and 5.7 — the
-     * ground you can see yourself walking into roughly TRIPLES.
-     *
-     * ---- 4. AND WHY THERE IS NO COIN TOSS AT DUE SOUTH --------------
-     *
-     * The obvious way to write "ease toward travel" is to point the
-     * camera at the travel bearing and clamp it. Do that and due south
-     * is a coin toss between +26° and −26°, and a walker wobbling either
-     * side of it flips a fifty-two-degree pan back and forth. That is
-     * the wobble, and it is not a tuning problem, it is a discontinuity.
-     *
-     * Splitting travel into its two components removes it outright:
-     * the yaw runs off the CROSSING component and the retreat off the
-     * TOWARD-THE-LENS one. Both are continuous everywhere on the circle,
-     * both are odd or even in the right way, and both are exactly zero
-     * for a walker standing still — which is the clause that keeps six
-     * WOWED verdicts valid, the same clause that protected them through
-     * Session 4's rebuild.
-     * ================================================================ */
-    /* ================================================================ *
-     * SESSION 12 — AND THE OWNER PLAYED IT AND IT MADE THEM SICK.
-     *
-     * The feel gate above was owed from Session 9 and was run for the
-     * first time on 2026-08-31. It returned NOT YET, in four words:
-     * "makes me kind of sick". Every check in check-camera.mjs was
-     * green while that was true, because no check asked the question
-     * the owner was answering — HOW FAST DOES THE FRAME TURN.
-     *
-     * Measured tick by tick, driving a normal circuit (north, north-
-     * east, east, south-east, south, west, stop):
-     *
-     *                        swing    rotation   dolly    east    south
-     *   as shipped          51.2°    34.7°/s   5.3 u/s   +3.2    +6.0
-     *   the astern alone     0.0°     0.0°/s   5.3 u/s   +0.0    +6.0
-     *   the yaw alone       51.2°    34.7°/s   2.1 u/s   +3.2    +0.0
-     *
-     * ("east" and "south" are the extra units of PAGE the component
-     * puts in front of the walker on that heading, over a rig with the
-     * bearing pinned. The 2.1 u/s left in the yaw-alone row is camRise
-     * on the terrain and belongs to Session 4.)
-     *
-     * SO THE TWO COMPONENTS SEPARATE CLEANLY AND THE VERDICT IS
-     * ARITHMETIC. The yaw is a hundred per cent of the rotation and
-     * twelve per cent of the gain it was built for — it bought 3.2 more
-     * units of page walking east, on top of 27 the pinned rig already
-     * had, and charged a fifty-one degree swing at thirty-five degrees
-     * a second for them. The astern is a hundred per cent of the walk
-     * south — five units of warning to eleven, which is the defect
-     * Session 9 existed to close — and it does not rotate the frame at
-     * all.
-     *
-     * THE YAW IS THE SICKNESS AND THE ASTERN IS THE GAIN. So:
-     *
-     *   1. THE AUTOMATIC YAW COMES OFF BOTH RIGS. Not reduced: a small
-     *      unrequested rotation is a small dose of the same thing, and
-     *      at 8° it would still be buying under a unit of page. The
-     *      envelope BELOW SURVIVES WHOLE — it is the PEEK'S envelope
-     *      now, and every reason it is 26° and 12° is unchanged.
-     *      Rotation in this game is a thing the player ASKS FOR. That
-     *      is the distinction the sickness actually turns on: a large
-     *      field rotating because you pressed a walking key is vection;
-     *      the same rotation, at the same rate, because you are holding
-     *      the key that means "look", is a head turn.
-     *   2. THE ASTERN STAYS, and its ease is slowed so the rig can
-     *      never give ground faster than the walker covers it —
-     *      5.3 u/s to 3.4, against a walk of 4.1.
-     *
-     * WHAT IS LOST, STATED SO NOBODY HAS TO GUESS: the lean. Walking
-     * east or west the frame no longer leans into the crossing, and
-     * critique-camera-1 praised that lean. It is worth 3.2 units of
-     * page out of 30.2, and it is still available on `,` and `.` — the
-     * peek reaches the same 26°, from any heading, whenever a hand asks
-     * for it. What is NOT lost is the walk south, which was the other
-     * half of that verdict and the whole of the defect.
-     * ================================================================ */
-    /** Degrees off north, per rig — the table in §1 above is the reason,
-     *  and it is not a knob. Since Session 12 nothing but THE PEEK ever
-     *  reaches it, and nothing in this game may exceed it. */
-    yawEase: 2.2,
-    /** A stopped walker is in the SHIPPED composition, not asymptotically
-     *  near it. Under this much the bearing is set to exactly zero. */
-    yawSnap: 0.0026,
     /** How long the aim runs ahead of the walker, capped per rig by
-     *  `lead` above: a lead is free, it helps east–west, and in portrait
-     *  the frame is 3.4 units wide at the walker so it must be small. */
+     *  `lead` above. */
     leadSec: 0.9,
-    /** Travel at the lens: how far the camera gives ground, and how far
-     *  its aim drops to lay that ground out. §3 above is the reason. */
-    asternBack: 5.5,
-    asternLook: -1.6,
-    /** SESSION 12: 1.4 GAVE GROUND FASTER THAN THE WALKER COVERED IT.
-     *  At 1.4 the rig recedes at 5.3 units a second against a walk of
-     *  4.1, so turning south the ground flowed backwards under a walker
-     *  who was going forwards — the one part of the astern opening that
-     *  was a motion nobody asked for. The ceiling is the walk itself,
-     *  and 0.85 measures 3.35 on desktop and 3.38 in portrait. It costs nothing that matters:
-     *  the opening is measured after six seconds of southward travel
-     *  and its steady state is untouched, so the walk south still sees
-     *  the same page it earned its verdict on. */
-    asternEase: 0.85,
-
-    /* ================================================================ *
-     * THE ROOM RIG (Session 23, `WORLD-SYSTEMS` §11, `world/rooms.ts`).
-     *
-     * §11 said an interior is a camera problem before it is an art
-     * problem, and it is this one: the rig trails thirteen units and
-     * a room is six deep, so the front wall of any house stands exactly
-     * between the lens and a walker who has just gone in through its
-     * door. Two answers, and both are subtractions from the resting
-     * rig rather than a second camera:
-     *
-     *   1. THE FRONT WALL GOES TO PENCIL. That is the land's, off the
-     *      room's blend, and it is the drawing convention (a section)
-     *      and not a camera trick.
-     *   2. THE RIG CLOSES, by these much: back, up and aim all come in
-     *      so a room fills the frame the way a land does, and the
-     *      frame's bottom edge lands about two units behind the
-     *      walker, which is where the section cuts the room. Portrait
-     *      closes by less, because its frame is already narrow.
-     *
-     * And one rule about the ground: A ROOM IS FLAT. Inside, the rise
-     * term reads zero — the ridge behind the loft would otherwise pull
-     * the rig eleven units back to show a hill the room's back wall is
-     * in front of.
-     *
-     * THE RATE IS THE LAW. `check-camera` holds the rig to giving
-     * ground no faster than the walk (4.1 u/s) and this is the same
-     * ceiling coming the other way: the blend moves at 3.4 units of
-     * dolly a second, whatever the dolly is, so a flat room closes in
-     * about a second and the loft on the ridge takes four and never
-     * lurches. `rooms.tick` is handed the rate each frame. */
+    /* THE ROOM RIG (Session 23, `world/rooms.ts`): inside, the rig
+     * closes by these much so a room fills the frame the way a land
+     * does, the rise term reads zero (a room is flat), and the blend
+     * moves at `rate` units of dolly a second whatever the dolly is. */
     room: {
       desktop: { back: 4.0, up: 1.4, look: 0.8 },
       portrait: { back: 2.0, up: 1.3, look: 0.8 },
@@ -1600,26 +1678,54 @@ export class App {
   }
 
   private snapCamera() {
-    // a teleport has no travel, so it has no bearing: the snapped frame
-    // is always the shipped composition, due north
-    this.camYaw = 0;
+    /* A teleport has no travel: the aim and the ground snap to the
+     * walker. THE YAW STAYS THE PLAYER'S — the camera keeps whatever
+     * look they left it at, through every mount and dismount. */
     this.camAstern = 0;
     this.camTarget.copy(this.char.pos);
     this.camGround = this.terrain.smoothHeightAt(this.char.pos.x, this.char.pos.z);
-    this.camRise = this.riseAhead(this.char.pos.x, this.char.pos.z, this.camGround, 0);
-    const rig = this.camRig();
-    const C = App.CAM;
-    this.camera.position.set(
-      this.char.pos.x,
-      this.camGround + rig.up + this.camRise * C.riseUp,
-      this.char.pos.z + rig.back + this.camRise * C.riseBack
-    );
-    this.camera.lookAt(
-      this.char.pos.x,
-      this.camGround + rig.look + this.camRise * C.riseLook,
-      this.char.pos.z
-    );
+    this.camRise = this.riseAhead(this.char.pos.x, this.char.pos.z, this.camGround, this.camYaw);
+    const pose = this.camPose(this.camRig(), rooms.camK);
+    this.camera.position.set(pose.x, pose.y, pose.z);
+    this.camera.lookAt(this.camTarget.x, pose.aimY, this.camTarget.z);
     this.applyFog();
+  }
+
+  /* ---- CAMERA: the look, ticked before the walk so the walk can be
+   * relative to it (core/Look.ts, engine/billboard.ts) --------------- */
+  private lookTick(dt: number) {
+    this.look.enabled = this.bearingOn && this.started;
+    if (Math.hypot(this.char.vel.x, this.char.vel.z) > 0.25) this.walkHeading = this.char.heading;
+    const ask = this.look.takeRecentre();
+    if (ask && this.started && !this.char.frozen) this.recentre();
+    this.look.tick(dt, this.char.frozen ? 0 : this.input.peek);
+    this.camYaw = this.look.yaw;
+    setCameraYaw(this.camYaw);
+  }
+
+  /** Behind the walker — looking the way they last walked — eased and
+   *  capped in rate (Look.RECENTRE_RATE), and the pitch back to rest. */
+  private recentre() {
+    this.look.recentre(Math.PI - this.walkHeading, this.camRig().pitch);
+  }
+
+  /** Where the rig stands for the aim point, yaw, pitch and zoom it
+   *  has: `dist` back along the yaw, `pitch` up about the aim, plus the
+   *  rise retreat, minus the room's closing, never inside the hill. */
+  private camPose(rig: { dist: number; pitch: number; look: number }, inK: number) {
+    const C = App.CAM;
+    const roomRig = this.camera.aspect < 0.8 ? C.room.portrait : C.room.desktop;
+    const pitch = this.started ? this.look.pitch : rig.pitch;
+    const dist = Math.max(3.0, rig.dist * this.look.zoom + this.camRise * C.riseBack - inK * roomRig.back);
+    const aimY = this.camGround + rig.look + this.camRise * C.riseLook - inK * roomRig.look;
+    const flat = dist * Math.cos(pitch);
+    const x = this.camTarget.x - flat * Math.sin(this.camYaw);
+    const z = this.camTarget.z + flat * Math.cos(this.camYaw);
+    const y = Math.max(
+      aimY + dist * Math.sin(pitch) + this.camRise * C.riseUp - inK * roomRig.up,
+      this.terrain.heightAt(x, z) + C.clearance
+    );
+    return { x, y, z, aimY, dist };
   }
 
   /**
@@ -1713,6 +1819,8 @@ export class App {
     const dt = this.forceDt > 0 ? this.forceDt : real;
     this.forceDt = 0;
     this.elapsed += dt;
+    /* ---- PEN: the first frame is a mark on the road to the title ---- */
+    if (!this.framed) { this.framed = true; performance.mark('inklands:first-frame'); }
 
     /* ---- THE HOUR --------------------------------------------------- *
      * One advance, one grade, one fog. Everything else in the game that
@@ -1746,8 +1854,11 @@ export class App {
     }
 
     this.input.update(dt);
+    /* ---- CAMERA: the look, before the walk ---- */
+    this.lookTick(dt);
     this.char.frozen = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen || !this.started
       || this.ui.blinking;
+    if (this.voice.open) this.char.frozen = true; /* VOICE: the notebook has the screen */
     // a step stands you up; the prompt says so, and so does a thumb
     if (this.seat && Math.hypot(this.input.move.x, this.input.move.y) > 0.3) {
       this.standUp();
@@ -1787,7 +1898,18 @@ export class App {
      * camera, the map opens, the notes open, and the doors open again
      * in half a minute at the next stop. */
     if (this.train.aboard) this.input.move.set(0, 0);
-    this.char.update(dt, this.input.move);
+    /* ---- CAMERA: the walk is relative to the lens ------------------- *
+     * W walks away from the camera, S toward it, A and D across it: the
+     * stick's vector is turned by the yaw before the walker, the road's
+     * carry and the grade probe ever see it. */
+    {
+      const sy = Math.sin(this.camYaw);
+      const cy = Math.cos(this.camYaw);
+      const mx = this.input.move.x;
+      const my = this.input.move.y;
+      this.moveWorld.set(mx * cy - my * sy, mx * sy + my * cy);
+    }
+    this.char.update(dt, this.moveWorld);
     this.teachTheRun(dt);
 
     /* WHAT THE PAGE REFUSES — and it refuses the exact opposite of
@@ -1815,6 +1937,8 @@ export class App {
       ? (x: number, z: number) => !rowableAt(x, z)
       : this.bicycle.aboard
         ? (x: number, z: number) => this.bicycleRefuses(x, z)
+        : this.horse.aboard /* ---- SCALE ---- */
+          ? (x: number, z: number) => this.horseRefuses(x, z)
         : (x: number, z: number) => this.terrain.blockedAt(x, z) || barriers.blocks(x, z);
     if (refuses(this.char.pos.x, this.char.pos.z)) {
       const nx = this.char.pos.x;
@@ -1842,6 +1966,7 @@ export class App {
     this.char.setGround(
       this.terrain.heightAt(this.char.pos.x, this.char.pos.z) - (this.boat.aboard ? 0.34 : 0)
         - (this.bicycle.aboard ? 0.26 : 0)
+        + (this.horse.aboard ? 0.92 : 0) /* ---- SCALE: up on the saddle ---- */
         + (this.seat?.sit?.lift ?? 0) + this.seatDy,
       this.boat.aboard ? [0, 1, 0] : this.terrain.normalAt(this.char.pos.x, this.char.pos.z)
     );
@@ -1880,7 +2005,9 @@ export class App {
     if (this.bicycle.aboard) {
       this.bicycle.setAt(this.char.pos.x, this.char.pos.z);
       const down = Math.max(0, -this.char.grade);
-      this.char.maxSpeed = App.BIKE.max * (1 + Math.min(0.5, down * 3));
+      /* ---- SCALE: on sand it is slow, not refused ---- */
+      const sandy = regionAt(this.char.pos.x, this.char.pos.z).step === 'sand' ? 0.45 : 1;
+      this.char.maxSpeed = App.BIKE.max * (1 + Math.min(0.5, down * 3)) * sandy;
     }
     this.bicycle.update(
       dt,
@@ -1888,6 +2015,22 @@ export class App {
       this.char.heading,
       this.bicycle.aboard ? Math.hypot(this.char.vel.x, this.char.vel.z) : 0
     );
+
+    /* ---- SCALE: THE HORSE. Aboard, it IS the walker's position; called,
+     * it trots to them; its hooves sound off its own stride. ---- */
+    if (this.horse.aboard) this.horse.setAt(this.char.pos.x, this.char.pos.z);
+    this.horse.update(
+      dt,
+      this.terrain.heightAt(this.horse.pos.x, this.horse.pos.y),
+      this.char.heading,
+      this.horse.aboard ? Math.hypot(this.char.vel.x, this.char.vel.z) : 0,
+      (x, z) => this.horseRefuses(x, z),
+      (x, z) => this.terrain.heightAt(x, z)
+    );
+    if (this.horse.hoofbeat && this.started
+      && Math.hypot(this.char.pos.x - this.horse.pos.x, this.char.pos.z - this.horse.pos.y) < 70) {
+      this.audio.event('hooves', this.horse.aboard ? this.char.effort : 0.4);
+    }
 
     /* ---- THE 8:15 --------------------------------------------------- *
      * It runs on the hour and on nothing else. Aboard, it IS the
@@ -1953,7 +2096,7 @@ export class App {
      * foot with the wet banner over a shoulder there is no run and two
      * thirds of a walk. Nothing says so. The mounts set their own
      * speeds and are left alone. */
-    if (!this.boat.aboard && !this.bicycle.aboard && !this.train.aboard) {
+    if (!this.boat.aboard && !this.bicycle.aboard && !this.train.aboard && !this.horse.aboard) {
       const heavy = !!held?.def.heavy;
       this.char.maxSpeed = App.WALK.max * (heavy ? 0.66 : 1);
       this.char.runMult = heavy ? 1.0 : App.WALK.run;
@@ -1962,6 +2105,9 @@ export class App {
     this.prints.update(dt);
     this.terrain.update(dt);
     this.world.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.region.id, weather.windK,
+      this.camera.position.x, this.camera.position.z);
+    /* ---- SCALE: something moving in every frame ---- */
+    traffic.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.char.effort,
       this.camera.position.x, this.camera.position.z);
 
     /* ---- THE ROOMS (Session 23) -------------------------------------- *
@@ -2236,7 +2382,17 @@ export class App {
     if (this.started) {
       // a card is up: the world's own writing stays behind it
       this.poi.suppressed = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen;
+      if (this.voice.open) this.poi.suppressed = true; /* VOICE */
       this.activePoi = this.poi.update(this.char.pos);
+      /* ---- VOICE: bubbles follow, toasts time out, the world answers ---- */
+      this.voice.tick(dt);
+      opening.tick(dt); /* ---- FIRST HOUR: the opening, after the voice ---- */
+      jobs.tick(dt); /* ---- THINGS: jobs, stamps, toys, monsters ---- */
+      if (notebook.dirty) {
+        notebook.dirty = false;
+        this.save.data.notebook = notebook.saved;
+        this.save.persist();
+      }
       /* THE ROUTES, WALKED (WORLD-SYSTEMS §6). A route is the one kind
        * of knowledge nobody in this world could tell you, because they
        * cannot cross a border and the line crosses eleven. So it is
@@ -2257,6 +2413,7 @@ export class App {
         this.save.data.pos = { x: this.char.pos.x, z: this.char.pos.z };
         this.save.data.boat = { x: this.boat.pos.x, z: this.boat.pos.y };
         this.save.data.bicycle = { x: this.bicycle.pos.x, z: this.bicycle.pos.y };
+        this.save.data.horse = { x: this.horse.pos.x, z: this.horse.pos.y }; /* ---- SCALE ---- */
         this.save.data.hour = dayClock.hour;
         this.save.data.day = dayClock.day;
         this.save.persist();
@@ -2266,59 +2423,14 @@ export class App {
     const C = App.CAM;
     const rig = this.camRig();
 
-    /* ---- THE BEARING, in two components and no coin toss ------------ *
-     *
-     *   the part of your travel that CROSSES the frame turns the camera;
-     *   the part that comes AT THE LENS opens the ground at your feet.
-     *
-     * That is the whole rule (see App.CAM, THE BEARING, for why it is
-     * that and not "point at the travel bearing and clamp it" — the
-     * short version is that clamping makes due south a coin toss between
-     * ±26° and a walker wobbling either side of it flips a fifty-two
-     * degree pan back and forth). Both terms are the walker's own
-     * velocity over their own top speed, so both are zero standing still
-     * and both scale honestly with the boat, which is faster.
-     *
-     * THE PEEK DOES NOT ADD, IT TAKES OVER. Adding would let a peek and
-     * a turn stack past the envelope, and the envelope is the one number
-     * in this system that is not allowed to be exceeded — so a full peek
-     * IS the envelope, from any bearing, and letting go hands the camera
-     * back to the walk. */
-    const vmax = Math.max(1e-3, this.char.maxSpeed);
-    let yawWant = 0;
-    let asternWant = 0;
-    if (this.bearingOn && this.started && !this.char.frozen) {
-      /* THE ONLY THING THAT TURNS THE FRAME IS A HAND ON A KEY. Session
-       * 12: `this.input.peek` is already clamped to ±1 and already
-       * ramped, so the whole of the yaw is one multiply now, and there
-       * is no term in it that a walk can reach. */
-      yawWant = ((rig.peekYaw * Math.PI) / 180) * this.input.peek;
-      asternWant = Math.max(0, Math.min(1, this.char.vel.z / vmax));
-    }
-    this.camYaw += (yawWant - this.camYaw) * (1 - Math.exp(-dt * C.yawEase));
-    this.camAstern += (asternWant - this.camAstern) * (1 - Math.exp(-dt * C.asternEase));
-    /* AND IT ARRIVES, rather than approaching. An exponential ease never
-     * reaches zero, and "a stopped walker is always in the composition
-     * the land was authored for" is a contract, not a limit.
-     *
-     * The test is on what the camera is being ASKED for, not on the
-     * asking being nothing: a walker letting go of the keys decelerates
-     * exponentially too, so their velocity never becomes exactly zero
-     * either, and a snap that waited for it would never fire. Under a
-     * sixth of a degree of ask is a shuffle, not a turn. */
-    if (Math.abs(yawWant) < C.yawSnap && Math.abs(this.camYaw) < C.yawSnap) this.camYaw = 0;
-    if (asternWant < 0.004 && this.camAstern < 0.004) this.camAstern = 0;
-
-    /* ---- the follow ------------------------------------------------ *
-     * Horizontal: damped, with a lead in the direction of travel — free,
-     * and the one term that helps east–west travel without costing a
-     * standee a degree. It is capped in UNITS per rig rather than held at
-     * a number of seconds, because portrait's frame is only three and a
-     * half units wide where the walker stands and a lead written in
-     * seconds walks them off the side of it at a run.
-     * Vertical: slower, off a disc-averaged ground, so cockle never
-     * reaches the frame. Rise: slower still, so cresting the castle
-     * ramp opens the frame as a swell rather than a jolt. */
+    /* ---- CAMERA: the rig, orbited by the hand (core/Look.ts) -------- *
+     * Yaw, pitch and zoom are the player's and were ticked at the top
+     * of the frame (`lookTick`); nothing below turns the frame. What is
+     * left is the comfort work: the aim point eases after the walker
+     * with a small lead, the ground under it and the rise ahead are
+     * damped, a room flattens the rise and closes the rig, and the lens
+     * never goes inside a hill. */
+    this.camAstern = 0;
     const sp = Math.hypot(this.char.vel.x, this.char.vel.z);
     const lead = sp > 1e-3 ? Math.min(C.leadSec, rig.lead / sp) : 0;
     const tx = this.char.pos.x + this.char.vel.x * lead;
@@ -2329,48 +2441,22 @@ export class App {
 
     const groundNow = this.terrain.smoothHeightAt(this.camTarget.x, this.camTarget.z);
     this.camGround += (groundNow - this.camGround) * (1 - Math.exp(-dt * 2.0));
-    /* A ROOM IS FLAT (App.CAM.room): the rise the lens reads ahead is
-     * taken away by the room's blend, at the blend's own bounded rate. */
+    // a room is flat: the rise the lens reads ahead is taken away by the
+    // room's blend, at the blend's own bounded rate
     const inK = rooms.camK;
-    const roomRig = this.camera.aspect < 0.8 ? C.room.portrait : C.room.desktop;
     const riseNow = this.riseAhead(
       this.camTarget.x, this.camTarget.z, groundNow, this.camYaw
     ) * (1 - inK);
     this.camRise += (riseNow - this.camRise) * (1 - Math.exp(-dt * 1.1));
 
-    /* The rig, swung. The camera orbits the AIM POINT, so the thing it
-     * is aimed at never moves on the page when the bearing changes —
-     * only what is around it does. */
-    const dBack = rig.back + this.camRise * C.riseBack + this.camAstern * C.asternBack - inK * roomRig.back;
-    /* HOW FAR THE RIG IS ASKING TO SIT, kept for the harness. Session 12
-     * asserts a ceiling on how fast this may CHANGE — the rig may not
-     * give ground faster than the walker covers it — and neither of the
-     * two distances you can measure from outside will do. Camera to
-     * WALKER moves when a peek swings the camera round a lead-offset
-     * aim point, which is a turn and not a dolly; camera to AIM POINT
-     * moves when the lead itself lurches on a change of direction,
-     * which is the frame translating and not a dolly either. This is
-     * the dolly: the two terms that retreat, and nothing else. */
-    this.camBack = dBack;
-    const sy = Math.sin(this.camYaw);
-    const cy = Math.cos(this.camYaw);
-    const camX = this.camTarget.x - dBack * sy;
-    const camZ = this.camTarget.z + dBack * cy;
-    // never inside the hill: on the scarp the ground behind the walker
-    // can be higher than the walker is
-    const camY = Math.max(
-      this.camGround + rig.up + this.camRise * C.riseUp - inK * roomRig.up,
-      this.terrain.heightAt(camX, camZ) + C.clearance
-    );
-    this.camera.position.x += (camX - this.camera.position.x) * k;
-    this.camera.position.y += (camY - this.camera.position.y) * (1 - Math.exp(-dt * 2.4));
-    this.camera.position.z += (camZ - this.camera.position.z) * k;
-    this.camera.lookAt(
-      this.camTarget.x,
-      this.camGround + rig.look + this.camRise * C.riseLook
-        + this.camAstern * C.asternLook - inK * roomRig.look,
-      this.camTarget.z
-    );
+    const pose = this.camPose(rig, inK);
+    // the rig's own commanded distance, kept for the harness (`bearing().back`)
+    this.camBack = pose.dist;
+    this.camera.position.x = pose.x;
+    this.camera.position.z = pose.z;
+    // the floor clearance can step on a scarp; the height alone is eased
+    this.camera.position.y += (pose.y - this.camera.position.y) * (1 - Math.exp(-dt * 6.0));
+    this.camera.lookAt(this.camTarget.x, pose.aimY, this.camTarget.z);
     this.applyFog();
 
     if (!this.noRender) this.fx.render(dt);

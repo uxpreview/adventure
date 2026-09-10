@@ -46,6 +46,7 @@ import { rookAt } from '../rooks';
 import { SPEC_BY_ID } from '../layout';
 import { clock } from '../daylight';
 import { platform } from '../../engine/Eight15';
+import { npcs } from '../npc'; /* VOICE */
 import { knowledge } from '../knowledge';
 import { events, registerRoutine, routine as routineNow } from '../events';
 import { things } from '../things';
@@ -717,6 +718,8 @@ export const buildForest: RegionBuilder = (ctx) => {
     (m.material as THREE.MeshBasicMaterial).transparent = true;
   }
   brackTurn.visible = false;
+  /* ---- VOICE: where Brack is drawn ---- */
+  npcs.track('brack', () => { const m = brackTurn.visible ? brackTurn : brackWatch; return { x: m.position.x, z: m.position.z, present: brackWatch.visible || brackTurn.visible }; });
 
   /* ---- THE GOAT (THE-STRANGERS E12 says it gets out; it is already
    *      canon, so it is already here) ------------------------------ */
@@ -1399,6 +1402,8 @@ export const buildCanyon: RegionBuilder = (ctx) => {
   const holt = [0, 1, 2].map((p) =>
     ctx.standee(holtTexture(6220 + p, p as 0 | 1 | 2), 1.55, 2.65, BOAT.x - 5.5, BOAT.z + 1.5));
   for (const m of holt) (m.material as THREE.MeshBasicMaterial).transparent = true;
+  /* ---- VOICE: where Holt is drawn ---- */
+  npcs.track('holt', () => { const m = holt.find((v) => v.visible) ?? holt[0]; return { x: m.position.x, z: m.position.z, present: !!holt.find((v) => v.visible) }; });
 
   /* ---- ODD, on the floor, with his line (Session 22, S5) ----------- */
   const odd = [0, 1].map((p) => ctx.standee(oddTexture(6240 + p, p as 0 | 1), 1.55, 2.65, ODD.x, ODD.z, { rotY: -0.1 }));
@@ -2044,6 +2049,8 @@ export const buildDesert: RegionBuilder = (ctx) => {
   const amos = [0, 1, 2].map((p) =>
     ctx.standee(amosTexture(7110 + p, p as 0 | 1 | 2), 1.6, 2.62, CATCH.x - 4, CATCH.z + 2));
   for (const m of amos) (m.material as THREE.MeshBasicMaterial).transparent = true;
+  /* ---- VOICE: where Amos is drawn ---- */
+  npcs.track('amos', () => { const m = amos.find((v) => v.visible) ?? amos[0]; return { x: m.position.x, z: m.position.z, present: !!amos.find((v) => v.visible) }; });
 
   /* ================================================================ *
    * THE HANDS, and WHERE THE ROAD STOPS.
@@ -2692,7 +2699,7 @@ function droveAt(hour: number): number {
  *  bridge whose east end runs along the water. */
 export const downsDog = new Follower({
   id: 'the-downs-dog', rect: SPEC_BY_ID.downs.rect, home: { x: 106.5, z: 40.5 },
-  gap: 2.6, notice: 14, walk: 4.0, trot: 9.2, margin: 2,
+  gap: 2.6, notice: 14, walk: 2.5, trot: 5.7, margin: 2, /* ---- SCALE ---- */
 });
 
 export const buildDowns: RegionBuilder = (ctx) => {
@@ -2955,6 +2962,8 @@ export const buildDowns: RegionBuilder = (ctx) => {
   /* ---- JOAN, AND THE FOUR WHO WORK WITH HER ----------------------- */
   const joanWork = ctx.standee(joanTexture(5710, 0), 1.72, 2.7, 172, -6);
   const joanRest = ctx.standee(joanTexture(5711, 1), 1.72, 2.7, 137.5, 12.5);
+  /* ---- VOICE: where Joan is drawn (the field, or the table) ---- */
+  npcs.track('joan', () => { const m = joanRest.visible ? joanRest : joanWork; return { x: m.position.x, z: m.position.z, present: joanWork.visible || joanRest.visible }; });
   for (const m of [joanWork, joanRest]) {
     (m.material as THREE.MeshBasicMaterial).transparent = true;
   }

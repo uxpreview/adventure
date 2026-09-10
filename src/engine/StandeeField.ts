@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { yawUniform } from './billboard';
 
 export type StandeeFieldOpts = {
   /** World size of one quad. */
@@ -62,6 +63,13 @@ export class StandeeField {
   private count: number;
   private ground: ((x: number, z: number) => number) | null;
   private isDecal: boolean;
+  /* ---- PEN: the sphere round the instances that are actually on the
+   * page, so a field behind the lens is not a draw call. Parked seats
+   * and hidden instances are left out; refreshed lazily on the next
+   * update after a set() or hide(). ---- */
+  private boundsDirty = false;
+  private hidden: Uint8Array;
+  private quadH: number;
   /** The authored opacities, so setDim can be a multiply and not a set. */
   private base: number;
   private ghost: number;
@@ -91,6 +99,8 @@ export class StandeeField {
     this.birth = new THREE.InstancedBufferAttribute(births, 1);
     geo.setAttribute('aBirth', this.birth);
 
+    /* ---- PEN: premultiplied, so the filtered edge is never black ---- */
+    if (!tex.premultiplyAlpha) { tex.premultiplyAlpha = true; tex.needsUpdate = true; }
     this.mat = new THREE.ShaderMaterial({
       uniforms: {
         uMap: { value: tex },
@@ -108,6 +118,12 @@ export class StandeeField {
         uWave: { value: new THREE.Vector3(wave?.amp ?? 0, wave?.speed ?? 0, wave?.len ?? 0) },
         uQuadH: { value: h },
         uPlayer: { value: new THREE.Vector2(1e6, 1e6) },
+        /* THE CAMERA'S YAW (the reset, pillar 1): one uniform object
+         * shared by every field, so a standing quad turns about its own
+         * feet to face the lens with no CPU work per instance. A decal
+         * lies on the page and does not turn. */
+        uYaw: yawUniform,
+        uFace: { value: decal ? 0 : 1 },
       },
       vertexShader: /* glsl */ `
         attribute float aBirth;
@@ -118,6 +134,8 @@ export class StandeeField {
         uniform vec3 uWave;
         uniform float uQuadH;
         uniform vec2 uPlayer;
+        uniform float uYaw;
+        uniform float uFace;
         varying vec2 vUv;
         varying float vWake;
         void main() {
@@ -128,6 +146,14 @@ export class StandeeField {
           float spring = t > 0.0 ? 1.0 + uOvershoot * exp(-t * 4.0) * sin(min(t, 1.2) * 9.0) : 1.0;
           vec3 p = position * spring;
           vec4 wp = instanceMatrix * modelMatrix * vec4(p, 1.0);
+          if (uFace > 0.5) {
+            // face the lens: turn the quad about its own feet by -yaw
+            vec3 o = (instanceMatrix * modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+            vec3 d = wp.xyz - o;
+            float ca = cos(uYaw);
+            float sa = -sin(uYaw);
+            wp.xyz = o + vec3(ca * d.x + sa * d.z, d.y, -sa * d.x + ca * d.z);
+          }
           if (uWind.x > 0.0) {
             // the wind, and the walker: both act on the top of the
             // blade, in world space so flips and rotations stay honest
@@ -164,16 +190,20 @@ export class StandeeField {
           vec4 tex = texture2D(uMap, vUv);
           float alpha = tex.a * mix(uGhost, uBase, vWake);
           if (alpha < 0.012) discard;
-          gl_FragColor = vec4(tex.rgb * uColor, alpha);
+          /* PEN: the drawing is uploaded premultiplied (see props.inkBlend) */
+          gl_FragColor = vec4(tex.rgb * uColor * mix(uGhost, uBase, vWake), alpha);
         }
       `,
       transparent: true,
+      premultipliedAlpha: true, /* PEN */
       depthWrite: false,
       side: THREE.DoubleSide,
     });
 
     this.mesh = new THREE.InstancedMesh(geo, this.mat, capacity);
     this.mesh.frustumCulled = false;
+    this.hidden = new Uint8Array(capacity);
+    this.quadH = decal ? Math.max(w, h) : h;
     /* Unused capacity is parked at ZERO SCALE, not merely a thousand
      * units under the page. A field is often created at the size a
      * scatter was ASKED for and `ctx.scatter` is allowed to return
@@ -202,6 +232,8 @@ export class StandeeField {
     this.dummy.updateMatrix();
     this.mesh.setMatrixAt(i, this.dummy.matrix);
     this.mesh.instanceMatrix.needsUpdate = true;
+    this.hidden[i] = 0;
+    this.boundsDirty = true;
   }
 
   /**
@@ -245,6 +277,32 @@ export class StandeeField {
     this.dummy.updateMatrix();
     this.mesh.setMatrixAt(i, this.dummy.matrix);
     this.mesh.instanceMatrix.needsUpdate = true;
+    this.hidden[i] = 1;
+    this.boundsDirty = true;
+  }
+
+  /* ---- PEN: the sphere round what is on the page ---- */
+  private refreshBounds() {
+    this.boundsDirty = false;
+    let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity, minY = Infinity, maxY = -Infinity, n = 0;
+    for (let i = 0; i < this.count; i++) {
+      const p = this.positions[i];
+      if (!p || this.hidden[i]) continue;
+      const y = this.ground ? this.ground(p.x, p.z) : 0;
+      if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+      if (p.z < minZ) minZ = p.z; if (p.z > maxZ) maxZ = p.z;
+      if (y < minY) minY = y; if (y > maxY) maxY = y;
+      n++;
+    }
+    if (!n) { this.mesh.frustumCulled = false; return; }
+    const cx = (minX + maxX) / 2, cz = (minZ + maxZ) / 2, cy = (minY + maxY) / 2 + this.quadH / 2;
+    // half the diagonal of the box, the quad's own reach, and a margin
+    // for the wind and the bend away from the walker
+    const r = Math.hypot(maxX - minX, maxZ - minZ, maxY - minY + this.quadH) / 2 + this.quadH * 1.5 + 2;
+    const sphere = this.mesh.boundingSphere ?? (this.mesh.boundingSphere = new THREE.Sphere());
+    sphere.center.set(cx, cy, cz);
+    sphere.radius = r;
+    this.mesh.frustumCulled = true;
   }
 
   /** Wake instance i at absolute shader time t (pass current time for now). */
@@ -351,6 +409,7 @@ export class StandeeField {
   update(time: number, windK = 1) {
     this.mat.uniforms.uTime.value = time;
     this.mat.uniforms.uWindK.value = windK;
+    if (this.boundsDirty) this.refreshBounds();
   }
 
   /** Where the walker is, for the grass-parting bend (wind fields only). */

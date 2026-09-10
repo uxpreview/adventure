@@ -3,6 +3,7 @@ import { clock } from './daylight';
 import { routineAt, registerRoutine, type RoutineDef, type RoutineState } from './events';
 import { folkTexture, type FolkKind, type FolkPose } from './textures-life';
 import type { BuildCtx } from './regions/index';
+import { billboardMode } from '../engine/billboard';
 
 /**
  * LIFE — how an unnamed inhabitant or an animal is put on the page
@@ -64,6 +65,7 @@ export class Figure {
    *  handcart, a rod. Follows the figure; hidden with it. */
   prop: THREE.Mesh | null = null;
   propOffset = { x: 0, z: 0 };
+  private propKept = false;
 
   constructor(
     private ctx: BuildCtx, readonly def: RoutineDef, readonly kind: FolkKind,
@@ -80,6 +82,8 @@ export class Figure {
     this.mat = this.mesh.material as THREE.MeshBasicMaterial;
     this.mat.transparent = true;
     this.mesh.visible = false;
+    // a person faces a way: seen from behind, the cutout shows its back
+    billboardMode(this.mesh, 'keep');
     this.shown = def.stops[0].pose as FolkPose;
     this.state = routineAt(def, clock.hour);
     drawn.push(this);
@@ -110,6 +114,7 @@ export class Figure {
     this.mesh.scale.x = s.face;
     this.mat.opacity = s.fade;
     if (this.prop) {
+      if (!this.propKept) { billboardMode(this.prop, 'keep'); this.propKept = true; }
       this.prop.position.set(s.x + this.propOffset.x * s.face, this.ctx.groundY(s.x, s.z), s.z + this.propOffset.z);
       this.prop.scale.x = s.face * Math.abs(this.prop.scale.x);
       (this.prop.material as THREE.MeshBasicMaterial).opacity = s.fade;
@@ -144,7 +149,7 @@ export class Creature {
     readonly maps: THREE.Texture[], w: number, h: number, x: number, z: number,
     private ground: (x: number, z: number) => number = ctx.groundY
   ) {
-    this.mesh = ctx.standee(maps[0], w, h, x, z);
+    this.mesh = ctx.standee(maps[0], w, h, x, z, { face: 'keep' });
     this.mat = this.mesh.material as THREE.MeshBasicMaterial;
     this.mat.transparent = true;
     drawn.push(this);

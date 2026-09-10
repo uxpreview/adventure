@@ -1,3 +1,6 @@
+import type { NotebookSave } from '../world/notebook';
+import type { OpeningSave } from '../world/opening'; /* ---- FIRST HOUR ---- */
+
 export type SkinId = 'pip' | 'b';
 
 export type SaveData = {
@@ -22,6 +25,8 @@ export type SaveData = {
    *  yours is where you left it. Absent in an older save, which reads
    *  as the verge at the mouth of the court. */
   bicycle?: { x: number; z: number } | null;
+  /* ---- SCALE: WHERE THE HORSE IS — the same promise as the bicycle. ---- */
+  horse?: { x: number; z: number } | null;
   /**
    * WHAT TIME IT IS. The day cycle runs while you play and stops when
    * you stop, so coming back tomorrow morning does not mean coming back
@@ -86,6 +91,10 @@ export type SaveData = {
    * as nothing, which is what an older walker was wearing.
    */
   worn?: string | null;
+  /* ---- VOICE: the notebook, whole (`src/world/notebook.ts`) ---- */
+  notebook?: NotebookSave | null;
+  /* ---- FIRST HOUR: where the scripted opening got to (`src/world/opening.ts`) ---- */
+  opening?: OpeningSave | null;
 };
 
 const KEY = 'inklands-save-v1';
@@ -99,12 +108,15 @@ const DEFAULTS: SaveData = {
   walked: 0,
   boat: null,
   bicycle: null,
+  horse: null,
   hour: null,
   known: [],
   passed: [],
   taughtRun: false,
   things: {},
   worn: null,
+  notebook: null,
+  opening: null, /* ---- FIRST HOUR ---- */
 };
 
 export class Save {

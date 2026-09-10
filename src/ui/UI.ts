@@ -38,6 +38,11 @@ export class UI {
   onWear: (() => string | null) | null = null;
   onOpenMap: ((width: number) => HTMLCanvasElement) | null = null;
   onPromptClick: (() => void) | null = null;
+  /* ---- VOICE: the notebook's key and button, and its line ---- */
+  onToggleNotebook: (() => void) | null = null;
+  onCloseNotebook: (() => void) | null = null;
+  /** The objective line, top-left; lettered by `ui/notebook.ts`. */
+  objectiveEl: HTMLElement;
 
   private loader: HTMLElement;
   private loaderBar: HTMLElement;
@@ -101,6 +106,10 @@ export class UI {
     const mapBtn = el('hud-btn', this.hud, 'button');
     letterEl(mapBtn, 'map', S.button(11));
     mapBtn.addEventListener('click', () => (this.mapOpen ? this.closeMap() : this.openMap()));
+    /* ---- VOICE: the notebook button, next to the map's ---- */
+    const nbBtn = el('hud-btn', this.hud, 'button');
+    letterEl(nbBtn, 'notebook', S.button(11));
+    nbBtn.addEventListener('click', () => this.onToggleNotebook?.());
     this.soundBtn = el('hud-btn', this.hud, 'button');
     letterEl(this.soundBtn, 'sound: on', S.button(11));
     this.soundBtn.addEventListener('click', () => {
@@ -126,7 +135,9 @@ export class UI {
     this.cardKicker = el('kicker', this.card);
     this.cardName = el('name', this.card);
     this.cardSub = el('district', this.card);
-    this.chrome = [this.hud, this.card];
+    /* ---- VOICE: the objective line is chrome too ---- */
+    this.objectiveEl = el('objective', this.root);
+    this.chrome = [this.hud, this.card, this.objectiveEl];
     this.blinkEl = el('blink', this.root);
 
     // hint line (controls, small truths)
@@ -180,6 +191,11 @@ export class UI {
     letterEl(lt, 'INKLANDS', { ...S.display(30), px: 30 });
     const sub2 = el('loader-sub', this.loader);
     letterEl(sub2, 'inking the sheet…', S.quiet(11));
+    /* ---- PEN: the loader says what it is drawing ---- */
+    window.addEventListener('inklands:drawing', (e) => {
+      const d = (e as CustomEvent<{ name: string; done: number; total: number }>).detail;
+      letterEl(sub2, `inked ${d.name.toLowerCase()} — ${d.done} of ${d.total}`, S.quiet(11));
+    });
     const track = el('loader-track', this.loader);
     this.loaderBar = el('loader-bar', track);
 
@@ -203,9 +219,12 @@ export class UI {
         return;
       }
       if (e.code === 'KeyM') (this.mapOpen ? this.closeMap() : this.openMap());
+      /* ---- VOICE: N opens and closes the notebook; Escape closes it ---- */
+      if (e.code === 'KeyN') this.onToggleNotebook?.();
       if (e.code === 'Escape') {
         this.closeMap();
         this.closeNote();
+        this.onCloseNotebook?.();
       }
     });
   }
@@ -226,6 +245,7 @@ export class UI {
 
   showTitle(hasSave: boolean) {
     if (this.begun) return;
+    performance.mark('inklands:title'); /* ---- PEN ---- */
     this.continueBtn.style.display = hasSave ? '' : 'none';
     this.title.classList.remove('gone');
     this.hud.classList.remove('show');
