@@ -146,6 +146,9 @@ class Npcs {
       radius: TALK_R,
       label: n.def.name,
       labelHeight: 2.5,
+      /* gate round 2: the name is over their head from fourteen units,
+       * so Joan reads across her sheaves and Marget across her square */
+      labelReach: 14,
       prompt: `TALK TO ${n.def.name}`,
       get enabled() {
         const p = self.positionOf(n.def.id);

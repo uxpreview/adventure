@@ -148,6 +148,62 @@ opening/camera ×3):
 - The harness reports what a player sees: a read settles 750 ms for the
   fades, and a faded note's words are no longer listed as on screen.
 
+### The gate — round 2 (2026-09-10, after the round-1 fixes, desktop)
+
+The cold player stopped at game-second 245 (command budget). At sixty
+seconds: *"walk around a hand-drawn world, read the things written on it,
+carry what I read back to people, and slowly work out what 8:15 is…
+the long goal is to get all twelve lands ready for something that comes
+at 8:15. Sureness: 8/10."* Scores: understandable 7, alive 7, fun 6,
+beautiful 9. **T1 holds. T2 holds.**
+
+**To a friend:** *"It's a walk-and-read game drawn like a sketchbook: you
+cross a paper world of twelve little lands, press E on signposts and
+gates to read a paragraph of very good prose, and carry names and
+errands between a handful of quiet people while a mystery about 'the
+8:15' ticks up in your notebook. It feels like A Short Hike's gentleness
+with Wind Waker's map-filling, and a bit of Kentucky Route Zero in the
+writing."* Next time: get past Brim's south gate and find Marget; find
+Val and see what "N of 12" means when a second land is done; reload and
+choose "push the cart yourself".
+
+What happened: the opening played through in 75 seconds — the shout,
+the run west, TALK TO NELL, M, the signpost, the milestone, the choice
+card, the cap on the figure's head, Nell and her cart gone from the
+gate and standing in Brim. Then the player rode to Brim and could not
+get in: the south gate's collision gap was 3.2 units in a 13-unit arch,
+the player pushed at the wall four units off the road for forty
+game-seconds, and nothing said so. Then the Downs: Joan's field, two
+figures who would not talk, a "look" label floating in the margin.
+Nell's lines, called from off-screen, were drawn over the walker's head.
+
+| pillar | verdict | the three changes named |
+|---|---|---|
+| THE CAMERA | REFERENCE | a crane on every border crossing and an opening vista · Brim's gate visibly open and admitting · occluders dolly or line-fade, not grey slabs; teach mouse-look in ten seconds |
+| THE VOICE | REFERENCE | the wall and the sheaves answer a push · Joan and the field workers say one sentence on E · bubbles anchored to the speaker, never the player |
+| THE FIRST HOUR | REFERENCE | Brim's gate passable · a generous horse mount band · TALK TO JOAN, and the "look" label gone |
+| SCALE AND MOTION | REFERENCE | Marget, Joan and Val walk, work and answer like Nell · open Brim · each land its own moving life |
+| THINGS TO DO | REFERENCE | the "push the cart yourself" branch as a physics toy · one verb every drawn object answers · the horse as a toy with a generous mount |
+| THE PEN | **not run** | the session's usage window ran out on the sixth critic |
+
+Reports: `design/reset/rounds/round-2/`.
+
+**Fixed after round 2** (named most: the gate ×5, silent pushes ×3, Joan
+and the field ×3, the bubbles ×2):
+- Brim's south gate admits 5.2 units (the north gate, the wood gate and
+  Greyweather's widened in proportion); the wall nudge fires on the wall
+  itself (the region line is the wall) and says EAST or WEST, ON THE ROAD.
+- Pushing at anything solid for a second is answered by the walker
+  ("Solid." · "Not through there." · "That's a wall. Round it, then.").
+- A named person's name reads from fourteen units, so JOAN HARROW shows
+  across her sheaves; the ask's pin is the middle of the row she reaps.
+- A place with a card and no verb prompts LOOK AT THE SOUTH GATE, not
+  "look".
+- A speaker behind the lens is pinned at the top of the page, not over
+  the walker's head.
+- The horse's mount reach is six units. The harness settles 900 ms
+  before a read.
+
 ### Known and open
 
 - Coast to coast is 2¼ minutes at a run; the brief wanted 4–5. One constant
@@ -161,3 +217,10 @@ opening/camera ×3):
   PEN, FIRST HOUR and THINGS sessions were cut off before writing theirs.
   Their commits are on `wt/camera-2`, `wt/pen-2`, `wt/first-hour`, `wt/things`.
 - Mobile portrait was exercised by the pillar sessions, not by a cold player.
+- The horse's mount prompt was "narrow" for round 2's player twice; the
+  reach is six units now but the cause was not found (the horse wanders;
+  a nearer place may take the prompt).
+- Brim's back streets have drawn gaps that are solid (round 1, sixty
+  seconds wedged against a house block).
+- The field workers in the Home Field are not talkable figures; only
+  routines (`life.ts` Figures) get a TALK prompt.

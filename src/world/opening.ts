@@ -73,7 +73,7 @@ export const OPENING_POIS: WorldPOI[] = [
  *  until somebody hands out a job. */
 export const THREE_ASKS = [
   { id: 'marget', name: 'MARGET', label: 'BRIM SQUARE', x: -45, z: -82, road: 'north' },
-  { id: 'joan', name: 'JOAN HARROW', label: 'THE HOME FIELD', x: 178, z: -24, road: 'east' },
+  { id: 'joan', name: 'JOAN HARROW', label: 'THE HOME FIELD', x: 176, z: -22, road: 'east' }, /* gate round 2: the middle of the row she reaps down and back up over the day; her name reads from further (POI labelReach) */
   { id: 'val', name: 'VAL', label: 'MAPLE COURT', x: -78, z: 140, road: 'south' },
 ];
 
@@ -125,8 +125,11 @@ class Opening {
     this.nudges = [
       {
         id: 'brim-wall', held: 0, last: -99,
-        test: (x, z, land) => (land === 'meadow' && z < -2 && Math.abs(x + 45) > 7)
-          ? `BRIM'S GATE IS ${x < -45 ? 'EAST' : 'WEST'} ALONG THE WALL, WHERE THE ROAD MEETS IT` : null,
+        /* Gate round 2: the wall IS the region line (z ≈ −11.7), so a
+         * walker pressed against it is already "in the kingdom", and the
+         * arch admits 2.6 units either side of the road, not seven. */
+        test: (x, z, land) => ((land === 'meadow' || land === 'kingdom') && z < -2 && z > -17 && Math.abs(x + 45) > 2.6)
+          ? `BRIM'S GATE IS ${x < -45 ? 'EAST' : 'WEST'} ALONG THE WALL, ON THE ROAD` : null,
       },
       {
         /* Gate round 1: the stile is at x = 12.6, so for most of the

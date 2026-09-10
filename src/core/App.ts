@@ -298,7 +298,7 @@ export class App {
       get x() { return self.horse.pos.x; },
       get z() { return self.horse.pos.y; },
       get enabled() { return !self.bicycle.aboard && !self.boat.aboard && !self.train.aboard; },
-      radius: 4.6,
+      radius: 6.0, /* gate round 2: "the mount band is so narrow finding it costs five moves" */
       prompt: () => !this.horse.aboard ? 'GET ON THE HORSE'
         : Math.hypot(this.char.vel.x, this.char.vel.z) > 0.8 ? 'WHOA' : 'GET OFF',
       onInteract: () => this.horseKey(),
@@ -1140,6 +1140,10 @@ export class App {
   private nothingSaidAt = -10;
   private playedSec = 0;
   private lookNudged = false;
+  private stuckFor = 0;
+  private stuckSaidAt = -10;
+  private stuckN = 0;
+  private static STUCK_LINES = ['Solid.', 'Not through there.', 'That\'s a wall. Round it, then.', 'No.'];
   /* ---- VOICE (gate round 1): E WITH NOTHING IN REACH IS STILL ANSWERED.
    * The cold player stood on a carter, a townsperson and a banner,
    * pressed E, and got silence three times. Now the walker says what
@@ -2041,6 +2045,18 @@ export class App {
       this.char.pos.z - this.prevPos.z
     );
     if (this.started) this.save.data.walked += moved;
+    /* ---- VOICE (gate round 2): PUSHING AT SOMETHING SOLID IS ANSWERED.
+     * The cold player pushed W at Brim's wall for forty game-seconds
+     * "with no message, no bump, no you-can't". A second of pushing
+     * without moving and the walker says so, once, then not again for
+     * a while. ---- */
+    const pushing = this.started && !this.char.frozen && !this.seat && !this.train.aboard && this.input.move.lengthSq() > 0.25;
+    this.stuckFor = pushing && moved < 0.01 ? this.stuckFor + dt : 0;
+    if (this.stuckFor > 1.1 && this.elapsed - this.stuckSaidAt > 7) {
+      this.stuckSaidAt = this.elapsed;
+      this.stuckFor = 0;
+      say('walker', App.STUCK_LINES[this.stuckN++ % App.STUCK_LINES.length]);
+    }
 
     /* ---- THE BOAT ---------------------------------------------------- *
      * Aboard, the boat IS the walker's position — it is not following

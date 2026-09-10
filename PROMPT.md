@@ -54,44 +54,68 @@ Run the pillars and the loop **one at a time, one agent at a time, over as
 many sessions as it takes.** A cold player and then one critic in sequence
 is fine. The brief's goal is unchanged; only the shape of the work is.
 
-## 2. Where it stands (2026-09-09, branch `claude/inklands-open-world-va3lgx`, PR #23)
+## 2. Where it stands (2026-09-10, branch `claude/prompt-item-1-l6ogmg`, PR #26)
 
-Play it: https://adventure-git-claude-inklands-open-world-va3lgx-ryankm.vercel.app
-(Vercel rebuilds this alias on every push to the branch.)
+Play it: https://adventure-git-claude-prompt-item-1-l6ogmg-ryankm.vercel.app
+(Vercel rebuilds this alias on every push to the branch.) PR #23 is
+merged; this branch is the gate's rounds on top of it.
 
-| Pillar | Built | Verified by | Report | Gate |
-|---|---|---|---|---|
-| THE CAMERA | yes | its engineers' orbit tours; integrator smoke | **missing** | not run |
-| THE VOICE | yes | its engineer's play on both rigs | `design/reset/reports/VOICE.md` | not run |
-| THE FIRST HOUR | yes | integrator: bull → Nell → THE FOURTH NAME in the notebook | **missing** | not run |
-| SCALE AND MOTION | yes | its engineer's timed runs and three-hour sweep | `design/reset/reports/SCALE.md` | not run |
-| THINGS TO DO | yes | **nobody** past the build | **missing** | not run |
-| THE PEN | yes | its engineers' fps/glyph/bench tools | **missing** | not run |
+The gate (`design/reset/THE-GATE.md`) has been run on the merged build.
+Rounds so far, all desktop, from the title, no parameters:
 
-"Gate" is the brief's test: a ten-minute cold play from the title with no
-instructions, then a blind critic per pillar. **It has not been run on the
-merged build**, so nothing above is done in the brief's sense. The code of
-every pillar is merged and the build is green.
+| round | T1 (what it wants at 60 s) | T2 (two sentences, three next) | T3 (critics for INKLANDS) |
+|---|---|---|---|
+| 1 | 6/10 — **fails** | yes | 0 of 6 |
+| 2 | 8/10 — holds | yes | 0 of 5 (THE PEN not run: usage window) |
 
-What the integrator saw with the harness, from the title, no parameters:
-0:04 the bull looks, Nell's bubble "RUN. THE GATE. NOW.", hint "hold shift
-to run"; 0:40 through the gate, Nell: "That bull is mine…"; four E presses:
-"Read it. Bring me the fourth name and I'll owe you."; objective line NELL —
-READ THE SIGNPOST AT THE CROSSROADS; N shows THE FOURTH NAME, four steps,
-"for: NELL'S CAP", THE 8:15 WILL STOP FOR 0 OF 12.
+Round 1's cold player never met Nell (the opening waited for a gate slam
+only a westward run produces). Round 2's played the opening end to end
+in 75 seconds and then could not get through Brim's south gate (a
+3.2-unit collision gap in a 13-unit arch). Each round's fixes are in
+`CHANGELOG.md` under "The gate"; the reports are in
+`design/reset/rounds/round-N/`.
+
+What every critic still names, and what a fix costs:
+- **Small, done as they came up:** the opening by any exit; E always
+  answered; WAIT as a verb; step pins; hints in game time; the lens
+  taught once; gates wide enough; a wall that says "Solid."; names read
+  from fourteen units; bubbles from off-screen pinned at the top.
+- **Pillar-sized, not done (see §3):** the camera never moves for the
+  world (no crane on a border, no vista); occluders are grey slabs over
+  the walker and the figure stands inside props (PEN); a universal
+  touch verb every drawn thing answers (THINGS); Marget, Joan and Val
+  do not walk and work the way Nell does; each land's own moving life.
 
 ## 3. The next session, and the ones after (one item per session, in order)
 
-1. **Run the gate.** `design/reset/THE-GATE.md`, top to bottom: cold player,
-   then the six critics one at a time. Write both verdicts into
-   `CHANGELOG.md` under "After". Fix the three things named most. Run the
-   cold player again. Repeat until the brief's stop condition holds.
-2. **The gate on a phone.** The same with `--rig portrait`.
-3. **The open list** in `CHANGELOG.md` "Known and open", top to bottom.
-4. **The four missing reports**, one page each, from the diff:
+1. **Run the gate again** (round 3+): `THE-GATE.md` top to bottom on
+   this branch — cold player, then all six critics, THE PEN included
+   (round 2's PEN critic never ran: the usage window emptied on the
+   twelfth agent of the session, so budget for one cold player and six
+   critics and little else). Keep fixing the three things named most.
+   T1 and T2 hold as of round 2; T3 is 0 of 5, so the loop is not done.
+   Round 2's fixes (the gate, the bump line, Joan's name, LOOK AT, the
+   off-screen bubbles) are built and pushed but have not been played
+   cold yet.
+2. **THE CAMERA moves for the world.** A crane on every border crossing
+   (pull back and rise, then settle behind the figure), an opening
+   shot from the Common that frames Brim, the Downs, Maple Court and
+   the sea, and occluders that dolly or line-fade instead of grey slabs.
+   Two critics in two rounds named it first.
+3. **THE PEN's second half: depth.** The walker and people depth-sorted
+   against props (nobody inside a bull, a fence, a cart or a fountain);
+   near buildings opaque and off the HUD; the figure whole at every
+   distance.
+4. **THINGS: one verb for everything.** A touch every drawn object
+   answers — sheaves topple, the bull startles, pigeons scatter, the
+   signpost's arms spin — and the "push the cart yourself" branch as a
+   toy.
+5. **The gate on a phone.** The same with `--rig portrait`.
+6. **The open list** in `CHANGELOG.md` "Known and open", top to bottom.
+7. **The four missing reports**, one page each, from the diff:
    `git log --stat dcd1a6e..origin/wt/camera-2`, `…wt/pen-2`,
    `…wt/first-hour`, `…wt/things`.
-5. **The owner plays.** Nothing but the URL. Their notes beat every critic.
+8. **The owner plays.** Nothing but the URL. Their notes beat every critic.
 
 ## 4. Rules that stay
 Keep the pen (no image, font or audio assets, ever). `npm run build` green

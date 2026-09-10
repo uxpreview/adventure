@@ -82,7 +82,7 @@ async function sec(s) {
 /* gate round 1: a read waits for the page's fades (0.4–0.8 s on the wall
  * clock) so a hint, an objective line or a closed map is reported as a
  * player a moment later would see it, not mid-transition. */
-const settle = () => page.waitForTimeout(750);
+const settle = () => page.waitForTimeout(900);
 
 const state = async () => { await settle(); return page.evaluate(() => {
   const I = window.__inklands; if (!I) return { loaded: false };
