@@ -184,7 +184,7 @@ Nell's lines, called from off-screen, were drawn over the walker's head.
 | THE FIRST HOUR | REFERENCE | Brim's gate passable · a generous horse mount band · TALK TO JOAN, and the "look" label gone |
 | SCALE AND MOTION | REFERENCE | Marget, Joan and Val walk, work and answer like Nell · open Brim · each land its own moving life |
 | THINGS TO DO | REFERENCE | the "push the cart yourself" branch as a physics toy · one verb every drawn object answers · the horse as a toy with a generous mount |
-| THE PEN | **not run** | the session's usage window ran out on the sixth critic |
+| THE PEN | REFERENCE | Brim's gate passable and every blocked step a bump or a line · opaque ink drawings for the grey occluder slabs, z-ordered under the HUD · ink the bare terrain and hedges at distance |
 
 Reports: `design/reset/rounds/round-2/`.
 

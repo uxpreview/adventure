@@ -66,7 +66,7 @@ Rounds so far, all desktop, from the title, no parameters:
 | round | T1 (what it wants at 60 s) | T2 (two sentences, three next) | T3 (critics for INKLANDS) |
 |---|---|---|---|
 | 1 | 6/10 — **fails** | yes | 0 of 6 |
-| 2 | 8/10 — holds | yes | 0 of 5 (THE PEN not run: usage window) |
+| 2 | 8/10 — holds | yes | 0 of 6 |
 
 Round 1's cold player never met Nell (the opening waited for a gate slam
 only a westward run produces). Round 2's played the opening end to end
@@ -89,11 +89,11 @@ What every critic still names, and what a fix costs:
 ## 3. The next session, and the ones after (one item per session, in order)
 
 1. **Run the gate again** (round 3+): `THE-GATE.md` top to bottom on
-   this branch — cold player, then all six critics, THE PEN included
-   (round 2's PEN critic never ran: the usage window emptied on the
-   twelfth agent of the session, so budget for one cold player and six
-   critics and little else). Keep fixing the three things named most.
-   T1 and T2 hold as of round 2; T3 is 0 of 5, so the loop is not done.
+   this branch — cold player, then the six critics. Round 2 used the
+   whole usage window on one cold player and six critics (the PEN
+   critic finished on the last request), so budget for exactly that
+   and the fixes. Keep fixing the three things named most. T1 and T2
+   hold as of round 2; T3 is 0 of 6, so the loop is not done.
    Round 2's fixes (the gate, the bump line, Joan's name, LOOK AT, the
    off-screen bubbles) are built and pushed but have not been played
    cold yet.
