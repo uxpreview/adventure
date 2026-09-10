@@ -81,6 +81,73 @@ play and the six blind critiques have not been run on the merged build**:
 the sessions that would have run them hit usage limits. That is the first
 job of the next session (see `PROMPT.md`).
 
+### The gate — round 1 (2026-09-10, the merged build, desktop)
+
+The cold player stopped at game-second 216 (its ~90-command budget went
+on Brim's back streets). At sixty seconds: *"I think it wants me to walk
+to all twelve lands, talk to people and do small jobs for them, so that
+the 8:15 will stop for each of them. Confidence: 6/10."* Scores:
+understandable 5, alive 7, fun 5, beautiful 9.
+
+**To a friend:** *"It's a walking-and-talking game drawn entirely in
+pencil and watercolour, where you're a stick figure crossing a sheet of
+paper split into twelve little lands, doing one small favour for each
+so that a train called the 8:15 will stop there. Every sign and fence
+and fountain has a paragraph of dry, lovely writing, and the world is
+busy with bulls and pigeons and people, but at the moment it's easy to
+get physically stuck and hard to tell who you can talk to."* Next time:
+find the market cross and wait at the belfry to dusk; go and find Nell
+("she's the one who shouted at me and I never met her"); walk west to
+Longshore.
+
+What actually happened: the first E read the crossroads signpost from
+the middle of the bull's field (the prompt was the poster's, left over
+from the title's cut); the bull charged and Nell shouted while the
+player was behind an open note and the map; the player ran **north** to
+the long fence, pressed E on the drawing of a shut gate, found the stile
+by wandering and left the field that way; the gate never slammed, the
+opening stayed on its first line for the whole session, no job landed,
+the controls line (drag to look) never printed, and Nell was never met.
+In Brim: E on a carter, a townsperson and a banner did nothing; the
+market cross was never found (nearest approach 10 units, not pinned);
+WAIT FOR THE BELL re-opened the note.
+
+| pillar | verdict | the three changes named |
+|---|---|---|
+| THE CAMERA | REFERENCE | let the camera orbit or flip south · fade or cut foreground buildings · name the far skyline and the clock arch when they enter view |
+| THE VOICE | REFERENCE | every drawn figure a line, or mark the mute ones · Marget or Nell reference one thing the player did · one real choice in the first ten minutes |
+| THE FIRST HOUR | REFERENCE | market cross visible and on the map, a key on every prompt · Nell's command opens the gate she points at, drawn gaps walkable · WAIT FOR THE BELL passes time, a tell on talkable people |
+| SCALE AND MOTION | REFERENCE | every drawn figure a line · WAIT FOR THE BELL advances the clock · moving things on the empty common, and the camera swings |
+| THINGS TO DO | REFERENCE | bull, pigeons, crowd each pokeable · WAIT FOR THE BELL passes time · a visible mark on every talkable figure and prop |
+| THE PEN | REFERENCE | depth-sort the walker and people against props · near buildings opaque, off the HUD · the figure whole at every distance |
+
+Reports: `design/reset/rounds/round-1/`.
+
+**Fixed after round 1** (named most: figures answer ×4, the wait ×3, the
+opening/camera ×3):
+- The opening survives any exit. Nell slams the gate when you are out of
+  the field by any way (stile, gate, the fence's end), not only when the
+  bull reaches the hedge; her shout pins THE FIELD GATE and the objective
+  line reads NELL — RUN. THE GATE IS WEST, then NELL — AT THE FIELD GATE.
+  E TO TALK; the fence nudges in the first minute and says which way the
+  stile really is. The spawn's prompt is the spawn's (no signpost from
+  the field).
+- E is always answered. Unnamed figures reach 4.8 units and carry their
+  role over their head as you come near (CARTER, SWEEPER…); E with nothing
+  in reach has the walker say what is a step off ("Closer, and it says
+  PUSH THE CART.") or that nothing is.
+- WAIT is a verb. WAIT FOR THE BELL runs the day forty-eight times faster
+  with the walker in the yard until the lamps are up (about twenty
+  seconds from mid-morning), a step stops it, and the fact lands as
+  before. Marget's line says "wait at THE BELFRY".
+- A job step pins its own place: THE MARKET CROSS while it is the next
+  step, then THE BELFRY.
+- Hints hold in game time (they timed out on the wall clock, which on the
+  stepped harness was before the next frame); a player who has not turned
+  the lens in seventy seconds is told once how.
+- The harness reports what a player sees: a read settles 750 ms for the
+  fades, and a faded note's words are no longer listed as on screen.
+
 ### Known and open
 
 - Coast to coast is 2¼ minutes at a run; the brief wanted 4–5. One constant

@@ -86,7 +86,7 @@ export type OpeningCtx = {
   showHint: (text: string, holdMs?: number) => void;
   touch: boolean;
   /** The meadow's opening state (`regions/meadow.ts` `common`). */
-  common: { bull: { state: string; t: number; face: number }; gate: { shut: boolean }; wake(): void };
+  common: { bull: { state: string; t: number; face: number }; gate: { shut: boolean }; wake(): void; slam(): void };
   data: () => { opening?: OpeningSave | null };
   persist: () => void;
 };
@@ -104,6 +104,9 @@ class Opening {
   private timers: Timer[] = [];
   private settled = false;
   private saidRun = false;
+  /** Seconds the walker has been out of the field with the gate still
+   *  open (gate round 1: the slam by any exit). */
+  private outFor = 0;
   private origLines: ((s: NpcState) => string[]) | null = null;
   private fallbackId: string | null = null;
   private fallbackAcc = 0;
@@ -126,9 +129,14 @@ class Opening {
           ? `BRIM'S GATE IS ${x < -45 ? 'EAST' : 'WEST'} ALONG THE WALL, WHERE THE ROAD MEETS IT` : null,
       },
       {
+        /* Gate round 1: the stile is at x = 12.6, so for most of the
+         * fence it is WEST, not east — the cold player at x = 27 was
+         * told nothing and found it by wandering. The direction is
+         * read off where you stand, and the gate is named as the hedge
+         * it is in. The band starts at the rails themselves. */
         id: 'long-fence', held: 0, last: -99,
-        test: (x, z, land) => (land === 'meadow' && x > -10 && x < 46 && z > 64 && z < 68.5)
-          ? (ctx.common.gate.shut ? 'THE STILE IS EAST ALONG THE FENCE' : 'THE STILE IS EAST ALONG THE FENCE. THE GATE IS WEST.') : null,
+        test: (x, z, land) => (land === 'meadow' && x > -10 && x < 46 && z > 63 && z < 68.5)
+          ? `THE STILE IS ${x > 14 ? 'WEST' : 'EAST'} ALONG THE FENCE${ctx.common.gate.shut ? '' : '. THE GATE IS WEST, IN THE HEDGE'}` : null,
       },
       {
         id: 'shut-gate', held: 0, last: -99,
@@ -149,6 +157,7 @@ class Opening {
     }
     this.timers.length = 0;
     this.saidRun = false;
+    this.outFor = 0;
     this.settled = true;
     this.go('wake');
     this.ctx.common.wake();
@@ -175,6 +184,7 @@ class Opening {
     this.stage = stage;
     this.said = 0;
     this.save();
+    fallbackAsk.refresh(); /* gate round 1: the objective line follows the stage */
   }
 
   private save() {
@@ -376,6 +386,25 @@ class Opening {
         if (c.common.bull.state === 'charge' && !this.saidRun) {
           this.saidRun = true;
           this.nellSays('RUN. THE GATE. NOW.', 3.2);
+          /* Gate round 1: the shout names the gate; the objective line
+           * and the map say which way it is. The cold player ran north
+           * into the long fence and pressed E on a drawing of a gate. */
+          notebook.place(PIN_GATE.label, PIN_GATE.x, PIN_GATE.z, { seen: true, quiet: true });
+          fallbackAsk.refresh();
+        }
+        /* Gate round 1: OUT OF THE FIELD BY ANY WAY — over the stile,
+         * through the gate — and the bull up, Nell slams it. The
+         * drawn slam (meadow.ts) waits for the bull at the hedge, which
+         * only a westward run produces; a walker who went north was
+         * stuck on this stage for the whole session. Never with the
+         * walker in the gap. */
+        if (!c.common.gate.shut) {
+          const inGap = Math.abs(w.z - PIN_GATE.z) < 2.0 && Math.abs(w.x - PIN_GATE.x) < 2.2;
+          // past the rails (z 64.5) or the hedge (x −12), not merely off
+          // the bull's rect, which ends a stride inside them
+          const out = w.z < 64 || w.x < -12.6 || w.x > 46.5 || w.z > 112.5;
+          this.outFor = (out && !inGap && this.elapsed > 1) ? this.outFor + dt : 0;
+          if (this.outFor > (this.saidRun ? 0.8 : 3)) c.common.slam();
         }
         if (c.common.gate.shut) {
           this.go('gate');
@@ -403,7 +432,7 @@ class Opening {
       default:
         break;
     }
-    if (this.stage !== 'wake') this.nudge(dt, w.x, w.z, land);
+    this.nudge(dt, w.x, w.z, land); /* gate round 1: the fence nudges in the first minute too */
     if (this.stage === 'done') {
       this.fallbackAcc += dt;
       if (this.fallbackAcc > 1) {
@@ -430,7 +459,11 @@ class Opening {
   /** With no job, the objective line names the nearest of the three
    *  who has not been met yet. */
   private fallback(): { name: string; want: string } | null {
-    if (this.stage !== 'done' || !this.ctx) return null;
+    if (!this.ctx) return null;
+    /* Gate round 1: the first minute has an objective line too. */
+    if (this.stage === 'wake') return this.saidRun ? { name: 'NELL', want: 'RUN. THE GATE IS WEST' } : null;
+    if (this.stage === 'gate') return { name: 'NELL', want: 'AT THE FIELD GATE. E TO TALK' };
+    if (this.stage !== 'done') return null;
     const w = this.ctx.walker();
     let best: (typeof THREE_ASKS)[number] | null = null;
     let bd = Infinity;

@@ -926,6 +926,16 @@ export const KINGDOM_POIS: WorldPOI[] = [
       if (!done && knowledge.has('fact:brim-hour')) return 'SETTLE THE HOUR';
       return 'WAIT FOR THE BELL';
     },
+    /* Gate round 1: WAIT FOR THE BELL waits. Three critics and the cold
+     * player pressed E here and got the note again; the lamps were an
+     * hour of real time away. Now the day runs while you stand in the
+     * yard until the lamps are up, and the fact lands the way it
+     * always did (the frame above learns it at lamp > 0.3). */
+    wait: {
+      until: () => knowledge.has('fact:brim-hour') || clock.lamp > 0.3,
+      hint: 'waiting in the yard for the lamps — step away to stop',
+      done: 'The lamps. One hand on that clock agrees with them.',
+    },
     get choice() {
       if (!knowledge.has('fact:brim-hour') || knowledge.has('reason:brim')) return undefined;
       return {

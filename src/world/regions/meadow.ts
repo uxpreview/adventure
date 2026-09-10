@@ -233,6 +233,20 @@ export const common = {
     this.reset();
     this.bull.state = 'watch'; this.bull.t = 0.6; this.bull.face = -1;
   },
+  /** FIRST HOUR (gate round 1): NELL SLAMS THE GATE, whichever way you
+   *  left the field. The slam used to wait for the bull to reach the
+   *  hedge, which it only does when you run west; a walker who went
+   *  north over the stile left the opening stuck on its first line
+   *  for the whole session. The opening calls this the moment you are
+   *  out and the bull has run; the frame below still does it the
+   *  drawn way when it can. */
+  slam() {
+    if (this.gate.shut) return;
+    this.gate.shut = true;
+    barriers.gap('the-field-gate')!.open = false;
+    say('gate-slam');
+    this.nell.pose = 2; this.nell.t = 0; this.nell.straightFor = 7;
+  },
 };
 
 /* THE MORNING PUTS THINGS BACK — the Common's own scheduled event, and
@@ -875,12 +889,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
        * the rails. Never with anybody standing in the gap: a gate shut
        * on the walker would leave them inside a rule with no way out. */
       const inGap = Math.abs(pz - GATE.z) < gateGap.r + 0.6 && Math.abs(px - HEDGE_X) < 2.2;
-      if (!inGap) {
-        common.gate.shut = true;
-        gateGap.open = false;
-        say('gate-slam');
-        N.pose = 2; N.t = 0; N.straightFor = 7;
-      }
+      if (!inGap) common.slam();
     }
     if (N.pose === 2 && N.t > 0.7) { N.pose = 1; N.t = 0; }
     else if (N.pose === 1) {

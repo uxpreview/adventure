@@ -106,13 +106,28 @@ class Jobs {
 
   give(spec: JobSpec) {
     if (notebook.list().some((j) => j.id === spec.id)) return;
-    notebook.job({
-      id: spec.id, name: spec.name, giver: npcs.get(spec.giver)?.def.name ?? spec.giver.toUpperCase(),
-      steps: spec.steps.map((st) => st.text), reward: spec.reward, land: spec.land, pin: spec.pin,
-    });
+    notebook.job(this.jobDef(spec, 0));
     notebook.activate(spec.id);
     T.arm(spec.id, 0);
     try { window.dispatchEvent(new CustomEvent('inklands:event', { detail: 'page' })); } catch { /* no ears */ }
+  }
+
+  /** The notebook's entry for a job whose next step is `i`: pinned
+   *  where that step happens, or where the job as a whole does. */
+  private jobDef(spec: JobSpec, i: number) {
+    const pin = spec.steps[i]?.pin ?? spec.pin;
+    return {
+      id: spec.id, name: spec.name, giver: npcs.get(spec.giver)?.def.name ?? spec.giver.toUpperCase(),
+      steps: spec.steps.map((st) => st.text), reward: spec.reward, land: spec.land, pin,
+    };
+  }
+
+  /** Gate round 1: a step with its own place moves the pin there. */
+  private pinStep(spec: JobSpec, i: number) {
+    const pin = spec.steps[i]?.pin;
+    if (!pin) return;
+    notebook.place(pin.label, pin.x, pin.z, { quiet: true });
+    notebook.job(this.jobDef(spec, i));
   }
 
   /* ---- the frame --------------------------------------------------- */
@@ -141,6 +156,7 @@ class Jobs {
       else {
         notebook.step(spec.id, i + 1);
         T.arm(spec.id, i + 1);
+        this.pinStep(spec, i + 1);
       }
     }
 

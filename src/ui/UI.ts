@@ -331,8 +331,26 @@ export class UI {
       ...S.voice(11.5), maxWidth: Math.max(200, window.innerWidth - 32), align: 'center',
     });
     this.hintEl.classList.add('show');
+    /* Gate round 1: the hold is GAME time, ticked by App, like a toast
+     * or a bubble — not a wall-clock timeout. On the stepped harness a
+     * 7.5 s hint went before the cold player's next frame. */
     window.clearTimeout(this.hintTimer);
-    this.hintTimer = window.setTimeout(() => this.hintEl.classList.remove('show'), holdMs);
+    this.hintLeft = holdMs / 1000;
+  }
+
+  private hintLeft = 0;
+  /** Once a frame, from App: the hint's hold runs on the game's clock. */
+  tickHint(dt: number) {
+    if (this.hintLeft <= 0) return;
+    this.hintLeft -= dt;
+    if (this.hintLeft <= 0) this.hintEl.classList.remove('show');
+  }
+
+  /** Gate round 1: a hint that was held for a wait goes when it ends. */
+  hideHint() {
+    window.clearTimeout(this.hintTimer);
+    this.hintLeft = 0;
+    this.hintEl.classList.remove('show');
   }
 
   /* ================================================================ *

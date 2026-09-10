@@ -114,6 +114,13 @@ export type WorldPOI = import('../../engine/POI').POIDef & {
   /** TOUCH: ring, knock, push, shout down. A one-shot on a thing in
    *  reach, with the walker's position, so a shove knows which way. */
   touch?: (px: number, pz: number) => void;
+  /** WAIT (gate round 1): a place whose verb is waiting for something
+   *  on the clock. While `until()` is false, the key runs the day fast
+   *  with the walker standing here; a step, or leaving, stops it.
+   *  `hint` sits on screen meanwhile; `done` is the walker's line when
+   *  it comes. Dispatched before the NOTE, so a prompt that says WAIT
+   *  waits. */
+  wait?: { until: () => boolean; hint: string; done: string };
   /** SIT: the seat point the walker is put on, facing the camera's
    *  north. The camera does not move; time passes; routines go by.
    *  `learns` is what sitting here teaches — JOAN's wait resolves on
