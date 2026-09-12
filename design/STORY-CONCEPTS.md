@@ -33,6 +33,11 @@ Every concept below obeys six rules, and the rules are the fix:
   carried through the world while someone talks, control arriving in
   stages (look, then walk, then act), a spectacle that dumps you at the
   bull with one obvious thing to do.
+  (`PROMPT.md` §2b lists "a cart-ride prologue" among the rejected
+  pitches. This reads that as a rejection of that pitch's story, not of
+  the device the owner named as the reference. If the device itself is
+  out, Concept 3's cart and Concept 2's horse become a walk-in at dawn
+  with the same talker, and nothing else in either concept moves.)
 - **A first job of three words** that is finished in two minutes and
   needs no compass, because what you follow is drawn on the ground.
 - **Someone to care about** who has a voice and is in trouble by the

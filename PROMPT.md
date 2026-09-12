@@ -118,6 +118,14 @@ a yes. Next time: get a bearing first (tone, who you are, a reference
 whose whole shape to steal, or the trailer in three shots), then one
 direction, not four.
 
+**Three concepts, each with a bearing first, are in
+`design/STORY-CONCEPTS.md` (2026-09-12): DOWNSTREAM (the river stopped;
+decide who gets it back), THE KING'S ROAD (walk a thousand-year-old king
+home, a companion who talks the whole way), WHAT TOOK TAM (find the
+carter the wood took). A side-by-side table, a recommendation and three
+questions for the owner are at the end of that file. Nothing is picked
+until the owner picks.
+
 ## 3. The next session, and the ones after (one item per session, in order)
 
 1. **Run the gate again** (round 3+): `THE-GATE.md` top to bottom on
