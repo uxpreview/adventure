@@ -86,6 +86,38 @@ What every critic still names, and what a fix costs:
   touch verb every drawn thing answers (THINGS); Marget, Joan and Val
   do not walk and work the way Nell does; each land's own moving life.
 
+## 2b. The owner's notes (2026-09-12, played on a phone, no sheet)
+
+These beat every critic. Verbatim in substance:
+- The bull poses no danger. It sits there if you don't move, and it
+  chases you backwards.
+- Finding the field gate is extremely difficult: it isn't connected to
+  anything (the hedge is blobs, not a line) and it faces you (a
+  billboard, not a gate in a hedge).
+- The map is incredibly hard to read.
+- With the free camera it's easy to forget which way north is; "THE
+  GATE IS WEST" means nothing.
+- Nell's quest is confusing and wordy. Nobody will understand it. The
+  first quest should pull you into the game.
+- **The story itself does not work** and people will not understand or
+  care about it. It is to be rethought in a fresh session, from
+  scratch if need be. Nothing built is sacred if a better game needs it
+  to go: the twelve lands, the 8:15, the twelve waits, the mechanics.
+  The ballpoint-on-paper look is the *style* of the game, not its
+  subject; do not pitch stories about drawing, pens or paper.
+- Reference points for the opening the owner wants: Skyrim's cart and
+  GTA's cold open. Carried through the world before you control it,
+  someone talking, control arriving in stages, a spectacle that dumps
+  you somewhere with one obvious thing to do.
+
+The story conversation so far (2026-09-12) pitched and rejected: the
+cap on the bull's horn; a cart-ride prologue; the 8:15 arriving empty;
+a chase across the lands; get home by fixing the line; a postal round;
+a fading page; a manhunt with a clock; an unfinished drawing. None got
+a yes. Next time: get a bearing first (tone, who you are, a reference
+whose whole shape to steal, or the trailer in three shots), then one
+direction, not four.
+
 ## 3. The next session, and the ones after (one item per session, in order)
 
 1. **Run the gate again** (round 3+): `THE-GATE.md` top to bottom on
