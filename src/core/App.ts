@@ -298,7 +298,7 @@ export class App {
       get x() { return self.horse.pos.x; },
       get z() { return self.horse.pos.y; },
       get enabled() { return !self.bicycle.aboard && !self.boat.aboard && !self.train.aboard; },
-      radius: 4.6,
+      radius: 6.0, /* gate round 2: "the mount band is so narrow finding it costs five moves" */
       prompt: () => !this.horse.aboard ? 'GET ON THE HORSE'
         : Math.hypot(this.char.vel.x, this.char.vel.z) > 0.8 ? 'WHOA' : 'GET OFF',
       onInteract: () => this.horseKey(),
@@ -384,7 +384,8 @@ export class App {
         this.standUp();
         return;
       }
-      this.activePoi?.def.onInteract?.();
+      if (this.activePoi) this.activePoi.def.onInteract?.();
+      else this.nothingInReach(); /* ---- VOICE (gate round 1): E is always answered ---- */
     });
     this.ui.onPromptClick = () => this.activePoi?.def.onInteract?.();
 
@@ -949,6 +950,11 @@ export class App {
         this.snapCamera();
         this.region = regionAt(SPAWN.x, SPAWN.z);
         this.district = districtAt(SPAWN.x, SPAWN.z);
+        /* ---- FIRST HOUR (gate round 1): the prompt is the spawn's, not
+         * the poster's. The cut left READ THE SIGNPOST up from the
+         * crossroads, and the cold player's first E read it from the
+         * middle of the bull's field. ---- */
+        this.activePoi = this.poi.update(this.char.pos);
       };
       if (blink) {
         this.ui.blink(wake);
@@ -1046,6 +1052,15 @@ export class App {
         return;
       }
     }
+    /* ---- THINGS (gate round 1): WAIT is a verb. A prompt that says
+     * WAIT FOR THE BELL runs the day until the thing comes, with the
+     * walker standing here; a step stops it. ---- */
+    if (def.wait && !def.wait.until()) {
+      this.waiting = def;
+      this.ui.showHint(def.wait.hint, 180000);
+      toast('YOU WAIT. THE DAY RUNS FAST.', 'plain');
+      return;
+    }
     const note = def.note;
     if (note) {
       this.audio.note();
@@ -1117,6 +1132,44 @@ export class App {
   }
 
   private static SIT_TIME = 6;
+  /* ---- THINGS (gate round 1): a WAIT at a place. Forty-eight times:
+   * from mid-morning to the lamps is about twenty game-seconds, with
+   * the sky doing it in view. ---- */
+  private static WAIT_TIME = 48;
+  private waiting: WorldPOI | null = null;
+  private nothingSaidAt = -10;
+  private playedSec = 0;
+  private lookNudged = false;
+  private stuckFor = 0;
+  private stuckSaidAt = -10;
+  private stuckN = 0;
+  private static STUCK_LINES = ['Solid.', 'Not through there.', 'That\'s a wall. Round it, then.', 'No.'];
+  /* ---- VOICE (gate round 1): E WITH NOTHING IN REACH IS STILL ANSWERED.
+   * The cold player stood on a carter, a townsperson and a banner,
+   * pressed E, and got silence three times. Now the walker says what
+   * is near enough to be worth a step, or that nothing is. ---- */
+  private nothingInReach() {
+    if (this.elapsed - this.nothingSaidAt < 2.5) return;
+    this.nothingSaidAt = this.elapsed;
+    const px = this.char.pos.x;
+    const pz = this.char.pos.z;
+    let best: WorldPOI | null = null;
+    let bd = Infinity;
+    for (const p of this.poi.pois) {
+      if (!p.enabled || !p.def.onInteract || p.def.weak) continue;
+      const d = Math.hypot(px - p.def.x, pz - p.def.z);
+      if (d < p.def.radius * 2.6 && d < bd) { bd = d; best = p.def as WorldPOI; }
+    }
+    if (best) {
+      const pr = best.prompt;
+      const verb = (typeof pr === 'function' ? pr() : pr) ?? null;
+      const who = (best as { npc?: boolean }).npc ? (best.label ?? null) : null;
+      say('walker', who ? `Closer. ${who.charAt(0) + who.slice(1).toLowerCase()} is a step off.` : verb ? `Closer, and it says ${verb}.` : 'Closer.');
+      return;
+    }
+    const lines = ['Nobody here to talk to.', 'Nothing to hand. Somewhere else, then.', 'Nothing here. The map has places.'];
+    say('walker', lines[Math.floor(this.elapsed) % lines.length]);
+  }
   private sitDown(def: WorldPOI) {
     if (!def.sit || this.boat.aboard || this.train.aboard) return;
     const sx = def.sit.x;
@@ -1827,7 +1880,23 @@ export class App {
      * cares what time it is — the mixer, the lamps in Brim, whatever
      * Session 7 hangs a routine on — reads `daylight.clock` directly and
      * never comes through here (see world/daylight.ts). */
-    if (this.started) dayClock.advance(dt * (this.seat ? App.SIT_TIME : 1));
+    /* ---- THINGS (gate round 1): a wait runs the day at WAIT_TIME with
+     * the walker standing; the thing coming, a step, or leaving the
+     * place ends it. ---- */
+    if (this.waiting) {
+      const wd = this.waiting;
+      const far = Math.hypot(this.char.pos.x - wd.x, this.char.pos.z - wd.z) > wd.radius + 1;
+      if (wd.wait!.until()) {
+        this.waiting = null;
+        this.ui.hideHint();
+        say('walker', wd.wait!.done);
+      } else if (this.input.move.lengthSq() > 0.01 || far || this.ui.noteOpen || this.ui.mapOpen || this.voice.open) {
+        this.waiting = null;
+        this.ui.hideHint();
+        toast('YOU STOPPED WAITING', 'plain');
+      }
+    }
+    if (this.started) dayClock.advance(dt * (this.seat ? App.SIT_TIME : this.waiting ? App.WAIT_TIME : 1));
     const day = dayClock.state;
     /* THE WORLD'S BUSINESS (Session 15): what is happening this hour,
      * whether or not the walker is there to see it. */
@@ -1976,6 +2045,18 @@ export class App {
       this.char.pos.z - this.prevPos.z
     );
     if (this.started) this.save.data.walked += moved;
+    /* ---- VOICE (gate round 2): PUSHING AT SOMETHING SOLID IS ANSWERED.
+     * The cold player pushed W at Brim's wall for forty game-seconds
+     * "with no message, no bump, no you-can't". A second of pushing
+     * without moving and the walker says so, once, then not again for
+     * a while. ---- */
+    const pushing = this.started && !this.char.frozen && !this.seat && !this.train.aboard && this.input.move.lengthSq() > 0.25;
+    this.stuckFor = pushing && moved < 0.01 ? this.stuckFor + dt : 0;
+    if (this.stuckFor > 1.1 && this.elapsed - this.stuckSaidAt > 7) {
+      this.stuckSaidAt = this.elapsed;
+      this.stuckFor = 0;
+      say('walker', App.STUCK_LINES[this.stuckN++ % App.STUCK_LINES.length]);
+    }
 
     /* ---- THE BOAT ---------------------------------------------------- *
      * Aboard, the boat IS the walker's position — it is not following
@@ -2386,6 +2467,16 @@ export class App {
       this.activePoi = this.poi.update(this.char.pos);
       /* ---- VOICE: bubbles follow, toasts time out, the world answers ---- */
       this.voice.tick(dt);
+      this.ui.tickHint(dt); /* ---- gate round 1: hints hold in game time ---- */
+      /* ---- CAMERA (gate round 1): a player who has not turned the lens
+       * in the first seventy seconds is told once that they can. The
+       * cold player played 216 seconds facing north and reported "the
+       * camera only looks north". ---- */
+      this.playedSec += dt;
+      if (!this.lookNudged && this.playedSec > 70 && !this.look.everDragged) {
+        this.lookNudged = true;
+        this.ui.showHint('ontouchstart' in window ? 'drag high, or two fingers, to look around' : 'drag the mouse to look around — R to recentre', 7000);
+      }
       opening.tick(dt); /* ---- FIRST HOUR: the opening, after the voice ---- */
       jobs.tick(dt); /* ---- THINGS: jobs, stamps, toys, monsters ---- */
       if (notebook.dirty) {

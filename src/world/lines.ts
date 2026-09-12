@@ -64,7 +64,7 @@ export const PEOPLE: PersonDef[] = [
         'Two hands on that belfry clock and they don\'t agree. Nobody here has a thing to check them against.',
         'I\'ll open when this town knows what o\'clock it is. Not before.',
       ],
-      asked: ['Read the cross first, so you know what a market is for. Then sit under THE BELFRY till the lamps come on. One hand will agree with them. Come and tell me which.'],
+      asked: ['Read the cross first, so you know what a market is for. Then wait at THE BELFRY till the lamps come on. One hand will agree with them. Come and tell me which.'],
       done: ['There. Was that so hard? Forty years.', 'Cloth\'s out. Take a yard of the red. It suits you.'],
       'chose:door:the-bell-rings-it': ['Let the bell say it. Fine. The bell says eight, so I\'m open at eight.'],
       'chose:door:the-clock-set-to-eight': ['Eight. Yes. I always said eight. Stall\'s open, then.'],

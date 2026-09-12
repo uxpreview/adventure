@@ -31,6 +31,8 @@ export type POIDef = {
    * six-tenths of a unit apart and printed on top of each other.
    */
   labelHeight?: number;
+  /** How far off the label reads (default radius × 1.6). */
+  labelReach?: number;
   /** If set, an interact prompt appears in range; tapping/E triggers it.
    *  Since Session 15 it may be a FUNCTION, because one key does
    *  several things and the prompt says which: a stone in hand is
@@ -185,7 +187,8 @@ export class POIManager {
         else p.def.onExit?.();
       }
       if (p.labelEl) {
-        const show = d < p.def.radius * 1.6;
+        // gate round 2: a named person is seen from further than a stone
+        const show = d < (p.def.labelReach ?? p.def.radius * 1.6);
         p.labelEl.classList.toggle('show', show);
         if (show) shown.push({ p, d });
       }
@@ -246,7 +249,8 @@ export class POIManager {
 
     if (active) {
       const p = active.def.prompt;
-      letterEl(this.promptEl, (typeof p === 'function' ? p() : p) ?? 'look', S.voice(11.5));
+      /* gate round 2: a place with a card and no verb says LOOK AT <it>, not "look" */
+      letterEl(this.promptEl, (typeof p === 'function' ? p() : p) ?? (active.def.label ? `LOOK AT ${active.def.label}` : 'LOOK'), S.voice(11.5));
       this.promptEl.classList.add('show');
       /* AND THE PROMPT IS WRITTEN BESIDE THE THING, ON THE OPEN PAGE.
        *

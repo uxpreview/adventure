@@ -66,6 +66,9 @@ export class Look {
   private recentreAsk = false;
   private target: { yaw: number; pitch: number } | null = null;
   private dragging = false;
+  /** Gate round 1: whether this player has ever turned the lens (App
+   *  nudges once if not, after a minute). */
+  everDragged = false;
   private lastX = 0;
   private lastY = 0;
   private touches = new Map<number, { x: number; y: number; look: boolean }>();
@@ -123,6 +126,7 @@ export class Look {
   /** A drag of (px, py) pixels: right turns the look right, down tips
    *  the camera up over the walker. Also the harness's hand. */
   orbitBy(px: number, py: number) {
+    this.everDragged = true;
     if (!this.enabled) return;
     this.target = null;
     this.dYaw += px * YAW_PER_PX;

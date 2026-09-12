@@ -79,11 +79,23 @@ async function sec(s) {
   await page.waitForTimeout(60);
 }
 
-const state = () => page.evaluate(() => {
+/* gate round 1: a read waits for the page's fades (0.4–0.8 s on the wall
+ * clock) so a hint, an objective line or a closed map is reported as a
+ * player a moment later would see it, not mid-transition. */
+const settle = () => page.waitForTimeout(900);
+
+const state = async () => { await settle(); return page.evaluate(() => {
   const I = window.__inklands; if (!I) return { loaded: false };
   const vis = [...document.querySelectorAll('[aria-label]')].filter((e) => {
-    const r = e.getBoundingClientRect(); const cs = getComputedStyle(e);
-    return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && +cs.opacity > 0.05 && !e.closest('.gone');
+    const r = e.getBoundingClientRect();
+    if (!(r.width > 0 && r.height > 0)) return false;
+    // gate round 1: a note card fades on its VEIL, not on its words —
+    // the words kept opacity 1 and were reported for the whole session
+    for (let n = e; n && n !== document.body; n = n.parentElement) {
+      const cs = getComputedStyle(n);
+      if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity <= 0.05 || n.classList.contains('gone')) return false;
+    }
+    return true;
   }).map((e) => e.getAttribute('aria-label'));
   const title = document.querySelector('.title-veil') && !document.querySelector('.title-veil')?.classList.contains('gone');
   return {
@@ -92,7 +104,7 @@ const state = () => page.evaluate(() => {
     prompt: I.promptText?.() ?? null, holding: I.holding?.() ?? null,
     text: vis,
   };
-});
+}); };
 
 async function shot(name = 'shot') {
   shotN++;

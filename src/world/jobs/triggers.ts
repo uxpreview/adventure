@@ -23,6 +23,10 @@ export type JobStep = {
   when: Trigger;
   /** Fired once, the frame the step is ticked. */
   onDone?: () => void;
+  /** Gate round 1: where THIS step happens, pinned on the map while it
+   *  is the next step. The cold player hunted the market cross for two
+   *  hundred seconds with only the belfry on the map. */
+  pin?: { x: number; z: number; label: string };
 };
 
 export type JobSpec = {

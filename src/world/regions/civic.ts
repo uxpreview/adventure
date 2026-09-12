@@ -283,7 +283,9 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   }
   [-116, -76, -16, 24].forEach((tx, i) =>
     ctx.standee(wallTowerTexture(880 + i), 6.4, 8.2, tx + (r() - 0.5) * 3, -11.6, { solid: true }));
-  const southGate = ctx.standee(brimGateTexture(810), 13, 13, -45, -12.5, { solid: { gap: 3.2 } });
+  /* gate round 2: the arch admits 5.2 of its 13 units, not 3.2 — the cold
+   * player pushed at the wall four units off the road for forty seconds */
+  const southGate = ctx.standee(brimGateTexture(810), 13, 13, -45, -12.5, { solid: { gap: 5.2 } });
   const pennantL = ctx.standee(gatePennantTexture(811), 1.5, 3, -49.1, -13.2);
   const pennantR = ctx.standee(gatePennantTexture(812), 1.5, 3, -40.9, -13.0);
   ctx.hang(pennantL, 10.3);
@@ -517,7 +519,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   }
   ctx.standee(wallTowerTexture(1540), 6.2, 8, 57, -140 + (r() - 0.5) * 3, { rotY: Math.PI / 2, solid: true });
   ctx.standee(wallTowerTexture(1541), 6.2, 8, 56.5, -58 + (r() - 0.5) * 3, { rotY: Math.PI / 2, solid: true });
-  ctx.standee(woodGateTexture(1542), 12, 12, 56, -110, { rotY: Math.PI / 2, solid: { gap: 3.2 } });
+  ctx.standee(woodGateTexture(1542), 12, 12, 56, -110, { rotY: Math.PI / 2, solid: { gap: 4.6 } });
 
   /* -- the north wall: the town closed toward the castle ------------- *
    * Collected, because since Session 4 the camera RETREATS when the
@@ -542,7 +544,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   }
   northRun.push(ctx.standee(wallTowerTexture(1570), 6.2, 8, -100 + (r() - 0.5) * 3, -155.6, { solid: true }));
   northRun.push(ctx.standee(wallTowerTexture(1571), 6.2, 8, -6 + (r() - 0.5) * 3, -155.8, { solid: true }));
-  const northGate = ctx.standee(brimGateTexture(1572), 11.5, 11.5, -45, -156.5, { solid: { gap: 3.0 } });
+  const northGate = ctx.standee(brimGateTexture(1572), 11.5, 11.5, -45, -156.5, { solid: { gap: 4.6 } });
   ctx.decal(wheelRutsDecal(1573), 11, 5.5, -45, -148, Math.PI / 2, 0.6);
 
   /* -- folk and the four gate banners -------------------------------- */
@@ -926,6 +928,16 @@ export const KINGDOM_POIS: WorldPOI[] = [
       if (!done && knowledge.has('fact:brim-hour')) return 'SETTLE THE HOUR';
       return 'WAIT FOR THE BELL';
     },
+    /* Gate round 1: WAIT FOR THE BELL waits. Three critics and the cold
+     * player pressed E here and got the note again; the lamps were an
+     * hour of real time away. Now the day runs while you stand in the
+     * yard until the lamps are up, and the fact lands the way it
+     * always did (the frame above learns it at lamp > 0.3). */
+    wait: {
+      until: () => knowledge.has('fact:brim-hour') || clock.lamp > 0.3,
+      hint: 'waiting in the yard for the lamps — step away to stop',
+      done: 'The lamps. One hand on that clock agrees with them.',
+    },
     get choice() {
       if (!knowledge.has('fact:brim-hour') || knowledge.has('reason:brim')) return undefined;
       return {
@@ -1201,7 +1213,7 @@ export const buildCastle: RegionBuilder = (ctx) => {
   /* -- THE BARBICAN: low on the ramp, so the ridge can rise behind it *
    * Its height is not the point and never was — it is the FIRST of the
    * approach's three beats, and the ridge does the rest. */
-  const gate = ctx.standee(greyweatherGateTexture(970), 9.5, 9.5, -45, -192, { solid: { gap: 2.6 } });
+  const gate = ctx.standee(greyweatherGateTexture(970), 9.5, 9.5, -45, -192, { solid: { gap: 4.0 } });
   /* THE PORTCULLIS THAT COMES DOWN A FOOT (Session 19; the castle's
    * toy, `QUESTS` §8): a grid hung in the arch, raised; rattle it and
    * it drops a stride and stops, and the winch takes it back up over

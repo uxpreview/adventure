@@ -59,7 +59,21 @@ export type Npc = {
 type Pos = { x: number; z: number; present: boolean };
 
 const TALK_R = 4.0;
-const FOLK_R = 3.6;
+/** Gate round 1: 3.6 left the cold player standing on a carter's
+ *  toes, four units off, pressing E at nothing. */
+const FOLK_R = 4.8;
+
+/** An unnamed figure's role, from its routine id: the pool it speaks
+ *  from and the name written over its head. */
+function roleOf(id: string): { who: string; pool: string[] | null } {
+  let pool: string[] | null = null;
+  let role = '';
+  for (const [prefix, lines] of FOLK_BY_ROLE) {
+    if (id.startsWith(prefix) && prefix.length > role.length) { role = prefix; pool = lines; }
+  }
+  const who = (role || id).replace(/-\d+$/, '').replace(/-/g, ' ').replace(/^THE /i, '').toUpperCase();
+  return { who, pool };
+}
 
 function figOf(d: { report(): unknown }): Figure | null {
   return d instanceof Figure ? d : null;
@@ -132,6 +146,9 @@ class Npcs {
       radius: TALK_R,
       label: n.def.name,
       labelHeight: 2.5,
+      /* gate round 2: the name is over their head from fourteen units,
+       * so Joan reads across her sheaves and Marget across her square */
+      labelReach: 14,
       prompt: `TALK TO ${n.def.name}`,
       get enabled() {
         const p = self.positionOf(n.def.id);
@@ -297,6 +314,10 @@ class Npcs {
         get x() { return f.mesh.position.x; },
         get z() { return f.mesh.position.z; },
         radius: FOLK_R,
+        /* Gate round 1: THE TELL. A figure you can talk to has its role
+         * written over its head as you come near, like a named person
+         * has their name — so the square reads as people, not scenery. */
+        label: roleOf(f.def.id).who,
         labelHeight: 2.3,
         prompt: 'TALK',
         get enabled() { return f.mesh.visible && opacityOf(f.mesh) > 0.5; },
@@ -309,17 +330,12 @@ class Npcs {
   }
 
   private talkFolk(f: Figure) {
-    const id = f.def.id;
-    let pool: string[] | null = null;
-    let role = '';
-    for (const [prefix, lines] of FOLK_BY_ROLE) {
-      if (id.startsWith(prefix) && prefix.length > role.length) { role = prefix; pool = lines; }
-    }
-    if (!pool) pool = FOLK_BY_LAND[f.def.land] ?? ['...'];
+    const r = roleOf(f.def.id);
+    const pool = r.pool ?? FOLK_BY_LAND[f.def.land] ?? ['...'];
     const k = this.folkCount.get(f) ?? 0;
     this.folkCount.set(f, k + 1);
     const line = pool[k % pool.length];
-    const who = (role || id).replace(/-\d+$/, '').replace(/-/g, ' ').toUpperCase();
+    const who = r.who;
     say({ name: who, get x() { return f.mesh.position.x; }, get z() { return f.mesh.position.z; } }, line);
     notebook.heard(who, line);
   }

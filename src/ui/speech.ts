@@ -202,10 +202,11 @@ function place(b: Bubble) {
   let sx = (v.x * 0.5 + 0.5) * window.innerWidth;
   let sy = (-v.y * 0.5 + 0.5) * window.innerHeight;
   if (behind) {
-    // a speaker behind the lens: the line is pinned low, where the
-    // walker is, rather than lost
+    /* a speaker behind the lens: the line is pinned at the top of the
+     * page, called from off it — not over the walker's head, where the
+     * cold player (gate round 2) read Nell's lines as their own */
     sx = window.innerWidth * 0.5;
-    sy = window.innerHeight * 0.62;
+    sy = 0;
   }
   const hw = b.w * 0.5;
   const pad = 8;

@@ -18,8 +18,10 @@ export const MARGET_JOB: JobSpec = {
   reward: 'THE RED SCARF',
   shout: 'IN BRIM, A STALL OPENS FOR THE FIRST TIME IN FORTY YEARS',
   steps: [
-    { text: 'READ THE MARKET CROSS', when: reach(-35, -71, 8) },
-    { text: 'SIT ON THE BELFRY BENCH TILL THE LAMPS COME ON', when: known('fact:brim-hour') },
+    /* Gate round 1: each step pins its own place; the cross is east of
+     * the fountain and was never found without one. */
+    { text: 'READ THE MARKET CROSS', when: reach(-35, -71, 8), pin: { x: -35, z: -71, label: 'THE MARKET CROSS' } },
+    { text: 'WAIT AT THE BELFRY TILL THE LAMPS COME ON', when: known('fact:brim-hour'), pin: { x: -64, z: -42, label: 'THE BELFRY' } },
     { text: 'SETTLE THE HOUR AT THE BELFRY', when: decided('kingdom') },
   ],
   doorEnds: true,
