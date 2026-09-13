@@ -126,6 +126,12 @@ carter the wood took). A side-by-side table, a recommendation and three
 questions for the owner are at the end of that file. Nothing is picked
 until the owner picks.
 
+**The fourth, and the owner's own direction (2026-09-13):**
+`design/YOU-SAID-AN-HOUR.md`. Wake on the ridge with no memory, choose a
+name, "You're back. You said an hour.", a list of twelve promises in your
+own hand. Written to be shared with people who know nothing about the
+game; the owner is collecting opinions on it.
+
 ## 3. The next session, and the ones after (one item per session, in order)
 
 1. **Run the gate again** (round 3+): `THE-GATE.md` top to bottom on
