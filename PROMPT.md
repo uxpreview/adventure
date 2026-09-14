@@ -132,6 +132,14 @@ name, "You're back. You said an hour.", a list of twelve promises in your
 own hand. Written to be shared with people who know nothing about the
 game; the owner is collecting opinions on it.
 
+**The working foundation (2026-09-14):** `design/foundation/01`–`04`
+are the owner's baseline (core vision, story overview, opening sequence,
+decision log). `05_Inklands_Critique_2.md` answers the open questions:
+he left rather than forgot, the sea and Pye, Joan and the bench, Morrow
+as successor not rival, four tiers of three, the railway as the
+connection that needs no person, the bench and the note as the ending.
+Nothing in 05 is decided until the owner logs it in 04.
+
 ## 3. The next session, and the ones after (one item per session, in order)
 
 1. **Run the gate again** (round 3+): `THE-GATE.md` top to bottom on
