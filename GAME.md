@@ -3,11 +3,17 @@
 *Read this and `design/THE-RESET.md`. Nothing else in `design/` binds.*
 
 ## In two sentences
-You wake in a field on a hand-drawn sheet of paper with a bull looking at
-you, and a woman called Nell wants the fourth name off a signpost. Twelve
-lands, twelve people who each want one thing, a horse, a bicycle, a boat,
-a notebook that keeps count, and a train with no track that comes at the end
-and stops for everyone you helped.
+You wake on a bench on a village green with no memory and a note in your
+own hand saying BACK IN AN HOUR, and everyone knows you: three years ago
+you were the one who held twelve small places together, and you left.
+Twelve promises in your notebook, a bull, a horse, a kid who took your job,
+a dog that has him now, and a gathering that failed once and happens again
+at the end without you running it.
+
+**The story of record is `design/foundation/08_Inklands_Story_Foundation_v1.md`.**
+What is built today (below) is the opening and jobs from before it; the
+next sessions rebuild the first five minutes on it, then the twelve
+promises in tiers.
 
 ## The six pillars (the only rules)
 1. **You can always look.** Orbit, pitch and zoom are the player's. Never
@@ -31,6 +37,10 @@ and stops for everyone you helped.
 - **The opening.** Bull → gate → Nell → THE FOURTH NAME (signpost, the south
   road into Maple Court, the milestone, back to Nell) → Nell's cap → three
   pins and the horse.
+  **Superseded by the story of record; still what runs.** The new opening
+  is the bench, Nell's "You're back", the name lettered onto the notebook,
+  the bull and the horse (GET IT HOME), three recognitions, the notebook's
+  twelve lines, the second note, the pull.
 - **People.** Nell (Common), Marget (Brim), Wick (castle), Pye (beach), Wren
   (ocean), Brack (Penwood), Holt (canyon), Amos (Flats), Joan Harrow
   (Downs), Val (Maple Court), the man at the junction (Greyline), Dennis

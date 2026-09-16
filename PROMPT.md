@@ -118,7 +118,80 @@ a yes. Next time: get a bearing first (tone, who you are, a reference
 whose whole shape to steal, or the trailer in three shots), then one
 direction, not four.
 
+**Three concepts, each with a bearing first, are in
+`design/STORY-CONCEPTS.md` (2026-09-12): DOWNSTREAM (the river stopped;
+decide who gets it back), THE KING'S ROAD (walk a thousand-year-old king
+home, a companion who talks the whole way), WHAT TOOK TAM (find the
+carter the wood took). A side-by-side table, a recommendation and three
+questions for the owner are at the end of that file. Nothing is picked
+until the owner picks.
+
+**The fourth, and the owner's own direction (2026-09-13):**
+`design/YOU-SAID-AN-HOUR.md`. Wake on the ridge with no memory, choose a
+name, "You're back. You said an hour.", a list of twelve promises in your
+own hand. Written to be shared with people who know nothing about the
+game; the owner is collecting opinions on it.
+
+**The working foundation (2026-09-14):** `design/foundation/01`–`04`
+are the owner's baseline (core vision, story overview, opening sequence,
+decision log). `05_Inklands_Critique_2.md` answers the open questions:
+he left rather than forgot, the sea and Pye, Joan and the bench, Morrow
+as successor not rival, four tiers of three, the railway as the
+connection that needs no person, the bench and the note as the ending.
+Nothing in 05 is decided until the owner logs it in 04.
+`06` is the owner's refined foundation (2026-09-16: the disastrous day,
+the sea, Morrow, the dog, the network, a gathering as the endgame, the
+bench as the ending). `07` stress-tests it: make the disastrous day the
+gathering itself (the 8:15 is its time, the bridge is the emergency),
+fix the three-year timeline (Pye found him coming in), Joan said the
+line, the network as one relay of twelve calls, cut "leave honestly",
+the player writes the first page at the end.
+
+**THE STORY OF RECORD (2026-09-16):
+`design/foundation/08_Inklands_Story_Foundation_v1.md`.** Consolidated
+from 01–07 and the owner's decisions; nothing in it is provisional. Files
+02, 03, 06 are history. Read 01 (core vision) and 08, nothing else in the
+folder, to build story.
+
 ## 3. The next session, and the ones after (one item per session, in order)
+
+**The story rebuild comes first (owner, 2026-09-16: "proceed"). One item
+per session, in order, each ending with the cold player and the critic
+from `THE-GATE.md`:**
+
+0. **The first five minutes on the story of record** (`08` §7): the
+   title as the Common at dusk from the ridge; the bench with the note;
+   Nell's "You're back" / "It's been three years"; the name typed and
+   lettered onto the notebook cover (a keyboard on the phone rig); the
+   bull that comes for you and the horse Nell whistles, GET IT HOME,
+   the bull following the horse to a gate Nell stands in; three
+   recognitions on the walk back (Morrow, fifteen, with the dog);
+   the notebook's first page and twelve lines, one crossed out; the
+   second note; the pull. The old opening (`src/world/opening.ts`)
+   is replaced, not patched. Gate: the cold player says what the game
+   wants inside sixty seconds and names three of the twelve.
+1. **The three verbs the arc stands on**: SIT (a held press with a
+   visible fidget until the end), "I'LL HANDLE IT" (a dialogue option
+   everywhere, always works, always costs someone visibly), and
+   crossing a line out in the notebook.
+2. **Tier 1 promises** (Wick, Nell, Marget) as built in `08` §9, each
+   with its turn, its choice, its visible change, and its call
+   reconnected. The jobs registry (`src/world/jobs/`) is re-hung on
+   the twelve lines verbatim.
+3. **Tier 2** (Val, Brack, Holt): the faded footprints, the lantern, the
+   canyon and the Flats.
+4. **Tier 3** (Amos, Pye, Wren): the rain table, the eighth pot and the
+   honest note, the fleet and the Vikings.
+5. **Tier 4** (Joan, the man at the crossing, Dennis): the second plate
+   and the sit, the truth told, the board and the date.
+6. **The relay and the gathering** (`08` §10, §14): the call in one
+   shot, Morrow's morning, handing lines to people, the gate held,
+   the table, Joan, the bench, the first page typed, the note taken
+   down, "You coming?"
+7. Then the gate rounds below, on the whole thing.
+
+The pillar items that follow (camera, pen, things, phone) are done
+inside these sessions where the story needs them, not before.
 
 1. **Run the gate again** (round 3+): `THE-GATE.md` top to bottom on
    this branch — cold player, then the six critics. Round 2 used the
