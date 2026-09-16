@@ -147,6 +147,12 @@ fix the three-year timeline (Pye found him coming in), Joan said the
 line, the network as one relay of twelve calls, cut "leave honestly",
 the player writes the first page at the end.
 
+**THE STORY OF RECORD (2026-09-16):
+`design/foundation/08_Inklands_Story_Foundation_v1.md`.** Consolidated
+from 01–07 and the owner's decisions; nothing in it is provisional. Files
+02, 03, 06 are history. Read 01 (core vision) and 08, nothing else in the
+folder, to build story.
+
 ## 3. The next session, and the ones after (one item per session, in order)
 
 1. **Run the gate again** (round 3+): `THE-GATE.md` top to bottom on
