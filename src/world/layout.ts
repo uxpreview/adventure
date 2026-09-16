@@ -109,7 +109,10 @@ export const POSTER = { x: -45, z: 58 };
  * ran due west from the bull — which is what the hint tells them to
  * do — hit the hedge eight units south of the gap and stood there with
  * the bull behind them. The run west is now the run through the gate. */
-export const SPAWN = { x: 24, z: 82 };
+/** THE BENCH (the story of record, `design/foundation/08` §7): you wake
+ *  sitting on it, on the green between the king's road and Nell's gate,
+ *  under a note in your own hand. `opening.ts` BENCH is the same point. */
+export const SPAWN = { x: -26, z: 92 };
 
 /* ================================================================== *
  * DISTRICTS — more regions, no more sheet (`THE-FUN-PASS` §2.4, §7).

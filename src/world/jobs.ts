@@ -173,7 +173,7 @@ class Jobs {
     const n = landsDone();
     if (n !== this.doneWas) {
       this.doneWas = n;
-      toast(`THE 8:15 WILL STOP FOR ${n} OF ${LANDS_TOTAL}`, 'job');
+      toast(`${n} OF ${LANDS_TOTAL} KEPT`, 'job');
     }
 
     stamps.tick(this.elapsed);

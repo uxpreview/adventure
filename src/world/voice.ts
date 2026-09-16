@@ -55,7 +55,7 @@ export class Voice {
   private boat = false;
   private bicycle = false;
   private train = false;
-  private seated = false;
+  private seated: boolean | null = null;
   /** Lands heard of this frame, said together at the end of it. */
   private namesPending: string[] = [];
 
@@ -234,8 +234,11 @@ export class Voice {
     }
     const s = c.seated();
     if (s !== this.seated) {
+      /* THE FIRST FIVE MINUTES: waking on the bench is not a sit you
+       * chose, so the first seat of a fresh page says nothing. */
+      const first = this.seated === null;
       this.seated = s;
-      if (s) toast('YOU SIT. THE DAY RUNS SIX TIMES FASTER.', 'plain');
+      if (s && !first) toast('YOU SIT. THE DAY RUNS SIX TIMES FASTER.', 'plain');
     }
   }
 

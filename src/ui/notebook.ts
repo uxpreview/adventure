@@ -9,6 +9,8 @@ import { UI } from './UI';
 import { landsDone, LANDS_TOTAL } from '../world/jobs';
 import { STAMP_COLLECTION } from '../world/stamps';
 import { stampImpression } from '../world/textures-monsters';
+/* ---- THE FIRST FIVE MINUTES: the first page ---- */
+import { THE_LIST, LIST_HEAD } from '../world/thelist';
 
 /**
  * THE NOTEBOOK PAGE (VOICE) — the walker's own book, opened with N or
@@ -21,8 +23,8 @@ import { stampImpression } from '../world/textures-monsters';
  * opens the notebook when clicked.
  */
 
-type Tab = 'JOBS' | 'HEARD' | 'PLACES' | 'FOUND' | 'CHOICES';
-const TABS: Tab[] = ['JOBS', 'HEARD', 'PLACES', 'FOUND', 'CHOICES'];
+type Tab = 'THE LIST' | 'JOBS' | 'HEARD' | 'PLACES' | 'FOUND' | 'CHOICES';
+const TABS: Tab[] = ['THE LIST', 'JOBS', 'HEARD', 'PLACES', 'FOUND', 'CHOICES'];
 
 const el = (cls: string, parent: HTMLElement, tag = 'div'): HTMLElement => {
   const d = document.createElement(tag);
@@ -80,7 +82,8 @@ export class NotebookPage {
   private page: HTMLElement;
   private tabsEl: HTMLElement;
   private body: HTMLElement;
-  private tab: Tab = 'JOBS';
+  private tab: Tab = 'THE LIST';
+  private title: HTMLElement;
   private tabEls = new Map<Tab, HTMLElement>();
   private cache = new Map<string, HTMLElement>();
   private dirtyWhileOpen = false;
@@ -98,8 +101,8 @@ export class NotebookPage {
     this.page.style.backgroundImage = `url(${panelPageURL(6120)})`;
     this.page.addEventListener('click', (e) => e.stopPropagation());
     const head = el('nb-head', this.page);
-    const title = el('nb-title', head);
-    letterEl(title, 'notebook', { ...S.display(16), px: 16, align: 'left' });
+    this.title = el('nb-title', head);
+    this.letterTitle();
     const close = el('nb-close', head, 'button');
     letterEl(close, 'put it away', S.button(10.5));
     close.addEventListener('click', () => this.close());
@@ -117,6 +120,7 @@ export class NotebookPage {
 
     notebook.ui = this;
     notebook.onChange(() => {
+      this.letterTitle();
       this.objectiveTick();
       if (this.isOpen) this.render();
       else this.dirtyWhileOpen = true;
@@ -146,9 +150,16 @@ export class NotebookPage {
     else this.open();
   }
 
-  show(t: Tab) {
-    this.tab = t;
+  show(t: Tab | string) {
+    if (!TABS.includes(t as Tab)) return;
+    this.tab = t as Tab;
     this.render();
+  }
+
+  /** The cover: the name the walker chose on the bench, once there is one. */
+  private letterTitle() {
+    const n = notebook.name;
+    letterEl(this.title, n ? `${n}'s notebook` : 'notebook', { ...S.display(16), px: 16, align: 'left' });
   }
 
   /* ---- lines, cached by content ------------------------------------ */
@@ -188,11 +199,36 @@ export class NotebookPage {
     const out: HTMLElement[] = [];
     const push = (e: HTMLElement) => out.push(e);
     switch (this.tab) {
+      case 'THE LIST': {
+        /* THE FIRST PAGE, in his own hand: twelve lines, one crossed
+         * out, and the sentence over them. Stuck to the cover until the
+         * opening reads it. */
+        if (!notebook.listShown) {
+          push(this.lineEl('list-stuck', 'the first page is stuck to the cover. it can wait.', 'quiet', w));
+          break;
+        }
+        push(this.lineEl('list-head', LIST_HEAD, 'head', w));
+        const jobs = notebook.list();
+        THE_LIST.forEach((l, i) => {
+          /* a line is crossed out when he crossed it out, or when the
+           * land's job is done: the notebook keeps its own score */
+          const kept = !!l.kept || jobs.some((j) => j.land === l.land && j.complete);
+          const row = document.createElement('div');
+          row.className = `nb-list-row${kept ? ' kept' : ''}`;
+          const num = this.lineEl(`list-n|${i}`, `${i + 1}.`, 'pencil', 30);
+          num.style.cssText = 'display:inline-block;width:26px;flex:0 0 26px;';
+          row.style.cssText = 'display:flex;align-items:flex-start;gap:4px;margin:3px 0;';
+          const text = this.lineEl(`list|${l.id}|${kept}`, l.line, 'line', w - 40);
+          row.appendChild(num);
+          row.appendChild(text);
+          push(row);
+          if (kept) requestAnimationFrame(() => { if (!text.querySelector('.nb-strike')) strike(text); });
+        });
+        break;
+      }
       case 'JOBS': {
         const jobs = notebook.list();
         const asks = asked();
-        /* ---- THINGS: the finale's count, at the top of the page ---- */
-        push(this.lineEl(`eight15|${landsDone()}`, `THE 8:15 WILL STOP FOR ${landsDone()} OF ${LANDS_TOTAL}`, 'head', w));
         if (!jobs.length && !asks.length) push(this.lineEl('none', 'nothing yet. talk to somebody.', 'quiet', w));
         const active = notebook.active();
         for (const j of [...jobs.filter((x) => !x.complete), ...jobs.filter((x) => x.complete)]) {

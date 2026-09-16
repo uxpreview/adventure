@@ -345,6 +345,32 @@ export class App {
       common,
       data: () => this.save.data,
       persist: () => this.save.persist(),
+      /* ---- THE FIRST FIVE MINUTES: the verbs the opening needs ---- */
+      mounted: () => this.horse.aboard,
+      whistleTo: (x, z) => { this.audio.init(); this.audio.event('whistle'); this.horse.call(x, z); },
+      sitOnBench: () => this.sitAt('THE BENCH'),
+      openName: (submit) => this.ui.openName(submit),
+      nameOpen: () => this.ui.nameOpen,
+      openList: () => notebook.openTo('THE LIST'),
+      notebookOpen: () => this.voice.open,
+    });
+    /* THE BULL REACHED YOU: the figure goes over, the hat comes off, and
+     * the walker says the one thing that is true about it. */
+    let knockSaid = 0;
+    let knockAt = -99;
+    window.addEventListener('inklands:bull-knock', () => {
+      if (!this.started) return;
+      this.standUp();
+      this.char.vel.set(0, 0, 0);
+      this.char.recoil();
+      const hat = worn.drop();
+      if (hat) { this.dress(); toast('THE BULL HAS YOUR HAT', 'plain'); }
+      // three lines, and then it has said what it has to say
+      if (knockSaid < 3 && this.elapsed - knockAt > 6) {
+        knockAt = this.elapsed;
+        const lines = ['Oof. It knows me.', 'It knows me. That\'s worse.', 'Right. The horse.'];
+        say('walker', lines[knockSaid++]);
+      }
     });
     /* ---- THINGS: the jobs, the stamps, the toys, the monsters ---- */
     jobs.init({
@@ -379,7 +405,7 @@ export class App {
         return;
       }
       // a choice card is closed by choosing, or by walking away
-      if (this.ui.choiceOpen) return;
+      if (this.ui.choiceOpen || this.ui.nameOpen) return;
       if (this.seat) {
         this.standUp();
         return;
@@ -950,6 +976,8 @@ export class App {
         this.snapCamera();
         this.region = regionAt(SPAWN.x, SPAWN.z);
         this.district = districtAt(SPAWN.x, SPAWN.z);
+        /* ---- THE FIRST FIVE MINUTES: you wake sitting on the bench ---- */
+        this.sitAt('THE BENCH');
         /* ---- FIRST HOUR (gate round 1): the prompt is the spawn's, not
          * the poster's. The cut left READ THE SIGNPOST up from the
          * crossroads, and the cold player's first E read it from the
@@ -1170,6 +1198,14 @@ export class App {
     const lines = ['Nobody here to talk to.', 'Nothing to hand. Somewhere else, then.', 'Nothing here. The map has places.'];
     say('walker', lines[Math.floor(this.elapsed) % lines.length]);
   }
+  /** Sit on a named seat, wherever it is: the bench, on SET OUT. */
+  private sitAt(label: string) {
+    const p = this.poi.pois.find((q) => q.def.label === label && (q.def as WorldPOI).sit);
+    if (!p) return;
+    this.sitDown(p.def as WorldPOI);
+    this.snapCamera();
+  }
+
   private sitDown(def: WorldPOI) {
     if (!def.sit || this.boat.aboard || this.train.aboard) return;
     const sx = def.sit.x;
@@ -1925,7 +1961,7 @@ export class App {
     this.input.update(dt);
     /* ---- CAMERA: the look, before the walk ---- */
     this.lookTick(dt);
-    this.char.frozen = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen || !this.started
+    this.char.frozen = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen || this.ui.nameOpen || !this.started
       || this.ui.blinking;
     if (this.voice.open) this.char.frozen = true; /* VOICE: the notebook has the screen */
     // a step stands you up; the prompt says so, and so does a thumb
@@ -2185,6 +2221,10 @@ export class App {
 
     this.prints.update(dt);
     this.terrain.update(dt);
+    /* THE FIRST FIVE MINUTES: the bull follows the horse while you are
+     * on it, and never knocks a rider off. Set before the land ticks,
+     * so the frame you mount is already a following frame. */
+    common.bull.follow = common.bull.loose && this.horse.aboard;
     this.world.tick(dt, this.elapsed, this.char.pos.x, this.char.pos.z, this.region.id, weather.windK,
       this.camera.position.x, this.camera.position.z);
     /* ---- SCALE: something moving in every frame ---- */

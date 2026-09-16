@@ -14,6 +14,7 @@ import {
 } from '../textures-common';
 import { goatTexture } from '../textures-wood';
 import { foxTexture, batTexture, childTexture, handcartTexture, rodTexture, dogTexture, ladderTexture } from '../textures-life';
+import { dachshundTexture } from '../textures-cast'; /* THE FIRST FIVE MINUTES: the dog */
 import { Figure, Creature, stops } from '../life';
 import { weather } from '../weather';
 import { clock } from '../daylight';
@@ -22,8 +23,8 @@ import { events } from '../events';
 import { barriers } from '../barriers';
 import { Follower } from '../company';
 import { knowledge } from '../knowledge';
-import { opening, MILESTONE } from '../opening'; /* FIRST HOUR */
-import { borderStoneTexture } from '../textures-opening'; /* FIRST HOUR */
+import { opening, MILESTONE, BENCH, BENCH_NOTE } from '../opening'; /* THE FIRST FIVE MINUTES */
+import { borderStoneTexture, benchTexture, pinnedNoteTexture, laundryLineTexture, morrowTexture } from '../textures-opening';
 import { SPEC_BY_ID } from '../layout';
 import { platform } from '../../engine/Eight15';
 import { npcs } from '../npc'; /* VOICE */
@@ -144,6 +145,13 @@ const STILE = { x: 12.6, z: 63.8 };
  *  the walker's north shoulder (below), so the chase crosses the
  *  picture instead of happening under it. */
 const BULL_HOME = { x: 33, z: 70 };
+/** THE FIRST FIVE MINUTES (`design/foundation/08` §7): the bull is
+ *  LOOSE on the green when you wake, grazing south of the bench, and
+ *  it knows you. Its ground while loose is the whole green between the
+ *  coast road's end and the river bend, the field included; penned, it
+ *  is the field again. */
+const LOOSE_HOME = { x: -34, z: 74 };
+const LOOSE = { minX: -64, maxX: 44, minZ: 60, maxZ: 114 };
 /** How far off the walker the bull runs at: it aims a stride and a
  *  half to the side of you that is in the frame, never at you. */
 const BULL_SHOULDER = 2.4;
@@ -157,7 +165,9 @@ barriers.register({
 });
 barriers.register({
   id: 'the-hedge-return', x0: HEDGE_X, z0: FENCE_Z, x1: HEDGE_X, z1: 104, half: 1.5,
-  gaps: [{ id: 'the-field-gate', x: GATE.x, z: GATE.z, r: 1.4, open: true }],
+  /* two units either side: a horse and a bull go through it (the first
+   * five minutes), and a gate a rider has to thread is a wall */
+  gaps: [{ id: 'the-field-gate', x: GATE.x, z: GATE.z, r: 2.0, open: true }],
 });
 
 /** THE GOAT — the second co-walker, and the first thing in the game to
@@ -166,7 +176,7 @@ barriers.register({
  *  every road. (The Penwood's goat runs away; `THE-STRANGERS` E12 says
  *  a goat gets out. This is the one that did.) */
 const goat = new Follower({
-  id: 'the-common-goat', rect: SPEC_BY_ID.meadow.rect, home: { x: -22, z: 72 },
+  id: 'the-common-goat', rect: SPEC_BY_ID.meadow.rect, home: { x: -42, z: 68 },
   gap: 3.2, notice: 18, walk: 2.2, trot: 5.4, margin: 2, /* ---- SCALE ---- */
   // it will not go in with the bull, and it does not follow you in
   keepOut: { minX: -14, maxX: 46, minZ: 63, maxZ: 112 },
@@ -214,24 +224,61 @@ const LADDER_TRIPS = [
 
 /** THE OPENING'S STATE, for the builder, the POIs and the harness. */
 export const common = {
-  bull: { x: BULL_HOME.x, z: BULL_HOME.z, state: 'graze' as 'graze' | 'lying' | 'watch' | 'charge' | 'balk' | 'fence' | 'home', t: 0, face: -1, stride: 0, balks: 0 },
+  bull: {
+    x: BULL_HOME.x, z: BULL_HOME.z, state: 'graze' as 'graze' | 'lying' | 'watch' | 'charge' | 'balk' | 'fence' | 'home', t: 0, face: -1, stride: 0, balks: 0,
+    /** Out on the green (the opening) rather than in the field. */
+    loose: false,
+    /** Following the horse: it keeps two strides off and never balks. */
+    follow: false,
+    /** Grazing and not looking, whatever you do: the bench's minute. */
+    hold: false,
+    /** Times it reached you and knocked you over. */
+    knocks: 0,
+  },
   gate: { shut: false },
   nell: { pose: 0 as 0 | 1 | 2, t: 0, straightFor: 0 },
+  /** MORROW GOING PAST WITH THE DOG: the opening moves them, the land
+   *  draws them. Off the page unless `on`. */
+  walkby: { on: false, mx: 0, mz: 0, mpose: 0, mface: 1 as -1 | 1, dx: 0, dz: 0, dpose: 0, dface: 1 as -1 | 1 },
+  /** The note on the bench: the first, or the second under it. */
+  note: { second: false },
   goat,
   /** Put the opening back where a fresh page has it: the harness's. */
   reset() {
     this.bull.x = BULL_HOME.x; this.bull.z = BULL_HOME.z; this.bull.state = 'graze';
     this.bull.t = 0; this.bull.balks = 0;
+    this.bull.loose = false; this.bull.follow = false; this.bull.hold = false; this.bull.knocks = 0;
     this.gate.shut = false;
     barriers.gap('the-field-gate')!.open = true;
     this.nell.pose = 0; this.nell.t = 0;
+    this.walkby.on = false;
+    this.note.second = false;
     goat.reset();
   },
-  /** FIRST HOUR: SET OUT. The bull has already seen you: it charges
-   *  inside the first second whatever the hour, every time. */
+  /** SET OUT: the bull is loose on the green and grazing, and it does
+   *  not look up until the opening lets it (`hold`). */
   wake() {
     this.reset();
-    this.bull.state = 'watch'; this.bull.t = 0.6; this.bull.face = -1;
+    this.loose();
+    this.bull.hold = true;
+  },
+  /** Loose on the green, at its loose home, grazing. */
+  loose() {
+    this.bull.loose = true; this.bull.follow = false;
+    this.bull.x = LOOSE_HOME.x; this.bull.z = LOOSE_HOME.z;
+    this.bull.state = 'graze'; this.bull.t = 0; this.bull.balks = 0; this.bull.face = 1;
+    this.gate.shut = false;
+    barriers.gap('the-field-gate')!.open = true;
+  },
+  /** PENNED: it is in the field and you are not; Nell shuts the gate,
+   *  and the field is its whole land again. */
+  pen() {
+    this.bull.loose = false; this.bull.follow = false; this.bull.hold = false;
+    if (!(this.bull.x >= FIELD.minX && this.bull.x < FIELD.maxX && this.bull.z >= FIELD.minZ && this.bull.z < FIELD.maxZ)) {
+      this.bull.x = BULL_HOME.x; this.bull.z = BULL_HOME.z;
+    }
+    this.slam();
+    this.bull.state = 'fence'; this.bull.t = 0;
   },
   /** FIRST HOUR (gate round 1): NELL SLAMS THE GATE, whichever way you
    *  left the field. The slam used to wait for the bull to reach the
@@ -550,13 +597,32 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   for (let i = 0; i < 5; i++) {
     ctx.decal(wheatDecal(454 + i), 10, 6.6, -2 + i * 9 + r() * 3, 76 + r() * 8, r() * 0.4, 0.55);
   }
+  /* ---- THE FIRST FIVE MINUTES: the bench, the note, the washing ---- *
+   * You wake sitting on the bench on the green, under the note; Nell
+   * is at her washing line by the gate. */
+  ctx.standee(benchTexture(1750), 3.2, 1.6, BENCH.x, BENCH.z, { face: 'run' });
+  ctx.decal(wornGroundDecal(1751), 5, 3.2, BENCH.x, BENCH.z + 0.6, 0.1, 0.4);
+  const noteFirst = pinnedNoteTexture(1752, false);
+  const noteSecond = pinnedNoteTexture(1753, true);
+  const noteMesh = ctx.standee(noteFirst, 0.52, 0.6, BENCH_NOTE.x, BENCH_NOTE.z - 0.2);
+  noteMesh.position.y += 1.02;
+  const noteMat = noteMesh.material as THREE.MeshBasicMaterial;
+  let noteShown = false;
+  ctx.standee(laundryLineTexture(1754), 5.4, 2.5, HEDGE_X - 7.6, 89.6, { face: 'run' });
+  const morrow = new Creature(ctx, 'morrow', 'meadow', [0, 1].map((p) => morrowTexture(1760 + p, p as 0 | 1)), 1.0, 1.75, -56, 60);
+  const morrowDog = new Creature(ctx, 'morrows-dog', 'meadow', [0, 1, 2, 3].map((p) => dachshundTexture(1765 + p, p as 0 | 1 | 2 | 3)), 2.2, 1.1, -58, 60.6);
+  morrow.hide();
+  morrowDog.hide();
+
   /* NELL, at the gate, watching the road — three drawings, one showing
    * (`THE-WAITS` §9; the doodle-folk figure that stood here since
    * Session 2 is retired, because she has a name now and a name is
    * three drawings). She stands a step east of the leaf's hinge, on
    * the fence line, and she faces WEST, up the east road toward the
    * crossroads, because that is the road people come down. */
-  const NELL = { x: HEDGE_X - 2.4, z: 82.6 };
+  /* THE FIRST FIVE MINUTES: she is at her washing line, a few steps
+   * west of the gate, where the bench can see her. */
+  const NELL = { x: HEDGE_X - 8.5, z: 86.2 };
   const nellPoses = [0, 1, 2].map((p) =>
     ctx.standee(nellTexture(1630 + p, p as 0 | 1 | 2), 1.15, 1.9, NELL.x, NELL.z, { face: 'keep' }));
   /* ---- VOICE: where Nell is drawn, for the talk prompt ---- */
@@ -748,16 +814,28 @@ export const buildMeadow: RegionBuilder = (ctx) => {
      * ================================================================ */
     const B = common.bull;
     const bd = Math.hypot(px - B.x, pz - B.z);
-    const walkerIn = inField(px, pz);
-    const leash = Math.hypot(B.x - BULL_HOME.x, B.z - BULL_HOME.z);
+    /* LOOSE (the opening): the green is its field, and you are always
+     * in it. Penned: the field, as ever. */
+    const walkerIn = B.loose || inField(px, pz);
+    const home = B.loose ? LOOSE_HOME : BULL_HOME;
+    const leash = Math.hypot(B.x - home.x, B.z - home.z);
     B.t += dt;
-    const clampField = (x: number, z: number): [number, number] => [
-      Math.max(FIELD.minX + BULL_MARGIN, Math.min(FIELD.maxX - BULL_MARGIN, x)),
-      Math.max(FIELD.minZ + BULL_MARGIN, Math.min(FIELD.maxZ - BULL_MARGIN, z)),
-    ];
-    const night = events.progress('the-bull-lies-down') >= 0;
+    const ground = B.loose ? LOOSE : FIELD;
+    const clampField = (x: number, z: number): [number, number] => {
+      const cx = Math.max(ground.minX + BULL_MARGIN, Math.min(ground.maxX - BULL_MARGIN, x));
+      const cz = Math.max(ground.minZ + BULL_MARGIN, Math.min(ground.maxZ - BULL_MARGIN, z));
+      // loose, it will not wade the river bend: an axis into water holds
+      if (B.loose && terrain.waterAt(cx, cz) > 0.04) {
+        if (terrain.waterAt(B.x, cz) <= 0.04) return [B.x, cz];
+        if (terrain.waterAt(cx, B.z) <= 0.04) return [cx, B.z];
+        return [B.x, B.z];
+      }
+      return [cx, cz];
+    };
+    const night = events.progress('the-bull-lies-down') >= 0 && !B.loose;
     if (B.state === 'graze') {
-      if (walkerIn && bd < 26) { B.state = 'watch'; B.t = 0; }
+      if (B.hold) { /* the bench's minute: it has not looked up yet */ }
+      else if (walkerIn && bd < 26) { B.state = 'watch'; B.t = 0; }
       else if (night && B.t > 2) { B.state = 'lying'; B.t = 0; }
     } else if (B.state === 'lying') {
       /* THE NIGHT'S BULL. Down in the grass with its legs under it. It
@@ -768,7 +846,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
     } else if (B.state === 'watch') {
       B.face = px < B.x ? -1 : 1;
       if (!walkerIn || bd > 36) { B.state = 'graze'; B.t = 0; B.balks = 0; }
-      else if ((B.t > 1.1 || walkerSpeed > 1.2) && B.t > 0.35 && leash < 40) {
+      else if ((B.t > 1.1 || walkerSpeed > 1.2) && B.t > 0.35 && (leash < 40 || B.loose)) {
         B.state = 'charge'; B.t = 0; B.stride = 0;
         say('bull-snort');
         /* THE RUN IS TAUGHT BY NECESSITY. App prints the one hint the
@@ -804,8 +882,10 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       const ux = (tx - B.x) / Math.max(1e-3, td);
       const uz = (tz - B.z) / Math.max(1e-3, td);
       B.face = ux < 0 ? -1 : 1;
-      /* IT NEVER TOUCHES YOU: it will not step inside two strides. */
-      const step = Math.min(speed * dt, Math.max(0, td), Math.max(0, bd - 2.3));
+      /* IT NEVER TOUCHES YOU: it will not step inside two strides.
+       * Loose and on foot, it reaches you, and that is the knock. */
+      const keep = B.loose && !B.follow ? 1.1 : B.follow ? 3.0 : 2.3;
+      const step = Math.min(speed * dt, Math.max(0, td), Math.max(0, bd - keep));
       const [nx, nz] = clampField(B.x + ux * step, B.z + uz * step);
       const moved = Math.hypot(nx - B.x, nz - B.z);
       B.stride += moved;
@@ -816,19 +896,34 @@ export const buildMeadow: RegionBuilder = (ctx) => {
          * it stops dead, and says so. */
         B.state = 'fence'; B.t = 0;
         say('bull-snort');
-      } else if (bd <= 2.35 || td < 0.35) {
+      } else if (B.follow) {
+        /* FOLLOWING THE HORSE: two strides off, and it waits when the
+         * horse gets away, and comes on again when it is near. */
+        if (bd > 34) { B.state = 'watch'; B.t = 0; }
+      } else if (bd <= keep + 0.05 || td < 0.35) {
         B.state = 'balk'; B.t = 0; B.balks++;
         say('bull-snort');
+        if (B.loose && bd <= keep + 0.6) {
+          /* THE KNOCK: it reached you. App rocks the walker, takes the
+           * hat, and the walker says it knows him. */
+          B.knocks++;
+          window.dispatchEvent(new CustomEvent('inklands:bull-knock'));
+        }
       } else if (!walkerIn && bd > 14) {
         B.state = 'fence'; B.t = 0;
-      } else if (leash > 44) {
+      } else if (leash > (B.loose ? 90 : 44)) {
         B.state = 'home'; B.t = 0;
       }
     } else if (B.state === 'balk') {
       B.face = px < B.x ? -1 : 1;
-      if (B.t > 1.1) {
-        if (walkerIn && bd < 30 && B.balks < 3) { B.state = 'charge'; B.t = 0; B.stride = 0; }
-        else if (walkerIn && bd < 30) { B.state = 'watch'; B.t = -3; B.balks = 0; }
+      /* loose, it has just knocked you over: it stands over you a
+       * while, goes again once, and then backs off and watches — a
+       * danger with a rhythm, not a mincer */
+      const holdFor = B.loose && !B.follow ? 2.2 : 1.1;
+      const again = B.loose && !B.follow ? 2 : 3;
+      if (B.t > holdFor) {
+        if (walkerIn && bd < 30 && B.balks < again) { B.state = 'charge'; B.t = 0; B.stride = 0; }
+        else if (walkerIn && bd < 30) { B.state = 'watch'; B.t = B.loose ? -6 : -3; B.balks = 0; }
         else { B.state = 'home'; B.t = 0; B.balks = 0; }
       }
     } else if (B.state === 'fence') {
@@ -836,13 +931,13 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       if (walkerIn && bd < 26) { B.state = 'watch'; B.t = 0; }
       else if (B.t > 6) { B.state = 'home'; B.t = 0; B.balks = 0; }
     } else if (B.state === 'home') {
-      const hd = Math.hypot(BULL_HOME.x - B.x, BULL_HOME.z - B.z);
+      const hd = Math.hypot(home.x - B.x, home.z - B.z);
       if (hd < 0.4) { B.state = night ? 'lying' : 'graze'; B.t = 0; B.face = -1; }
       else {
         const k = Math.min(hd, 2.4 * dt);
-        B.face = BULL_HOME.x < B.x ? -1 : 1;
-        B.x += ((BULL_HOME.x - B.x) / hd) * k;
-        B.z += ((BULL_HOME.z - B.z) / hd) * k;
+        B.face = home.x < B.x ? -1 : 1;
+        B.x += ((home.x - B.x) / hd) * k;
+        B.z += ((home.z - B.z) / hd) * k;
         if (walkerIn && bd < 20) { B.state = 'watch'; B.t = 0; }
       }
     }
@@ -882,7 +977,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
      * heading for the gate by definition, and the slam waits for them. */
     const elsewhere = pz < FENCE_Z + 0.5 || px < HEDGE_X;
     const toHedge = B.x - HEDGE_X;
-    if (!common.gate.shut && coming && toHedge > 0
+    if (!common.gate.shut && !B.loose && coming && toHedge > 0
       && ((through && toHedge < 16) || (elsewhere && toHedge < 5))) {
       /* THE SLAM: once you are through and it is coming — never in your
        * face — or, if you went over the stile, when it is all but at
@@ -929,6 +1024,21 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       m.visible = p === gp;
       m.position.set(goat.x, ctx.groundY(goat.x, goat.z), goat.z);
       m.scale.x = goat.face < 0 ? 1 : -1;
+    }
+
+    /* ---- THE FIRST FIVE MINUTES: the second note; Morrow going past ---- */
+    if (common.note.second !== noteShown) {
+      noteShown = common.note.second;
+      noteMat.map = noteShown ? noteSecond : noteFirst;
+      noteMat.needsUpdate = true;
+    }
+    {
+      const wb = common.walkby;
+      if (!wb.on) { morrow.hide(); morrowDog.hide(); }
+      else {
+        morrow.set(wb.mpose, wb.mx, wb.mz, wb.mface);
+        morrowDog.set(wb.dpose, wb.dx, wb.dz, wb.dface);
+      }
     }
 
     /* ---- THE CART, where the registry has it ------------------------ */
@@ -1192,19 +1302,31 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   };
 };
 
-/** NELL'S CARD — both doors visible before either is taken, each with
- *  a cost, and nothing anywhere says which was right. Door one is the
- *  wait's answer; door two is the cart, yours, and Nell has a cart at
- *  a border. The card is offered once. */
-const NELL_CARD: NonNullable<WorldPOI['choice']> = {
-  body: 'you came back up the road with the fourth name: 8:15, and an arrow pointing north. for once she does not settle. the cart is behind her. it has been almost loaded for years, and it was only ever waiting on which way it was going.',
-  options: [
-    { label: 'TELL HER THE FOURTH NAME', door: 'door:the-cart-turned-north' },
-    { label: 'KEEP IT, AND PUSH THE CART YOURSELF', door: 'door:the-cart-pushed' },
-  ],
-};
-
 export const MEADOW_POIS: WorldPOI[] = [
+  {
+    /* THE BENCH you wake on. A seat: the walker is put on it facing
+     * the road, and a step stands you up. */
+    x: BENCH.x, z: BENCH.z, radius: 2.6, label: 'THE BENCH',
+    prompt: 'SIT ON THE BENCH',
+    sit: { x: BENCH.x, z: BENCH.z + 0.25, lift: 0.5 },
+    /* not while the bull is loose (the horse's prompt must win here),
+     * except on the bench's own minute, so STAND UP is on the page */
+    get enabled() { return !common.bull.loose || opening.stage === 'bench'; },
+    set enabled(_v: boolean) { /* the bull decides */ },
+  } as unknown as WorldPOI,
+  {
+    /* THE NOTE pinned to the bench's end, in your own handwriting. The
+     * first one all game; the second appears under it once the list
+     * has been read. */
+    x: BENCH_NOTE.x + 0.6, z: BENCH_NOTE.z + 0.3, radius: 2.3, label: 'THE NOTE',
+    prompt: 'READ THE NOTE',
+    note: {
+      title: 'the note',
+      body: () => common.note.second
+        ? 'a second note, under the first, in a hand that is not yours: YOU DON\'T HAVE TO DO ALL TWELVE. on the back, in yours, older, pressed hard enough to go through: YES, I DO.'
+        : 'back in an hour. — you. pinned to the bench with a tack, in your own handwriting, and it has been rained on more than once. nobody has taken it down.',
+    },
+  } as unknown as WorldPOI,
   {
     x: -42, z: 52, radius: 7, label: 'THE CROSSROADS',
     prompt: 'READ THE SIGNPOST',
@@ -1324,26 +1446,12 @@ export const MEADOW_POIS: WorldPOI[] = [
      * her, and the field, where the camera can see her — so the reach
      * is six, centred on where she stands. */
     x: HEDGE_X - 1.2, z: 82.2, radius: 6, label: 'THE FIELD GATE',
-    get prompt() {
-      const done = knowledge.has('door:the-cart-turned-north') || knowledge.has('door:the-cart-pushed');
-      if (!done && opening.hasTheName()) return 'TELL HER THE FOURTH NAME'; /* FIRST HOUR */
-      return 'LEAN ON THE GATE WITH HER';
-    },
-    get choice() {
-      if (!opening.hasTheName()) return undefined; /* FIRST HOUR: the milestone, or the Mile's timetable */
-      return NELL_CARD;
-    },
+    prompt: 'LEAN ON THE GATE WITH HER',
     note: {
       title: 'the field gate',
-      body: () => {
-        if (knowledge.has('door:the-cart-turned-north')) {
-          return 'the cart is loaded and roped and its shafts point up the king\'s road. it has not moved. she is not leaning on anything any more, and she looks at it the way you look at a bag by the door.';
-        }
-        if (knowledge.has('door:the-cart-pushed')) {
-          return 'the cart is wherever you left it. she can see it from here. she has not gone to fetch it, and she is not going to, and she has stopped watching the road.';
-        }
-        return 'nell. she leans here most days and watches whoever comes up the road: straightens, and settles again. the cart behind her has been nearly loaded for as long as the fence has been a fence. it will be loaded, she says, the day she knows which way it is going, and three of the four names on the signpost she could go to tomorrow.';
-      },
+      body: () => common.gate.shut
+        ? 'the gate is shut and the bull is behind it, looking at you the way it did before. nell hangs her washing on the line beside it and does not look at the bull, because she has never needed to.'
+        : 'the gate is open. it has been open for three years, because the one who was going to fix the catch said he would be an hour. the bull is out. nell hangs her washing beside it and says nothing about either.',
     },
   } as unknown as WorldPOI,
   {

@@ -4,97 +4,108 @@ import { say, type Speaker } from '../ui/speech';
 import { toast } from '../ui/toast';
 import { fallbackAsk } from '../ui/notebook';
 import { knowledge } from './knowledge';
-import { worn } from './worn';
+import { THE_LIST } from './thelist';
 import type { WorldPOI } from './regions';
 import type { RegionId } from './layout';
 
 /**
- * THE FIRST HOUR — the scripted first ten minutes, as a small state
- * machine App ticks after the voice. It reads the world (the bull, the
- * gate, notes read, the land underfoot, a door taken) and answers with
- * Nell's lines, one job in the notebook, the toasts that name a key
- * the first time it matters, and, at the end, three pins and a horse.
+ * THE FIRST FIVE MINUTES — the opening on the story of record
+ * (`design/foundation/08_Inklands_Story_Foundation_v1.md` §7), as a
+ * small state machine App ticks after the voice.
  *
- *   wake      you are in the long grass and the bull has seen you
- *   gate      Nell slammed it; talk to her (E)
- *   talk      she named the signpost (M); the job lands (N)
- *   signpost  read it at THE CROSSROADS
- *   border    take the south road into Maple Court
- *   stone     read the milestone over the border
- *   return    bring the fourth name back: her card
- *   chosen    the choice read back; the cap; then the world opens
- *   done      three people want something; the horse; nothing more
+ *   bench   you wake sitting on a bench on the green, under a note in
+ *           your own hand. Nell, hanging washing by the gate: "You're
+ *           back." "It's been three years." She asks what to call you
+ *   named   the name is lettered onto the notebook. The bull, loose on
+ *           the green, has seen you
+ *   bull    it comes for you. RUN. It knows you. Nell whistles the horse
+ *   horse   GET IT HOME: get on the horse, and the bull follows the
+ *           horse; lead it through the gate and Nell shuts it
+ *   home    "That's more like you." Morrow goes past with the dog and
+ *           does not stop
+ *   list    the notebook's first page: TWELVE THINGS. THEN I CAN GO
+ *           HOME. Twelve pins. The bell rings the wrong hour
+ *   done    the world is open
  *
- * Nell's lines while the opening runs come from here, not `lines.ts`
- * (her `lines` on the registry is replaced and put back at the end).
+ * Nell's lines while the opening runs come from here, not `lines.ts`.
  * Nothing here touches the other eleven people.
  */
 
-export type OpeningStage =
-  | 'off' | 'wake' | 'gate' | 'talk' | 'signpost' | 'border' | 'stone' | 'return' | 'chosen' | 'done';
+export type OpeningStage = 'off' | 'bench' | 'named' | 'bull' | 'horse' | 'home' | 'list' | 'done';
 
 export type OpeningSave = { stage: OpeningStage; said: number };
 
-export const JOB_ID = 'the-fourth-name';
-export const JOB_NAME = 'THE FOURTH NAME';
-const GIVER = 'NELL';
-const REWARD = 'NELL\'S CAP';
-const STEPS = [
-  'READ THE SIGNPOST AT THE CROSSROADS',
-  'TAKE THE SOUTH ROAD INTO MAPLE COURT',
-  'READ THE MILESTONE',
-  'BRING THE FOURTH NAME BACK TO NELL',
-];
-
-const PIN_CROSSROADS = { x: -42, z: 52, label: 'THE CROSSROADS' };
-const PIN_MILESTONE = { x: -44.5, z: 123, label: 'THE MILESTONE' };
-const PIN_GATE = { x: -13.2, z: 82.2, label: 'THE FIELD GATE' };
-const PIN_SOUTH_GATE = { x: -45, z: -14, label: 'THE SOUTH GATE' };
-
-/** Where the stone is drawn (the meadow builder draws it, a stride
- *  short of the border on the road's west verge). */
+/** Where you wake: a bench on the green between the road and Nell's
+ *  gate, facing the road. The note is on its east end. */
+export const BENCH = { x: -26, z: 92 };
+export const BENCH_NOTE = { x: -23.7, z: 91.6 };
+/** The milestone at the Common's south border (the meadow draws it). */
 export const MILESTONE = { x: -46.6, z: 119.2 };
 
-/** The one place the opening adds: over the border, on the road. Its
- *  reach stops a unit inside the Common, so reading it means crossing. */
+export const JOB_ID = 'get-it-home';
+export const JOB_NAME = 'GET IT HOME';
+const GIVER = 'NELL';
+const REWARD = 'THE HORSE';
+const STEPS = ['GET ON THE HORSE', 'LEAD THE BULL THROUGH THE GATE'];
+
+const PIN_GATE = { x: -13.2, z: 82.2, label: 'THE FIELD GATE' };
+const PIN_BENCH = { x: BENCH.x, z: BENCH.z, label: 'THE BENCH' };
+
+/** THE FIELD, so the opening can tell a penned bull from a loose one
+ *  (the same rect `regions/meadow.ts` keeps). */
+const FIELD = { minX: -10, maxX: 46, minZ: 65.6, maxZ: 112 };
+const HEDGE_X = -12;
+
+/** Morrow's walk past, from the coast road's end, past the bench and
+ *  the gate, and away east. He does not stop. */
+const MORROW_PATH: [number, number][] = [[-60, 62], [-40, 74], [-28, 82], [-22, 88], [-30, 100], [-42, 112], [-45, 128]];
+const MORROW_PACE = 3.4;
+const DOG_GAP = 2.6;
+
+/** The one place the opening adds beyond the meadow's own: the
+ *  milestone over the south border, kept from before. */
 export const OPENING_POIS: WorldPOI[] = [
   {
-    x: PIN_MILESTONE.x, z: PIN_MILESTONE.z, radius: 5.5, label: 'THE MILESTONE',
+    x: -44.5, z: 123, radius: 5.5, label: 'THE MILESTONE',
     prompt: 'READ THE MILESTONE',
     note: {
       title: 'the milestone',
-      body: 'brim 3. the sea 5. and under those, cut deeper and older than either: 8:15, and an arrow. the arrow points north, back the way you came, up the king\'s road, through brim, to wherever the road stops. a time, then, and a direction. that is more than the signpost had.',
+      body: 'brim 3. the sea 5. and under those, cut deeper and older than either: 8:15. no distance after it. somebody cut a time into a stone that only ever gave distances, and nobody has cut anything since.',
     },
   },
-];
-
-/** The three the world opens on: a person, where to find them, which
- *  road. Pinned in pencil; the nearest is the objective line's fallback
- *  until somebody hands out a job. */
-export const THREE_ASKS = [
-  { id: 'marget', name: 'MARGET', label: 'BRIM SQUARE', x: -45, z: -82, road: 'north' },
-  { id: 'joan', name: 'JOAN HARROW', label: 'THE HOME FIELD', x: 176, z: -22, road: 'east' }, /* gate round 2: the middle of the row she reaps down and back up over the day; her name reads from further (POI labelReach) */
-  { id: 'val', name: 'VAL', label: 'MAPLE COURT', x: -78, z: 140, road: 'south' },
 ];
 
 export type OpeningCtx = {
   walker: () => { x: number; y: number; z: number };
   regionId: () => RegionId;
   started: () => boolean;
-  /** Note ids read (`Save.readNotes`) — a POI label, or a note title. */
   readNotes: () => string[];
   showHint: (text: string, holdMs?: number) => void;
   touch: boolean;
   /** The meadow's opening state (`regions/meadow.ts` `common`). */
-  common: { bull: { state: string; t: number; face: number }; gate: { shut: boolean }; wake(): void; slam(): void };
-  data: () => { opening?: OpeningSave | null };
+  common: {
+    bull: { x: number; z: number; state: string; t: number; face: number; loose: boolean; follow: boolean; hold: boolean; knocks: number };
+    gate: { shut: boolean };
+    walkby: { on: boolean; mx: number; mz: number; mpose: number; mface: -1 | 1; dx: number; dz: number; dpose: number; dface: -1 | 1 };
+    note: { second: boolean };
+    wake(): void;
+    pen(): void;
+    loose(): void;
+  };
+  data: () => { opening?: OpeningSave | null; name?: string | null };
   persist: () => void;
+  /* ---- the verbs the opening needs from App ---- */
+  mounted: () => boolean;
+  whistleTo: (x: number, z: number) => void;
+  sitOnBench: () => void;
+  openName: (submit: (name: string) => void) => void;
+  nameOpen: () => boolean;
+  openList: () => void;
+  notebookOpen: () => boolean;
 };
 
 type Timer = { at: number; fn: () => void };
 type Nudge = { id: string; test: (x: number, z: number, land: RegionId) => string | null; held: number; last: number };
-
-const NELL_DOORS = ['door:the-cart-turned-north', 'door:the-cart-pushed'];
 
 class Opening {
   stage: OpeningStage = 'off';
@@ -104,13 +115,15 @@ class Opening {
   private timers: Timer[] = [];
   private settled = false;
   private saidRun = false;
-  /** Seconds the walker has been out of the field with the gate still
-   *  open (gate round 1: the slam by any exit). */
-  private outFor = 0;
+  private whistled = false;
+  private mountedOnce = false;
   private origLines: ((s: NpcState) => string[]) | null = null;
   private fallbackId: string | null = null;
   private fallbackAcc = 0;
   private nudges: Nudge[] = [];
+  /** Morrow's walk: distance along the path, and whether he has spoken. */
+  private walk = { d: 0, said: false, dogPause: -1, dogPaused: false, t: 0 };
+  private listWasOpen = false;
 
   /* ---- wiring --------------------------------------------------- */
   install(ctx: OpeningCtx) {
@@ -125,26 +138,13 @@ class Opening {
     this.nudges = [
       {
         id: 'brim-wall', held: 0, last: -99,
-        /* Gate round 2: the wall IS the region line (z ≈ −11.7), so a
-         * walker pressed against it is already "in the kingdom", and the
-         * arch admits 2.6 units either side of the road, not seven. */
         test: (x, z, land) => ((land === 'meadow' || land === 'kingdom') && z < -2 && z > -17 && Math.abs(x + 45) > 2.6)
           ? `BRIM'S GATE IS ${x < -45 ? 'EAST' : 'WEST'} ALONG THE WALL, ON THE ROAD` : null,
       },
       {
-        /* Gate round 1: the stile is at x = 12.6, so for most of the
-         * fence it is WEST, not east — the cold player at x = 27 was
-         * told nothing and found it by wandering. The direction is
-         * read off where you stand, and the gate is named as the hedge
-         * it is in. The band starts at the rails themselves. */
-        id: 'long-fence', held: 0, last: -99,
-        test: (x, z, land) => (land === 'meadow' && x > -10 && x < 46 && z > 63 && z < 68.5)
-          ? `THE STILE IS ${x > 14 ? 'WEST' : 'EAST'} ALONG THE FENCE${ctx.common.gate.shut ? '' : '. THE GATE IS WEST, IN THE HEDGE'}` : null,
-      },
-      {
         id: 'shut-gate', held: 0, last: -99,
         test: (x, z, land) => (land === 'meadow' && ctx.common.gate.shut && x > -11 && x < -6 && Math.abs(z - 82) < 6)
-          ? 'THE GATE IS SHUT. THE STILE IS NORTH-EAST, ON THE LONG FENCE.' : null,
+          ? 'THE GATE IS SHUT. THE STILE IS ON THE LONG FENCE, NORTH.' : null,
       },
     ];
   }
@@ -152,19 +152,16 @@ class Opening {
   /** A fresh page: SET OUT. */
   begin() {
     if (!this.ctx) return;
-    // an old save's walker who already took Nell's door has had the
-    // opening, whatever the save says
-    if (NELL_DOORS.some((d) => knowledge.has(d))) {
-      this.go('done');
-      return;
-    }
     this.timers.length = 0;
     this.saidRun = false;
-    this.outFor = 0;
+    this.whistled = false;
+    this.mountedOnce = false;
     this.settled = true;
-    this.go('wake');
+    this.go('bench');
     this.ctx.common.wake();
+    this.ctx.sitOnBench();
     this.takeNell();
+    this.greet();
   }
 
   /** Whether the opening prints its own control line, so App's old
@@ -177,9 +174,9 @@ class Opening {
     return this.stage !== 'off' && this.stage !== 'done';
   }
 
-  /** The fourth name is in hand: Nell's place offers her card. */
+  /** Kept for the meadow: no card at the gate any more. */
   hasTheName() {
-    return this.stage === 'return' || this.stage === 'chosen' || knowledge.has('fact:the-timetable');
+    return false;
   }
 
   private go(stage: OpeningStage) {
@@ -187,7 +184,7 @@ class Opening {
     this.stage = stage;
     this.said = 0;
     this.save();
-    fallbackAsk.refresh(); /* gate round 1: the objective line follows the stage */
+    fallbackAsk.refresh();
   }
 
   private save() {
@@ -211,6 +208,10 @@ class Opening {
     notebook.heard('NELL', line);
   }
 
+  private get name(): string {
+    return this.ctx?.data().name ?? '';
+  }
+
   /* ---- Nell's lines, by stage ------------------------------------- */
   private takeNell() {
     const n = npcs.get('nell');
@@ -232,41 +233,63 @@ class Opening {
     void s;
     const pick = (lines: string[]) => [lines[Math.min(this.said, lines.length - 1)]];
     switch (this.stage) {
-      case 'wake':
-      case 'gate':
-        return ['Three names on that signpost I could go to tomorrow. It\'s the fourth I want. THE CROSSROADS — it\'s on your map.'];
-      case 'talk':
-        return ['Read it. Bring me the fourth name and I\'ll owe you.'];
-      case 'signpost':
+      case 'bench':
+        return pick(['You said you\'d only be gone an hour.', 'It\'s been three years.']);
+      case 'named':
+      case 'bull':
+        return pick(['Mind the bull. It knows you.', 'RUN.']);
+      case 'horse':
         return pick([
-          'The signpost. Where the roads meet, west of here. M shows you.',
-          'I\'ll be here. I\'m always here.',
+          'Get on the horse. It follows the horse. Lead it through the gate and I\'ll shut it.',
+          'Through the gate. Then get out of the way.',
         ]);
-      case 'border':
-      case 'stone':
-        return pick([
-          'A time, not a place. The milestone on the south road is older than the signpost. See what it says.',
-          'South. Over the border. Then come back.',
-        ]);
+      case 'home':
+      case 'list':
+        return pick(['That\'s more like you.', 'Keep the horse. You always did.', 'Morrow\'s got a copy of your notebook. He got most of it wrong.']);
       default:
         return this.origLines ? this.origLines(npcs.state('nell')) : [];
     }
   }
 
   private onNellTalk() {
-    switch (this.stage) {
-      case 'wake':
-      case 'gate':
-        // E: talk taught. The line named the crossroads and the
-        // registry pinned it; now the map is a key.
-        toast('M FOR THE MAP', 'learned');
-        this.go('talk');
-        this.after(3.0, () => this.landJob());
-        break;
-      default:
-        this.said++;
-        this.save();
+    this.said++;
+    this.save();
+  }
+
+  /* ---- the bench --------------------------------------------------- */
+  private greet() {
+    this.after(1.6, () => this.nellSays('Oh. You\'re back.'));
+    this.after(4.8, () => this.nellSays('You said you\'d only be gone an hour.'));
+    this.after(8.4, () => this.nellSays('It\'s been three years.', 3.4));
+    this.after(11.6, () => this.askName());
+  }
+
+  private askName() {
+    if (!this.ctx || this.stage !== 'bench') return;
+    if (this.name) { this.named(this.name, true); return; }
+    this.nellSays('What do I call you? — You don\'t know. Course you don\'t.', 3.2);
+    this.after(2.2, () => {
+      if (!this.ctx || this.stage !== 'bench') return;
+      this.ctx.openName((name) => this.named(name, false));
+    });
+  }
+
+  private named(name: string, reloaded: boolean) {
+    if (!this.ctx) return;
+    this.ctx.data().name = name;
+    notebook.setName(name);
+    this.ctx.persist();
+    this.go('named');
+    if (!reloaded) {
+      this.nellSays(`${name}, then. Right.`, 2.4);
+      toast(`WRITTEN ON THE COVER: ${name.toUpperCase()}`, 'learned');
     }
+    this.after(2.0, () => {
+      if (!this.ctx) return;
+      this.ctx.showHint(this.ctx.touch ? 'drag low to walk · drag high to look' : 'wasd to walk · drag to look · E to act', 6000);
+      this.ctx.common.bull.hold = false;
+      this.go('bull');
+    });
   }
 
   /* ---- the job ---------------------------------------------------- */
@@ -274,86 +297,173 @@ class Opening {
     return { id: JOB_ID, name: JOB_NAME, giver: GIVER, steps: STEPS, reward: REWARD, land: 'meadow' as RegionId, pin };
   }
 
-  private landJob() {
-    if (this.stage !== 'talk') return;
-    notebook.job(this.jobDef(PIN_CROSSROADS));
-    notebook.activate(JOB_ID);
-    toast('N — YOUR NOTEBOOK', 'learned');
-    this.nellSays('Read it. Bring me the fourth name and I\'ll owe you.');
-    this.go('signpost');
-  }
-
-  private readTheSignpost() {
-    this.go('border');
-    this.after(1.6, () => {
-      say('walker', '8:15. That\'s not a place. That\'s a time.');
-      notebook.step(JOB_ID, 1);
-      notebook.place(PIN_MILESTONE.label, PIN_MILESTONE.x, PIN_MILESTONE.z);
-      notebook.job(this.jobDef(PIN_MILESTONE));
-    });
-  }
-
-  private crossedTheBorder() {
-    toast('OVER THE BORDER: MAPLE COURT', 'found');
-    notebook.step(JOB_ID, 2);
-    this.go('stone');
-  }
-
-  private readTheMilestone() {
-    this.go('return');
-    this.after(1.6, () => {
-      say('walker', 'A time, and an arrow. North.');
-      notebook.step(JOB_ID, 3);
-      notebook.place(PIN_GATE.label, PIN_GATE.x, PIN_GATE.z, { seen: true, quiet: true });
+  private whistle() {
+    if (!this.ctx || this.whistled) return;
+    this.whistled = true;
+    const w = this.ctx.walker();
+    this.nellSays('It knows you. Hang on —', 2.0);
+    this.ctx.whistleTo(w.x, w.z);
+    this.after(1.4, () => {
+      this.nellSays('Get on the horse. It follows the horse. Lead it through the gate and I\'ll shut it.', 7);
       notebook.job(this.jobDef(PIN_GATE));
+      notebook.activate(JOB_ID);
+      toast('E — GET ON THE HORSE WHEN IT COMES', 'learned');
+      this.go('horse');
     });
   }
 
-  private doorTaken() {
-    this.go('chosen');
-    // the choice is read back by the voice (6–18 s); around it: the
-    // job closes, the cap, and then the world
-    this.after(1.4, () => notebook.complete(JOB_ID));
-    this.after(4.0, () => {
-      worn.take('nells-cap');
-      this.nellSays('Have the cap. It was in the cart. Everything was in the cart.');
-    });
-    this.after(24, () => this.openTheWorld());
-  }
-
-  private openTheWorld() {
-    if (this.stage !== 'chosen') return;
-    this.nellSays('If you want more to do: MARGET, in Brim\'s square, north. JOAN HARROW, on the Downs, east. VAL, at the top of Maple Court, south.', 9);
-    for (const a of THREE_ASKS) notebook.place(a.label, a.x, a.z, { quiet: true });
-    notebook.place(PIN_SOUTH_GATE.label, PIN_SOUTH_GATE.x, PIN_SOUTH_GATE.z, { quiet: true });
-    toast('THREE PEOPLE WANT SOMETHING. PICK ONE.', 'job');
-    toast(`PINNED: ${THREE_ASKS.map((a) => a.label).join(', ').replace(/, ([^,]*)$/, ' AND $1')}`, 'place');
-    this.after(6.5, () => {
-      this.nellSays('And take the horse. It\'s at the crossroads. Whistle — H — and it comes to you.', 6);
+  private penned() {
+    if (!this.ctx) return;
+    this.ctx.common.pen();
+    notebook.step(JOB_ID, 2);
+    notebook.complete(JOB_ID, 'It went in. It always did, for you.');
+    this.go('home');
+    this.after(1.2, () => this.nellSays('There. That\'s more like you.', 3));
+    this.after(4.6, () => this.nellSays('I was beginning to think you weren\'t coming back.', 4));
+    this.after(9.0, () => {
+      this.nellSays('Keep the horse. You always did.', 3.5);
       toast('H WHISTLES THE HORSE', 'learned');
-      this.go('done');
+    });
+    this.after(11.5, () => this.startWalkby());
+  }
+
+  /* ---- Morrow goes past ------------------------------------------- */
+  private startWalkby() {
+    if (!this.ctx || this.stage !== 'home') return;
+    this.walk = { d: 0, said: false, dogPause: -1, dogPaused: false, t: 0 };
+    const wb = this.ctx.common.walkby;
+    wb.on = true;
+    const [x, z] = MORROW_PATH[0];
+    wb.mx = x; wb.mz = z; wb.dx = x - 2; wb.dz = z + 0.6;
+  }
+
+  private pathAt(d: number): { x: number; z: number; face: -1 | 1; end: boolean } {
+    let acc = 0;
+    for (let i = 0; i < MORROW_PATH.length - 1; i++) {
+      const [x0, z0] = MORROW_PATH[i];
+      const [x1, z1] = MORROW_PATH[i + 1];
+      const L = Math.hypot(x1 - x0, z1 - z0);
+      if (d <= acc + L) {
+        const k = (d - acc) / L;
+        return { x: x0 + (x1 - x0) * k, z: z0 + (z1 - z0) * k, face: x1 >= x0 ? 1 : -1, end: false };
+      }
+      acc += L;
+    }
+    const [x, z] = MORROW_PATH[MORROW_PATH.length - 1];
+    return { x, z, face: 1, end: true };
+  }
+
+  private tickWalkby(dt: number) {
+    const c = this.ctx;
+    if (!c) return;
+    const wb = c.common.walkby;
+    if (!wb.on) return;
+    const W = this.walk;
+    W.t += dt;
+    W.d += MORROW_PACE * dt;
+    const m = this.pathAt(W.d);
+    wb.mx = m.x; wb.mz = m.z; wb.mface = m.face;
+    wb.mpose = Math.floor(W.t / 0.32) % 2;
+    const w = c.walker();
+    const md = Math.hypot(w.x - m.x, w.z - m.z);
+    if (!W.said && md < 16) {
+      W.said = true;
+      say({ name: 'MORROW', get x() { return wb.mx; }, get z() { return wb.mz; } }, 'Did you fix the bridge?', { hold: 3.2 });
+      notebook.heard('MORROW', 'Did you fix the bridge?');
+    }
+    // the dog: behind him, until it notices you; then it stops, and
+    // looks, and goes after him again
+    const dd = Math.hypot(w.x - wb.dx, w.z - wb.dz);
+    if (W.dogPause < 0 && !W.dogPaused && dd < 7) { W.dogPause = 1.8; W.dogPaused = true; }
+    if (W.dogPause > 0) {
+      W.dogPause -= dt;
+      wb.dpose = 3;
+      wb.dface = w.x < wb.dx ? -1 : 1;
+    } else {
+      const target = this.pathAt(Math.max(0, W.d - DOG_GAP));
+      const gx = target.x - wb.dx;
+      const gz = target.z - wb.dz;
+      const g = Math.hypot(gx, gz);
+      const speed = g > 4 ? 6.4 : MORROW_PACE;
+      const step = Math.min(g, speed * dt);
+      if (g > 0.05) { wb.dx += (gx / g) * step; wb.dz += (gz / g) * step; wb.dface = gx >= 0 ? 1 : -1; }
+      wb.dpose = g > 4 ? 2 : g > 0.3 ? 1 : 0;
+    }
+    if (m.end || (W.said && W.d > 70) || W.t > 40) {
+      wb.on = false;
+      this.openTheList();
+    }
+  }
+
+  /* ---- the list --------------------------------------------------- */
+  private openTheList() {
+    if (!this.ctx || this.stage !== 'home') return;
+    this.go('list');
+    notebook.listShown = true;
+    notebook.dirty = true;
+    toast('N — YOUR NOTEBOOK', 'learned');
+    this.listWasOpen = false;
+    this.after(1.2, () => { this.ctx?.openList(); });
+  }
+
+  private tickList() {
+    const c = this.ctx;
+    if (!c) return;
+    const open = c.notebookOpen();
+    if (open) { this.listWasOpen = true; return; }
+    if (!this.listWasOpen) return;
+    // the page is shut again: the world opens
+    this.go('done');
+    for (const l of THE_LIST) notebook.place(l.pin.label, l.pin.x, l.pin.z, { quiet: true });
+    notebook.place(PIN_BENCH.label, PIN_BENCH.x, PIN_BENCH.z, { seen: true, quiet: true });
+    toast('PINNED: TWELVE PLACES. ANY ORDER.', 'place');
+    c.common.note.second = true;
+    this.after(2.0, () => {
+      try { window.dispatchEvent(new CustomEvent('inklands:event', { detail: 'brim-bell' })); } catch { /* no ears */ }
+    });
+    this.after(3.4, () => this.nellSays('That\'s the bell. Morrow rings it. He\'s had the hour wrong for three years.', 6));
+    this.after(7.0, () => {
       this.giveNellBack();
-      npcs.set('nell', { phase: 'done' });
+      npcs.set('nell', { phase: 'met' });
+      fallbackAsk.refresh();
     });
   }
 
   /* ---- a reloaded page picks up where it was ------------------------ */
   private settle() {
     this.settled = true;
-    if (!this.ctx) return;
+    const c = this.ctx;
+    if (!c) return;
     switch (this.stage) {
-      case 'wake':
-        this.ctx.common.wake();
+      case 'bench':
+        c.common.wake();
+        c.sitOnBench();
+        this.after(2.5, () => this.askName());
         break;
-      case 'talk':
-        this.landJob();
+      case 'named':
+        c.common.loose();
+        c.common.bull.hold = false;
+        this.go('bull');
         break;
-      case 'chosen':
-        if (!notebook.list().find((j) => j.id === JOB_ID)?.complete) {
-          notebook.complete(JOB_ID);
-          worn.take('nells-cap');
+      case 'bull':
+      case 'horse':
+        c.common.loose();
+        c.common.bull.hold = false;
+        this.whistled = this.stage === 'horse';
+        if (this.stage === 'horse' && !notebook.list().some((j) => j.id === JOB_ID)) {
+          notebook.job(this.jobDef(PIN_GATE));
+          notebook.activate(JOB_ID);
         }
-        this.after(6, () => this.openTheWorld());
+        break;
+      case 'home':
+        c.common.pen();
+        if (!notebook.list().find((j) => j.id === JOB_ID)?.complete) notebook.complete(JOB_ID);
+        this.after(3, () => this.startWalkby());
+        break;
+      case 'list':
+        c.common.pen();
+        notebook.listShown = true;
+        this.after(1.5, () => c.openList());
         break;
       default:
         break;
@@ -375,72 +485,52 @@ class Opening {
     }
     const w = c.walker();
     const land = c.regionId();
-    const read = c.readNotes();
+    const b = c.common.bull;
     switch (this.stage) {
-      case 'wake': {
-        /* THE BULL, EVERY TIME. The title's blink teleports the walker a
-         * beat after SET OUT, and a bull that watched an empty field
-         * went back to grazing (or lying down, at night). The moment
-         * the walker is in the field, it is watching, and it charges
-         * inside the second. */
-        const b = c.common.bull;
-        const inField = w.x >= -10 && w.x < 46 && w.z >= 65.6 && w.z < 112;
-        if (inField && (b.state === 'graze' || b.state === 'lying')) { b.state = 'watch'; b.t = 0.7; b.face = -1; }
-        if (c.common.bull.state === 'charge' && !this.saidRun) {
+      case 'bull': {
+        if (b.state === 'charge' && !this.saidRun) {
           this.saidRun = true;
-          this.nellSays('RUN. THE GATE. NOW.', 3.2);
-          /* Gate round 1: the shout names the gate; the objective line
-           * and the map say which way it is. The cold player ran north
-           * into the long fence and pressed E on a drawing of a gate. */
-          notebook.place(PIN_GATE.label, PIN_GATE.x, PIN_GATE.z, { seen: true, quiet: true });
-          fallbackAsk.refresh();
+          this.nellSays('RUN.', 2.4);
+          window.dispatchEvent(new CustomEvent('inklands:run-now'));
+          this.after(2.6, () => this.whistle());
         }
-        /* Gate round 1: OUT OF THE FIELD BY ANY WAY — over the stile,
-         * through the gate — and the bull up, Nell slams it. The
-         * drawn slam (meadow.ts) waits for the bull at the hedge, which
-         * only a westward run produces; a walker who went north was
-         * stuck on this stage for the whole session. Never with the
-         * walker in the gap. */
-        if (!c.common.gate.shut) {
-          const inGap = Math.abs(w.z - PIN_GATE.z) < 2.0 && Math.abs(w.x - PIN_GATE.x) < 2.2;
-          // past the rails (z 64.5) or the hedge (x −12), not merely off
-          // the bull's rect, which ends a stride inside them
-          const out = w.z < 64 || w.x < -12.6 || w.x > 46.5 || w.z > 112.5;
-          this.outFor = (out && !inGap && this.elapsed > 1) ? this.outFor + dt : 0;
-          if (this.outFor > (this.saidRun ? 0.8 : 3)) c.common.slam();
-        }
-        if (c.common.gate.shut) {
-          this.go('gate');
-          this.after(0.9, () => this.nellSays('That bull is mine. It went for you because you looked at it. It does that.'));
-          this.after(3.4, () => c.showHint(
-            c.touch ? 'drag low to walk · drag high to look · tap the prompt to talk' : 'wasd to walk · drag to look · E to talk · M map · N notebook',
-            7500,
-          ));
-        }
+        // it reached you before it charged twice: whistle sooner
+        if (b.knocks > 0 && !this.whistled) this.whistle();
         break;
       }
-      case 'signpost':
-        if (read.includes(PIN_CROSSROADS.label)) this.readTheSignpost();
+      case 'horse': {
+        const mounted = c.mounted();
+        b.follow = mounted;
+        if (mounted && !this.mountedOnce) {
+          this.mountedOnce = true;
+          notebook.step(JOB_ID, 1);
+          this.nellSays('Now bring it here. Through the gate.', 4);
+        }
+        /* PENNED: it is east of the hedge line and you are west of it —
+         * or out over the fence any other way. Nell shuts the gate the
+         * frame you are through; the field's own clamp keeps it in. */
+        const bullIn = b.x > HEDGE_X + 0.4 && b.x < FIELD.maxX - 0.5 && b.z > FIELD.minZ + 0.3 && b.z < FIELD.maxZ - 0.5;
+        const walkerOut = w.x < HEDGE_X - 0.3 || w.z < FIELD.minZ - 1.6 || w.x > FIELD.maxX + 0.5 || w.z > FIELD.maxZ + 0.5;
+        const inGap = Math.abs(w.z - PIN_GATE.z) < 2.0 && Math.abs(w.x - HEDGE_X) < 2.2;
+        if (bullIn && walkerOut && !inGap && b.loose) this.penned();
+        else if (c.common.gate.shut && !b.loose) this.penned();
         break;
-      case 'border':
-        if (read.includes(PIN_MILESTONE.label)) { this.crossedTheBorder(); this.readTheMilestone(); }
-        else if (land === 'neighborhood') this.crossedTheBorder();
+      }
+      case 'home':
+        this.tickWalkby(dt);
         break;
-      case 'stone':
-        if (read.includes(PIN_MILESTONE.label)) this.readTheMilestone();
-        break;
-      case 'return':
-        if (NELL_DOORS.some((d) => knowledge.has(d))) this.doorTaken();
+      case 'list':
+        this.tickList();
         break;
       default:
         break;
     }
-    this.nudge(dt, w.x, w.z, land); /* gate round 1: the fence nudges in the first minute too */
+    this.nudge(dt, w.x, w.z, land);
     if (this.stage === 'done') {
       this.fallbackAcc += dt;
       if (this.fallbackAcc > 1) {
         this.fallbackAcc = 0;
-        const id = this.fallback()?.name ?? null;
+        const id = this.fallback()?.want ?? null;
         if (id !== this.fallbackId) { this.fallbackId = id; fallbackAsk.refresh(); }
       }
     }
@@ -455,27 +545,26 @@ class Opening {
       if (n.held < 2.2 || this.elapsed - n.last < 45) continue;
       n.last = this.elapsed;
       toast(text, 'place');
-      if (n.id === 'brim-wall') notebook.place(PIN_SOUTH_GATE.label, PIN_SOUTH_GATE.x, PIN_SOUTH_GATE.z, { quiet: true });
     }
   }
 
-  /** With no job, the objective line names the nearest of the three
-   *  who has not been met yet. */
+  /** With no job, the objective line names the nearest line of the
+   *  list whose person is not done with you. */
   private fallback(): { name: string; want: string } | null {
     if (!this.ctx) return null;
-    /* Gate round 1: the first minute has an objective line too. */
-    if (this.stage === 'wake') return this.saidRun ? { name: 'NELL', want: 'RUN. THE GATE IS WEST' } : null;
-    if (this.stage === 'gate') return { name: 'NELL', want: 'AT THE FIELD GATE. E TO TALK' };
+    if (this.stage === 'bench') return { name: 'NELL', want: 'AT THE WASHING LINE' };
+    if (this.stage === 'bull') return this.saidRun ? { name: 'NELL', want: 'RUN' } : null;
     if (this.stage !== 'done') return null;
     const w = this.ctx.walker();
-    let best: (typeof THREE_ASKS)[number] | null = null;
+    let best: (typeof THE_LIST)[number] | null = null;
     let bd = Infinity;
-    for (const a of THREE_ASKS) {
-      if (npcs.state(a.id).phase !== 'idle') continue;
-      const d = Math.hypot(a.x - w.x, a.z - w.z);
-      if (d < bd) { bd = d; best = a; }
+    for (const l of THE_LIST) {
+      if (l.kept || npcs.state(l.id).phase === 'done' || knowledge.decided(l.land)
+        || notebook.list().some((j) => j.land === l.land && j.complete)) continue;
+      const d = Math.hypot(l.pin.x - w.x, l.pin.z - w.z);
+      if (d < bd) { bd = d; best = l; }
     }
-    return best ? { name: best.name, want: best.label } : null;
+    return best ? { name: 'THE LIST', want: `${best.who}, ${best.pin.label}` } : null;
   }
 }
 
