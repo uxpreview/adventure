@@ -118,6 +118,36 @@ it opens, so the E that opened it is not the first letter of your name.
 Replayed on the harness: the same beats at the same seconds, the gate
 shut at 33, no page errors.
 
+### Played by hand (2026-09-16, desktop, from the title, no parameters)
+
+Played in a real browser with a GPU rather than the harness. The opening
+holds end to end: bench, Nell's four lines, the name card, the knock,
+the horse, the gate shut at the second try, "1 OF 12 KEPT", the list
+opening itself, twelve pins, the objective falling back to Val. Found:
+
+- **The list's strikes were off the page.** `strike()` appends an
+  absolute canvas to a static host, so on THE LIST the ink line was
+  measured against the page and drew nowhere near the row (JOBS was
+  fine because `.nb-jobhead` is relative). The host is now made
+  relative when it is static. Nell's and Joan's lines are struck.
+- **Thirty seconds of fence, again.** With the bull following, the gap
+  was found on the third pass; the first two rode along the hedge
+  past Nell, and the walker ended up shut inside the field with the
+  bull (the stile line printed on resume, not at the time). The label
+  THE FIELD GATE reads from thirty units but there is nothing at the
+  gap itself that says "gap". Not fixed here.
+- **Morrow was missed.** The walk-by ran while the walker was inside
+  the field facing the fence; the notebook opened itself to the list
+  mid-ride with no sign of him or the dog. The list should wait until
+  he has been on screen, or the walk-by should wait for the walker to
+  be on the green.
+- Small: WHOA and THE FIELD GATE letter over each other at the gate;
+  the toasts stack over the horse; the walker never has to stand up
+  (the bull knocks a sitting walker); "Right. The horse." answers E
+  when the horse is out of reach and reads as if it worked; on a
+  674-pixel-tall window lines 11 and 12 of the list are below the
+  fold with no sign the page scrolls.
+
 ## The reset — Sessions 24 to 27 (2026-09-07 → 2026-09-09)
 
 One branch, `claude/inklands-open-world-va3lgx`, PR #23. Six pillar engineers
