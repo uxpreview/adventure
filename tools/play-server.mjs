@@ -143,6 +143,7 @@ async function run(cmd) {
       await sec(0.2);
       return { gameSec: +gameSec.toFixed(1), ...(await state()) };
     }
+    case 'type': { await page.keyboard.type(a.join(' ')); await sec(0.3); return await state(); }
     case 'press': { await page.keyboard.press(key(a[0])); await sec(Number(a[1] ?? 0.5)); return await state(); }
     case 'down': await page.keyboard.down(key(a[0])); return 'ok';
     case 'up': await page.keyboard.up(key(a[0])); return 'ok';

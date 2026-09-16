@@ -41,6 +41,10 @@ export type NotebookSave = {
   activeId: string | null;
   /** Who the walker has met and what they have been asked (`npc.ts`). */
   npcs: Record<string, unknown>;
+  /** THE FIRST FIVE MINUTES: the name on the cover, chosen on the
+   *  bench; and whether the first page has been read yet. */
+  name?: string | null;
+  listShown?: boolean;
 };
 
 const HEARD_CAP = 40;
@@ -58,13 +62,17 @@ class Notebook {
   /** Plain-English lines for things learned, most recent last. */
   learned: string[] = [];
   npcs: Record<string, unknown> = {};
+  /** The name on the cover, or nothing yet. */
+  name: string | null = null;
+  /** Whether the first page (THE LIST) is readable yet. */
+  listShown = false;
   private activeId: string | null = null;
   /** Set when anything changed, so App persists without polling. */
   dirty = false;
   /** The page and the objective line listen here. */
   private listeners: (() => void)[] = [];
   /** The page, once it exists (`ui/notebook.ts`). */
-  ui: { open(): void; close(): void; toggle(): void; readonly isOpen: boolean } | null = null;
+  ui: { open(): void; close(): void; toggle(): void; show?(tab: string): void; readonly isOpen: boolean } | null = null;
 
   onChange(fn: () => void) {
     this.listeners.push(fn);
@@ -216,8 +224,16 @@ class Notebook {
     return out;
   }
 
+  /** The name on the cover. */
+  setName(name: string) {
+    this.name = name;
+    this.changed();
+  }
+
   /* ---- the page --------------------------------------------------- */
   open() { this.ui?.open(); }
+  /** Open the page to one tab (the opening opens it to THE LIST). */
+  openTo(tab: string) { this.ui?.open(); this.ui?.show?.(tab); }
   close() { this.ui?.close(); }
   toggle() { this.ui?.toggle(); }
   get isOpen() { return this.ui?.isOpen ?? false; }
@@ -227,6 +243,7 @@ class Notebook {
     return {
       jobs: this.jobs, heard: this.heardList, places: this.places, found: this.foundMap,
       choices: this.choices, scores: this.scores, learned: this.learned, activeId: this.activeId, npcs: this.npcs,
+      name: this.name, listShown: this.listShown,
     };
   }
 
@@ -241,6 +258,8 @@ class Notebook {
     this.learned = s.learned ?? [];
     this.activeId = s.activeId ?? null;
     this.npcs = s.npcs ?? {};
+    this.name = s.name ?? null;
+    this.listShown = !!s.listShown;
     for (const fn of this.listeners) fn();
   }
 

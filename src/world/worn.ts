@@ -109,6 +109,15 @@ class Worn {
   }
 
   /** Put on something earned, or nothing. */
+  /** THE BULL TAKES YOUR HAT: whatever is on comes off, and is still
+   *  yours to put back on. Returns what came off. */
+  drop(): string | null {
+    const id = this.current;
+    if (!id) return null;
+    this.put(null);
+    return id;
+  }
+
   put(id: string | null) {
     if (id !== null && !this.has(id)) return;
     if (id === this.current) return;

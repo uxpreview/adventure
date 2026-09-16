@@ -1,5 +1,123 @@
 # CHANGELOG
 
+## The first five minutes — the story of record (2026-09-16)
+
+Branch `claude/game-storyline-concepts-i7imu0`, after PR #27 merged the
+story. The opening is rebuilt on `design/foundation/08` §7; nothing else
+in the game moved. `npm run build` green.
+
+### What changed
+
+**You wake on a bench.** `SPAWN` is the bench on the green (−26, 92),
+south of Nell's gate so the gate, the washing and the bull are all in the
+frame that looks north. The walker is put on the seat at SET OUT (a
+step stands you up). A note is pinned to the bench's end: READ THE NOTE
+is "back in an hour. — you", rained on; after the list it is the second
+note under the first (YOU DON'T HAVE TO DO ALL TWELVE / YES, I DO).
+
+**Nell at her washing line.** Moved from the gate to a line a few steps
+west of it, in the bench's frame. Her opening lines come from
+`opening.ts` by stage: "Oh. You're back." / "You said you'd only be gone
+an hour." / "It's been three years." / "What do I call you? — You don't
+know. Course you don't." Her registry lines (`lines.ts`) are the
+after-lines: three years, the bull, Morrow's copy, Joan's two plates.
+
+**The name.** The one thing in the game you type. A card with a text
+field whose own letters are invisible; what you type is lettered in the
+hand above it as you type. Enter or "that'll do". The name goes on the
+notebook's cover ("Ryan's notebook"), Nell says it once, and it is saved
+(`SaveData.name`, `NotebookSave.name`). Keys typed into the field are
+never steps or interacts (`Input.typing`).
+
+**The bull is loose, and it knows you.** `common.bull.loose`: its ground
+is the whole green (the river bend refused), it grazes at (−34, 74) and
+does not look up until the name is chosen (`hold`). Then it charges, and
+loose and on foot it reaches you: the knock (`inklands:bull-knock`) rocks
+the walker, takes the hat if there is one, and the walker says "Oof. It
+knows me." (three lines, then it has said what it has to say). Loose, it
+stands over you two seconds, goes once more, and backs off to watch for
+six. Nell shouts RUN and whistles the horse to you.
+
+**GET IT HOME.** Two steps: GET ON THE HORSE, LEAD THE BULL THROUGH THE
+GATE. Mounted, the bull follows the horse three strides off and never
+balks (`follow`, set by App before the land ticks, so the frame you mount
+is a following frame). Ride through the gate and out again: when it is
+east of the hedge line and you are west of it, Nell slams the gate
+(`common.pen()`), the field is its ground again, the job completes,
+"There. That's more like you." / "I was beginning to think you weren't
+coming back." / "Keep the horse. You always did." The gate's gap is two
+units either side now (a rider can thread it).
+
+**Morrow goes past.** Fifteen, a copied notebook under his arm, the
+dachshund behind him. From the coast road's end past the bench and the
+gate and away down the king's road; "Did you fix the bridge?" at sixteen
+units, and he does not stop. The dog stops when it notices you, sits and
+looks, and goes after him. Drawn by the meadow (`morrowTexture`,
+`dachshundTexture`), moved by the opening (`common.walkby`).
+
+**THE LIST.** The notebook's first tab. "the first page is stuck to the
+cover" until the walk-by; then the notebook opens itself to it: TWELVE
+THINGS. THEN I CAN GO HOME and the twelve lines verbatim
+(`src/world/thelist.ts`), a line struck when he crossed it out (Joan) or
+when its land's job is done (Nell's, after the opening). Close it and
+the twelve places are pinned, the bell rings the wrong hour, Nell says
+Morrow rings it, and the objective line falls back to the nearest line
+of the list ("THE LIST — VAL, THE THREE CHAIRS").
+
+**Gone.** THE FOURTH NAME, the milestone as a job step, Nell's card at
+the gate and its two doors, "THE 8:15 WILL STOP FOR n OF 12" (now "n OF
+12 KEPT" on the JOBS page and as the toast). The milestone stays as a
+place with a note.
+
+**Harness.** `node tools/play.mjs type TEXT` types into a field.
+`window.__inklands.opening.stage` for the stage.
+
+### The scripted play (desktop, from the title, no parameters)
+
+At 3.5 s: the bench, STAND UP, "Oh. You're back." At 14.5: the name
+card. At 20: RUN and "hold shift to run"; the bull crosses the frame.
+At 24: "Oof. It knows me.", NEW JOB: GET IT HOME. At 27: on the horse.
+At 33: through the gate with the bull three strides behind. At 38: the
+gate shut, YOURS: THE HORSE, "There. That's more like you." At 48:
+"Keep the horse." At 62: Morrow and the dog on the green. At 84: the
+list. At 88: twelve pins, the bell, "THE LIST — VAL, THE THREE CHAIRS".
+No page errors.
+
+### What the cold player said (round 3, `design/reset/rounds/round-3/REPORT.md`)
+
+Played cold from the title with no source, to game-second 183. T1 held:
+at sixty seconds it could say what the game wanted (confidence 8/10).
+Scores: understandable 5, alive 8, fun 6, beautiful 9. Its one sentence
+to a friend: "a quiet hand-drawn walking game where you come back to a
+village three years late with no memory, a notebook and a list of twelve
+small favours you owe people, one per land, and you go round doing them
+in any order". Best moment: the stuck first page coming loose into
+TWELVE THINGS, and "Oof. It knows me." Worst: seventy seconds riding
+the same fifteen metres of fence not knowing which gap was the gate or
+which side was home, while Nell's talk prompt stole the horse's.
+
+### Fixed after round 3
+
+**Nell gets out of the horse's way.** `npcs.mute(id, on)` takes a
+person's talk prompt off the page. Nell is muted from the whistle until
+you are on the horse, so GET ON THE HORSE is the only prompt near it.
+
+**Nell stands at the gate.** At the whistle she walks from the washing
+line to the gate post (`common.nellAtGate`), so "this gate" is the one
+she is standing at, and THE FIELD GATE's label reads from thirty units.
+Her lines say which side: "Bring it in through this gate, and I'll shut
+it behind it." / "In through the gate, well in. I'll do the rest."
+
+**The pen rule.** The gate shuts when the bull is five units inside the
+hedge line and not in the gap, whichever side you are on. If you are
+still inside with it, she says the stile is on the long fence, north.
+
+**The name card** clears itself and takes focus a quarter-second after
+it opens, so the E that opened it is not the first letter of your name.
+
+Replayed on the harness: the same beats at the same seconds, the gate
+shut at 33, no page errors.
+
 ## The reset — Sessions 24 to 27 (2026-09-07 → 2026-09-09)
 
 One branch, `claude/inklands-open-world-va3lgx`, PR #23. Six pillar engineers

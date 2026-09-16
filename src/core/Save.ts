@@ -95,6 +95,8 @@ export type SaveData = {
   notebook?: NotebookSave | null;
   /* ---- FIRST HOUR: where the scripted opening got to (`src/world/opening.ts`) ---- */
   opening?: OpeningSave | null;
+  /** THE NAME chosen on the bench, or null before it is. */
+  name?: string | null;
 };
 
 const KEY = 'inklands-save-v1';
@@ -117,6 +119,7 @@ const DEFAULTS: SaveData = {
   worn: null,
   notebook: null,
   opening: null, /* ---- FIRST HOUR ---- */
+  name: null,
 };
 
 export class Save {

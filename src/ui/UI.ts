@@ -29,6 +29,8 @@ export class UI {
   mapOpen = false;
   /** A choice card has the screen. Frozen like a note; see below. */
   choiceOpen = false;
+  /** THE NAME CARD has the screen (the bench, the first minute). */
+  nameOpen = false;
 
   onBegin: (() => void) | null = null;
   onContinue: (() => void) | null = null;
@@ -71,6 +73,13 @@ export class UI {
   private choiceOpts: HTMLElement;
   private choiceText: { title: string; body: string; options: string[] } | null = null;
   private choicePick: ((i: number) => void) | null = null;
+  private nameVeil: HTMLElement;
+  private nameTitle: HTMLElement;
+  private nameBody: HTMLElement;
+  private namePreview: HTMLElement;
+  private nameInput: HTMLInputElement;
+  private nameBtn: HTMLElement;
+  private nameSubmit: ((name: string) => void) | null = null;
   private map: HTMLElement;
   private mapSlot: HTMLElement;
   private hud: HTMLElement;
@@ -166,6 +175,30 @@ export class UI {
     this.choiceOpts = el('choice-options', this.choiceCard);
 
     // map overlay
+    /* THE NAME CARD: the one thing in the game you type. The field's own
+     * text is transparent and only the caret shows; what you typed is
+     * lettered in the hand above it as you type, so the name is in
+     * ballpoint from the first letter. */
+    this.nameVeil = el('note-veil choice-veil name-veil', this.root);
+    const nameCard = el('note-card choice-card name-card', this.nameVeil);
+    this.nameTitle = el('note-title', nameCard);
+    this.nameBody = el('note-body', nameCard);
+    this.namePreview = el('name-preview', nameCard);
+    this.nameInput = el('name-input', nameCard, 'input') as HTMLInputElement;
+    this.nameInput.id = 'walker-name';
+    this.nameInput.setAttribute('autocomplete', 'off');
+    this.nameInput.setAttribute('autocapitalize', 'words');
+    this.nameInput.setAttribute('maxlength', '14');
+    this.nameInput.setAttribute('aria-label', 'what will you go by, for now?');
+    this.nameInput.addEventListener('input', () => this.letterName());
+    this.nameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); this.submitName(); }
+      e.stopPropagation();
+    });
+    this.nameBtn = el('choice-btn name-btn', nameCard, 'button');
+    letterEl(this.nameBtn, 'that\'ll do', S.button(11.5));
+    this.nameBtn.addEventListener('click', (e) => { e.stopPropagation(); this.submitName(); });
+    nameCard.addEventListener('click', (e) => e.stopPropagation());
     this.map = el('map-veil', this.root);
     this.mapSlot = el('map-slot', this.map);
     this.map.addEventListener('click', () => this.closeMap());
@@ -209,6 +242,7 @@ export class UI {
     });
 
     window.addEventListener('keydown', (e) => {
+      if (this.nameOpen) return; /* the field has the keys */
       if (this.choiceOpen) {
         /* THE KEYS ARE THE OPTIONS, in order: 1, 2, 3 — and Escape walks
          * away. Nothing else is read while a choice is up, so the map
@@ -486,6 +520,48 @@ export class UI {
     const cb = this.choicePick;
     this.closeChoice();
     cb?.(i);
+  }
+
+  /* ================================================================ *
+   * THE NAME CARD (the story of record, `design/foundation/08` §7).
+   * "You can't remember your name. What will you go by, for now?"
+   * ================================================================ */
+  openName(submit: (name: string) => void) {
+    this.closeNote();
+    this.closeChoice();
+    this.nameSubmit = submit;
+    const w = Math.max(150, Math.min(400, window.innerWidth * 0.92 - 44));
+    letterEl(this.nameTitle, 'you can\'t remember your name.', { ...S.display(15.5), px: 15.5, align: 'left', maxWidth: w });
+    letterEl(this.nameBody, 'what will you go by, for now?', { ...S.voice(12), maxWidth: w, leading: 2.4 });
+    this.nameInput.value = '';
+    this.letterName();
+    this.nameVeil.classList.add('show');
+    this.nameOpen = true;
+    UI.chrome.open = true;
+    /* the key that was being pressed when the card came up is not the
+     * first letter of a name */
+    window.setTimeout(() => { this.nameInput.focus(); this.nameInput.value = ''; this.letterName(); }, 260);
+  }
+
+  private letterName() {
+    const v = this.nameInput.value.trim();
+    letterEl(this.namePreview, v || '. . .', { px: 22, alpha: v ? 0.92 : 0.35, align: 'center' });
+  }
+
+  private submitName() {
+    const v = this.nameInput.value.trim().replace(/\s+/g, ' ');
+    if (!v) { this.nameInput.focus(); return; }
+    const cb = this.nameSubmit;
+    this.closeName();
+    cb?.(v);
+  }
+
+  closeName() {
+    this.nameVeil.classList.remove('show');
+    this.nameOpen = false;
+    UI.chrome.open = this.noteOpen || this.choiceOpen;
+    this.nameSubmit = null;
+    this.nameInput.blur();
   }
 
   closeChoice() {

@@ -11,9 +11,9 @@ a dog that has him now, and a gathering that failed once and happens again
 at the end without you running it.
 
 **The story of record is `design/foundation/08_Inklands_Story_Foundation_v1.md`.**
-What is built today (below) is the opening and jobs from before it; the
-next sessions rebuild the first five minutes on it, then the twelve
-promises in tiers.
+The first five minutes are built on it (below). The twelve named
+people's jobs are still the ones from before it; the next sessions re-hang
+them on the twelve lines of the list, in four tiers.
 
 ## The six pillars (the only rules)
 1. **You can always look.** Orbit, pitch and zoom are the player's. Never
@@ -34,13 +34,16 @@ promises in tiers.
 - **Controls.** WASD/stick to walk (relative to the camera), Shift to run,
   drag to look, wheel/pinch to zoom, `R` recentre, `E` talk/act, `M` map,
   `N` notebook, `H` whistle the horse, `Esc` close.
-- **The opening.** Bull → gate → Nell → THE FOURTH NAME (signpost, the south
-  road into Maple Court, the milestone, back to Nell) → Nell's cap → three
-  pins and the horse.
-  **Superseded by the story of record; still what runs.** The new opening
-  is the bench, Nell's "You're back", the name lettered onto the notebook,
-  the bull and the horse (GET IT HOME), three recognitions, the notebook's
-  twelve lines, the second note, the pull.
+- **The opening (the first five minutes, on the story of record).** You
+  wake sitting on a bench on the green under a note in your own hand.
+  Nell at her washing line: "You're back." "It's been three years." You
+  type a name and it is lettered onto the notebook's cover. The bull is
+  loose and knows you; it knocks you down; Nell whistles the horse. GET
+  IT HOME: get on the horse, the bull follows the horse, lead it through
+  the gate and Nell shuts it. The horse is yours. Morrow, fifteen, goes
+  past with the dog and does not stop. The notebook's first page: TWELVE
+  THINGS. THEN I CAN GO HOME, twelve lines, one crossed out; twelve pins
+  on the map; the bell rings the wrong hour; a second note on the bench.
 - **People.** Nell (Common), Marget (Brim), Wick (castle), Pye (beach), Wren
   (ocean), Brack (Penwood), Holt (canyon), Amos (Flats), Joan Harrow
   (Downs), Val (Maple Court), the man at the junction (Greyline), Dennis

@@ -36,24 +36,20 @@ export type PersonDef = {
 /* ---- THINGS: the eleven's `asked`/`done` lines match their jobs in `jobs/*.ts`; Nell's are FIRST HOUR's ---- */
 export const PEOPLE: PersonDef[] = [
   {
-    id: 'nell', name: 'NELL', land: 'meadow', want: 'THE CROSSROADS',
-    /* FIRST HOUR: while the opening runs, Nell's lines come from
-     * `opening.ts` by stage. These are what she says before it starts
-     * (an old save) and after it is done. */
+    id: 'nell', name: 'NELL', land: 'meadow',
+    /* THE FIRST FIVE MINUTES: while the opening runs, Nell's lines come
+     * from `opening.ts` by stage. These are what she says after it is
+     * done, and what an old save hears. */
     lines: {
-      idle: ['That bull is mine. It went for you because you looked at it. It does that.'],
+      idle: ['You\'re back, then.'],
       met: [
-        'Three names on that signpost I could go to tomorrow. It\'s the fourth I want.',
-        'The cart\'s been nearly loaded since the fence was a fence.',
-        'Mind the bull. He minds you.',
+        'Three years. I hung that washing out the day you went and I\'ve hung it out every day since.',
+        'The bull\'s yours to mind as much as mine. It always was. You just never let anyone else.',
+        'Morrow\'s got a copy of your notebook. He got most of it wrong. He\'s fifteen.',
+        'Joan\'s laid two plates every night for three years. I\'d go and sit at one of them, if I were you.',
       ],
-      asked: [
-        'Read the signpost at THE CROSSROADS. There\'s a fourth name on it, and it isn\'t a place. Bring it back.',
-        'A time, not a place. The milestone on the south road is older than the signpost. See what it says about it.',
-      ],
-      done: ['North, then. I\'d have said north.', 'Keep the cap. I\'ve a hood in the cart.', 'Three roads, three people. I\'m not going to pick for you.'],
-      'chose:door:the-cart-turned-north': ['8:15. Not a place. A time. Well — the cart goes north, then, and I go with it.'],
-      'chose:door:the-cart-pushed': ['You pushed my cart to the edge of the world. Fine. It\'s a cart at a border now. That\'s a kind of answer.'],
+      asked: [],
+      done: ['Keep the horse. You always did.'],
     },
   },
   {

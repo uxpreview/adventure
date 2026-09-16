@@ -46,6 +46,11 @@ const JOY_RUN = 88;
  *  either side of where they went down on a 390-wide screen. */
 const PEEK_PX = 90;
 export class Input {
+  /** Whether a key event belongs to a text field on the page. */
+  static typing(e: KeyboardEvent): boolean {
+    const t = e.target as HTMLElement | null;
+    return !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA');
+  }
   move = new THREE.Vector2();
   /** 0 walking .. 1 flat out. Continuous; never a state. */
   run = 0;
@@ -97,12 +102,15 @@ export class Input {
   constructor(private canvas: HTMLElement, private joyEl: HTMLElement) {
     window.addEventListener('keydown', (e) => {
       if (e.repeat) return;
+      /* THE NAME CARD: a key typed into a text field is a letter, not a
+       * step or an interact. */
+      if (Input.typing(e)) return;
       this.keys.add(e.code);
       if ((e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') && this.enabled) {
         this.fireInteract();
       }
     });
-    window.addEventListener('keyup', (e) => this.keys.delete(e.code));
+    window.addEventListener('keyup', (e) => { if (!Input.typing(e)) this.keys.delete(e.code); });
     window.addEventListener('blur', () => this.keys.clear());
 
     canvas.addEventListener('pointerdown', (e) => {
