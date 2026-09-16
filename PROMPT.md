@@ -139,6 +139,13 @@ he left rather than forgot, the sea and Pye, Joan and the bench, Morrow
 as successor not rival, four tiers of three, the railway as the
 connection that needs no person, the bench and the note as the ending.
 Nothing in 05 is decided until the owner logs it in 04.
+`06` is the owner's refined foundation (2026-09-16: the disastrous day,
+the sea, Morrow, the dog, the network, a gathering as the endgame, the
+bench as the ending). `07` stress-tests it: make the disastrous day the
+gathering itself (the 8:15 is its time, the bridge is the emergency),
+fix the three-year timeline (Pye found him coming in), Joan said the
+line, the network as one relay of twelve calls, cut "leave honestly",
+the player writes the first page at the end.
 
 ## 3. The next session, and the ones after (one item per session, in order)
 
