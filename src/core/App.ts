@@ -2141,7 +2141,10 @@ export class App {
       this.terrain.heightAt(this.horse.pos.x, this.horse.pos.y),
       this.char.heading,
       this.horse.aboard ? Math.hypot(this.char.vel.x, this.char.vel.z) : 0,
-      (x, z) => this.horseRefuses(x, z),
+      /* called, it jumps a fence to reach you (gate round 4: whistled
+       * to the far side of the long fence, it stood there); ridden, it
+       * refuses what a walker refuses */
+      (x, z) => this.horse.aboard ? this.horseRefuses(x, z) : this.terrain.blockedAt(x, z),
       (x, z) => this.terrain.heightAt(x, z)
     );
     if (this.horse.hoofbeat && this.started

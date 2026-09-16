@@ -125,6 +125,9 @@ class Opening {
   private nudges: Nudge[] = [];
   /** Morrow's walk: distance along the path, and whether he has spoken. */
   private walk = { d: 0, said: false, dogPause: -1, dogPaused: false, t: 0 };
+  private walkbyDue = false;
+  private walkbyWaited = 0;
+  private walkbyRuns = 0;
   private listWasOpen = false;
 
   /* ---- wiring --------------------------------------------------- */
@@ -145,8 +148,18 @@ class Opening {
       },
       {
         id: 'shut-gate', held: 0, last: -99,
-        test: (x, z, land) => (land === 'meadow' && ctx.common.gate.shut && x > -11 && x < -6 && Math.abs(z - 82) < 6)
+        test: (x, z, land) => (land === 'meadow' && ctx.common.gate.shut
+          && x > HEDGE_X && x < FIELD.maxX && z > FIELD.minZ + 3 && z < FIELD.maxZ)
           ? 'THE GATE IS SHUT. THE STILE IS ON THE LONG FENCE, NORTH.' : null,
+      },
+      {
+        /* riding the hedge with the bull behind: the gap is the one
+         * thing on it with a person in it */
+        id: 'the-gap', held: 0, last: -99,
+        test: (x, z, land) => (land === 'meadow' && this.stage === 'horse' && ctx.mounted()
+          && Math.abs(x - HEDGE_X) < 9 && z > 60 && z < 116
+          && !(Math.abs(z - PIN_GATE.z) < 3.4 && Math.abs(x - HEDGE_X) < 2.5))
+          ? 'THE GAP IS WHERE NELL STANDS.' : null,
       },
     ];
   }
@@ -236,7 +249,9 @@ class Opening {
     const pick = (lines: string[]) => [lines[Math.min(this.said, lines.length - 1)]];
     switch (this.stage) {
       case 'bench':
-        return pick(['You said you\'d only be gone an hour.', 'It\'s been three years.']);
+        /* the timed lines are hers to say; E gets something else, so a
+         * press is always answered (gate round 4: E "did nothing twice") */
+        return pick(['Don\'t look at me like that.', 'Three years, and you just stand there.', 'Well. Go on.']);
       case 'named':
       case 'bull':
         return pick(['Mind the bull. It knows you.', 'RUN.']);
@@ -261,6 +276,7 @@ class Opening {
   /* ---- the bench --------------------------------------------------- */
   private greet() {
     this.after(1.6, () => this.nellSays('Oh. You\'re back.'));
+    this.after(2.2, () => this.ctx?.showHint(this.ctx.touch ? 'drag low to walk · drag high to look' : 'wasd to walk · drag to look · E to act', 6000));
     this.after(4.8, () => this.nellSays('You said you\'d only be gone an hour.'));
     this.after(8.4, () => this.nellSays('It\'s been three years.', 3.4));
     this.after(11.6, () => this.askName());
@@ -288,7 +304,6 @@ class Opening {
     }
     this.after(2.0, () => {
       if (!this.ctx) return;
-      this.ctx.showHint(this.ctx.touch ? 'drag low to walk · drag high to look' : 'wasd to walk · drag to look · E to act', 6000);
       this.ctx.common.bull.hold = false;
       this.go('bull');
     });
@@ -323,7 +338,8 @@ class Opening {
     this.ctx.common.pen();
     const w = this.ctx.walker();
     const inside = w.x > HEDGE_X && w.z > FIELD.minZ && w.z < FIELD.maxZ && w.x < FIELD.maxX;
-    if (inside) this.after(3.2, () => this.nellSays('You\'re in with it. Stile\'s at the top of the field.', 4));
+    /* said last, and held, so the next line does not paint over it */
+    if (inside) this.after(13.0, () => this.nellSays('You\'re in with it. Stile\'s at the top of the field, north.', 5));
     notebook.step(JOB_ID, 2);
     notebook.complete(JOB_ID, 'It went in. It always did, for you.');
     this.go('home');
@@ -333,13 +349,32 @@ class Opening {
       this.nellSays('Keep the horse. You always did.', 3.5);
       toast('H WHISTLES THE HORSE', 'learned');
     });
-    this.after(11.5, () => this.startWalkby());
+    this.after(11.5, () => { this.walkbyDue = true; });
+  }
+
+  /** Morrow's walk is for the walker to see: it waits until they are
+   *  out of the field and near the green, and if it ran and they were
+   *  not there for it, it runs once more. */
+  private tickWalkbyWait(dt: number) {
+    const c = this.ctx;
+    if (!c || !this.walkbyDue || c.common.walkby.on) return;
+    this.walkbyWaited += dt;
+    const w = c.walker();
+    const inField = w.x > HEDGE_X - 1 && w.x < FIELD.maxX && w.z > FIELD.minZ && w.z < FIELD.maxZ;
+    const near = Math.hypot(w.x - BENCH.x, w.z - BENCH.z) < 48;
+    /* thirty seconds is as long as he waits for anybody: a walker who
+     * has gone to Brim still gets the list (gate round 4 never saw it) */
+    if ((inField || !near || c.notebookOpen()) && this.walkbyWaited < 30) return;
+    this.walkbyDue = false;
+    this.walkbyWaited = 0;
+    this.startWalkby();
   }
 
   /* ---- Morrow goes past ------------------------------------------- */
   private startWalkby() {
     if (!this.ctx || this.stage !== 'home') return;
     this.walk = { d: 0, said: false, dogPause: -1, dogPaused: false, t: 0 };
+    this.walkbyRuns++;
     const wb = this.ctx.common.walkby;
     wb.on = true;
     const [x, z] = MORROW_PATH[0];
@@ -400,6 +435,10 @@ class Opening {
     }
     if (m.end || (W.said && W.d > 70) || W.t > 40) {
       wb.on = false;
+      // he went past and nobody was there to see it: once more, later,
+      // unless they have left the green altogether
+      const far = Math.hypot(w.x - BENCH.x, w.z - BENCH.z) > 60;
+      if (!W.said && this.walkbyRuns < 2 && !far) { this.after(6, () => { this.walkbyDue = true; }); return; }
       this.openTheList();
     }
   }
@@ -469,7 +508,7 @@ class Opening {
         c.common.nellAtGate = true;
         c.common.pen();
         if (!notebook.list().find((j) => j.id === JOB_ID)?.complete) notebook.complete(JOB_ID);
-        this.after(3, () => this.startWalkby());
+        this.after(3, () => { this.walkbyDue = true; });
         break;
       case 'list':
         c.common.pen();
@@ -524,12 +563,13 @@ class Opening {
          * own clamp keeps it in. A walker shut in with it leaves over the
          * stile, and the nudge says so. */
         const bullIn = b.x > HEDGE_X + 5 && b.x < FIELD.maxX - 0.5 && b.z > FIELD.minZ + 0.3 && b.z < FIELD.maxZ - 0.5;
-        const inGap = Math.abs(w.z - PIN_GATE.z) < 2.4 && Math.abs(w.x - HEDGE_X) < 2.4;
+        const inGap = Math.abs(w.z - PIN_GATE.z) < 3.4 && Math.abs(w.x - HEDGE_X) < 2.4;
         if (bullIn && !inGap && b.loose) this.penned();
         else if (c.common.gate.shut && !b.loose) this.penned();
         break;
       }
       case 'home':
+        this.tickWalkbyWait(dt);
         this.tickWalkby(dt);
         break;
       case 'list':

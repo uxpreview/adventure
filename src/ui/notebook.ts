@@ -45,6 +45,9 @@ function strike(host: HTMLElement) {
   c.className = 'nb-strike';
   c.style.width = `${w}px`;
   c.style.height = `${h}px`;
+  /* the strike is absolute, so its host has to be the thing it is
+   * measured against — a static host would hand it to the page */
+  if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
   host.appendChild(c);
 }
 

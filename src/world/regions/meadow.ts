@@ -165,9 +165,11 @@ barriers.register({
 });
 barriers.register({
   id: 'the-hedge-return', x0: HEDGE_X, z0: FENCE_Z, x1: HEDGE_X, z1: 104, half: 1.5,
-  /* two units either side: a horse and a bull go through it (the first
-   * five minutes), and a gate a rider has to thread is a wall */
-  gaps: [{ id: 'the-field-gate', x: GATE.x, z: GATE.z, r: 2.0, open: true }],
+  /* three units either side — the drawn frame's width: a horse and a
+   * bull go through it (the first five minutes), and a gate a rider
+   * has to thread is a wall. Played by hand, two units took three
+   * passes to find with the bull following. */
+  gaps: [{ id: 'the-field-gate', x: GATE.x, z: GATE.z, r: 3.0, open: true }],
 });
 
 /** THE GOAT — the second co-walker, and the first thing in the game to
