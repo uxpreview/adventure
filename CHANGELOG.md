@@ -152,6 +152,67 @@ opening itself, twelve pins, the objective falling back to Val. Found:
   up, and "Right. The horse." is the third knock's line, not an answer
   to E; both are as designed.)
 
+### After — the gate, round 4 (2026-09-16, desktop, from the title, no parameters)
+
+Reports in `design/reset/rounds/round-4/`. The cold player played to
+game-second 368 (its command budget), in-game 9:00 to 20:23.
+
+**T1 holds:** at sixty seconds it could say what the game wants
+(confidence 7/10): "walk the twelve lands on the map and put right the
+small things I left undone — twelve of them, one per land, each kept
+in a notebook." Scores: understandable 6, alive 8, fun 7, beautiful 9.
+
+**T2 holds.** To a friend: "It's a hand-drawn, one-sheet walking game
+where you come back to a village after three years and everyone's
+slightly hurt about it, and you go land by land putting right the
+little things you left undone — a gate, a clock — by leaning on
+things, waiting, and reading the notes. Nothing attacks you except a
+bull that remembers you, and the writing on every card is dry and
+kind." Next time: wait for the bell and tell Marget which hand; get
+the horse over the fence and ride to the third land; find whoever
+said "I was beginning to think you weren't coming back."
+
+**T3 fails, 0 of 6:**
+
+| pillar | verdict |
+|---|---|
+| THE CAMERA | REFERENCE |
+| THE VOICE OF THE WORLD | REFERENCE |
+| THE FIRST HOUR | REFERENCE |
+| SCALE AND MOTION | REFERENCE |
+| THINGS TO DO | REFERENCE |
+| THE PEN | REFERENCE |
+
+What they name most: the South Gate arch is drawn as faint as its wall
+and the player walked under it twice (3 critics); the whistled horse
+stood on the far side of the long fence (3); the map's labels pile
+into one smudge (2); E on TALK TO NELL did nothing twice at the start
+(2); the controls line arrives after the name box (2); the square's
+bystanders have no names and no lines (2); the moving figure is drawn
+without legs (PEN); the hedge wash overprints Nell, the gate and the
+bull (PEN). And one the critics could not see: **the cold player never
+got THE LIST** — it left the green before Morrow's walk, and the
+walk-by wait added this session waited for ever.
+
+### Fixed after round 4
+
+- **The list always comes.** Morrow waits at most thirty seconds for
+  the walker to be on the green; he does not go past a second time
+  for a walker who has left it altogether. A walker in Brim gets the
+  list about a minute after the pen.
+- **A called horse jumps a fence.** Whistled, it refuses only what
+  the terrain refuses; ridden, it refuses what a walker does.
+- **E at the bench is answered.** Nell's TALK lines while you are on
+  the bench are lines her timers do not say ("Don't look at me like
+  that." / "Three years, and you just stand there." / "Well. Go on.").
+- **The controls line prints at the bench**, two seconds after "Oh.
+  You're back.", not after the name.
+
+Left for the next session, in order of how many named them: the South
+Gate arch (and the wall hint's timing); the map's stacked labels;
+names and a line for Brim's bystanders; legs on the moving figure; the
+hedge wash.
+
 ## The reset — Sessions 24 to 27 (2026-09-07 → 2026-09-09)
 
 One branch, `claude/inklands-open-world-va3lgx`, PR #23. Six pillar engineers

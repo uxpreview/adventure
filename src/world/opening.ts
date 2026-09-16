@@ -126,6 +126,7 @@ class Opening {
   /** Morrow's walk: distance along the path, and whether he has spoken. */
   private walk = { d: 0, said: false, dogPause: -1, dogPaused: false, t: 0 };
   private walkbyDue = false;
+  private walkbyWaited = 0;
   private walkbyRuns = 0;
   private listWasOpen = false;
 
@@ -248,7 +249,9 @@ class Opening {
     const pick = (lines: string[]) => [lines[Math.min(this.said, lines.length - 1)]];
     switch (this.stage) {
       case 'bench':
-        return pick(['You said you\'d only be gone an hour.', 'It\'s been three years.']);
+        /* the timed lines are hers to say; E gets something else, so a
+         * press is always answered (gate round 4: E "did nothing twice") */
+        return pick(['Don\'t look at me like that.', 'Three years, and you just stand there.', 'Well. Go on.']);
       case 'named':
       case 'bull':
         return pick(['Mind the bull. It knows you.', 'RUN.']);
@@ -273,6 +276,7 @@ class Opening {
   /* ---- the bench --------------------------------------------------- */
   private greet() {
     this.after(1.6, () => this.nellSays('Oh. You\'re back.'));
+    this.after(2.2, () => this.ctx?.showHint(this.ctx.touch ? 'drag low to walk · drag high to look' : 'wasd to walk · drag to look · E to act', 6000));
     this.after(4.8, () => this.nellSays('You said you\'d only be gone an hour.'));
     this.after(8.4, () => this.nellSays('It\'s been three years.', 3.4));
     this.after(11.6, () => this.askName());
@@ -300,7 +304,6 @@ class Opening {
     }
     this.after(2.0, () => {
       if (!this.ctx) return;
-      this.ctx.showHint(this.ctx.touch ? 'drag low to walk · drag high to look' : 'wasd to walk · drag to look · E to act', 6000);
       this.ctx.common.bull.hold = false;
       this.go('bull');
     });
@@ -352,14 +355,18 @@ class Opening {
   /** Morrow's walk is for the walker to see: it waits until they are
    *  out of the field and near the green, and if it ran and they were
    *  not there for it, it runs once more. */
-  private tickWalkbyWait() {
+  private tickWalkbyWait(dt: number) {
     const c = this.ctx;
     if (!c || !this.walkbyDue || c.common.walkby.on) return;
+    this.walkbyWaited += dt;
     const w = c.walker();
     const inField = w.x > HEDGE_X - 1 && w.x < FIELD.maxX && w.z > FIELD.minZ && w.z < FIELD.maxZ;
     const near = Math.hypot(w.x - BENCH.x, w.z - BENCH.z) < 48;
-    if (inField || !near || c.notebookOpen()) return;
+    /* thirty seconds is as long as he waits for anybody: a walker who
+     * has gone to Brim still gets the list (gate round 4 never saw it) */
+    if ((inField || !near || c.notebookOpen()) && this.walkbyWaited < 30) return;
     this.walkbyDue = false;
+    this.walkbyWaited = 0;
     this.startWalkby();
   }
 
@@ -428,8 +435,10 @@ class Opening {
     }
     if (m.end || (W.said && W.d > 70) || W.t > 40) {
       wb.on = false;
-      // he went past and nobody was there to see it: once more, later
-      if (!W.said && this.walkbyRuns < 2) { this.after(6, () => { this.walkbyDue = true; }); return; }
+      // he went past and nobody was there to see it: once more, later,
+      // unless they have left the green altogether
+      const far = Math.hypot(w.x - BENCH.x, w.z - BENCH.z) > 60;
+      if (!W.said && this.walkbyRuns < 2 && !far) { this.after(6, () => { this.walkbyDue = true; }); return; }
       this.openTheList();
     }
   }
@@ -560,7 +569,7 @@ class Opening {
         break;
       }
       case 'home':
-        this.tickWalkbyWait();
+        this.tickWalkbyWait(dt);
         this.tickWalkby(dt);
         break;
       case 'list':
