@@ -159,7 +159,17 @@ folder, to build story.
 per session, in order, each ending with the cold player and the critic
 from `THE-GATE.md`:**
 
-0. **The first five minutes on the story of record** (`08` §7): the
+0. ~~**The first five minutes on the story of record**~~ **BUILT,
+   2026-09-16** (`src/world/opening.ts`, `regions/meadow.ts`, the name
+   card in `ui/UI.ts`, THE LIST in `ui/notebook.ts`, `world/thelist.ts`).
+   Plays end to end on the harness in ninety game-seconds; see
+   `CHANGELOG.md` "The first five minutes". Left for the next pass:
+   the title poster is still the crossroads, not the Common at dusk
+   from the ridge (the camera pillar's crane); the phone rig has not
+   been played cold; a faint second walker is drawn under the horse's
+   feet when mounted (pre-existing; `Character` on a mount).
+   The item as written:
+   the
    title as the Common at dusk from the ridge; the bench with the note;
    Nell's "You're back" / "It's been three years"; the name typed and
    lettered onto the notebook cover (a keyboard on the phone rig); the
