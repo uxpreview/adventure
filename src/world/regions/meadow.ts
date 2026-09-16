@@ -242,6 +242,8 @@ export const common = {
   walkby: { on: false, mx: 0, mz: 0, mpose: 0, mface: 1 as -1 | 1, dx: 0, dz: 0, dpose: 0, dface: 1 as -1 | 1 },
   /** The note on the bench: the first, or the second under it. */
   note: { second: false },
+  /** Nell at the gate (the job and after) rather than at her line. */
+  nellAtGate: false,
   goat,
   /** Put the opening back where a fresh page has it: the harness's. */
   reset() {
@@ -253,6 +255,7 @@ export const common = {
     this.nell.pose = 0; this.nell.t = 0;
     this.walkby.on = false;
     this.note.second = false;
+    this.nellAtGate = false;
     goat.reset();
   },
   /** SET OUT: the bull is loose on the green and grazing, and it does
@@ -621,12 +624,16 @@ export const buildMeadow: RegionBuilder = (ctx) => {
    * the fence line, and she faces WEST, up the east road toward the
    * crossroads, because that is the road people come down. */
   /* THE FIRST FIVE MINUTES: she is at her washing line, a few steps
-   * west of the gate, where the bench can see her. */
-  const NELL = { x: HEDGE_X - 8.5, z: 86.2 };
+   * west of the gate, where the bench can see her; for the job, and
+   * after it, she stands at the gate itself. */
+  const NELL_LINE = { x: HEDGE_X - 8.5, z: 86.2 };
+  const NELL_GATE = { x: HEDGE_X - 2.4, z: 82.6 };
+  const nellAt = () => (common.nellAtGate ? NELL_GATE : NELL_LINE);
+  const NELL = { get x() { return nellAt().x; }, get z() { return nellAt().z; } };
   const nellPoses = [0, 1, 2].map((p) =>
     ctx.standee(nellTexture(1630 + p, p as 0 | 1 | 2), 1.15, 1.9, NELL.x, NELL.z, { face: 'keep' }));
   /* ---- VOICE: where Nell is drawn, for the talk prompt ---- */
-  npcs.track('nell', () => ({ x: nellPoses[common.nell.pose].position.x, z: NELL.z, present: platform.land !== 'meadow' }));
+  npcs.track('nell', () => ({ x: nellPoses[common.nell.pose].position.x, z: nellAt().z, present: platform.land !== 'meadow' }));
 
   /* THE BULL: four drawings, one showing, mirrored to face its way —
    * the fourth is the night's, lying down (Session 17). */
@@ -1004,6 +1011,8 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       const m = nellPoses[p];
       m.visible = p === N.pose && !nellGone;
       m.position.x = NELL.x + nellOff * -nellFace;
+      m.position.z = NELL.z;
+      m.position.y = ctx.groundY(m.position.x, NELL.z);
       m.scale.x = nellFace < 0 ? 1 : -1;
     }
 
@@ -1446,6 +1455,9 @@ export const MEADOW_POIS: WorldPOI[] = [
      * her, and the field, where the camera can see her — so the reach
      * is six, centred on where she stands. */
     x: HEDGE_X - 1.2, z: 82.2, radius: 6, label: 'THE FIELD GATE',
+    /* the name reads from across the green: the cold player rode the
+     * hedge for a minute not knowing which gap was the gate */
+    labelReach: 30, labelHeight: 3.2,
     prompt: 'LEAN ON THE GATE WITH HER',
     note: {
       title: 'the field gate',

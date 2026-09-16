@@ -538,7 +538,9 @@ export class UI {
     this.nameVeil.classList.add('show');
     this.nameOpen = true;
     UI.chrome.open = true;
-    window.setTimeout(() => this.nameInput.focus(), 60);
+    /* the key that was being pressed when the card came up is not the
+     * first letter of a name */
+    window.setTimeout(() => { this.nameInput.focus(); this.nameInput.value = ''; this.letterName(); }, 260);
   }
 
   private letterName() {

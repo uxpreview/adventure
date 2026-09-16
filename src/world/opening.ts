@@ -88,6 +88,8 @@ export type OpeningCtx = {
     gate: { shut: boolean };
     walkby: { on: boolean; mx: number; mz: number; mpose: number; mface: -1 | 1; dx: number; dz: number; dpose: number; dface: -1 | 1 };
     note: { second: boolean };
+    /** Nell stands at the gate (the job) rather than at her line. */
+    nellAtGate: boolean;
     wake(): void;
     pen(): void;
     loose(): void;
@@ -240,8 +242,8 @@ class Opening {
         return pick(['Mind the bull. It knows you.', 'RUN.']);
       case 'horse':
         return pick([
-          'Get on the horse. It follows the horse. Lead it through the gate and I\'ll shut it.',
-          'Through the gate. Then get out of the way.',
+          'Get on the horse. It follows the horse. Bring it in through this gate, and I\'ll shut it behind it.',
+          'In through the gate, well in. I\'ll do the rest.',
         ]);
       case 'home':
       case 'list':
@@ -303,8 +305,11 @@ class Opening {
     const w = this.ctx.walker();
     this.nellSays('It knows you. Hang on —', 2.0);
     this.ctx.whistleTo(w.x, w.z);
+    // she goes to the gate, and her prompt gets out of the horse's way
+    this.ctx.common.nellAtGate = true;
+    npcs.mute('nell', true);
     this.after(1.4, () => {
-      this.nellSays('Get on the horse. It follows the horse. Lead it through the gate and I\'ll shut it.', 7);
+      this.nellSays('Get on the horse. It follows the horse. Bring it in through this gate, and I\'ll shut it behind it.', 7);
       notebook.job(this.jobDef(PIN_GATE));
       notebook.activate(JOB_ID);
       toast('E — GET ON THE HORSE WHEN IT COMES', 'learned');
@@ -314,7 +319,11 @@ class Opening {
 
   private penned() {
     if (!this.ctx) return;
+    npcs.mute('nell', false);
     this.ctx.common.pen();
+    const w = this.ctx.walker();
+    const inside = w.x > HEDGE_X && w.z > FIELD.minZ && w.z < FIELD.maxZ && w.x < FIELD.maxX;
+    if (inside) this.after(3.2, () => this.nellSays('You\'re in with it. Stile\'s at the top of the field.', 4));
     notebook.step(JOB_ID, 2);
     notebook.complete(JOB_ID, 'It went in. It always did, for you.');
     this.go('home');
@@ -450,12 +459,14 @@ class Opening {
         c.common.loose();
         c.common.bull.hold = false;
         this.whistled = this.stage === 'horse';
+        c.common.nellAtGate = this.stage === 'horse';
         if (this.stage === 'horse' && !notebook.list().some((j) => j.id === JOB_ID)) {
           notebook.job(this.jobDef(PIN_GATE));
           notebook.activate(JOB_ID);
         }
         break;
       case 'home':
+        c.common.nellAtGate = true;
         c.common.pen();
         if (!notebook.list().find((j) => j.id === JOB_ID)?.complete) notebook.complete(JOB_ID);
         this.after(3, () => this.startWalkby());
@@ -503,16 +514,18 @@ class Opening {
         b.follow = mounted;
         if (mounted && !this.mountedOnce) {
           this.mountedOnce = true;
+          npcs.mute('nell', false);
           notebook.step(JOB_ID, 1);
-          this.nellSays('Now bring it here. Through the gate.', 4);
+          this.nellSays('Now bring it here. In through the gate, well in.', 4);
         }
-        /* PENNED: it is east of the hedge line and you are west of it —
-         * or out over the fence any other way. Nell shuts the gate the
-         * frame you are through; the field's own clamp keeps it in. */
-        const bullIn = b.x > HEDGE_X + 0.4 && b.x < FIELD.maxX - 0.5 && b.z > FIELD.minZ + 0.3 && b.z < FIELD.maxZ - 0.5;
-        const walkerOut = w.x < HEDGE_X - 0.3 || w.z < FIELD.minZ - 1.6 || w.x > FIELD.maxX + 0.5 || w.z > FIELD.maxZ + 0.5;
-        const inGap = Math.abs(w.z - PIN_GATE.z) < 2.0 && Math.abs(w.x - HEDGE_X) < 2.2;
-        if (bullIn && walkerOut && !inGap && b.loose) this.penned();
+        /* PENNED: the bull is well inside the field — five units past
+         * the hedge line — whether you are in there with it or not, and
+         * nobody is standing in the gap. Nell shuts the gate; the field's
+         * own clamp keeps it in. A walker shut in with it leaves over the
+         * stile, and the nudge says so. */
+        const bullIn = b.x > HEDGE_X + 5 && b.x < FIELD.maxX - 0.5 && b.z > FIELD.minZ + 0.3 && b.z < FIELD.maxZ - 0.5;
+        const inGap = Math.abs(w.z - PIN_GATE.z) < 2.4 && Math.abs(w.x - HEDGE_X) < 2.4;
+        if (bullIn && !inGap && b.loose) this.penned();
         else if (c.common.gate.shut && !b.loose) this.penned();
         break;
       }

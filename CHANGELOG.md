@@ -83,6 +83,41 @@ gate shut, YOURS: THE HORSE, "There. That's more like you." At 48:
 list. At 88: twelve pins, the bell, "THE LIST — VAL, THE THREE CHAIRS".
 No page errors.
 
+### What the cold player said (round 3, `design/reset/rounds/round-3/REPORT.md`)
+
+Played cold from the title with no source, to game-second 183. T1 held:
+at sixty seconds it could say what the game wanted (confidence 8/10).
+Scores: understandable 5, alive 8, fun 6, beautiful 9. Its one sentence
+to a friend: "a quiet hand-drawn walking game where you come back to a
+village three years late with no memory, a notebook and a list of twelve
+small favours you owe people, one per land, and you go round doing them
+in any order". Best moment: the stuck first page coming loose into
+TWELVE THINGS, and "Oof. It knows me." Worst: seventy seconds riding
+the same fifteen metres of fence not knowing which gap was the gate or
+which side was home, while Nell's talk prompt stole the horse's.
+
+### Fixed after round 3
+
+**Nell gets out of the horse's way.** `npcs.mute(id, on)` takes a
+person's talk prompt off the page. Nell is muted from the whistle until
+you are on the horse, so GET ON THE HORSE is the only prompt near it.
+
+**Nell stands at the gate.** At the whistle she walks from the washing
+line to the gate post (`common.nellAtGate`), so "this gate" is the one
+she is standing at, and THE FIELD GATE's label reads from thirty units.
+Her lines say which side: "Bring it in through this gate, and I'll shut
+it behind it." / "In through the gate, well in. I'll do the rest."
+
+**The pen rule.** The gate shuts when the bull is five units inside the
+hedge line and not in the gap, whichever side you are on. If you are
+still inside with it, she says the stile is on the long fence, north.
+
+**The name card** clears itself and takes focus a quarter-second after
+it opens, so the E that opened it is not the first letter of your name.
+
+Replayed on the harness: the same beats at the same seconds, the gate
+shut at 33, no page errors.
+
 ## The reset — Sessions 24 to 27 (2026-09-07 → 2026-09-09)
 
 One branch, `claude/inklands-open-world-va3lgx`, PR #23. Six pillar engineers

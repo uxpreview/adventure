@@ -91,6 +91,9 @@ class Npcs {
   private scanned = 0;
   private folkCount = new WeakMap<Figure, number>();
   private namedFigureIds = new Set<string>();
+  /** People whose talk prompt is off the page for now (the opening
+   *  mutes Nell while the horse's prompt has to win). */
+  private muted = new Set<string>();
   /** The walker, for `near` and for a reaction's earshot. */
   walker: { x: number; z: number } = { x: 0, z: 0 };
 
@@ -151,6 +154,7 @@ class Npcs {
       labelReach: 14,
       prompt: `TALK TO ${n.def.name}`,
       get enabled() {
+        if (self.muted.has(n.def.id)) return false;
         const p = self.positionOf(n.def.id);
         return !!p && p.present;
       },
@@ -160,6 +164,12 @@ class Npcs {
     } as unknown as POIDef;
     n.poi = def;
     this.poiMan!.add(def);
+  }
+
+  /** Take a person's talk prompt off the page, or put it back. */
+  mute(id: string, on: boolean) {
+    if (on) this.muted.add(id);
+    else this.muted.delete(id);
   }
 
   /** Where a person is now, and whether they are on the page. */
