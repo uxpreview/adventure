@@ -1,16 +1,16 @@
-# YOU SAID AN HOUR — the story pitch, for readers with no context
+# YOU SAID AN HOUR — the story pitch, for readers with no context (v2)
 
-*2026-09-13. The fourth concept, after the three in `STORY-CONCEPTS.md`
-and the owner's own direction: start somewhere beautiful, wake with no
-memory, choose a name, and make the game about finding out who you are.
-Written to be shared with people who have never heard of the game.*
+*2026-09-16. Version two, on the story of record
+(`design/foundation/08_Inklands_Story_Foundation_v1.md`). Written to be
+shared with people who have never heard of the game. The shareable page
+is the artifact "You Said an Hour"; this is the same text.*
 
 ---
 
-You wake up with no memory. Not even your name. The first person you meet
-isn't surprised to see you. Everybody in this world knows who you are, and
-you don't know any of them, and somewhere you left a list of twelve
-promises in your own handwriting.
+You wake up on a bench with no memory. Not even your name. The first
+person you meet isn't surprised to see you. Everybody in this world knows
+who you are, you don't know any of them, and there's a list of twelve
+promises in your pocket in your own handwriting.
 
 ## What the game is
 
@@ -21,207 +21,204 @@ end to end, there are twelve small places: a castle on a ridge, a walled
 market town, a village green, a suburb with its porch lights on, a pine
 wood with a black lake, a dry canyon, a farm, a desert, a beach, the open
 sea, a downtown with a coffee cart, and an office park at the end of the
-road.
-
-They are from twelve different centuries and they sit next to each other,
-and nobody who lives there thinks that is strange.
+road. They are from twelve different centuries and they sit next to each
+other, and nobody who lives there thinks that is strange.
 
 You walk around it. You talk to people, who answer in hand-lettered speech
 bubbles. You ride a horse, a bicycle, a rowing boat, and at one point an
 office chair. You do small jobs for people. There is no fighting and you
-cannot die. It is meant to be the kind of place you send a friend a link
-to.
-
-The game exists and it works. What it has not had is a story that makes
-anyone care. This is the one we are proposing.
+cannot die.
 
 ## The idea in three sentences
 
-You wake up with no memory, not even your name, and the game asks what you
-would like to be called. The first person you meet says, *"You're back. You
-said an hour."* Everybody in this world knows you, you don't know any of
-them, and somewhere you left a notebook with a list in your own
-handwriting: twelve promises to twelve people.
-
-The game is walking that list, finding out who you were from what everyone
-else remembers, and deciding who you are going to be.
+Three years ago you were the person who held this world together: the one
+who carried every message, fixed every bridge, and said "I'll handle it"
+to everybody. One day you couldn't, and you left, and you told a
+twelve-year-old you'd be back in an hour. Now you're back with no memory,
+and the only thing you have is the list of twelve things you were going to
+do before you let yourself go home.
 
 ## The first five minutes
 
-- **0:00** You open your eyes on the ridge above the castle at dawn. The
-  camera pulls back and you see the whole world at once: the castle below
-  you, the town, the green, the sea off to the left, the office towers far
-  away on the right. Everywhere you will ever go is in that one picture,
-  and the road down is right there.
-- **0:20** A line appears: *You can't remember your name. What will you go
-  by, for now?* You type one. It is written onto the cover of a notebook in
-  ballpoint, in the game's own handwriting.
-- **0:40** At the foot of the ridge a man is changing the banners on the
-  castle wall. His name is Wick. He doesn't look surprised. *"You're back.
-  You said an hour."* He points down into the castle. *"Your things are in
-  the hall where you left them."*
-- **1:00** The job on screen is three words: **FIND YOUR THINGS.** In the
-  hall: a hat, and the notebook. Inside it, in your handwriting, a list.
-  Twelve lines. One is crossed out.
-- **3:00** The map opens with twelve places marked on it. Then the game
-  gets out of your way.
+- **0:00** You wake on a bench beside a village green at dusk. A
+  half-eaten sandwich. One shoe untied. A note pinned above your head, in
+  your handwriting: BACK IN AN HOUR. — You
+- **0:30** A woman hanging laundry looks over. *"Oh. You're back."* You ask
+  if you know her. *"You said you'd only be gone an hour."* A pause. *"It's
+  been three years."*
+- **1:00** She asks what to call you, since you plainly don't know. You
+  type a name. It's written onto the cover of a notebook in ballpoint, in
+  the game's own handwriting.
+- **1:30** Her bull is loose on the green, and it knows you. It comes for
+  you. RUN. She whistles up a horse and hands you the reins. GET IT HOME.
+  The bull chases the horse; you lead it to the gate; she shuts it. The
+  horse is yours.
+- **5:00** The notebook. First page, in your hand: TWELVE THINGS. THEN I
+  CAN GO HOME. Twelve lines under it. One is crossed out. Then a map with
+  twelve places on it, and the game gets out of your way.
 
 ## The list
 
-This is the whole game on one page, and you wrote it.
+This is the whole game on one page, and you wrote it, the week before you
+left.
 
-1. Wick. Is the king coming back? Give him an answer.
-2. Marget. I owe her. Pay it.
-3. Nell. Get the bull home.
+**TWELVE THINGS. THEN I CAN GO HOME.**
+
+1. Wick. Find out why the old road is closed. Don't let him tell you it's nothing.
+2. Nell. Get the bull home.
+3. Marget. I owe her. Pay it.
 4. Val. Cut the gap in the hedge.
 5. Brack. Go and look in the lake.
 6. Holt. Find out how much water.
 7. Amos. When did it last rain?
 8. Pye. Row the eighth pot out.
 9. Wren. Give the race a finish line.
-10. ~~Joan. Be there for the harvest.~~ *(kept)*
+10. ~~Joan. Be there for the harvest.~~
 11. The man at the crossing. Come back.
 12. Dennis. The 8:15. Don't miss it.
 
 You can do them in any order. Each one is a short story of ten to twenty
-minutes, in its own place, with its own people, and a moment where it
-turns out to be about something other than what it said. And each one
-tells you something about who you were, because every place remembers a
-different you.
+minutes with its own people, and a moment where it turns out to be about
+something other than what it said. The first three are simple favours. The
+next three show you that your old fixes caused problems. The three after
+that are promises that shouldn't be kept the way you wrote them, and you
+can cross a line out. The last three aren't tasks at all.
 
-## Twelve places, twelve versions of you
+## What the twelve remember
 
-1. **The castle (Wick).** Empty, banners up, one man keeping them clean
-   for a king who rode out and never came back. You promised Wick an
-   answer. You said an hour. The answer is out in the world, on a fallen
-   statue and on a train timetable at the far end of the road. You decide
-   whether to tell him, or let him keep the only job he has ever had.
-2. **The market town (Marget).** Stalls set, bunting up, market day "next
-   week" for years, because the clock tower's two hands disagree and nobody
-   can agree what hour to open. Marget says you owe her. You find out why:
-   last time you were here you rang the bell at the wrong hour, and that is
-   what broke it. You wait in the yard until the lamps come on and one hand
-   agrees with them. Then you decide which hand is right, and one person in
-   town is wrong forever.
-3. **The green (Nell).** Nell's bull got out again, and it knows you. It
-   comes for you the moment it sees you. If it catches you it throws you
-   and takes your hat. Nell whistles up a horse and hands you the reins;
-   the bull chases the horse, and you lead it home. The horse is yours
-   after that. This is where you learn to ride, and it is the funniest ten
-   minutes in the game.
-4. **The suburb (Val).** Porch lights on all night. Three garden chairs
-   facing a hedge that grew shut. You promised Val you'd cut the gap so the
-   chairs could see the castle again. The kids on the street have a
-   nickname for you. Somebody has been running the sprinklers at three in
-   the morning. It was you.
+1. **The castle (Wick).** One man keeping the banners clean for a king who
+   never came back. He chained the road three years ago and lights the
+   braziers on the wall every night. He says it's nothing. It isn't: the
+   braziers are the castle's signal to the town, and he has been sending
+   it nightly to a bell that never rings.
+2. **The green (Nell).** Nell could always pen her own bull. She stopped
+   when you started.
+3. **The market town (Marget).** The stalls have stood set and unopened for
+   three years, because the clock's two hands disagree and nobody will
+   ring the bell without knowing the hour. What you owe her isn't money.
+   She covered for you once, and never said.
+4. **The suburb (Val).** Three garden chairs face a hedge that was planted
+   shut after an argument you promised to settle and didn't turn up for.
+   Cutting it reopens the view, and the argument. In the grass on the far
+   side: your own footprints, three years old, heading west.
 5. **The pine wood (Brack).** A black lake nobody goes near. At night
-   something in the trees ticks, and stops when you stop. You promised
-   Brack you would go and look. Your own old footprints go right down to
-   the water and do not come back. The frightening one.
-6. **The canyon (Holt).** Dry. A man keeps a boat oiled for a river that
-   left. Marks up the wall showing what would float first. You promised him
-   a number, and you go and get one. Then you decide whether to tell him
-   the river is not coming, or leave him ready.
-7. **The desert (Amos).** A rain-catch and a cistern that a man fills by
-   hand every night from an oasis a long walk away. Something landed out
-   here once and burned ruled patterns into the ground, and there are
-   lights over it at night. You promised to find out when it last rained.
-   There is a rainfall table with a single entry in it, and the entry is in
-   your handwriting. The first-contact comedy.
-8. **The beach (Pye).** A fisherman with seven pots that catch nothing
-   much, and a van of surfers checking a sea that only has a tide. You
-   promised to row an eighth pot out further than he has ever gone. The
-   surfers remember you as the one who wiped out.
-9. **The sea (Wren).** A regatta that has gone round the same buoy since
-   before anyone was counting, with no finish line. A Viking longship that
-   has been waiting for a wind for four hundred years and cannot land. One
-   boat has been in last place since the beginning and is gaining. You were
-   its crew. You promised the buoy-keeper a finish line. The sports movie.
-10. **The farm (Joan).** The only line you crossed out. You were here for
-    the harvest, like you said. There is a second plate at Joan's table and
-    it is yours. Nothing to fix. The place you go to rest.
-11. **Downtown (the man at the crossing).** Nobody stops for anything. A
-    man has stood still at the crossing for years; everyone walks round
-    him, and the pavement is worn into the shape of it. A coffee cart where
-    the barista calls out a name for an order nobody ever collects. The
-    name is yours. He was waiting for you. You said you would come back.
-    The sad one.
-12. **The office park (Dennis).** A train stop with a timetable for the
-    8:15. No track. There has never been a track. Everyone waits anyway. A
-    design team is running a research sprint about the train, with sticky
-    notes on the shelter glass and a persona pinned up, and the persona is
-    you. You promised Dennis you would be on the 8:15. It is the last line
-    on the list.
+   something in the trees ticks, and stops when you stop. Your footprints
+   go down to the water and don't come back. A lantern sits on the bank
+   where somebody set it down to go on in the dark. The frightening one.
+6. **The canyon (Holt).** Dry, because the channel you rigged was yours
+   alone and nobody could keep it running after you left. Holt wants you
+   to fix it. What he needs is the desert next door, which has water, and
+   hasn't spoken to the canyon in three years.
+7. **The desert (Amos).** Amos wants the date to win an argument with the
+   farm. The rainfall table has exactly one entry, in your handwriting:
+   the night before the day you left. The only rain anyone remembers. It
+   took the bridge. The funny one.
+8. **The beach (Pye).** Seven pots that catch nothing much, and an eighth
+   set on a bearing nobody rows. In it: a coat, and in the coat a note in
+   your handwriting that you wrote that night and couldn't leave. Pye
+   pulled you out of the sea last week. *"Past the mark. Coming in, not
+   going out."* He never read the note. He isn't that kind of person.
+9. **The sea (Wren).** A regatta that has gone round one buoy since before
+   anyone was counting, and a Viking longship that has waited four hundred
+   years for a wind and can't land. One boat has been last since the
+   beginning and is gaining. You row out to set the finish, and the last
+   boat comes alongside, and the Vikings know you. That's where you were
+   for three years. Rowing with the only people in the world you couldn't
+   help, who liked you anyway.
+10. **The farm (Joan).** The line you crossed out yourself, because you
+    were there for every harvest. The promise you broke isn't written
+    down. There's a second plate at her table. The only thing to do here
+    is sit down, and it is the hardest thing in the game.
+11. **Downtown (the man at the crossing).** Nobody in the city stops. One
+    man has stood at the crossing for three years holding the lights green
+    for a crowd that never came. You told him you'd come back. Arriving
+    doesn't solve it. Telling him the truth does, once you know it.
+12. **The office park (Dennis).** A board with a time on it. Dennis has
+    kept that time for three years. A design team has run a research
+    sprint about it and pinned up a persona, and the persona is you. The
+    last line on the list is setting a new time, together, and then not
+    being the one who runs everything.
 
-## What everyone remembers, put together
+## The day you left
 
-Nobody in this world can leave their own place. That is just how it is:
-they will walk you to the edge and stop. You are the only one who ever
-went everywhere. So you became the one everybody asked for things, and you
-promised all of them, and you kept some and not others, and one day you
-told each of them you would be an hour.
+You were putting on the first gathering of all twelve places, on the
+green, at a quarter past eight. You'd organised every part of it. It
+rained the night before, the only rain anyone remembers, and the river
+took the footbridge that six of the twelve would cross. You said "I'll
+handle it" and went to fix it alone. Three people offered to help. You
+said no three times. You were the one who was meant to walk round at noon
+and tell each place it was on, so nobody rang, nobody lit, nobody came.
 
-The game never explains why you forgot. It is about what you did, not why.
+At a quarter past eight the bridge was finished and perfect, and the green
+had one long table on it with the bull standing in the middle eating the
+bread, a twelve-year-old asleep on the bench with the dog, and Joan
+clearing up alone. You started fixing chairs. She said sit down. You
+couldn't. Then she said the only true thing anyone had said to you in
+years, and put the second plate away. You pinned a note to the bench
+beside the sleeping kid, took a boat, and rowed out past the edge of the
+world.
 
-## Choices, and the ending
+> "You always come when there's something to fix. You never come when
+> there's nothing you can do."
 
-Every promise ends in a choice with a real cost on both sides, and the
-world shows you the result within a minute and keeps it forever. A stall
-opens, or never does. A lamp goes out. A man sits down after years of
-standing. The banners come down. Nothing tells you which was right.
+## The kid, and the dog
 
-When you have walked enough of the list, at a quarter past eight the next
-morning, the 8:15 comes. Once. Down the road that runs through all twelve
-places, and it stops in every one. The people whose promises you kept are
-on the platforms. At the ones you didn't, the doors open on nobody, and it
-moves on.
+Morrow is fifteen now. He kept the note up. He kept the dog. He copied
+your notebook from memory, wrong in places, and has been doing your job
+for three years, alone, your way: "Already handled." He rang the town bell
+at the wrong hour last week trying to call a gathering he couldn't run,
+and that's what you heard from the sea and went over the side for. He
+doesn't know that. His fear is that you being back makes his three years
+mean nothing.
 
-At the last stop, the timetable has a name at the bottom. The same one the
-barista has been calling. The same one on the persona. Your real one. The
-last choice in the game: keep it, or keep the one you chose on the ridge.
-Then the doors are open, and you can get on, or stay.
+The dog recognises you, and goes back to him.
 
-The title screen is re-lettered with whichever name you picked.
+## The ending
 
-## Around the story
+The last promise sets a date for the gathering. Then the call goes round
+the world without you: a kid shouts down the well, the town rings the
+bell, the castle lights the braziers on the bell, the suburb's porch
+lights come on, the coffee cart calls it out, the lights come up over the
+desert, the canyon's echo comes back right, the lantern is lit at the wood
+gate, the horn sounds on the point, the longship answers, and the well
+answers last. One shot, the whole map. Any place whose promise you didn't
+keep stays dark.
 
-Between the twelve there is a lot to mess with: skimming stones, a paper
-plane, riding the office chair down the corridor, a bicycle time trial, a
-dachshund that fetches, a stamp to collect from each of the twelve places,
-and things in the dark that chase you and take your hat. A day lasts forty
-minutes. Night falls. Weather comes across the map and you can see it
-coming.
+On the day, the bull gets out at seven, and Morrow goes after it alone and
+won't be helped, and the day starts to fail exactly the way it did before.
+You can do everything yourself. The game lets you, and the table ends up
+half empty. Or you can take his list and walk each line to the person it
+belongs to, which is your old job with a different message: *you do it.*
+Then you find Morrow cornered with the bull, and you don't take the rope.
+You hold the gate.
+
+At a quarter past eight every road has people on it. The longship lands
+for the first time in four hundred years. Joan says sit down, and you do.
+She tells you what happened, and that she was the one who said it, and
+that she laid you on the bench last week under your own note, and why.
+And she tells you your name.
+
+Later, on the bench, with the gathering going on behind you, you open the
+notebook to TWELVE THINGS. THEN I CAN GO HOME, cross it out, and write a
+new first line. You type it. It's lettered in ballpoint as you go. You
+keep the notebook or hand it to the kid at the other end of the bench.
+You take the old note down. Somebody calls from the table:
+
+> "You coming?"
+> "Yeah. In a minute."
+
+The title screen is re-lettered with what you wrote, and your name.
 
 ## What we want to know from you
 
-1. After the first five minutes, would you know what you are meant to do?
-2. Would you want to find out who you were? Is *"you said an hour"* enough
-   of a hook?
+1. After the first five minutes, would you know what you're meant to do?
+2. Is "you said an hour" enough of a hook to find out what you did?
 3. Which of the twelve would you walk to first? Which would you skip?
-4. Does the ending (the train, the name) feel like an ending, or a shrug?
-5. Waking up with no memory is an old trick. Does this version feel
-   earned, or lazy?
-6. Describe the game back to us in one sentence.
+4. The three years with the Vikings: does it land, or is it too silly?
+5. Joan left you on a bench under your own note instead of telling you.
+   Was she right?
+6. Does the ending feel earned, or like a lesson?
+7. Describe the game back to us in one sentence.
 
 *Inklands is a work in progress. Everything above is a proposal, not a
 promise. Except the bull, which is real.*
-
----
-
-## Notes for the next session (not part of the shareable pitch)
-
-- The one rule that stays shut: the answer to "who am I" is a person in
-  the world. Never the one who drew it. The medium is the style, not the
-  subject.
-- Everything here is built or half-built: the ridge, the notebook, the
-  stamps as a count, the horse and the bull, the twelve named people and
-  their jobs, the 8:15 reading back "n of 12", footprints as ink (older
-  tracks in faded ink are the wayfinding), the persona in the sprint, the
-  barista's uncollected name, the name on the plinth and the timetable.
-- New: the name entry lettered onto the notebook cover; the crane on the
-  ridge; the bull tossing the walker and taking the hat; faded old
-  footprints as trails; the hall as the first interior; the title screen
-  re-lettered at the end.
-- The three earlier concepts (`STORY-CONCEPTS.md`) survive as material:
-  the king as the castle's story, the water as the canyon's, the thing in
-  the wood as the pine wood's.

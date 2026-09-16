@@ -27,11 +27,10 @@ Adopted by the owner:
 - "I'll handle it" is a recurring dialogue option whose cost rises.
 - Nobody in the game says the theme except Joan, once, as an accusation.
 
-Decided in this file (the owner can overrule any by editing this
-section; the rest of the document then changes accordingly):
+Decided in this file and confirmed by the owner on 2026-09-16
+("proceed with what you think would be best"):
 - The three years: he was with the Vikings, beyond the mark, rowing in
-  the regatta. Revealed inside Wren's promise. (Fallback if rejected:
-  unknown to everyone, never asked.)
+  the regatta. Revealed inside Wren's promise.
 - It rained the night before the gathering, the only rain in memory, and
   the river took the east bridge.
 - The bull went through the table at 8:15.
