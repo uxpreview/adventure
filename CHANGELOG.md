@@ -133,20 +133,24 @@ opening itself, twelve pins, the objective falling back to Val. Found:
 - **Thirty seconds of fence, again.** With the bull following, the gap
   was found on the third pass; the first two rode along the hedge
   past Nell, and the walker ended up shut inside the field with the
-  bull (the stile line printed on resume, not at the time). The label
-  THE FIELD GATE reads from thirty units but there is nothing at the
-  gap itself that says "gap". Not fixed here.
+  bull, and the stile line was painted over by Nell's next line.
+  **Fixed:** the gate's gap is three units either side (the drawn
+  frame's width); riding the hedge mounted for more than two seconds
+  prints THE GAP IS WHERE NELL STANDS; the stile line is Nell's last
+  and holds; the shut-gate nudge covers the whole field, not five
+  units of it. On the harness the pen now lands on the first pass.
 - **Morrow was missed.** The walk-by ran while the walker was inside
   the field facing the fence; the notebook opened itself to the list
-  mid-ride with no sign of him or the dog. The list should wait until
-  he has been on screen, or the walk-by should wait for the walker to
-  be on the green.
-- Small: WHOA and THE FIELD GATE letter over each other at the gate;
-  the toasts stack over the horse; the walker never has to stand up
-  (the bull knocks a sitting walker); "Right. The horse." answers E
-  when the horse is out of reach and reads as if it worked; on a
-  674-pixel-tall window lines 11 and 12 of the list are below the
-  fold with no sign the page scrolls.
+  mid-ride with no sign of him or the dog. **Fixed:** the walk waits
+  until the walker is out of the field and within fifty units of the
+  bench with the notebook shut, and if he gets to the end of the road
+  unseen he goes past once more. The list opens after that.
+- Small, not fixed: WHOA and THE FIELD GATE letter over each other at
+  the gate; the toasts stack over the horse; on a 674-pixel-tall
+  window lines 11 and 12 of the list are below the fold with no sign
+  the page scrolls. (The bull knocking a sitting walker stands them
+  up, and "Right. The horse." is the third knock's line, not an answer
+  to E; both are as designed.)
 
 ## The reset — Sessions 24 to 27 (2026-09-07 → 2026-09-09)
 
