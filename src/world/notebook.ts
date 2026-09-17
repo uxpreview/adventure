@@ -95,6 +95,10 @@ class Notebook {
     dayNow = fn;
   }
 
+  /** Places are still written down, and nothing is said about it: the
+   *  bench's minute, when somebody is talking (`opening.ts`). */
+  hush = false;
+
   /* ---- jobs ------------------------------------------------------- */
   job(def: JobDef) {
     const have = this.jobs.find((j) => j.id === def.id);
@@ -106,9 +110,10 @@ class Notebook {
     const j: Job = { ...def, steps: [...def.steps], done: 0, complete: false };
     this.jobs.push(j);
     if (!this.activeId) this.activeId = j.id;
+    /* one line: the objective line already letters the giver and the
+     * first step, on the same frame, and flashes */
     toast(`NEW JOB: ${j.name}`, 'job');
     if (j.pin) this.place(j.pin.label, j.pin.x, j.pin.z, { quiet: true });
-    if (j.steps[0]) toast(`${j.giver} — ${j.steps[0]}`, 'plain');
     this.changed();
   }
 
@@ -119,9 +124,8 @@ class Notebook {
     const was = j.done;
     j.done = Math.max(j.done, Math.min(index, j.steps.length));
     if (j.done === was) return;
+    /* one line: what is NEXT is the objective line's to say */
     if (j.steps[was]) toast(`DONE: ${j.steps[was]}`, 'done');
-    const next = j.steps[j.done];
-    if (next) toast(`NEXT: ${next}`, 'plain');
     this.changed();
   }
 
@@ -131,8 +135,7 @@ class Notebook {
     j.complete = true;
     j.done = j.steps.length;
     j.line = line;
-    toast(`DONE: ${j.name}`, 'done');
-    if (j.reward) toast(`YOURS: ${j.reward}`, 'found');
+    toast(j.reward ? `DONE: ${j.name}. YOURS: ${j.reward}` : `DONE: ${j.name}`, 'done');
     if (line) toast(line, 'plain');
     if (this.activeId === id) {
       const next = this.jobs.find((x) => !x.complete);
@@ -178,12 +181,12 @@ class Notebook {
       have.z = z;
       have.land = land;
       if (opts.seen) have.seen = true;
-      if (opts.seen && !wasSeen && !opts.quiet) toast(`FOUND: ${key}`, 'found');
+      if (opts.seen && !wasSeen && !opts.quiet && !this.hush) toast(`FOUND: ${key}`, 'found');
       this.changed();
       return;
     }
     this.places.push({ label: key, x, z, land, seen: !!opts.seen });
-    if (!opts.quiet) toast(opts.seen ? `FOUND: ${key}` : `PINNED: ${key}`, opts.seen ? 'found' : 'place');
+    if (!opts.quiet && !this.hush) toast(opts.seen ? `FOUND: ${key}` : `PINNED: ${key}`, opts.seen ? 'found' : 'place');
     this.changed();
   }
 

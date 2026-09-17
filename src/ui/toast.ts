@@ -3,22 +3,45 @@ import { INK } from '../engine/palette';
 import { letterCanvas, S } from './lettering';
 
 /**
- * THE ANSWER LINE (VOICE). Every action gets an answer on screen within
- * a frame: one lettered line with a small ink glyph, bottom-centre on a
- * wide screen and top-left under the objective line on a phone. Up to
- * three stack; each holds about three seconds and fades.
+ * THE ANSWER LINE (VOICE). Every action gets an answer on screen: one
+ * lettered line with a small ink glyph, bottom-centre on a wide screen
+ * and top-left under the objective line on a phone.
+ *
+ * ONE LINE AT A TIME (the owner, 2026-09-17: "in the first 10 seconds a
+ * ton of things pop up and it makes it really hard to understand what
+ * to do"). Three used to stack, and a job's start was three of them at
+ * once over a speech bubble. Now one line is up; the next waits its
+ * turn, a repeat of a line already up or waiting is dropped, and the
+ * whole line holds its tongue while a card has the page (`holdToasts`).
+ * The first line still appears on the frame that asked for it.
  */
 
 export type ToastKind = 'learned' | 'found' | 'job' | 'done' | 'score' | 'plain' | 'place';
 
-const HOLD_S = 3.0;
-const MAX = 3;
+const HOLD_S = 2.8;
+/** With others waiting a line gives way sooner. */
+const HOLD_BUSY_S = 1.9;
+const MAX_WAITING = 4;
 
-type Live = { el: HTMLElement; t: number };
+type Live = { el: HTMLElement; t: number; text: string };
 
 let root: HTMLElement | null = null;
 let live: Live[] = [];
+let waiting: { text: string; kind: ToastKind }[] = [];
+let held = false;
 let seq = 0;
+
+/** Whether a line is on the page (a bubble on a phone keeps clear of it). */
+export function toastsLive() {
+  return live.length > 0 && !held;
+}
+
+/** A card has the page: the line is hidden and its clock stops. */
+export function holdToasts(on: boolean) {
+  if (on === held) return;
+  held = on;
+  ensureRoot().classList.toggle('held', on);
+}
 
 const DPR = () => Math.min(2, (typeof devicePixelRatio === 'number' ? devicePixelRatio : 1) || 1);
 
@@ -81,8 +104,19 @@ function ensureRoot(): HTMLElement {
   return root;
 }
 
-/** The answer line. Appears this frame; holds ~3 s; three at most. */
+/** The answer line. One at a time; the rest wait their turn. */
 export function toast(text: string, kind: ToastKind = 'plain') {
+  if (live.some((l) => l.text === text) || waiting.some((w) => w.text === text)) return;
+  if (live.length || held) {
+    waiting.push({ text, kind });
+    // a long queue is old news: the oldest waiting line gives way
+    while (waiting.length > MAX_WAITING) waiting.shift();
+    return;
+  }
+  show(text, kind);
+}
+
+function show(text: string, kind: ToastKind) {
   const host = ensureRoot();
   seq++;
   const el = document.createElement('div');
@@ -102,8 +136,7 @@ export function toast(text: string, kind: ToastKind = 'plain') {
   // this frame, not the next: the answer is on screen before the
   // frame that asked for it is done
   el.classList.add('show');
-  live.push({ el, t: 0 });
-  while (live.length > MAX) drop(live.shift()!);
+  live.push({ el, t: 0, text });
 }
 
 function drop(l: Live) {
@@ -113,18 +146,26 @@ function drop(l: Live) {
 
 /** Advance the clock: called once a frame with the game's dt. */
 export function tickToasts(dt: number) {
-  if (!live.length) return;
-  for (const l of live) l.t += dt;
-  const keep: Live[] = [];
-  for (const l of live) {
-    if (l.t > HOLD_S) drop(l);
-    else keep.push(l);
+  if (held) return;
+  if (live.length) {
+    const hold = waiting.length ? HOLD_BUSY_S : HOLD_S;
+    const keep: Live[] = [];
+    for (const l of live) {
+      l.t += dt;
+      if (l.t > hold) drop(l);
+      else keep.push(l);
+    }
+    live = keep;
   }
-  live = keep;
+  if (!live.length && waiting.length) {
+    const next = waiting.shift()!;
+    show(next.text, next.kind);
+  }
 }
 
 /** Sweep everything (the harness's broom). */
 export function clearToasts() {
   for (const l of live) l.el.remove();
   live = [];
+  waiting = [];
 }

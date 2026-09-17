@@ -53,8 +53,8 @@ import type { WorldPOI } from '../world/regions';
 import { Voice } from '../world/voice';
 import { notebook } from '../world/notebook';
 import { npcs } from '../world/npc';
-import { say, shout } from '../ui/speech';
-import { toast } from '../ui/toast';
+import { say, shout, speechEls } from '../ui/speech';
+import { toast, holdToasts } from '../ui/toast';
 import { withHint } from '../world/lines';
 import { letterBench } from '../ui/lettering'; /* ---- PEN ---- */
 import { repliesOpen, pickReply } from '../ui/replies'; /* THE THREE VERBS */
@@ -2638,8 +2638,16 @@ export class App {
 
     if (this.started) {
       // a card is up: the world's own writing stays behind it
-      this.poi.suppressed = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen;
+      this.poi.suppressed = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen || this.ui.nameOpen;
       if (this.voice.open) this.poi.suppressed = true; /* VOICE */
+      /* ONE VOICE AT A TIME (the owner, 2026-09-17). A card or a land's
+       * name has the page: the answer line waits. A bubble is on the
+       * page: no place is named under it. Somebody is talking to a man
+       * on a bench: the places keep their names to themselves. */
+      holdToasts(this.ui.noteOpen || this.ui.mapOpen || this.ui.nameOpen || this.ui.cardUp);
+      this.poi.reserved = [...this.ui.chrome, ...speechEls()];
+      this.poi.quietLabels = opening.quiet;
+      if (this.ui.nameOpen) this.ui.hideHint();
       this.activePoi = this.poi.update(this.char.pos);
       /* ---- VOICE: bubbles follow, toasts time out, the world answers ---- */
       this.voice.tick(dt);

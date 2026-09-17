@@ -1374,7 +1374,7 @@ export const MEADOW_POIS: WorldPOI[] = [
     sit: { x: BENCH.x, z: BENCH.z + 0.25, lift: 0.5 },
     /* not while the bull is loose (the horse's prompt must win here),
      * except on the bench's own minute, so STAND UP is on the page */
-    get enabled() { return !common.bull.loose || opening.stage === 'bench'; },
+    get enabled() { return !common.bull.loose || opening.quiet; },
     set enabled(_v: boolean) { /* the bull decides */ },
   } as unknown as WorldPOI,
   {

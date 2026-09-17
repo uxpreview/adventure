@@ -1,5 +1,41 @@
 # CHANGELOG
 
+## One voice at a time (2026-09-17)
+
+The owner, on a phone, five screenshots: "In the first 10 seconds of
+playing, a ton of things pop up and it makes it really hard to
+understand what to do and what's going on. I think this isn't just an
+issue for mobile either." The bench's first three seconds were a land's
+card, two FOUND lines lettered across it, an objective, two place
+names, a prompt, the control line and Nell. The job's start said GET ON
+THE HORSE four ways at once (Nell's bubble, NEW JOB, the step as a
+toast, "E — GET ON THE HORSE" on a phone with no E), under a bubble
+written over all of it. `npm run build` green; checked on the harness's
+portrait rig from the title; not yet played cold.
+
+**The answer line is one line** (`ui/toast.ts`). Three used to stack.
+Now one is up and the rest wait their turn (four at most, a repeat is
+dropped, a line gives way sooner when others wait), and the line holds
+its tongue while a card, the map, the name card or a land's name has
+the page (`holdToasts`). A job says one thing per event: NEW JOB; DONE
+(a step); DONE and YOURS on one line. What is next is the objective
+line's to say, and it already did.
+
+**Nothing is written over anything.** A bubble on a phone stops under
+the objective and the answer line instead of over them
+(`speech.place`); a place's name is not lettered under a bubble
+(`speechEls` into `POI.reserved`); the name card hides the prompt, the
+names and the hint, and comes after Nell has finished asking, not over
+her.
+
+**The bench's minute is Nell's** (`opening.quiet`). The land's card has
+the page for its three seconds, alone; then her three lines, one at a
+time; then the name. No FOUND lines (`notebook.hush`; the places are
+still written down), no place names, no objective. The controls come
+after the name, when there is about to be a bull, on their own. Her job
+line is half the length; the gate is hers to say when he is up and the
+lens is on it.
+
 ## The owner's four, played by hand (2026-09-17)
 
 Branch `claude/next-session-r4gate`. The owner's notes after playing:

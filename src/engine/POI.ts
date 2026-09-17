@@ -152,6 +152,9 @@ export class POIManager {
    * it.
    */
   suppressed = false;
+  /** Names stay off the page and the prompt stays on it: somebody is
+   *  talking and the places can wait (the bench's minute). */
+  quietLabels = false;
 
   /** Returns the active interactable POI (for the interact key). */
   update(charPos: THREE.Vector3): POI | null {
@@ -188,7 +191,7 @@ export class POIManager {
       }
       if (p.labelEl) {
         // gate round 2: a named person is seen from further than a stone
-        const show = d < (p.def.labelReach ?? p.def.radius * 1.6);
+        const show = !this.quietLabels && d < (p.def.labelReach ?? p.def.radius * 1.6);
         p.labelEl.classList.toggle('show', show);
         if (show) shown.push({ p, d });
       }
