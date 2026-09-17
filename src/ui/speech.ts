@@ -25,6 +25,8 @@ type Bubble = {
   w: number;
   then?: () => void;
   out: boolean;
+  /** How far off the speaker was when the line was said (earshot). */
+  d0?: number;
 };
 
 type Queued = { who: Speaker; text: string; opts: { hold?: number; then?: () => void } };
@@ -244,6 +246,17 @@ export function speechEls(): HTMLElement[] {
 export function tickSpeech(dt: number) {
   for (const [key, b] of live) {
     b.t += dt;
+    /* OUT OF EARSHOT: a line said to a man who has since walked off (or
+     * ridden: a horse does thirty units in the time a long line holds)
+     * is not carried along the top of the page after him. A voice that
+     * was far when it spoke (the bell, a shout across the green) is
+     * measured from where he was then. */
+    if (b.who !== 'walker' && walkerPos && !b.out) {
+      const w = walkerPos();
+      const d = Math.hypot(b.who.x - w.x, b.who.z - w.z);
+      if (b.d0 === undefined) b.d0 = d;
+      else if (d > Math.max(45, b.d0 + 25)) b.t = Math.max(b.t, b.hold);
+    }
     place(b);
     if (!b.out && b.t > b.hold) {
       b.out = true;

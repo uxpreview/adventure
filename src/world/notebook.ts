@@ -16,6 +16,9 @@ export type JobDef = {
   reward?: string;
   land?: RegionId;
   pin?: { x: number; z: number; label: string };
+  /** THE TWELVE LINES: the line of THE LIST this job hangs on,
+   *  verbatim. The page heads the job with it once the list is read. */
+  line?: string;
 };
 
 export type Job = JobDef & {

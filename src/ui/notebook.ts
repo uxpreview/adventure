@@ -371,12 +371,18 @@ export class NotebookPage {
   }
 
   private jobEl(j: Job, active: boolean, w: number): HTMLElement {
-    const key = `job|${j.id}|${j.done}|${j.complete}|${active}`;
+    /* THE TWELVE LINES: once the first page has been read, a job that
+     * hangs on a line of it is headed by that line, verbatim, in his
+     * own hand; the steps under it are what keeping it takes */
+    const hung = notebook.listShown && j.line ? j.line : null;
+    const key = `job|${j.id}|${j.done}|${j.complete}|${active}|${hung ? 1 : 0}|${j.steps[j.done] ?? ''}`;
     let wrap = this.cache.get(key);
     if (wrap) return wrap;
     wrap = document.createElement('div');
     wrap.className = `nb-job${j.complete ? ' complete' : ''}${active ? ' active' : ''}`;
-    const head = this.lineEl(`jobhead|${j.giver}|${j.name}`, `${j.giver} — ${j.name}`, 'head', w - 24);
+    const head = hung
+      ? this.lineEl(`jobline-head|${j.id}|${hung}`, hung, 'voice', w - 24)
+      : this.lineEl(`jobhead|${j.giver}|${j.name}`, `${j.giver} — ${j.name}`, 'head', w - 24);
     const headWrap = document.createElement('div');
     headWrap.className = 'nb-jobhead';
     if (active && !j.complete) {

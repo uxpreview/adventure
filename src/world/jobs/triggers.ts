@@ -17,21 +17,37 @@ import type { RegionId } from '../layout';
 
 export type Trigger = () => boolean;
 
+export type Pin = { x: number; z: number; label: string };
+
 export type JobStep = {
-  /** What the notebook shows: short, imperative, plain. */
-  text: string;
+  /** What the notebook shows: short, imperative, plain. A function when
+   *  what is next depends on a choice already made. */
+  text: string | (() => string);
   when: Trigger;
   /** Fired once, the frame the step is ticked. */
   onDone?: () => void;
   /** Gate round 1: where THIS step happens, pinned on the map while it
    *  is the next step. The cold player hunted the market cross for two
    *  hundred seconds with only the belfry on the map. */
-  pin?: { x: number; z: number; label: string };
+  pin?: Pin | (() => Pin);
 };
 
 export type JobSpec = {
   /** `job:marget` — readable, like everything else. */
   id: string;
+  /** THE TWELVE LINES: which line of THE LIST (`thelist.ts`, by its
+   *  person's id) this job hangs on. The notebook heads the job with
+   *  that line, verbatim, in his own hand. Every job hangs on one. */
+  line: string;
+  /** A promise rebuilt on the story of record (`foundation/08` §9): the
+   *  line is the job from the first word its person says to him, and
+   *  only doing it keeps it (an old card's door does not). */
+  promise?: boolean;
+  /** The talk that gives the job is also the first step's talk. */
+  firstTalkCounts?: boolean;
+  /** A place that starts it as well as the person: read the chain and
+   *  the old road is a job, whether or not you have met Wick. */
+  startsAt?: { x: number; z: number; r: number };
   land: RegionId;
   /** The npc id of the person who gives it. */
   giver: string;
@@ -42,7 +58,7 @@ export type JobSpec = {
   reward?: string;
   pin?: { x: number; z: number; label: string };
   /** The world's line when it is done, if nobody is near to say it. */
-  shout: string;
+  shout: string | (() => string);
   /** Hands over the reward and changes the land. */
   onComplete?: () => void;
   /** True when the last step is a card door the VOICE already reads
@@ -73,7 +89,7 @@ export const noteTalk = (id: string) => { talked.set(id, elapsed); };
 /** Each step arms when it becomes the next one; a talk before that
  *  does not count. */
 const armed = new Map<string, number>();
-export const arm = (jobId: string, step: number) => { armed.set(`${jobId}#${step}`, elapsed); };
+export const arm = (jobId: string, step: number, back = 0) => { armed.set(`${jobId}#${step}`, elapsed - back); };
 export const armedAt = (jobId: string, step: number) => armed.get(`${jobId}#${step}`) ?? -1;
 
 /** The step being evaluated, so `talkedTo` can compare against its arm

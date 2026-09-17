@@ -81,6 +81,17 @@ import { worn } from '../worn';
  * at a land's stop, that land's own person is the one standing on it. */
 import { platform } from '../../engine/Eight15';
 import { npcs } from '../npc'; /* VOICE */
+/* ---- TIER 1 (`world/tier1.ts`): Wick's road, Marget's debt ---- */
+import {
+  chainPostTexture, roadChainTexture, chainDownDecal, overgrownRoadDecal, mountingBlockTexture, coldBrazierTexture,
+  stallCoverTexture, brimFolkTexture, margetSatTexture, hallWallTexture, hallFloorDecal, palletTexture,
+  type BrimFolk,
+} from '../textures-tier1';
+import {
+  greyweather, brim, CHAIN, BRAZIERS, WICK_POST, WICK_WATCH, WICK_BLOCK, WICK_AT_CHAIN,
+  HALL_DOOR, HALL_ROOM, BELFRY, MARGET_PATH,
+} from '../tier1-state';
+import { tier1, K, marketCalled, brimHour, roadOpen, duskAtTheFires, wickStep, margetStays, hourKnown } from '../tier1';
 import { bell } from '../../engine/Bicycle';
 import type { RegionBuilder, WorldPOI } from './index';
 import type { StandeeField } from '../../engine/StandeeField';
@@ -415,7 +426,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   // standing about in a square that already has sixteen of them
   const marget = ctx.standee(margetTexture(1486), 1.45, 2.6, -43.1, -75.0);
   /* ---- VOICE: where Marget is drawn ---- */
-  npcs.track('marget', () => ({ x: marget.position.x, z: marget.position.z, present: marget.visible && (marget.material as THREE.MeshBasicMaterial).opacity > 0.5 }));
+  npcs.track('marget', () => ({ x: marget.position.x, z: marget.position.z, present: (marget.visible || margetSat.visible) && (marget.material as THREE.MeshBasicMaterial).opacity > 0.5 }));
   for (const m of [stallShut, stallOpen, marget]) {
     (m.material as THREE.MeshBasicMaterial).transparent = true;
   }
@@ -426,6 +437,57 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     { rotY: -0.16 });
   (marketBoard.material as THREE.MeshBasicMaterial).transparent = true;
   marketBoard.visible = false;
+
+  /* ---- TIER 1: MARGET, SAT (what I'LL HANDLE IT costs, seen) -------- */
+  const margetSat = ctx.standee(margetSatTexture(1488), 1.45, 2.6, -43.1, -75.0);
+  (margetSat.material as THREE.MeshBasicMaterial).transparent = true;
+  margetSat.visible = false;
+  /* ---- TIER 1: THE STALLS HAVE STOOD COVERED FOR THREE YEARS. A sheet
+   * tied over each counter and a slate on it; the covers come off the
+   * day the bell is rung at an hour somebody knows. Under EIGHT one
+   * stays on, and the slate on it says when she thinks it is. ---- */
+  const SLATES = ['NEXT WEEK', 'NOT TODAY', 'SOON', 'AFTER THE BELL', 'WHEN IT RINGS'];
+  const DORRIES = 3; // the baker's stall, east side
+  const cover = (i: number, slate: string, seed: number) => {
+    const [x, z, , rot] = stalls[i];
+    const m = ctx.standee(stallCoverTexture(seed, slate), 5.6, 5.1, x, z, { rotY: rot });
+    const mat = m.material as THREE.MeshBasicMaterial;
+    mat.depthWrite = false;
+    mat.transparent = true;
+    m.renderOrder = 4;
+    return m;
+  };
+  const covers = stalls.map((_, i) => cover(i, SLATES[i], 1620 + i));
+  const dorriesCover = cover(DORRIES, 'AT ELEVEN', 1626);
+  dorriesCover.visible = false;
+  /* ---- TIER 1: SIX PEOPLE IN THE SQUARE WITH NAMES (gate round 4: "six
+   * or seven drawn people and only Marget has a name or a line"). They
+   * keep the square's hours, and what they say is `lines.ts`. ---- */
+  const NAMED: [BrimFolk, number, number, number][] = [
+    ['hob', -46.9, -77.8, 2.5], ['dorrie', -36.3, -92.7, 2.35], ['pell', -56.3, -78.8, 2.55],
+    ['bryn', -53.3, -64.4, 2.7], ['cass', -41.0, -84.4, 2.2], ['tolly', -50.9, -92.4, 2.3],
+  ];
+  const named = NAMED.map(([who, x, z, h], i) => {
+    const m = ctx.standee(brimFolkTexture(1630 + i, who), h * 0.6, h, x, z);
+    (m.material as THREE.MeshBasicMaterial).transparent = true;
+    brim.folk[who] = { x, z, present: true };
+    npcs.track(who, () => brim.folk[who]);
+    return m;
+  });
+  /** Marget's walk to the bell and back: how far along `MARGET_PATH`. */
+  const mWalk = { d: 0, len: 0, t: 0 };
+  for (let i = 0; i < MARGET_PATH.length - 1; i++) mWalk.len += Math.hypot(MARGET_PATH[i + 1][0] - MARGET_PATH[i][0], MARGET_PATH[i + 1][1] - MARGET_PATH[i][1]);
+  const onPath = (d: number): [number, number] => {
+    let acc = 0;
+    for (let i = 0; i < MARGET_PATH.length - 1; i++) {
+      const [x0, z0] = MARGET_PATH[i];
+      const [x1, z1] = MARGET_PATH[i + 1];
+      const L = Math.hypot(x1 - x0, z1 - z0);
+      if (d <= acc + L) { const k = (d - acc) / L; return [x0 + (x1 - x0) * k, z0 + (z1 - z0) * k]; }
+      acc += L;
+    }
+    return MARGET_PATH[MARGET_PATH.length - 1];
+  };
 
   // bunting strung post to post, ends pinned at lamp height,
   // breathing in the update
@@ -652,10 +714,12 @@ export const buildKingdom: RegionBuilder = (ctx) => {
      * stall that never opens; the clock set to eleven is her hour, she
      * opens, and the lamplighter is three hours wrong every night.
      * Nothing here says which was right. */
-    const bellRung = knowledge.has('door:the-bell-rings-it');
+    /* TIER 1 (`foundation/08` §9.3): two doors, which hand is right,
+     * and somebody in Brim is wrong for good under either. The market
+     * is called when the bell is rung at that hour (`tier1.ring`), not
+     * by the door; an old save's bell door still counts as called. */
     const setEight = knowledge.has('door:the-clock-set-to-eight');
     const setEleven = knowledge.has('door:the-clock-set-to-eleven');
-    if ((bellRung || setEleven) && knowledge.learn('reason:brim')) say('brim-bell');
     if ((setEight || setEleven) && belfry.visible) say('clock-set');
     belfry.visible = !setEight && !setEleven;
     belfrySet8.visible = setEight;
@@ -697,13 +761,13 @@ export const buildKingdom: RegionBuilder = (ctx) => {
      *    market. There is no prompt and nothing to accept: you turn up
      *    knowing something and the world does the rest.
      * ================================================================ */
-    const open = knowledge.has('reason:brim');
-    /* THE MARKET IS CALLED EITHER WAY (Session 21): under every door
-     * the board is chalked at the cross; under one of them the stall it
-     * was chalked for stays shut, at her hour, for good. */
-    const called = open || setEight;
+    const open = marketCalled();
+    const called = open;
     // dawn to dusk. A cloth laid at first light and folded at the last
-    const outNow = Math.min(
+    /* TIER 1: and she stays out past dusk while her promise hangs on the
+     * hour: the man she is waiting on is in the belfry yard */
+    const staying = margetStays();
+    const outNow = staying ? 1 : Math.min(
       Math.max(0, Math.min(1, (clock.hour - 5.5) / 0.9)),
       Math.max(0, Math.min(1, (20.4 - clock.hour) / 0.9))
     );
@@ -715,17 +779,67 @@ export const buildKingdom: RegionBuilder = (ctx) => {
      * always first. */
     /* AND IN THE RAIN THE SQUARE EMPTIES (Session 17): the crowd goes in
      * under the awnings and the shutters, which is what a crowd does. */
-    folk.setDim(Math.min(
+    const folkDim = Math.min(
       Math.max(0, Math.min(1, (clock.hour - 6.1) / 1.0)),
       Math.max(0, Math.min(1, (21.2 - clock.hour) / 1.0))
-    ) * (1 - 0.85 * W.rain));
-    for (const m of [stallShut, stallOpen, marget]) {
+    ) * (1 - 0.85 * W.rain);
+    folk.setDim(folkDim);
+    for (const m of [stallShut, stallOpen, marget, margetSat]) {
       (m.material as THREE.MeshBasicMaterial).opacity = outNow;
     }
     stallShut.visible = outNow > 0.02 && !open;
     stallOpen.visible = outNow > 0.02 && open;
-    marget.visible = outNow > 0.02 && platform.land !== 'kingdom';
     marketBoard.visible = called;
+
+    /* ---- TIER 1: THE NAMED SIX keep the square's hours; while Marget's
+     * promise hangs on the hour they stay for it like she does ---- */
+    {
+      const k = staying ? Math.max(folkDim, 0.9) : folkDim;
+      named.forEach((m, i) => {
+        (m.material as THREE.MeshBasicMaterial).opacity = k;
+        m.visible = k > 0.02;
+        brim.folk[NAMED[i][0]].present = k > 0.5;
+      });
+    }
+    /* ---- TIER 1: THE COVERS. On till the bell; then off, for good, and
+     * under EIGHT the baker's goes back on with her own hour on it ---- */
+    covers.forEach((m) => { m.visible = !open; });
+    dorriesCover.visible = open && brimHour() === 8;
+
+    /* ---- TIER 1: MARGET WALKS TO THE BELL, or sits down ---------------
+     * She said she would ring it: down the king's road and into the
+     * yard, a working walk, skirts and all, and back when it is rung.
+     * He said he would handle it: she is sat on a crate behind her
+     * stall, and stays sat. */
+    {
+      const g = brim.marget;
+      const want = g.goal === 'out' ? mWalk.len : 0;
+      const moving = Math.abs(want - mWalk.d) > 0.02;
+      if (moving) {
+        const step = 3.3 * dt;
+        mWalk.d += Math.max(-step, Math.min(step, want - mWalk.d));
+        mWalk.t += dt;
+        if (Math.abs(want - mWalk.d) <= 0.02) g.arrived = true;
+      } else if (!g.arrived && g.goal === 'out') g.arrived = true;
+      const [mx, mz] = onPath(mWalk.d);
+      const gy = ctx.groundY(mx, mz);
+      marget.position.set(mx, gy + (moving ? Math.abs(Math.sin(mWalk.t * 7.5)) * 0.09 : 0), mz);
+      marget.rotation.z = moving ? Math.sin(mWalk.t * 7.5) * 0.045 : 0;
+      const sat = knowledge.has(K.margetSat) && mWalk.d < 0.05;
+      const here = outNow > 0.02 && platform.land !== 'kingdom';
+      marget.visible = here && !sat;
+      margetSat.visible = here && sat;
+    }
+    /* ---- TIER 1: THE BELL, RUNG. The tower rocks a hair on each stroke
+     * (the harness has no ears, and neither has a phone on silent) ---- */
+    if (brim.bell.strokes > 0) {
+      const b = brim.bell;
+      if (b.t === 0) say('brim-bell');
+      b.t += dt;
+      const rock = Math.sin(b.t * 9) * 0.012 * Math.max(0, 1 - b.t / 4.5);
+      for (const m of [belfry, belfrySet8, belfrySet11]) m.rotation.z = rock;
+      if (b.t > 4.5) { b.strokes = 0; for (const m of [belfry, belfrySet8, belfrySet11]) m.rotation.z = 0; }
+    }
 
     /* ---- MARGET'S HOUSE, read every frame (Session 23) --------------- *
      * The house goes to pencil by the room's blend; the room comes up
@@ -752,15 +866,10 @@ export const buildKingdom: RegionBuilder = (ctx) => {
       if (fp) { crateShut.visible = true; crateShut.position.set(fp.x, fp.y, fp.z); }
     }
 
-    if (!open) {
-      // the belfry yard, while the lamps are settling the hour
-      if (clock.lamp > 0.3 && Math.hypot(px + 64, pz + 42) < 9) {
-        knowledge.learn('fact:brim-hour');
-      }
-      // and the cross, where a market is called from
-      if (knowledge.has('fact:brim-hour') && Math.hypot(px + 35, pz + 71) < 8) {
-        if (knowledge.learn('reason:brim')) say('brim-bell');
-      }
+    // the belfry yard, while the lamps are settling the hour (silent:
+    // the walker says it, and the notebook ticks the step)
+    if (!open && !hourKnown() && clock.lamp > 0.3 && Math.hypot(px - BELFRY.x, pz - BELFRY.z) < 9) {
+      knowledge.learn(K.hour);
     }
 
     // the gate pennants take the same wind as the meadow grass
@@ -934,40 +1043,51 @@ export const KINGDOM_POIS: WorldPOI[] = [
      * since Session 7; the card is the way to see every door before
      * one is taken. Nothing here says which was right. */
     x: -64, z: -42, radius: 7, label: 'THE BELFRY',
+    /* TIER 1 (`foundation/08` §9.3): wait in the yard till the lamps
+     * come on and one hand agrees with them; then say which hand is
+     * right. Two doors, and somebody in Brim is wrong for good under
+     * either. The bell is rung after, by Marget or by him. */
     get prompt() {
-      const done = knowledge.decided('kingdom');
-      if (!done && knowledge.has('fact:brim-hour')) return 'SETTLE THE HOUR';
-      return 'WAIT FOR THE BELL';
+      if (tier1.ropeMine) return 'RING THE BELL';
+      if (hourKnown() && !brimHour()) return 'SAY WHICH HAND IS RIGHT';
+      if (!hourKnown()) return 'WAIT FOR THE LAMPS';
+      return 'LOOK AT THE BELFRY';
     },
-    /* Gate round 1: WAIT FOR THE BELL waits. Three critics and the cold
-     * player pressed E here and got the note again; the lamps were an
-     * hour of real time away. Now the day runs while you stand in the
-     * yard until the lamps are up, and the fact lands the way it
-     * always did (the frame above learns it at lamp > 0.3). */
+    /* Gate round 1: a prompt that says WAIT waits. The day runs while
+     * you stand in the yard until the lamps are up. */
     wait: {
-      until: () => knowledge.has('fact:brim-hour') || clock.lamp > 0.3,
+      until: () => hourKnown() || clock.lamp > 0.3,
       hint: 'waiting in the yard for the lamps — step away to stop',
       done: 'The lamps. One hand on that clock agrees with them.',
     },
     get choice() {
-      if (!knowledge.has('fact:brim-hour') || knowledge.has('reason:brim')) return undefined;
+      if (!hourKnown() || brimHour() || marketCalled()) return undefined;
       return {
-        body: 'two hands on one clock, and they have disagreed for as long as anybody can remember. one says eight. the other says eleven and has never given ground. you stood in this yard while the lamps came on, which nobody in brim has thought to do, and the lamps came on with one of them. the bell could ring that hour. or the clock could be set, by hand, to either.',
+        body: 'two hands on one clock. one says eight. the other says eleven and has never given ground. the lamps came on with the eight. whichever you say, the bell will ring it, and somebody in brim is wrong for good.',
         options: [
-          { label: 'LET THE BELL RING THE LAMPS\' HOUR', door: 'door:the-bell-rings-it' },
-          { label: 'SET THE CLOCK TO EIGHT', door: 'door:the-clock-set-to-eight' },
-          { label: 'SET THE CLOCK TO ELEVEN', door: 'door:the-clock-set-to-eleven' },
+          { label: 'EIGHT IS RIGHT', door: 'door:the-clock-set-to-eight' },
+          { label: 'ELEVEN IS RIGHT', door: 'door:the-clock-set-to-eleven' },
         ],
       };
     },
-    note: {
-      title: 'the belfry',
-      body: () => {
-        if (knowledge.has('door:the-clock-set-to-eight')) return 'both hands say eight now. somebody set them, and the bell rang it, and the market was called from the cross at that hour for the first time in living memory. the lamps agree. one stall in the square has not opened, and lays its cloth at dawn, and folds it at dusk, at an hour nobody else keeps any more.';
-        if (knowledge.has('door:the-clock-set-to-eleven')) return 'both hands say eleven now. somebody set them, and the bell rang it, and the market was called. the lamplighter goes by the clock, which is what a lamplighter is for, and his round comes three hours before the light goes. the lamps are lit in the afternoon. nobody has said anything to him.';
-        if (knowledge.has('reason:brim')) return 'the clock\'s two hands still disagree, and the bell rang the hour anyway, the one the lamps keep, and the market was called from the cross. brim has been taking the bell\'s word for it ever since, and now it has a reason to.';
-        return 'the clock\'s two hands have disagreed for as long as anybody can remember and neither will give ground. the bell splits the difference and rings when it judges the hour has been earned. brim has been taking the bell\'s word for it ever since.';
-      },
+    /* the rope, when he said he would handle it */
+    touch: () => { if (tier1.ropeMine) tier1.ring(true); },
+    answers: true,
+    get note() {
+      if (tier1.ropeMine) return undefined;
+      return {
+        title: 'the belfry',
+        body: () => {
+          if (knowledge.has('door:the-clock-set-to-eight')) return marketCalled()
+            ? 'both hands say eight now, and the bell rings it every evening, and the covers are off the stalls. the lamps agree. one stall in the square is still covered, with a slate on it that says AT ELEVEN.'
+            : 'both hands say eight now. the bell has not rung it yet. somebody has to pull the rope.';
+          if (knowledge.has('door:the-clock-set-to-eleven')) return marketCalled()
+            ? 'both hands say eleven now, and the bell rings it, and the covers are off the stalls. the lamplighter goes by the clock, which is what a lamplighter is for, and his round comes three hours before the light goes. nobody has said anything to him.'
+            : 'both hands say eleven now. the bell has not rung it yet. somebody has to pull the rope.';
+          if (knowledge.has('reason:brim')) return 'the clock\'s two hands still disagree, and the bell rang the hour anyway, and the market was called from the cross.';
+          return 'the clock\'s two hands have disagreed for as long as anybody can remember and neither will give ground. the bell has not been rung at an hour anybody would swear to in three years. the rope is just inside the yard.';
+        },
+      };
     },
   } as unknown as WorldPOI,
   {
@@ -1239,6 +1359,9 @@ export const buildCastle: RegionBuilder = (ctx) => {
    * nobody has told him the king is not coming back (STORY §7) — so
    * somebody keeps a fire in at the gate, for a road nobody rides up.
    * The whole land argues in one drawing that only exists after dark. */
+  /* TIER 1: the baskets stand at the gate by day with ash in them; the
+   * lit drawing is over them from the hour a man lights it */
+  for (const x of [-52.5, -37.5]) ctx.standee(coldBrazierTexture(976 + (x > -45 ? 1 : 0)), 2.6, 3.5, x, -189.52);
   const braziers = [-52.5, -37.5].map((x, i) => {
     const m = ctx.standee(brazierTexture(972 + i), 2.6, 3.5, x, -189.5);
     (m.material as THREE.MeshBasicMaterial).depthWrite = false;
@@ -1246,8 +1369,58 @@ export const buildCastle: RegionBuilder = (ctx) => {
     return m;
   });
 
+  /* ================================================================ *
+   * TIER 1 · WICK · THE OLD ROAD (`foundation/08` §9.1).
+   *
+   * THE CHAIN. Across the king's road below the avenue, bollard to
+   * bollard, with a board on it in his hand. The bollards are round
+   * and may face the lens; the chain is a fixed plane on its own line,
+   * east to west across a road that runs north, so from north or south
+   * it is a chain across a road and from east or west it is two posts
+   * with a road between them and grass come up through the road
+   * beyond. Down, it is a decal, and a decal does not turn.
+   * ================================================================ */
+  for (const dx of [-CHAIN.halfW, CHAIN.halfW]) ctx.standee(chainPostTexture(1060 + (dx > 0 ? 1 : 0)), 1.0, 2.7, CHAIN.x + dx, CHAIN.z, { solid: 0.5 });
+  /* a third, shorter, in the crown of the road: end on, a chain is its
+   * posts, and three in a row read as a line where two read as one */
+  ctx.standee(chainPostTexture(1059), 0.8, 2.0, CHAIN.x, CHAIN.z);
+  /* two planes back to back, so the board reads the right way round
+   * from the castle side as well as from Brim's */
+  const chainFaces = [0, Math.PI].map((rotY, i) => {
+    const m = ctx.standee(roadChainTexture(1062 + i * 7), CHAIN.halfW * 2, 2.3, CHAIN.x, CHAIN.z + (i ? -0.03 : 0.03), { face: 'fixed', rotY });
+    ctx.hang(m, 0.25);
+    return m;
+  });
+  const chainLying = ctx.decal(chainDownDecal(1063), CHAIN.halfW * 2, 2.9, CHAIN.x, CHAIN.z + 1.2, 0, 0.95);
+  chainLying.visible = false;
+  const overgrown = [
+    ctx.decal(overgrownRoadDecal(1064), 7.5, 10, CHAIN.x, CHAIN.z - 6.2, 0, 0.85),
+    ctx.decal(overgrownRoadDecal(1065), 7, 9, CHAIN.x + 0.4, CHAIN.z - 15.5, 0.1, 0.7),
+  ];
+  const chainGap = barriers.register({
+    id: 'the-road-chain', x0: CHAIN.x - CHAIN.halfW, z0: CHAIN.z, x1: CHAIN.x + CHAIN.halfW, z1: CHAIN.z, half: 0.7,
+    gaps: [{ id: 'the-road-chain-gap', x: CHAIN.x, z: CHAIN.z, r: CHAIN.halfW - 0.4, open: false }],
+  }).gaps[0];
+  /* THE MOUNTING BLOCK by the west fire: what he sits down on, for good,
+   * if the chain is taken out of his hands. */
+  ctx.standee(mountingBlockTexture(1066), 2.0, 1.3, WICK_BLOCK.x - 0.2, WICK_BLOCK.z - 0.5);
+  /* AND THE FIRES, SEEN FROM BRIM, once the road is open: the same two
+   * fires, drawn large and high enough to clear the town's north wall.
+   * The castle to Brim, by sight. */
+  const farFires = [BRAZIERS.west, BRAZIERS.east].map((b, i) => {
+    const m = ctx.standee(lampGlowTexture(1067 + i), 8, 8, b.x, b.z);
+    ctx.hang(m, 3.2);
+    (m.material as THREE.MeshBasicMaterial).transparent = true;
+    (m.material as THREE.MeshBasicMaterial).depthWrite = false;
+    m.renderOrder = 3;
+    m.visible = false;
+    return m;
+  });
+
   /* -- THE KEEP: on the plateau, where the high seat belongs --------- */
-  const keep = ctx.standee(greyweatherKeepTexture(980), 34, 17, -45, -250, { solid: true });
+  /* TIER 1: the keep has a door now (the hall behind it is Wick's
+   * promise, kept); `the-hall-door` below is what keeps it shut */
+  const keep = ctx.standee(greyweatherKeepTexture(980), 34, 17, -45, -250, { solid: { gap: 1.1 } });
   /* THE KEEP STANDS ON SOMETHING (Session 19, the local QA pass §4:
    * *flat cards on empty ground*). Its foot is drawn: worn stone the
    * width of it, scree in the angles, and the bailey's own floor —
@@ -1297,6 +1470,22 @@ export const buildCastle: RegionBuilder = (ctx) => {
   loftRoom.put(ctx.standee(dyeVatTexture(1054), 2.0, 1.6, -36.4, -218.6, { solid: 0.9 }));
   loftRoom.put(ctx.standee(stoolTexture(1055), 0.9, 0.9, -31.6, -217.2, { rotY: -0.3, solid: 0.35 }));
   const hungBanner = loftRoom.put(ctx.standee(wetBannerTexture(1056), 0.9, 2.2, LOFT_PEG.x, LOFT_PEG.z));
+
+  /* ---- TIER 1: THE HALL (what Wick's promise unlocks: somewhere to
+   * come home to). Behind the keep's door: a fire that is in, a settle,
+   * a pallet by the hearth. Shut until his line is kept. ------------- */
+  const hallDoor = barriers.register({
+    id: 'the-hall-door', x0: HALL_DOOR.x - 2.6, z0: HALL_DOOR.z, x1: HALL_DOOR.x + 2.6, z1: HALL_DOOR.z, half: 0.7,
+    gaps: [{ id: 'the-hall-door-gap', x: HALL_DOOR.x, z: HALL_DOOR.z, r: 1.2, open: false }],
+  }).gaps[0];
+  const hallRoom = buildRoom(ctx, {
+    id: 'the-hall', land: 'castle', name: 'the hall at greyweather',
+    rect: HALL_ROOM, door: { x: HALL_DOOR.x, r: 1.1 },
+  }, 'stone', hallFloorDecal(1070), hallWallTexture(1071), 4.4, 1072);
+  hallRoom.front(keep);
+  hallRoom.put(ctx.standee(palletTexture(1073), 3.0, 1.2, -40.6, -255.6));
+  hallRoom.put(ctx.standee(tableTexture(1074, 'bare'), 3.2, 1.5, -49.4, -253.6, { solid: 1.1 }));
+  hallRoom.put(ctx.standee(chairTexture(1075), 1.0, 1.6, -47.2, -253.0, { rotY: -0.2, solid: 0.4 }));
   /* THE WET ONE, on the bank, and in the hand. */
   const bannerThing = things.get('the-wet-banner')!;
   bannerThing.def.hand = handBannerTexture(1057);
@@ -1473,6 +1662,37 @@ export const buildCastle: RegionBuilder = (ctx) => {
   const wick = new Figure(ctx, WICK_MORNING, 0, { maps: wickMaps, scale: 1.0 });
   const wickPm = new Figure(ctx, WICK_EVENING, 0, { maps: wickMaps, scale: 1.0 });
   let wickRelieved = false;
+  /* ---- TIER 1: WICK, WHEN HE IS NOT ON HIS ROUNDS. By day at his post
+   * by the west fire (on the mounting block, for good, if the chain was
+   * taken out of his hands). At dusk he lights the two fires, west then
+   * east, and stands out in front of them facing down the hill to Brim
+   * till late. Asked to, he walks down and unhooks the chain. His own
+   * drawings, moved here; the promise (`tier1.ts`) says where to. */
+  const wickStand = ctx.standee(wickMaps[0], 1.5, 2.5, WICK_POST.x, WICK_POST.z);
+  const wickStandMat = wickStand.material as THREE.MeshBasicMaterial;
+  wickStandMat.transparent = true;
+  wickStand.visible = false;
+  const wk = { x: WICK_POST.x, z: WICK_POST.z, t: 0, placed: false };
+  npcs.track('wick', () => {
+    const g = greyweather.wick;
+    if (wickStand.visible) return { x: g.x, z: g.z, present: true };
+    for (const f of [wick, wickPm]) {
+      if (f.mesh.visible && (f.mesh.material as THREE.MeshBasicMaterial).opacity > 0.3) return { x: f.mesh.position.x, z: f.mesh.position.z, present: true };
+    }
+    return { x: g.x, z: g.z, present: false };
+  });
+  /** A fire is lit from the moment he reaches it till first light. */
+  const fireLit = (i: number, h: number) => (h >= 18.94 + i * 0.04 || h < 5.4 ? 1 : 0);
+  /** The pilgrims come up as far as they can: to the chain and back
+   *  while it is up; to the gate, as they always did, once it is down. */
+  const PILGRIM_TO = (at: number, i: number, open: boolean) => stops(open ? [
+    [at + i * 0.01, -45 + (i ? 1.4 : -1.2), -160, 0, 1], [at + 0.14, -45 + (i ? 1.6 : -1.4), -193.5 + i * 0.6, 0, 1, 0.25],
+    [at + 0.54, -45 + (i ? 1.4 : -1.2), -160, 0, -1, 0.02],
+  ] : [
+    [at + i * 0.01, -45 + (i ? 1.4 : -1.2), -158.5, 0, 1], [at + 0.05, -45 + (i ? 1.6 : -1.4), CHAIN.z + 1.9 + i * 0.5, 0, 1, 0.3],
+    [at + 0.42, -45 + (i ? 1.4 : -1.2), -158.5, 0, -1, 0.02],
+  ]);
+  let pilgrimsOpen: boolean | null = null;
   /* THE BATS over the moat pool at dusk, and THE ROOKS THAT CROSS
    * (`rooks.ts`): three that roost on the keep and spend the day on a
    * scarecrow in another land. Drawn here while they are nearer here. */
@@ -1486,8 +1706,35 @@ export const buildCastle: RegionBuilder = (ctx) => {
 
   return (dt: number, t: number, px: number, pz: number) => {
     const h = clock.hour;
-    // the fires at the gate, on the same clock as Brim's lamps
-    lightUp(braziers, clock.lamp);
+    /* TIER 1: the fires at the gate are lit by a man, west then east,
+     * at dusk, and burn till first light */
+    braziers.forEach((m, i) => lightUp([m], fireLit(i, h) * Math.max(clock.lamp, 0.6)));
+    {
+      const open = roadOpen();
+      for (const m of chainFaces) m.visible = !open;
+      chainLying.visible = open;
+      chainGap.open = open;
+      for (const m of overgrown) m.visible = !open;
+      hallDoor.open = wickStep() === 99;
+      /* a fire you can see is lit: a halo on each from the moment he
+       * lights it; and once the road is open the same two, large, from
+       * Brim and the Common (the castle to Brim, by sight) */
+      const far = open && pz > -150;
+      const near = pz < -168;
+      farFires.forEach((m, i) => {
+        const s = far ? 1 : 0.5;
+        m.scale.set(s, s, 1);
+        lightUp([m], (far || near) ? fireLit(i, h) * Math.max(clock.lamp, 0.5) * (far ? 0.9 : 0.75) : 0);
+      });
+      if (open !== pilgrimsOpen) {
+        pilgrimsOpen = open;
+        pilgrims.forEach((f, n) => {
+          const k = n >> 1;
+          const i = n & 1;
+          f.def.stops.splice(0, f.def.stops.length, ...PILGRIM_TO([8.3, 16.2][k], i, open));
+        });
+      }
+    }
 
     /* THE CROWN, read back: which of the four kings is drawn. */
     const bare = worn.has('the-crown');
@@ -1536,9 +1783,57 @@ export const buildCastle: RegionBuilder = (ctx) => {
       }
     }
     {
-      const gone = platform.land === 'castle';
-      wick.tick(h, gone);
-      wickPm.tick(h, gone);
+      const g = greyweather.wick;
+      const out = g.goal === 'out';
+      const gone = platform.land === 'castle' || out;
+      const am = wick.tick(h, gone);
+      const pm = wickPm.tick(h, gone);
+      const onRounds = (am.present || pm.present) && !out;
+      /* where the promise has him, when his rounds do not */
+      const sat = knowledge.has(K.wickSat);
+      const dusk = duskAtTheFires();
+      let tx = sat ? WICK_BLOCK.x : WICK_POST.x;
+      let tz = sat ? WICK_BLOCK.z : WICK_POST.z;
+      if (out) { tx = WICK_AT_CHAIN.x; tz = WICK_AT_CHAIN.z; }
+      else if (dusk) {
+        if (h >= 18.9 && h < 18.94) { tx = BRAZIERS.west.x + 1.1; tz = BRAZIERS.west.z + 1.5; }
+        else if (h >= 18.94 && h < 18.98) { tx = BRAZIERS.east.x - 1.1; tz = BRAZIERS.east.z + 1.5; }
+        else { tx = WICK_WATCH.x; tz = WICK_WATCH.z; }
+      }
+      const abroad = out || dusk || (h >= 8.3 && h < 17.4);
+      const show = abroad && !onRounds && platform.land !== 'castle';
+      if (show && !wk.placed) {
+        // at dusk he comes out under the gate with a taper; otherwise he is where he is
+        const comingOut = dusk && h >= 18.9 && h < 18.94 && !out;
+        wk.x = comingOut ? -45 : tx;
+        wk.z = comingOut ? -190.4 : tz;
+        wk.placed = true;
+      }
+      if (!show) wk.placed = false;
+      const dx = tx - wk.x;
+      const dz = tz - wk.z;
+      const d = Math.hypot(dx, dz);
+      const moving = show && d > 0.08;
+      if (moving) {
+        const step = Math.min(d, 3.1 * dt);
+        wk.x += (dx / d) * step;
+        wk.z += (dz / d) * step;
+        wk.t += dt;
+      }
+      if (out && show && !moving) g.arrived = true;
+      g.x = wk.x;
+      g.z = wk.z;
+      g.present = show;
+      g.watching = show && dusk && !moving && (h >= 18.98 || h < 5.3) && !out;
+      wickStand.visible = show;
+      if (show) {
+        wickStand.position.set(wk.x, ctx.groundY(wk.x, wk.z), wk.z);
+        const pose = moving ? (Math.floor(wk.t / 0.3) % 2 ? 1 : 5) : sat && !out && !dusk ? 3 : 0;
+        const map = wickMaps[pose as 0 | 1 | 3 | 5];
+        if (wickStandMat.map !== map) { wickStandMat.map = map; wickStandMat.needsUpdate = true; }
+        const faceLeft = moving ? dx < 0 : px < wk.x;
+        wickStand.scale.x = (faceLeft ? -1 : 1) * Math.abs(wickStand.scale.x);
+      }
     }
     /* THE PORTCULLIS: down a stride in a third of a second, held, and
      * winched back over four. The braziers gutter while it is down. */
@@ -1601,7 +1896,10 @@ export const buildCastle: RegionBuilder = (ctx) => {
       seg.visible = past < 0.98;
     }
     const behind = Math.max(0, Math.min(1, (-244 - pz) / 6));
-    keepMat.opacity = 1 - behind * 0.75;
+    /* TIER 1: the hall's blend has the keep first (it goes to pencil as
+     * the walker goes in); the courtesy fade takes what is left */
+    hallRoom.show(rooms.blend('the-hall'));
+    keepMat.opacity = Math.min(keepMat.opacity, 1 - behind * 0.75);
 
     // the circling rooks bank like the swallows, slower and darker
     for (const s of loop) {
@@ -1660,6 +1958,83 @@ export const buildCastle: RegionBuilder = (ctx) => {
 };
 
 export const CASTLE_POIS: WorldPOI[] = [
+  /* ================================================================ *
+   * TIER 1 · WICK · THE OLD ROAD. The chain, the fires, the card that
+   * is taken at the man himself, and the hall his promise opens.
+   * ================================================================ */
+  {
+    /* THE CHAIN. Read, it is the way into his line of the list; if he
+     * said he would handle it, the key here takes it down. */
+    x: CHAIN.x, z: CHAIN.z + 0.9, radius: 4.6, label: 'THE CHAIN', labelHeight: 3.0, labelReach: 26,
+    get prompt() { return tier1.chainMine ? 'TAKE THE CHAIN DOWN' : roadOpen() ? 'LOOK AT THE CHAIN' : 'READ THE BOARD ON THE CHAIN'; },
+    touch: () => { if (tier1.chainMine) tier1.takeChainDown(); },
+    answers: true,
+    get note() {
+      if (tier1.chainMine) return undefined;
+      return {
+        title: 'the chain',
+        body: () => (roadOpen()
+          ? 'down, in the road, with the board beside it face up. it was on a hook. it was never locked. the grass that had come up through the road is already going down under feet.'
+          : 'a chain across the king\'s road, bollard to bollard, and a board wired to it: ROAD CLOSED. under that, smaller, in the same hand: IT IS NOTHING. — W. the road beyond it has grass coming up through it. you can walk round the end of a chain. nobody has.'),
+      };
+    },
+  } as unknown as WorldPOI,
+  {
+    /* THE BRAZIERS. He lights them at dusk; standing here, the key
+     * waits for that. */
+    x: BRAZIERS.x, z: BRAZIERS.z + 2.4, radius: 5, label: 'THE BRAZIERS', labelHeight: 4.2,
+    get prompt() { return duskAtTheFires() ? 'LOOK AT THE FIRES' : 'WAIT FOR DUSK'; },
+    wait: {
+      until: () => duskAtTheFires(),
+      hint: 'waiting by the braziers for dusk — step away to stop',
+      done: 'Dusk. Here he comes.',
+    },
+    note: {
+      title: 'the braziers',
+      body: () => (knowledge.has(K.wickCall)
+        ? 'two fires at a gate, lit every dusk for three years, west then east, by a man who then stands in front of them facing down the hill. they were never for the king. they are what the castle says to brim: we are coming. brim was to ring back.'
+        : 'two iron baskets either side of the gate. the ash in them is fresh. somebody lights these every night, for a road with a chain across it.'),
+    },
+  } as unknown as WorldPOI,
+  {
+    /* THE ROAD, DECIDED AT THE MAN (a card in the conversation: `npcs.
+     * cardNear` opens a place's open choice through its person). It
+     * stands where he stands, and only while his promise is at it. */
+    get x() { return greyweather.wick.x; },
+    get z() { return greyweather.wick.z; },
+    radius: 1.2,
+    get enabled() { return wickStep() === 4 && greyweather.wick.present; },
+    set enabled(_v: boolean) { /* the promise decides */ },
+    prompt: 'TALK TO WICK',
+    choice: {
+      title: 'the old road',
+      body: 'he chained it so nobody would come up and see him wait. open, anybody can. chained, what the castle has to say goes down the hill the way it always did: by you, on foot.',
+      options: [
+        { label: 'OPEN THE ROAD', door: 'door:the-road-opened' },
+        { label: 'LEAVE IT CHAINED. CARRY HIS WORD YOURSELF', door: 'door:the-road-left' },
+      ],
+    },
+  } as unknown as WorldPOI,
+  {
+    /* THE HALL: the fire that is in, and a settle in front of it. */
+    x: -45, z: -254.6, radius: 2.6, label: 'THE HALL FIRE', labelHeight: 3.4,
+    get enabled() { return wickStep() === 99; },
+    set enabled(_v: boolean) { /* his line, kept */ },
+    prompt: 'SIT BY THE FIRE',
+    sit: { x: -45, z: -254.2 },
+  } as unknown as WorldPOI,
+  {
+    x: -40.6, z: -254.9, radius: 2.0,
+    get enabled() { return wickStep() === 99; },
+    set enabled(_v: boolean) { /* his line, kept */ },
+    get prompt() { return clock.hour >= 5.5 && clock.hour < 8 ? 'LOOK AT THE PALLET' : 'SLEEP TILL MORNING'; },
+    wait: {
+      until: () => clock.hour >= 5.5 && clock.hour < 8,
+      hint: 'asleep by the fire — step away to get up',
+      done: 'Morning.',
+    },
+    note: { title: 'the pallet', body: 'straw, and a blanket folded the way you fold one. it has been slept on. not lately.' },
+  } as unknown as WorldPOI,
   {
     x: -45, z: -234, radius: 12, label: 'THE KEEP',
     prompt: 'CRANE YOUR NECK',

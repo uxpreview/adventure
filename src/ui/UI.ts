@@ -40,6 +40,8 @@ export class UI {
   /** THE WORN BUTTON's press (Session 22): goes round what the walker
    *  has earned. App answers with the label to letter. */
   onWear: (() => string | null) | null = null;
+  /** TIER 1: the wait button's press. */
+  onWait: (() => void) | null = null;
   onOpenMap: ((width: number) => HTMLCanvasElement) | null = null;
   onPromptClick: (() => void) | null = null;
   onPromptHold: ((down: boolean) => void) | null = null;
@@ -88,6 +90,7 @@ export class UI {
   private hud: HTMLElement;
   private soundBtn: HTMLElement;
   private wearBtn: HTMLElement;
+  private waitBtn: HTMLElement;
   private hintEl: HTMLElement;
   private hintTimer = 0;
   /**
@@ -151,6 +154,13 @@ export class UI {
       const label = this.onWear?.();
       if (label) letterEl(this.wearBtn, label, S.button(11));
     });
+
+    /* THE WAIT BUTTON (Tier 1): not on the page until Marget's line is
+     * kept; then it passes the time wherever he stands. T on the keys. */
+    this.waitBtn = el('hud-btn', this.hud, 'button');
+    this.waitBtn.style.display = 'none';
+    letterEl(this.waitBtn, 'wait', S.button(11));
+    this.waitBtn.addEventListener('click', () => this.onWait?.());
 
     // region card
     this.card = el('region-card', this.root);
@@ -310,6 +320,12 @@ export class UI {
 
   /** What the worn button says, and whether it is on the page at all
    *  (`null` takes it off: nothing has been earned). */
+  /** The wait button is on the page once WAIT is his. */
+  setWaitShown(on: boolean) {
+    const d = on ? '' : 'none';
+    if (this.waitBtn.style.display !== d) this.waitBtn.style.display = d;
+  }
+
   setWearLabel(label: string | null) {
     this.wearBtn.style.display = label === null ? 'none' : '';
     if (label !== null) letterEl(this.wearBtn, label, S.button(11));

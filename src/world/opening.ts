@@ -69,7 +69,8 @@ const HEDGE_X = -12;
 
 /** Morrow's walk past, from the coast road's end, past the bench and
  *  the gate, and away east. He does not stop. */
-const MORROW_PATH: [number, number][] = [[-60, 62], [-40, 74], [-28, 82], [-22, 88], [-30, 100], [-42, 112], [-45, 128]];
+/* (west of the washing line since it moved nearer the bench) */
+const MORROW_PATH: [number, number][] = [[-60, 62], [-40, 74], [-30, 82], [-28.8, 88], [-31, 100], [-42, 112], [-45, 128]];
 const MORROW_PACE = 3.4;
 const DOG_GAP = 2.6;
 
@@ -392,7 +393,8 @@ class Opening {
 
   /* ---- the job ---------------------------------------------------- */
   private jobDef(pin: { x: number; z: number; label: string }) {
-    return { id: JOB_ID, name: JOB_NAME, giver: GIVER, steps: STEPS, reward: REWARD, land: 'meadow' as RegionId, pin };
+    /* THE TWELVE LINES: her job hangs on the second line of the list */
+    return { id: JOB_ID, name: JOB_NAME, giver: GIVER, steps: STEPS, reward: REWARD, land: 'meadow' as RegionId, pin, line: THE_LIST.find((l) => l.id === 'nell')?.line };
   }
 
   private whistle() {

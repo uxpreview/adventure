@@ -408,6 +408,19 @@ body {
   opacity: 1;
   pointer-events: auto;
 }
+/* on a phone the answers go under the thumb, at the foot of the page,
+ * one over the other: along the middle they were lettered across the
+ * walker (and the horse under him). The prompt lifts to clear them
+ * (`POIManager.promptLift`). */
+@media (max-aspect-ratio: 4/5) {
+  .replies {
+    bottom: 10px;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .reply-btn { padding: 6px 12px 4px; }
+}
 .reply-btn {
   background: rgba(247, 244, 235, 0.94);
   border: 1.5px solid rgba(35, 38, 51, 0.6);

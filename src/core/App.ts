@@ -57,13 +57,14 @@ import { say, shout, speechEls } from '../ui/speech';
 import { toast, holdToasts } from '../ui/toast';
 import { withHint } from '../world/lines';
 import { letterBench } from '../ui/lettering'; /* ---- PEN ---- */
-import { repliesOpen, pickReply } from '../ui/replies'; /* THE THREE VERBS */
+import { repliesOpen, pickReply, repliesLift } from '../ui/replies'; /* THE THREE VERBS */
 import { crossout } from '../world/crossout';
 /* ---- FIRST HOUR: the scripted opening (`src/world/opening.ts`) ---- */
 import { opening, OPENING_POIS } from '../world/opening';
 import { nellsCapTexture } from '../world/textures-opening';
 /* ---- THINGS: jobs, stamps, toys, monsters (`src/world/jobs.ts`) ---- */
 import { jobs, THINGS_POIS } from '../world/jobs';
+import { canWait } from '../world/tier1'; /* TIER 1: WAIT is earned */
 import { redScarfTexture, postmasterCapTexture } from '../world/textures-monsters';
 
 const ALL_POIS: WorldPOI[] = [
@@ -228,6 +229,10 @@ export class App {
     // through the map button or across a region card
     this.poi.reserved = this.ui.chrome;
 
+    /* seated, the key stands him up, and the prompt says so whatever
+     * place is nearest (round 5's leftover: READ THE NOTE on the bench) */
+    this.poi.keySays = () => (this.seat ? 'STAND UP' : null);
+    this.poi.promptLift = () => repliesLift();
     // every point of interest exists from the start; distance hides them
     for (const def of ALL_POIS) {
       const verb = def.choice || def.note || def.touch || def.sit;
@@ -542,7 +547,10 @@ export class App {
     /* ---- SCALE: H whistles the horse ---- */
     window.addEventListener('keydown', (e) => {
       if (e.code === 'KeyH' && !e.repeat) this.whistle();
+      /* ---- TIER 1: T passes the time, once Marget's line is kept ---- */
+      if (e.code === 'KeyT' && !e.repeat && !Input.typing(e)) this.waitAnywhere();
     });
+    this.ui.onWait = () => this.waitAnywhere();
 
     /* THE RUN, TAUGHT BY NECESSITY (Session 16). The bull's charge is
      * the first time the game asks the walker to run somewhere
@@ -1265,6 +1273,29 @@ export class App {
     if (!worn.owned().length) return null;
     const d = worn.def(worn.current);
     return `wearing: ${d ? d.name.toLowerCase() : 'nothing'}`;
+  }
+
+  /* ================================================================ *
+   * TIER 1 · WAIT (what Marget's promise unlocks, `foundation/08` §9.3:
+   * "WAIT (passing time)"). Until then a wait is a place's verb (the
+   * belfry yard, the braziers). After it, T or the HUD's button passes
+   * the time wherever he stands, until a step. Pressed again, it stops.
+   * ================================================================ */
+  private waitAnywhere() {
+    if (!this.started || !canWait() || this.char.frozen) return;
+    if (this.waiting) {
+      this.waiting = null;
+      this.ui.hideHint();
+      toast('YOU STOPPED WAITING', 'plain');
+      return;
+    }
+    if (this.seat || this.sitTry || this.horse.aboard || this.bicycle.aboard || this.boat.aboard || this.train.aboard) return;
+    this.waiting = {
+      x: this.char.pos.x, z: this.char.pos.z, radius: 3,
+      wait: { until: () => false, hint: 'waiting — a step stops it', done: '' },
+    } as WorldPOI;
+    this.ui.showHint(this.waiting.wait!.hint, 180000);
+    toast('YOU WAIT. THE DAY RUNS FAST.', 'plain');
   }
 
   private static SIT_TIME = 6;
@@ -2049,6 +2080,7 @@ export class App {
      * Session 7 hangs a routine on — reads `daylight.clock` directly and
      * never comes through here (see world/daylight.ts). */
     this.tickSitTry(dt); /* ---- THE THREE VERBS: the held sit ---- */
+    this.ui.setWaitShown(this.started && canWait()); /* ---- TIER 1: WAIT, once earned ---- */
     /* ---- THINGS (gate round 1): a wait runs the day at WAIT_TIME with
      * the walker standing; the thing coming, a step, or leaving the
      * place ends it. ---- */
