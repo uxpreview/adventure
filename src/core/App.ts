@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { Terrain } from '../world/terrain';
 import { World } from '../world/regions';
 import { Character } from '../engine/Character';
-import { setCameraYaw, towardLens, billboardCount } from '../engine/billboard';
+import { setCameraYaw, towardLens, billboardCount, cameraRight } from '../engine/billboard';
 import { Footprints } from '../engine/Footprints';
 import { POIManager } from '../engine/POI';
 import { PaperFX } from '../postfx/PaperPass';
@@ -53,8 +53,8 @@ import type { WorldPOI } from '../world/regions';
 import { Voice } from '../world/voice';
 import { notebook } from '../world/notebook';
 import { npcs } from '../world/npc';
-import { say, shout } from '../ui/speech';
-import { toast } from '../ui/toast';
+import { say, shout, speechEls } from '../ui/speech';
+import { toast, holdToasts } from '../ui/toast';
 import { withHint } from '../world/lines';
 import { letterBench } from '../ui/lettering'; /* ---- PEN ---- */
 import { repliesOpen, pickReply } from '../ui/replies'; /* THE THREE VERBS */
@@ -360,6 +360,10 @@ export class App {
         if (this.horse.aboard) this.horse.setAt(x, z);
       },
       nameOpen: () => this.ui.nameOpen,
+      /* THE ONE TURN THE OPENING ASKS FOR. The look is the player's
+       * (core/Look.ts) and this goes through the same eased, capped
+       * recentre R does: any hand on the lens cancels it. */
+      lookAt: (x, z) => this.look.recentre(Math.atan2(x - this.char.pos.x, -(z - this.char.pos.z)), this.camRig().pitch),
       openList: () => notebook.openTo('THE LIST'),
       notebookOpen: () => this.voice.open,
     });
@@ -424,6 +428,26 @@ export class App {
       if (this.activePoi) this.activePoi.def.onInteract?.();
       else this.nothingInReach(); /* ---- VOICE (gate round 1): E is always answered ---- */
     });
+    /* A CLICK ON THE THING IS THE KEY (the owner, 2026-09-17: "it's not
+     * clear that you need to click GET ON THE HORSE instead of just
+     * clicking on the horse"). The prompt lettered beside a thing was
+     * the only part of it that answered a press. A click or a tap that
+     * does not travel, landing on the drawing the prompt is about, is
+     * the same press as the prompt's. A drag is still a look and a
+     * thumb that moves is still the stick. */
+    {
+      const canvas = this.renderer.domElement;
+      const downs = new Map<number, { x: number; y: number; t: number }>();
+      canvas.addEventListener('pointerdown', (e) => downs.set(e.pointerId, { x: e.clientX, y: e.clientY, t: performance.now() }));
+      canvas.addEventListener('pointercancel', (e) => downs.delete(e.pointerId));
+      canvas.addEventListener('pointerup', (e) => {
+        const d = downs.get(e.pointerId);
+        downs.delete(e.pointerId);
+        if (!d || !this.started || !this.input.enabled) return;
+        if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 10 || performance.now() - d.t > 450) return;
+        if (this.thingUnder(e.clientX, e.clientY)) this.input.fireInteract();
+      });
+    }
     /* THE THREE VERBS: the prompt under a thumb is the key, held or not */
     this.ui.onPromptClick = () => this.input.fireInteract();
     this.ui.onPromptHold = (down) => { this.input.promptHeld = down; };
@@ -1555,6 +1579,30 @@ export class App {
     this.save.data.horse = { x: this.horse.pos.x, z: this.horse.pos.y };
     this.save.persist();
   }
+  /** Whether a screen point lands on the thing the prompt is about: a
+   *  box about the height of a person over the place, as wide as its
+   *  drawing is likely to be, never smaller than a thumb. */
+  private thingUnder(sx: number, sy: number): boolean {
+    const p = this.activePoi;
+    if (!p || !p.def.onInteract) return false;
+    const x = p.def.x, z = p.def.z;
+    const g = this.terrain.heightAt(x, z);
+    const v = new THREE.Vector3();
+    const toScreen = (wx: number, wy: number, wz: number) => {
+      v.set(wx, wy, wz).project(this.camera);
+      return v.z < 1 ? { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight } : null;
+    };
+    const foot = toScreen(x, g, z);
+    const head = toScreen(x, g + 2.6, z);
+    if (!foot || !head) return false;
+    const [rx, rz] = cameraRight();
+    const side = toScreen(x + rx * 1.8, g, z + rz * 1.8);
+    const halfW = Math.max(44, side ? Math.abs(side.x - foot.x) : 0);
+    const top = Math.min(head.y, foot.y) - 24;
+    const bottom = Math.max(head.y, foot.y) + 24;
+    return Math.abs(sx - foot.x) < halfW && sy > top && sy < bottom;
+  }
+
   private horseRefuses(x: number, z: number): boolean {
     return this.terrain.blockedAt(x, z) || barriers.blocks(x, z);
   }
@@ -2590,8 +2638,16 @@ export class App {
 
     if (this.started) {
       // a card is up: the world's own writing stays behind it
-      this.poi.suppressed = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen;
+      this.poi.suppressed = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen || this.ui.nameOpen;
       if (this.voice.open) this.poi.suppressed = true; /* VOICE */
+      /* ONE VOICE AT A TIME (the owner, 2026-09-17). A card or a land's
+       * name has the page: the answer line waits. A bubble is on the
+       * page: no place is named under it. Somebody is talking to a man
+       * on a bench: the places keep their names to themselves. */
+      holdToasts(this.ui.noteOpen || this.ui.mapOpen || this.ui.nameOpen || this.ui.cardUp);
+      this.poi.reserved = [...this.ui.chrome, ...speechEls()];
+      this.poi.quietLabels = opening.quiet;
+      if (this.ui.nameOpen) this.ui.hideHint();
       this.activePoi = this.poi.update(this.char.pos);
       /* ---- VOICE: bubbles follow, toasts time out, the world answers ---- */
       this.voice.tick(dt);

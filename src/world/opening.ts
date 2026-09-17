@@ -47,9 +47,9 @@ export type OpeningStage = 'off' | 'bench' | 'named' | 'bull' | 'horse' | 'home'
 export type OpeningSave = { stage: OpeningStage; said: number; gateMine?: boolean };
 
 /** Where you wake: a bench on the green between the road and Nell's
- *  gate, facing the road. The note is on its east end. */
+ *  gate, facing the road. The note is tacked to its east upright. */
 export const BENCH = { x: -26, z: 92 };
-export const BENCH_NOTE = { x: -23.7, z: 91.6 };
+export const BENCH_NOTE = { x: BENCH.x + 1.24, z: BENCH.z };
 /** The milestone at the Common's south border (the meadow draws it). */
 export const MILESTONE = { x: -46.6, z: 119.2 };
 
@@ -117,6 +117,8 @@ export type OpeningCtx = {
   /** Put the walker (and whatever he is riding) a step aside. */
   stepAside: (x: number, z: number) => void;
   nameOpen: () => boolean;
+  /** Ease the look toward a place, once; a hand on the lens cancels it. */
+  lookAt: (x: number, z: number) => void;
   openList: () => void;
   notebookOpen: () => boolean;
 };
@@ -158,6 +160,7 @@ class Opening {
       this.gateMine = !!s.gateMine;
     }
     if (this.active) this.takeNell();
+    notebook.hush = this.quiet;
     fallbackAsk.get = () => this.fallback();
     this.nudges = [
       {
@@ -209,6 +212,17 @@ class Opening {
     return this.stage !== 'off';
   }
 
+  /** THE BENCH'S MINUTE IS ONE VOICE (the owner, 2026-09-17: "in the
+   *  first 10 seconds a ton of things pop up"). It was a land's card,
+   *  two FOUND lines written across it, an objective, two place names,
+   *  a prompt, the controls and Nell, all inside three seconds. While
+   *  she is talking to a man on a bench nothing else is said: no place
+   *  is named, nothing is FOUND, there is no objective, and the
+   *  controls come when there is something to walk away from. */
+  get quiet() {
+    return this.stage === 'bench' || this.stage === 'named';
+  }
+
   get active() {
     return this.stage !== 'off' && this.stage !== 'done';
   }
@@ -221,6 +235,7 @@ class Opening {
   private go(stage: OpeningStage) {
     if (this.stage === stage) return;
     this.stage = stage;
+    notebook.hush = this.quiet;
     this.said = 0;
     this.save();
     fallbackAsk.refresh();
@@ -328,11 +343,12 @@ class Opening {
 
   /* ---- the bench --------------------------------------------------- */
   private greet() {
-    this.after(1.6, () => this.nellSays('Oh. You\'re back.'));
-    this.after(2.2, () => this.ctx?.showHint(this.ctx.touch ? 'drag low to walk · drag high to look' : 'wasd to walk · drag to look · E to act', 6000));
-    this.after(4.8, () => this.nellSays('You said you\'d only be gone an hour.'));
-    this.after(8.4, () => this.nellSays('It\'s been three years.', 3.4));
-    this.after(11.6, () => this.askName());
+    /* the land's card has the page for its three seconds, alone; then
+     * she speaks, a line at a time, and nothing speaks over her */
+    this.after(3.8, () => this.nellSays('Oh. You\'re back.'));
+    this.after(7.2, () => this.nellSays('You said you\'d only be gone an hour.'));
+    this.after(10.8, () => this.nellSays('It\'s been three years.', 3.2));
+    this.after(14.4, () => this.askName());
   }
 
   private askName() {
@@ -344,7 +360,8 @@ class Opening {
     npcs.mute('nell', true);
     const who = this.nell;
     if (who) { say(who, 'What do I call you? — You don\'t know. Course you don\'t.', { hold: 3.2, now: true }); notebook.heard('NELL', 'What do I call you? — You don\'t know. Course you don\'t.'); }
-    this.after(2.2, () => {
+    /* the card comes when she has finished asking, not over her */
+    this.after(3.5, () => {
       if (!this.ctx || this.stage !== 'bench') return;
       this.ctx.openName((name) => this.named(name, false));
     });
@@ -361,7 +378,12 @@ class Opening {
       this.nellSays(`${name}, then. Right.`, 2.4);
       toast(`WRITTEN ON THE COVER: ${name.toUpperCase()}`, 'learned');
     }
-    this.after(2.0, () => {
+    /* the controls, when there is about to be something to walk away
+     * from, and with the page to themselves */
+    this.after(2.8, () => this.ctx?.showHint(this.ctx.touch
+      ? 'drag low to walk · drag high to look'
+      : 'wasd to walk · drag to look · E or a click to act', 6000));
+    this.after(4.0, () => {
       if (!this.ctx) return;
       this.ctx.common.bull.hold = false;
       this.go('bull');
@@ -383,10 +405,14 @@ class Opening {
     this.ctx.common.nellAtGate = true;
     npcs.mute('nell', true);
     this.after(1.4, () => {
-      this.nellSays('Get on the horse. It follows the horse. Bring it in through this gate, and I\'ll shut it behind it.', 7);
+      /* said once, short: the gate is hers to say when he is up and the
+       * lens is on it (`tick`, the offer); the objective line letters
+       * the step; the horse's own prompt is the key. It used to be this
+       * line at twice the length, NEW JOB, the step again and the key
+       * again, all at once. */
+      this.nellSays('Get on the horse. The bull follows the horse.', 4.5);
       notebook.job(this.jobDef(PIN_GATE));
       notebook.activate(JOB_ID);
-      toast('E — GET ON THE HORSE WHEN IT COMES', 'learned');
       this.go('horse');
     });
   }
@@ -653,6 +679,15 @@ class Opening {
           this.mountedOnce = true;
           npcs.mute('nell', false);
           notebook.step(JOB_ID, 1);
+          /* THE LENS TURNS TO THE GATE, ONCE (the owner, 2026-09-17: "the
+           * camera is always facing one direction unless the user moves
+           * it"). The hedge runs away from a lens looking north and the
+           * gate is a gap in it seen end on. Up in the saddle, at the
+           * press that put him there, the look eases round to the gate
+           * with Nell in it, and since the walk is relative to the lens,
+           * forward is the gate. A hand on the lens cancels it, and it
+           * never happens twice. */
+          c.lookAt(PIN_GATE.x, PIN_GATE.z);
           /* THE THREE VERBS: her part is the gate, and she offers it.
            * Unanswered, she does it, as she always would have. */
           handle.offer({
@@ -737,7 +772,7 @@ class Opening {
    *  list whose person is not done with you. */
   private fallback(): { name: string; want: string } | null {
     if (!this.ctx) return null;
-    if (this.stage === 'bench') return { name: 'NELL', want: 'AT THE WASHING LINE' };
+    if (this.stage === 'bench') return null; // she is talking; there is nothing to go and do
     if (this.stage === 'bull') return this.saidRun ? { name: 'NELL', want: 'RUN' } : null;
     if (this.stage !== 'done') return null;
     const w = this.ctx.walker();

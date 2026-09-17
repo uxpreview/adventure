@@ -338,7 +338,8 @@ export class UI {
     }
     this.card.classList.add('show');
     window.clearTimeout(this.cardTimer);
-    this.cardTimer = window.setTimeout(() => this.card.classList.remove('show'), opts.small ? 2600 : 3400);
+    this.cardUp = !opts.small;
+    this.cardTimer = window.setTimeout(() => { this.card.classList.remove('show'); this.cardUp = false; }, opts.small ? 2600 : 3400);
   }
 
   /** A sheet of paper over the page, `cut` in the middle of it, and
@@ -401,6 +402,9 @@ export class UI {
     inkLine(ctx, 6, 10, 274, 11, rng(77), { width: 2, alpha: 0.5, color: PENCIL, jitter: 1, passes: 1 });
     if (step > 0) inkLine(ctx, 6, 10, 6 + 268 * (step / 28), 10.5, rng(78), { width: 4.5, alpha: 0.95, jitter: 1.6, passes: 2 });
   }
+
+  /** A land's name is on the page: the answer line waits for it. */
+  cardUp = false;
 
   showHint(text: string, holdMs = 4200) {
     /* The hint is the control list and the control list got longer when

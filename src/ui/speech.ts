@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { rng, stroke } from '../engine/ink';
 import { INK } from '../engine/palette';
 import { letterCanvas, letterEl, S } from './lettering';
+import { toastsLive } from './toast';
 
 /**
  * SPEECH BUBBLES (VOICE). A person says a line and it is written in a
@@ -222,11 +223,21 @@ function place(b: Bubble) {
   const hw = b.w * 0.5;
   const pad = 8;
   const tall = window.innerWidth / window.innerHeight < 0.8;
-  const top = tall ? 64 : 12;
+  /* ONE VOICE AT A TIME: on a phone the objective line and the answer
+   * line are lettered down the top-left, and a bubble clamped to the
+   * top used to be written straight over both. It stops under them. */
+  const top = tall ? (toastsLive() ? 158 : 108) : 12;
   sx = Math.min(Math.max(sx, hw + pad), window.innerWidth - hw - pad);
   sy = Math.min(Math.max(sy, b.h + top), window.innerHeight - pad);
   b.el.style.left = `${sx}px`;
   b.el.style.top = `${sy}px`;
+}
+
+/** Every bubble on the page, so a place's name is not written under one. */
+export function speechEls(): HTMLElement[] {
+  const out: HTMLElement[] = [];
+  for (const b of live.values()) if (!b.out) out.push(b.el);
+  return out;
 }
 
 /** Once a frame: follow speakers, time the holds, run the queues. */

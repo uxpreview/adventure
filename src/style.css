@@ -535,6 +535,9 @@ body {
   pointer-events: none;
   z-index: 36;
 }
+.toasts.held {
+  visibility: hidden;
+}
 .toast {
   display: flex;
   align-items: center;
