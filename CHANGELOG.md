@@ -1,5 +1,97 @@
 # CHANGELOG
 
+## The three verbs the arc stands on (2026-09-17)
+
+Branch `claude/next-session-r4gate`. `PROMPT.md` §3 item 1, on the story
+of record (`design/foundation/08` §2, §8). `npm run build` green.
+
+### What changed
+
+**SIT is a held press.** E at a seat puts him on it and he will not
+stay: down, half up, a look either way, a knee going, and a ballpoint
+line drawing itself under the prompt (HOLD IT. STAY SAT.). Hold the key
+through it (2.2 s; 4.4 s anywhere on the Downs) and he is sat, and the
+day runs six times faster as before. Let go early and he is up again
+where he stood, with a reason ("In a minute." / "Can't. Not yet." /
+"There's things to do." / "I'll sit when it's done.") and the hint
+"hold E to stay sat". Under a thumb the prompt is pressed, not
+clicked, and held the same way. A seat that moves (the swing, the
+office chair) is a toy and takes no effort. `knowledge 'end:sat-down'`
+makes every seat free: the gathering sets it, later. Waking on the
+bench and a card's SIT DOWN door are not presses and are unchanged.
+(`App.trySit/tickSitTry`, `Character.fidget`, `Input.interactHeld`,
+`UI.setHold`.)
+
+**"I'LL HANDLE IT."** A person offers to do their part, and two
+answers are lettered along the bottom of the page: theirs, and I'LL
+HANDLE IT. 1 and 2 on the keys, or a thumb. Nothing stops while they
+are up; unanswered, they expire into the person doing their part. It
+always works, and it costs somebody something you can see; the notebook
+keeps the count (`notebook.handled`) and hands it to the cost so it can
+rise. CHOICES records each one with what it cost. (`world/handle.ts`,
+`ui/replies.ts`; `JobSpec.offer` so every promise can hang one.)
+Two are live, both inside the first five minutes:
+- **Nell, the gate.** As you get on the horse: "Bring him in through
+  this gate, well in. I'll shut it behind him." GO ON, THEN and she
+  shuts it as before. I'LL HANDLE IT: "Course you will." She leaves the
+  gate, sits down on her upturned basket by the line and stays sat
+  (saved). The gate is yours: lead the bull past the posts, then E at
+  the gate shuts it, from the saddle or off it (the horse's prompt
+  yields to it there). "Not yet. He's not in." if he is not. Read back:
+  "There. That's more like you." / "All of it, on your own. Same as
+  ever." and, asked again, "I used to pen him myself, you know. I
+  stopped when you started." (08 §9.2's turn.)
+- **Morrow, the bridge.** "Did you fix the bridge?" NOT YET: "Didn't
+  think so." I'LL HANDLE IT: "Already handled." He does not look
+  round, and the dog does not stop for you.
+
+**Crossing a line out.** On THE LIST, hold a line down and the pen
+draws across it; let go early and it lifts. At the end it is struck
+twice, pressed, and stays struck. The notebook does not object
+(CROSSED OUT: BRACK. THE NOTEBOOK DOES NOT OBJECT.). Its pin comes off
+the map if you have never stood there, the objective line stops naming
+it, and nothing is locked: the person is where they were and the job
+can still be done. Within twenty seconds the world says what it did:
+SOMEWHERE, MORROW WRITES BRACK INTO HIS OWN LIST. The next time you
+talk to that person they have heard, once, in their own words ("You
+crossed the lake out. Sensible. I would."). Joan's line is already
+crossed; a line whose job is done cannot be crossed again.
+(`world/crossout.ts`, `thelist.ts` `crossed`, `ui/notebook.ts`.)
+
+**Small.** Enter on the title is no longer a press in the world (it
+said "Closer, and it says READ THE SIGNPOST." over the title). The
+prompt under a thumb goes through the same path as the key, so STAND
+UP under a thumb stands you up. `check-verbs` reload timeout reads
+`RELOAD_TIMEOUT`; the check itself has not been touched since Session
+23 (2026-09-06) and is stale against the reset and the rebuilt opening
+(the walker wakes seated on the bench; it fails 112 clauses on this
+build, from its first section on). Not a gate; rewrite or retire it.
+
+**Harness.** `__inklands.replies()`, `.reply(i)`, `.handled()`,
+`.crossed()`, `.crossOut(id)`, `.holdE(on)`, `.sitTry()`.
+`node tools/play.mjs hold e 3` is a held E.
+
+### The scripted play (desktop, from the title, no parameters)
+
+At 36 s: on the horse, Nell's offer and the two answers. 2: "I'll handle
+it.", YOU CHOSE: I'LL HANDLE IT — THE GATE, NELL SITS DOWN ON HER
+BASKET. THE GATE IS YOURS. E at the gate with the bull outside: "Not
+yet. He's not in." Rode in, galloped out, E from the saddle with the
+bull six units inside: gate shut, 1 OF 12 KEPT, "All of it, on your
+own. Same as ever." Morrow: the two answers, 2, MORROW DOES NOT LOOK
+ROUND. THE DOG GOES WITH HIM. The list opened itself; Brack's row held
+down: struck, toast, and the shout after. E tapped at the bench: "In a
+minute.", hold E to stay sat. E held: fidget at 0.5, sat at 2.2 s,
+STAND UP. No page errors.
+
+### Left for the tiers
+
+Every promise hangs its own offer on `JobSpec.offer` (none of the old
+eleven jobs has one). Joan's SIT DOWN card door still sits at once; the
+held sit at her table is Tier 4's. The cost does not yet compound at
+the gathering. The crossed-out hold is wall-clock (a page, not the
+world), so the harness cannot show a short hold being refused.
+
 ## The first five minutes — the story of record (2026-09-16)
 
 Branch `claude/game-storyline-concepts-i7imu0`, after PR #27 merged the

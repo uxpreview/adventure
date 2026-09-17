@@ -1062,6 +1062,34 @@ export function nellTexture(seed: number, pose: 0 | 1 | 2): THREE.CanvasTexture 
 }
 
 /**
+ * NELL, SAT DOWN (the three verbs): on her upturned washing basket,
+ * hands in her lap, because he said he would handle it. The same coat,
+ * the same scarf, half the height.
+ */
+export function nellSatTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(96, 160, seed, (ctx, r) => {
+    const hx = 46;
+    const hy = 66;
+    scribbleCircle(ctx, hx, hy, 14, r, { width: 2, alpha: 0.85 }, 1.1);
+    stroke(ctx, [[hx - 10, hy + 6], [hx - 12, hy + 18]], r, { width: 2.2, alpha: 0.7, passes: 1 });
+    // the coat, folded at the lap
+    poly(ctx, [[32, 82], [28, 122], [66, 122], [60, 82]], r, { width: 2, alpha: 0.85 });
+    // thighs forward, shins down
+    stroke(ctx, [[34, 120], [72, 118], [74, 150]], r, { width: 2.2, alpha: 0.85 });
+    stroke(ctx, [[40, 124], [64, 126], [62, 150]], r, { width: 2.2, alpha: 0.8 });
+    // hands in her lap
+    stroke(ctx, [[32, 90], [40, 110], [58, 112]], r, { width: 1.8, alpha: 0.8 });
+    stroke(ctx, [[60, 90], [64, 106], [56, 114]], r, { width: 1.8, alpha: 0.8 });
+    // the basket, upturned: a wicker trapezoid with its weave
+    poly(ctx, [[18, 124], [12, 152], [58, 152], [52, 124]], r, { width: 2, alpha: 0.8 });
+    for (let i = 0; i < 4; i++) line(ctx, 15, 130 + i * 6, 55, 130 + i * 6, r, { width: 1, alpha: 0.4, passes: 1 });
+    for (let i = 0; i < 5; i++) line(ctx, 20 + i * 8, 125, 17 + i * 9, 151, r, { width: 1, alpha: 0.35, passes: 1 });
+    stroke(ctx, [[hx - 8, hy + 14], [hx + 2, hy + 20], [hx + 12, hy + 14]], r,
+      { width: 2.4, alpha: 0.7, passes: 1, color: '#8f4a52' });
+  });
+}
+
+/**
  * THE BULL — the first creature of the Common and the first thing in
  * the game that means it (`THE-FUN-PASS` §2.3, §3 item 1). Three
  * drawings, side on, facing right; the land mirrors it.

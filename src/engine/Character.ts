@@ -259,12 +259,23 @@ export class Character {
 
   setSitting(v: boolean) {
     this.sitting = v;
+    this.fidget = 0;
     if (v) this.setFrame(7);
     else {
       this.sway = 0;
       this.sprite.rotation.z = 0;
     }
   }
+
+  /**
+   * THE SIT TAKES EFFORT (story of record §2): while the key is held
+   * and the sit has not taken yet, this is how far along it is, 0..1,
+   * and the figure shows it — down, half up again, a look either way,
+   * a knee going. It gets quieter as it goes, and at 1 he is sat.
+   * Zero is a plain seat.
+   */
+  fidget = 0;
+  private fidgetT = 0;
 
   /** One sprite sheet for the current skin: Pip's tuft in black ink, B.'s
    *  flat cap in blue — or either silhouette in white for the Blot. */
@@ -361,8 +372,23 @@ export class Character {
     if (this.frozen || this.sitting) {
       this.vel.multiplyScalar(Math.max(0, 1 - dt * 10));
       if (this.sitting) {
-        this.setFrame(7);
-        this.sprite.rotation.z = this.sway;
+        if (this.fidget > 0 && this.fidget < 1) {
+          /* down for a beat, up for a shorter one, and the ups get
+           * rarer: 0.9 s cycles, the standing part shrinking to none */
+          this.fidgetT += dt;
+          const c = (this.fidgetT % 0.9) / 0.9;
+          const upShare = 0.42 * (1 - this.fidget);
+          const up = c < upShare;
+          this.setFrame(up ? 0 : 7);
+          const k = 1 - this.fidget;
+          // the knee: a quick small rock, and a look either way when up
+          this.sprite.rotation.z = this.sway + Math.sin(this.fidgetT * 23) * 0.035 * k + (up ? Math.sin(this.fidgetT * 5) * 0.06 : 0);
+          this.sprite.scale.x = Math.abs(this.sprite.scale.x) * (up && Math.sin(this.fidgetT * 5) < 0 ? -1 : 1);
+        } else {
+          this.fidgetT = 0;
+          this.setFrame(7);
+          this.sprite.rotation.z = this.sway;
+        }
       } else this.animateIdle(dt);
       this.group.position.copy(this.pos);
       return;

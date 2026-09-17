@@ -698,7 +698,7 @@ let r = await page.evaluate(() => {
 // nine sections keeps the sandbox busy enough that idle never comes
 // inside the default thirty seconds, and the title veil is the signal
 // that matters anyway.
-await page.reload({ waitUntil: 'load', timeout: 120000 });
+await page.reload({ waitUntil: 'load', timeout: Number(process.env.RELOAD_TIMEOUT ?? 120000) });
 await page.waitForSelector('.title-veil:not(.gone)', { timeout: 60000 }).catch(() => {});
 r.cast = await page.evaluate(() => {
   const I = window.__inklands;
@@ -892,7 +892,7 @@ r.cast = await page.evaluate(() => {
  * comes to the ball and stops at the green's edge; Val's wait is a card
  * and only one of its doors answers it.
  * ================================================================== */
-await page.reload({ waitUntil: 'load', timeout: 120000 });
+await page.reload({ waitUntil: 'load', timeout: Number(process.env.RELOAD_TIMEOUT ?? 120000) });
 await page.waitForSelector('.title-veil:not(.gone)', { timeout: 60000 }).catch(() => {});
 r.east = await page.evaluate(() => {
   const I = window.__inklands;
@@ -1137,7 +1137,7 @@ r.east = await page.evaluate(() => {
  * the cans and the pots are still on their platforms. On the second
  * page the FIRST doors, so that each is still the wait as designed.
  * ================================================================== */
-await page.reload({ waitUntil: 'load', timeout: 120000 });
+await page.reload({ waitUntil: 'load', timeout: Number(process.env.RELOAD_TIMEOUT ?? 120000) });
 await page.waitForSelector('.title-veil:not(.gone)', { timeout: 60000 }).catch(() => {});
 r.doors2 = await page.evaluate(() => {
   const I = window.__inklands;
@@ -1299,7 +1299,7 @@ r.doors2 = await page.evaluate(() => {
   return D;
 });
 
-await page.reload({ waitUntil: 'load', timeout: 120000 });
+await page.reload({ waitUntil: 'load', timeout: Number(process.env.RELOAD_TIMEOUT ?? 120000) });
 await page.waitForSelector('.title-veil:not(.gone)', { timeout: 60000 }).catch(() => {});
 r.doors1 = await page.evaluate(() => {
   const I = window.__inklands;
@@ -1765,7 +1765,7 @@ r.deep = await page.evaluate(() => {
 
 /* The names rule wants a FRESH page: the harness's own `goto` has
  * discovered ten lands by now, and ten names is past the threshold. */
-await page.reload({ waitUntil: 'load', timeout: 120000 });
+await page.reload({ waitUntil: 'load', timeout: Number(process.env.RELOAD_TIMEOUT ?? 120000) });
 await page.waitForSelector('.title-veil:not(.gone)', { timeout: 60000 }).catch(() => {});
 r.names = await page.evaluate(() => {
   const I = window.__inklands;

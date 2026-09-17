@@ -11,6 +11,7 @@ import { toys, TOY_POIS } from './toys';
 import { monsters } from './monsters';
 import * as T from './jobs/triggers';
 import type { JobSpec } from './jobs/triggers';
+import { handle } from './handle'; /* THE THREE VERBS */
 import { CIVIC_JOBS } from './jobs/civic';
 import { WILDS_JOBS } from './jobs/wilds';
 import { COAST_JOBS } from './jobs/coast';
@@ -110,6 +111,14 @@ class Jobs {
     notebook.activate(spec.id);
     T.arm(spec.id, 0);
     try { window.dispatchEvent(new CustomEvent('inklands:event', { detail: 'page' })); } catch { /* no ears */ }
+    /* THE THREE VERBS: the giver offers their own part with the job */
+    if (spec.offer) {
+      const n = npcs.get(spec.giver);
+      handle.offer({
+        id: spec.id, who: n?.def.name ?? spec.giver.toUpperCase(), speaker: n?.speaker ?? null,
+        line: spec.offer.line, yes: spec.offer.yes, mine: spec.offer.mine,
+      });
+    }
   }
 
   /** The notebook's entry for a job whose next step is `i`: pinned

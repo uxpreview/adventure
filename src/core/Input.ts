@@ -86,6 +86,16 @@ export class Input {
   hold: { x: number; y: number; run: number } | null = null;
   /** And the harness's other hand: a held peek, for the bearing sheet. */
   holdPeek: number | null = null;
+  /** The prompt button under a thumb (the UI sets it): the same held
+   *  press as the key, for the sit. */
+  promptHeld = false;
+  /** The harness's held E. */
+  holdInteract = false;
+  /** THE SIT IS A HELD PRESS: whether the interact key is down now. */
+  get interactHeld(): boolean {
+    return this.holdInteract || this.promptHeld
+      || this.keys.has('KeyE') || this.keys.has('Space') || this.keys.has('Enter');
+  }
   private keys = new Set<string>();
   private pointerId: number | null = null;
   private origin = new THREE.Vector2();

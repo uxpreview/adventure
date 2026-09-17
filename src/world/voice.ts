@@ -4,6 +4,8 @@ import type { UI } from '../ui/UI';
 import type { WorldPOI } from './regions';
 import { installSpeech, tickSpeech, say, shout } from '../ui/speech';
 import { toast, tickToasts } from '../ui/toast';
+import { installReplies, tickReplies } from '../ui/replies'; /* THE THREE VERBS */
+import { crossout } from './crossout';
 import { NotebookPage } from '../ui/notebook';
 import { notebook } from './notebook';
 import { npcs, defineThePeople } from './npc';
@@ -61,6 +63,7 @@ export class Voice {
 
   constructor(private ctx: VoiceCtx) {
     installSpeech({ root: ctx.ui.root, camera: ctx.camera, groundAt: ctx.groundAt, walker: ctx.walker });
+    installReplies({ root: ctx.ui.root, blocked: () => ctx.ui.choiceOpen || ctx.ui.nameOpen || ctx.ui.noteOpen || ctx.ui.mapOpen || this.page.isOpen });
     this.page = new NotebookPage(ctx.ui);
     notebook.setDayClock(() => clock.day);
     npcs.attach(ctx.poi);
@@ -127,6 +130,7 @@ export class Voice {
   tick(dt: number) {
     tickSpeech(dt);
     tickToasts(dt);
+    tickReplies(dt);
     if (!this.ctx.started()) return;
     this.elapsed += dt;
     const w = this.ctx.walker();
@@ -145,6 +149,7 @@ export class Voice {
     this.diffMounts();
     this.diffTouch(dt);
     this.fireReactions();
+    crossout.tick(dt); /* THE THREE VERBS */
   }
 
   /** "YOU HEARD OF: BRIM, LONGSHORE AND THE HARROW DOWNS" — one toast. */

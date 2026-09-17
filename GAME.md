@@ -30,10 +30,18 @@ them on the twelve lines of the list, in four tiers.
 6. **Keep the pen.** Zero image assets, procedural ballpoint and wash,
    hand lettering, procedural sound, 60 fps on a phone.
 
-## What exists (Session 27)
+## What exists (Session 28)
 - **Controls.** WASD/stick to walk (relative to the camera), Shift to run,
   drag to look, wheel/pinch to zoom, `R` recentre, `E` talk/act, `M` map,
-  `N` notebook, `H` whistle the horse, `Esc` close.
+  `N` notebook, `H` whistle the horse, `Esc` close. **Hold** `E` to sit
+  (a tap will not take). `1` `2` answer a person when answers are up.
+- **The three verbs the arc stands on.** SIT is a held press with a
+  visible fidget until the end. "I'LL HANDLE IT" is an answer wherever
+  somebody offers their part: it always works and it always costs them
+  something you can see (`world/handle.ts`; live at Nell's gate and
+  Morrow's bridge; every promise hangs one on `JobSpec.offer`). Hold a
+  line of THE LIST down to cross it out; the notebook does not object,
+  and the world says what it did (`world/crossout.ts`).
 - **The opening (the first five minutes, on the story of record).** You
   wake sitting on a bench on the green under a note in your own hand.
   Nell at her washing line: "You're back." "It's been three years." You

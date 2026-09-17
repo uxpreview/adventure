@@ -48,6 +48,14 @@ export type JobSpec = {
   /** True when the last step is a card door the VOICE already reads
    *  back, so the job does not say it twice. */
   doorEnds?: boolean;
+  /** THE THREE VERBS: the giver's own part, offered as the job is
+   *  given (`world/handle.ts`). Let them, or I'LL HANDLE IT. The tiers
+   *  hang one on every promise. */
+  offer?: {
+    line: string;
+    yes: { label: string; reply?: string; run?: () => void };
+    mine: { reply: string; what: string; cost: string; run: (count: number) => void };
+  };
 };
 
 /* ---- the clock the triggers read ---------------------------------- */

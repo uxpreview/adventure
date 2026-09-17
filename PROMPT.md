@@ -230,10 +230,15 @@ is next and the round-4 list rides along where an item touches it.
    second note; the pull. The old opening (`src/world/opening.ts`)
    is replaced, not patched. Gate: the cold player says what the game
    wants inside sixty seconds and names three of the twelve.
-1. **The three verbs the arc stands on**: SIT (a held press with a
-   visible fidget until the end), "I'LL HANDLE IT" (a dialogue option
-   everywhere, always works, always costs someone visibly), and
-   crossing a line out in the notebook.
+1. ~~**The three verbs the arc stands on**~~ **BUILT, 2026-09-17**
+   (`CHANGELOG.md` "The three verbs"): SIT is a held press with a
+   fidget (`App.trySit`); "I'LL HANDLE IT" is an answer strip
+   (`world/handle.ts`, `ui/replies.ts`), live at Nell's gate and
+   Morrow's bridge, with `JobSpec.offer` waiting for every promise;
+   a line of THE LIST is crossed out by holding it down
+   (`world/crossout.ts`). Left: each tier hangs its own offers; Joan's
+   SIT DOWN card door still sits at once (Tier 4); the cost does not
+   yet compound at the gathering (item 6).
 2. **Tier 1 promises** (Wick, Nell, Marget) as built in `08` §9, each
    with its turn, its choice, its visible change, and its call
    reconnected. The jobs registry (`src/world/jobs/`) is re-hung on
