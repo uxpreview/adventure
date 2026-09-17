@@ -135,6 +135,14 @@ What every critic still names, and what a fix costs:
 - A round costs about 1.4M tokens: the cold player ~250k (ninety
   commands, 77 screenshots), each critic ~200k (reads every frame).
   One agent at a time (the owner's amendment).
+- A sub-agent may be refused the Write tool ("return findings as
+  text"): round 5's cold player was. Tell it to return the report as
+  its final message and save it yourself to `play-gate/round-N/` (for
+  the critic) and `design/reset/rounds/round-N/`. The cold player also
+  ran out of commands at gameSec 220 on this machine; ask for fewer
+  screenshots per command, not fewer seconds.
+- `tools/check-verbs.mjs` is stale since the reset (112 failures, from
+  its first section); it is not a gate.
 - The harness clears `localStorage` on every load: a reload is a fresh
   game. `node tools/play.mjs eval` can teleport
   (`__inklands.char.teleport(x, z)`) and step
