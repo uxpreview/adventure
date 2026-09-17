@@ -7,6 +7,7 @@ import { notebook } from './notebook';
 import { say, type Speaker } from '../ui/speech';
 import { PEOPLE, FOLK_BY_ROLE, FOLK_BY_LAND, type NpcPhase, type PersonDef } from './lines';
 import type { RegionId } from './layout';
+import { crossout } from './crossout'; /* THE THREE VERBS */
 
 /**
  * THE PEOPLE (VOICE) — a registry of everybody who can be talked to.
@@ -30,6 +31,8 @@ export type NpcState = {
   doors: string[];
   /** What they have asked for, if anything (a POI label). */
   want?: string;
+  /** THE THREE VERBS: they have said their piece about being crossed out. */
+  crossedSaid?: boolean;
 };
 
 export type NpcDef = {
@@ -268,10 +271,19 @@ class Npcs {
       return;
     }
     const s = this.state(id);
+    /* THE THREE VERBS: a line crossed out by hand has been heard of */
+    const struck = crossout.lineFor(id, s);
+    if (struck) {
+      s.crossedSaid = true;
+      say(n.speaker, struck, { now: true });
+      notebook.heard(n.def.name, struck);
+      notebook.dirty = true;
+      return;
+    }
     const lines = n.def.lines(s);
     if (!lines.length) return;
     const line = lines[s.said % lines.length];
-    say(n.speaker, line);
+    say(n.speaker, line, { now: true });
     notebook.heard(n.def.name, line);
     // the first meeting; then, next time, what they want
     if (s.phase === 'idle') {

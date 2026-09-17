@@ -5,6 +5,17 @@ import { toast } from '../ui/toast';
 import { fallbackAsk } from '../ui/notebook';
 import { knowledge } from './knowledge';
 import { THE_LIST } from './thelist';
+import { handle } from './handle'; /* THE THREE VERBS */
+import { cameraRight } from '../engine/billboard';
+
+/** Which way a world direction lies on the screen, in a player's words. */
+function screenWay(dx: number, dz: number): 'LEFT' | 'RIGHT' | 'AHEAD' | 'BEHIND' {
+  const [rx, rz] = cameraRight();
+  const side = dx * rx + dz * rz;
+  const ahead = dx * rz - dz * rx; // forward is right turned a quarter left
+  if (Math.abs(side) >= Math.abs(ahead)) return side > 0 ? 'RIGHT' : 'LEFT';
+  return ahead > 0 ? 'AHEAD' : 'BEHIND';
+}
 import type { WorldPOI } from './regions';
 import type { RegionId } from './layout';
 
@@ -33,7 +44,7 @@ import type { RegionId } from './layout';
 
 export type OpeningStage = 'off' | 'bench' | 'named' | 'bull' | 'horse' | 'home' | 'list' | 'done';
 
-export type OpeningSave = { stage: OpeningStage; said: number };
+export type OpeningSave = { stage: OpeningStage; said: number; gateMine?: boolean };
 
 /** Where you wake: a bench on the green between the road and Nell's
  *  gate, facing the road. The note is on its east end. */
@@ -90,6 +101,8 @@ export type OpeningCtx = {
     note: { second: boolean };
     /** Nell stands at the gate (the job) rather than at her line. */
     nellAtGate: boolean;
+    /** Nell sat down on her basket: he said he would handle it. */
+    nellSat: boolean;
     wake(): void;
     pen(): void;
     loose(): void;
@@ -101,6 +114,8 @@ export type OpeningCtx = {
   whistleTo: (x: number, z: number) => void;
   sitOnBench: () => void;
   openName: (submit: (name: string) => void) => void;
+  /** Put the walker (and whatever he is riding) a step aside. */
+  stepAside: (x: number, z: number) => void;
   nameOpen: () => boolean;
   openList: () => void;
   notebookOpen: () => boolean;
@@ -129,6 +144,9 @@ class Opening {
   private walkbyWaited = 0;
   private walkbyRuns = 0;
   private listWasOpen = false;
+  /** THE THREE VERBS: "I'll handle it." The gate is his to shut. */
+  gateMine = false;
+  private gateNudge = 0;
 
   /* ---- wiring --------------------------------------------------- */
   install(ctx: OpeningCtx) {
@@ -137,14 +155,19 @@ class Opening {
     if (s) {
       this.stage = s.stage;
       this.said = s.said ?? 0;
+      this.gateMine = !!s.gateMine;
     }
     if (this.active) this.takeNell();
     fallbackAsk.get = () => this.fallback();
     this.nudges = [
       {
         id: 'brim-wall', held: 0, last: -99,
-        test: (x, z, land) => ((land === 'meadow' || land === 'kingdom') && z < -2 && z > -17 && Math.abs(x + 45) > 2.6)
-          ? `BRIM'S GATE IS ${x < -45 ? 'EAST' : 'WEST'} ALONG THE WALL, ON THE ROAD` : null,
+        /* gate round 4: it fired ten strides from the arch and sent the
+         * walker past it, in compass words a free camera makes
+         * meaningless (the owner, 2026-09-12). Now: only well off the
+         * gate, and LEFT / RIGHT / AHEAD / BEHIND as the screen has it. */
+        test: (x, z, land) => ((land === 'meadow' || land === 'kingdom') && z < -2 && z > -17 && Math.abs(x + 45) > 14)
+          ? `BRIM'S GATE IS ${screenWay(-45 - x, 0)} ALONG THE WALL, UNDER ITS NAME` : null,
       },
       {
         id: 'shut-gate', held: 0, last: -99,
@@ -159,7 +182,7 @@ class Opening {
         test: (x, z, land) => (land === 'meadow' && this.stage === 'horse' && ctx.mounted()
           && Math.abs(x - HEDGE_X) < 9 && z > 60 && z < 116
           && !(Math.abs(z - PIN_GATE.z) < 3.4 && Math.abs(x - HEDGE_X) < 2.5))
-          ? 'THE GAP IS WHERE NELL STANDS.' : null,
+          ? (this.gateMine ? 'THE GAP IS UNDER ITS NAME: THE FIELD GATE.' : 'THE GAP IS WHERE NELL STANDS.') : null,
       },
     ];
   }
@@ -171,6 +194,7 @@ class Opening {
     this.saidRun = false;
     this.whistled = false;
     this.mountedOnce = false;
+    this.gateMine = false;
     this.settled = true;
     this.go('bench');
     this.ctx.common.wake();
@@ -204,7 +228,7 @@ class Opening {
 
   private save() {
     if (!this.ctx) return;
-    this.ctx.data().opening = { stage: this.stage, said: this.said };
+    this.ctx.data().opening = { stage: this.stage, said: this.said, gateMine: this.gateMine };
     this.ctx.persist();
   }
 
@@ -256,12 +280,14 @@ class Opening {
       case 'bull':
         return pick(['Mind the bull. It knows you.', 'RUN.']);
       case 'horse':
+        if (this.gateMine) return pick(['Your gate. You said.', 'Ride through it with him behind you. Once he\'s past the posts, E at the gate.', 'Past the posts. Then E. I\'m sat.']);
         return pick([
           'Get on the horse. It follows the horse. Bring it in through this gate, and I\'ll shut it behind it.',
           'In through the gate, well in. I\'ll do the rest.',
         ]);
       case 'home':
       case 'list':
+        if (this.gateMine) return pick(['All of it, on your own. Same as ever.', 'I used to pen him myself, you know. I stopped when you started.', 'Keep the horse. You always did.']);
         return pick(['That\'s more like you.', 'Keep the horse. You always did.', 'Morrow\'s got a copy of your notebook. He got most of it wrong.']);
       default:
         return this.origLines ? this.origLines(npcs.state('nell')) : [];
@@ -271,6 +297,33 @@ class Opening {
   private onNellTalk() {
     this.said++;
     this.save();
+    /* gate round 5: FAIL FORWARD. He said he would handle it and has
+     * come back to her twice with the bull still out: she offers again.
+     * Taking help is always on the table; the basket stays where she
+     * left it. */
+    if (this.gateMine && this.stage === 'horse' && this.said >= 2 && this.ctx) {
+      const c = this.ctx;
+      handle.offer({
+        id: `nell-gate-again-${this.said}`, who: 'NELL', speaker: this.nell,
+        line: 'Shall I get the gate after all?',
+        yes: {
+          label: 'GO ON, NELL. YOU GET IT.', said: 'Go on, Nell.', reply: 'There. That wasn\'t hard to say.',
+          run: () => {
+            this.gateMine = false;
+            c.common.nellSat = false;
+            c.common.nellAtGate = true;
+            this.save();
+          },
+        },
+        mine: {
+          reply: 'Suit yourself. Past the posts, then E.',
+          what: 'STILL MINE',
+          cost: 'NELL STAYS SAT.',
+          run: () => { /* she was already sat */ },
+        },
+        seconds: 12, unanswered: 'nothing',
+      });
+    }
   }
 
   /* ---- the bench --------------------------------------------------- */
@@ -285,7 +338,12 @@ class Opening {
   private askName() {
     if (!this.ctx || this.stage !== 'bench') return;
     if (this.name) { this.named(this.name, true); return; }
-    this.nellSays('What do I call you? — You don\'t know. Course you don\'t.', 3.2);
+    /* gate round 5: the question queued behind her E-lines and came
+     * after the name. It is said now, and she takes no other talk till
+     * it is answered. */
+    npcs.mute('nell', true);
+    const who = this.nell;
+    if (who) { say(who, 'What do I call you? — You don\'t know. Course you don\'t.', { hold: 3.2, now: true }); notebook.heard('NELL', 'What do I call you? — You don\'t know. Course you don\'t.'); }
     this.after(2.2, () => {
       if (!this.ctx || this.stage !== 'bench') return;
       this.ctx.openName((name) => this.named(name, false));
@@ -295,6 +353,7 @@ class Opening {
   private named(name: string, reloaded: boolean) {
     if (!this.ctx) return;
     this.ctx.data().name = name;
+    npcs.mute('nell', false);
     notebook.setName(name);
     this.ctx.persist();
     this.go('named');
@@ -332,8 +391,29 @@ class Opening {
     });
   }
 
+  private bullIn = false;
+  private inGap = false;
+  /** Whether SHUT THE GATE is the thing the key does here and now. */
+  get gateKey(): boolean {
+    if (!this.ctx || !this.gateMine || this.stage !== 'horse') return false;
+    const w = this.ctx.walker();
+    return Math.hypot(w.x - PIN_GATE.x, w.z - PIN_GATE.z) < 9;
+  }
+  /** E at the gate, when the gate is his. It always works, if he does it. */
+  shutGate() {
+    if (!this.gateKey) return;
+    if (!this.bullIn) {
+      say('walker', 'Not yet. He\'s this side of it. Through the gate first, him behind me.', { now: true });
+      return;
+    }
+    if (this.inGap && this.ctx) this.ctx.stepAside(this.ctx.walker().x < HEDGE_X ? HEDGE_X - 3.2 : HEDGE_X + 3.2, PIN_GATE.z + 3.6);
+    handle.withdraw();
+    this.penned();
+  }
+
   private penned() {
     if (!this.ctx) return;
+    handle.withdraw();
     npcs.mute('nell', false);
     this.ctx.common.pen();
     const w = this.ctx.walker();
@@ -344,7 +424,9 @@ class Opening {
     notebook.complete(JOB_ID, 'It went in. It always did, for you.');
     this.go('home');
     this.after(1.2, () => this.nellSays('There. That\'s more like you.', 3));
-    this.after(4.6, () => this.nellSays('I was beginning to think you weren\'t coming back.', 4));
+    this.after(4.6, () => this.nellSays(this.gateMine
+      ? 'All of it, on your own. Same as ever.'
+      : 'I was beginning to think you weren\'t coming back.', 4));
     this.after(9.0, () => {
       this.nellSays('Keep the horse. You always did.', 3.5);
       toast('H WHISTLES THE HORSE', 'learned');
@@ -412,8 +494,20 @@ class Opening {
     const md = Math.hypot(w.x - m.x, w.z - m.z);
     if (!W.said && md < 16) {
       W.said = true;
-      say({ name: 'MORROW', get x() { return wb.mx; }, get z() { return wb.mz; } }, 'Did you fix the bridge?', { hold: 3.2 });
-      notebook.heard('MORROW', 'Did you fix the bridge?');
+      const morrow = { name: 'MORROW', get x() { return wb.mx; }, get z() { return wb.mz; } };
+      /* THE THREE VERBS: he asks, and does not stop for the answer */
+      handle.offer({
+        id: 'morrow-bridge', who: 'MORROW', speaker: morrow,
+        line: 'Did you fix the bridge?',
+        yes: { label: 'NOT YET.', said: 'Not yet.', reply: 'Didn\'t think so.' },
+        mine: {
+          reply: 'Already handled.',
+          what: 'THE BRIDGE IS MINE',
+          cost: 'MORROW DOES NOT LOOK ROUND. THE DOG GOES WITH HIM.',
+          run: () => { W.dogPause = -1; W.dogPaused = true; },
+        },
+        seconds: 7,
+      });
     }
     // the dog: behind him, until it notices you; then it stops, and
     // looks, and goes after him again
@@ -498,24 +592,28 @@ class Opening {
         c.common.loose();
         c.common.bull.hold = false;
         this.whistled = this.stage === 'horse';
-        c.common.nellAtGate = this.stage === 'horse';
+        c.common.nellAtGate = this.stage === 'horse' && !this.gateMine;
+        c.common.nellSat = this.gateMine;
         if (this.stage === 'horse' && !notebook.list().some((j) => j.id === JOB_ID)) {
           notebook.job(this.jobDef(PIN_GATE));
           notebook.activate(JOB_ID);
         }
         break;
       case 'home':
-        c.common.nellAtGate = true;
+        c.common.nellAtGate = !this.gateMine;
+        c.common.nellSat = this.gateMine;
         c.common.pen();
         if (!notebook.list().find((j) => j.id === JOB_ID)?.complete) notebook.complete(JOB_ID);
         this.after(3, () => { this.walkbyDue = true; });
         break;
       case 'list':
+        c.common.nellSat = this.gateMine;
         c.common.pen();
         notebook.listShown = true;
         this.after(1.5, () => c.openList());
         break;
       default:
+        if (this.stage === 'done') c.common.nellSat = this.gateMine;
         break;
     }
   }
@@ -555,7 +653,26 @@ class Opening {
           this.mountedOnce = true;
           npcs.mute('nell', false);
           notebook.step(JOB_ID, 1);
-          this.nellSays('Now bring it here. In through the gate, well in.', 4);
+          /* THE THREE VERBS: her part is the gate, and she offers it.
+           * Unanswered, she does it, as she always would have. */
+          handle.offer({
+            id: 'nell-gate', who: 'NELL', speaker: this.nell,
+            line: 'Bring him in through this gate, well in. I\'ll shut it behind him.',
+            yes: { label: 'YOU SHUT IT, NELL.', said: 'You shut it, Nell.' },
+            mine: {
+              reply: 'Course you will.',
+              what: 'I SHUT THE GATE MYSELF',
+              cost: 'NELL SITS DOWN ON HER BASKET. THE GATE IS YOURS.',
+              run: () => {
+                this.gateMine = true;
+                c.common.nellAtGate = false;
+                c.common.nellSat = true;
+                this.save();
+                toast('LEAD HIM THROUGH THE GATE. E AT THE GATE SHUTS IT BEHIND HIM.', 'learned');
+              },
+            },
+            seconds: 9,
+          });
         }
         /* PENNED: the bull is well inside the field — five units past
          * the hedge line — whether you are in there with it or not, and
@@ -564,7 +681,22 @@ class Opening {
          * stile, and the nudge says so. */
         const bullIn = b.x > HEDGE_X + 5 && b.x < FIELD.maxX - 0.5 && b.z > FIELD.minZ + 0.3 && b.z < FIELD.maxZ - 0.5;
         const inGap = Math.abs(w.z - PIN_GATE.z) < 3.4 && Math.abs(w.x - HEDGE_X) < 2.4;
-        if (bullIn && !inGap && b.loose) this.penned();
+        /* his gate: "in" is past the posts, because a bull on a gallop's
+         * tail is only ever a few strides behind the horse going out */
+        /* gate round 5: the cold player tried ten times and never shut it.
+         * The bull keeps pace with anything, so "in" is AT THE POSTS OR
+         * PAST THEM, and a walker stood in the gap is stepped aside by
+         * the leaf. It always works, if he does it. */
+        this.bullIn = b.loose && b.x > HEDGE_X - 1.2 && b.x < FIELD.maxX - 0.5 && b.z > FIELD.minZ + 0.3 && b.z < FIELD.maxZ - 0.5;
+        this.inGap = inGap;
+        if (this.gateMine) {
+          /* his gate: nothing shuts it but him. If he has forgotten, it
+           * says so once in a while. */
+          if (this.bullIn) {
+            this.gateNudge += dt;
+            if (this.gateNudge > 3 && this.gateKey) { this.gateNudge = -20; toast('HE IS THROUGH. E AT THE GATE, NOW.', 'place'); }
+          } else if (this.gateNudge > 0) this.gateNudge = 0;
+        } else if (bullIn && !inGap && b.loose) this.penned();
         else if (c.common.gate.shut && !b.loose) this.penned();
         break;
       }
@@ -612,7 +744,7 @@ class Opening {
     let best: (typeof THE_LIST)[number] | null = null;
     let bd = Infinity;
     for (const l of THE_LIST) {
-      if (l.kept || npcs.state(l.id).phase === 'done' || knowledge.decided(l.land)
+      if (l.kept || notebook.crossed.includes(l.id) || npcs.state(l.id).phase === 'done' || knowledge.decided(l.land)
         || notebook.list().some((j) => j.land === l.land && j.complete)) continue;
       const d = Math.hypot(l.pin.x - w.x, l.pin.z - w.z);
       if (d < bd) { bd = d; best = l; }

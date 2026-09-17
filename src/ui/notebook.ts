@@ -11,6 +11,7 @@ import { STAMP_COLLECTION } from '../world/stamps';
 import { stampImpression } from '../world/textures-monsters';
 /* ---- THE FIRST FIVE MINUTES: the first page ---- */
 import { THE_LIST, LIST_HEAD } from '../world/thelist';
+import { crossout } from '../world/crossout'; /* THE THREE VERBS */
 
 /**
  * THE NOTEBOOK PAGE (VOICE) — the walker's own book, opened with N or
@@ -33,15 +34,17 @@ const el = (cls: string, parent: HTMLElement, tag = 'div'): HTMLElement => {
   return d;
 };
 
-/** An ink line struck through a lettered element. */
-function strike(host: HTMLElement) {
+/** An ink line struck through a lettered element. `hard` is a line he
+ *  crossed out himself: twice, and pressed. */
+function strike(host: HTMLElement, hard = false) {
   const c = document.createElement('canvas');
   const w = Math.max(20, host.offsetWidth || 160);
   const h = Math.max(10, host.offsetHeight || 18);
   c.width = w;
   c.height = h;
   const ctx = c.getContext('2d')!;
-  line(ctx, 2, h * 0.55, w - 4, h * 0.5, rng(41 + w), { width: 1.6, alpha: 0.7, jitter: 1.2, passes: 1 });
+  line(ctx, 2, h * 0.55, w - 4, h * 0.5, rng(41 + w), { width: hard ? 2.2 : 1.6, alpha: hard ? 0.9 : 0.7, jitter: 1.2, passes: 1 });
+  if (hard) line(ctx, 3, h * 0.42, w - 6, h * 0.62, rng(43 + w), { width: 1.8, alpha: 0.8, jitter: 1.4, passes: 1 });
   c.className = 'nb-strike';
   c.style.width = `${w}px`;
   c.style.height = `${h}px`;
@@ -211,21 +214,25 @@ export class NotebookPage {
           break;
         }
         push(this.lineEl('list-head', LIST_HEAD, 'head', w));
+        push(this.lineEl('list-how', 'hold a line down to cross it out. it is your book.', 'quiet', w));
         const jobs = notebook.list();
         THE_LIST.forEach((l, i) => {
           /* a line is crossed out when he crossed it out, or when the
            * land's job is done: the notebook keeps its own score */
-          const kept = !!l.kept || jobs.some((j) => j.land === l.land && j.complete);
+          const byHand = notebook.crossed.includes(l.id);
+          const kept = !!l.kept || byHand || jobs.some((j) => j.land === l.land && j.complete);
           const row = document.createElement('div');
           row.className = `nb-list-row${kept ? ' kept' : ''}`;
+          row.dataset.line = l.id;
           const num = this.lineEl(`list-n|${i}`, `${i + 1}.`, 'pencil', 30);
           num.style.cssText = 'display:inline-block;width:26px;flex:0 0 26px;';
           row.style.cssText = 'display:flex;align-items:flex-start;gap:4px;margin:3px 0;';
-          const text = this.lineEl(`list|${l.id}|${kept}`, l.line, 'line', w - 40);
+          const text = this.lineEl(`list|${l.id}|${kept}|${byHand}`, l.line, 'line', w - 40);
           row.appendChild(num);
           row.appendChild(text);
           push(row);
-          if (kept) requestAnimationFrame(() => { if (!text.querySelector('.nb-strike')) strike(text); });
+          if (kept) requestAnimationFrame(() => { if (!text.querySelector('.nb-strike')) strike(text, byHand); });
+          else this.holdToCross(row, text, l.id);
         });
         break;
       }
@@ -297,6 +304,56 @@ export class NotebookPage {
     }
     this.body.textContent = '';
     for (const e of out) this.body.appendChild(e);
+  }
+
+  /* ---- THE THREE VERBS: a line of THE LIST is crossed out by holding
+   * it down. The pen draws across it while the press lasts; let go
+   * early and the pen lifts and the line is as it was. ---- */
+  private static CROSS_MS = 900;
+  private holdToCross(row: HTMLElement, text: HTMLElement, id: string) {
+    if (row.dataset.wired) return;
+    row.dataset.wired = '1';
+    row.style.cursor = 'pointer';
+    row.style.touchAction = 'none';
+    let timer = 0;
+    let t0 = 0;
+    let pen: HTMLCanvasElement | null = null;
+    const lift = () => {
+      if (!timer) return;
+      window.clearInterval(timer);
+      timer = 0;
+      pen?.remove();
+      pen = null;
+    };
+    const draw = (k: number) => {
+      if (!pen) return;
+      const w = pen.width;
+      const h = pen.height;
+      const ctx = pen.getContext('2d')!;
+      ctx.clearRect(0, 0, w, h);
+      line(ctx, 2, h * 0.55, 2 + (w - 6) * k, h * (0.55 - 0.05 * k), rng(41 + w), { width: 2.2, alpha: 0.9, jitter: 1.2, passes: 1 });
+    };
+    row.addEventListener('pointerdown', (e) => {
+      if (!crossout.can(id) || timer) return;
+      e.preventDefault();
+      t0 = performance.now();
+      pen = document.createElement('canvas');
+      pen.width = Math.max(20, text.offsetWidth || 160);
+      pen.height = Math.max(10, text.offsetHeight || 18);
+      pen.className = 'nb-strike';
+      pen.style.width = `${pen.width}px`;
+      pen.style.height = `${pen.height}px`;
+      if (getComputedStyle(text).position === 'static') text.style.position = 'relative';
+      text.appendChild(pen);
+      timer = window.setInterval(() => {
+        if (!row.isConnected) { lift(); return; } // the page redrew under the pen
+        const k = (performance.now() - t0) / NotebookPage.CROSS_MS;
+        if (k < 1) { draw(k); return; }
+        lift();
+        crossout.cross(id); // the notebook changes, and the page redraws it struck
+      }, 30);
+    });
+    for (const ev of ['pointerup', 'pointercancel', 'pointerleave'] as const) row.addEventListener(ev, lift);
   }
 
   /* ---- THINGS: the FOUND page draws each stamp as an ink rubber-stamp ---- */

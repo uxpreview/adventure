@@ -54,26 +54,60 @@ Run the pillars and the loop **one at a time, one agent at a time, over as
 many sessions as it takes.** A cold player and then one critic in sequence
 is fine. The brief's goal is unchanged; only the shape of the work is.
 
-## 2. Where it stands (2026-09-10, branch `claude/prompt-item-1-l6ogmg`, PR #26)
+## 2. Where it stands (2026-09-17, branch `claude/next-session-r4gate`; main is PR #29)
 
-Play it: https://adventure-git-claude-prompt-item-1-l6ogmg-ryankm.vercel.app
-(Vercel rebuilds this alias on every push to the branch.) PR #23 is
-merged; this branch is the gate's rounds on top of it.
+Play it: https://adventure-git-claude-next-session-r4gate-ryankm.vercel.app
+(Vercel rebuilds `adventure-git-<branch>-ryankm.vercel.app` on every push
+to a branch.) PRs #23 to #29 are merged; main is the story of record's
+first five minutes plus the gate's rounds on it.
 
-The gate (`design/reset/THE-GATE.md`) has been run on the merged build.
-Rounds so far, all desktop, from the title, no parameters:
+The gate (`design/reset/THE-GATE.md`) rounds so far, all desktop, from
+the title, no parameters:
 
 | round | T1 (what it wants at 60 s) | T2 (two sentences, three next) | T3 (critics for INKLANDS) |
 |---|---|---|---|
 | 1 | 6/10 — **fails** | yes | 0 of 6 |
 | 2 | 8/10 — holds | yes | 0 of 6 |
+| 3 | 8/10 — holds (first five minutes) | yes | not run |
+| 4 | 7/10 — holds | yes | 0 of 6 |
+| 5 | 9/10 — holds (the three verbs) | yes | 0 of 1 (FIRST HOUR only) |
 
-Round 1's cold player never met Nell (the opening waited for a gate slam
-only a westward run produces). Round 2's played the opening end to end
-in 75 seconds and then could not get through Brim's south gate (a
-3.2-unit collision gap in a 13-unit arch). Each round's fixes are in
-`CHANGELOG.md` under "The gate"; the reports are in
-`design/reset/rounds/round-N/`.
+Round 1's cold player never met Nell. Round 2's could not get through
+Brim's south gate. Round 3 (the rebuilt opening) rode fifteen metres of
+fence looking for the gap. Round 4 (2026-09-16, after the by-hand play
+and its fixes) penned the bull at 53 seconds, took the belfry job in
+Brim and sat through the rain to the lamps, but spent eighty seconds
+on Brim's wall walking under the South Gate twice, and never got THE
+LIST (a wait added that session; fixed after the round). Each round's
+fixes are in `CHANGELOG.md`; reports in `design/reset/rounds/round-N/`.
+
+Round 5 (2026-09-17, after the three verbs) chose I'LL HANDLE IT at
+thirty seconds and could not shut the gate in ten tries; it never saw
+Morrow or the list. Fixed after the round (the gate always works, Nell
+offers again, a press is answered now, the bull keeps off); **not yet
+played cold.** Round 4's items 1 and 2 below are built as of round 5's
+fixes and also not yet played cold.
+
+**What round 4's critics name most, in order (1 and 2 built 2026-09-17):**
+1. **The South Gate arch** is drawn as faint as its wall; the player
+   walked under it twice. The "BRIM'S GATE IS WEST ALONG THE WALL"
+   nudge fires while standing at it (3 critics).
+2. **The map's labels** pile into one smudge wherever places cluster
+   (THE COMMON / THE FIELD GATE / THE LONG FENCE / THE BENCH; BRIM
+   SQUARE / THE MARKET CROSS / THE BELFRY / THE SOUTH GATE) (2, and
+   the owner on 2026-09-12).
+3. **Brim's bystanders**: six or seven drawn people in the square and
+   only Marget has a name or a line (2).
+4. **The moving figure has no legs** at walking pace in a third of the
+   frames; **the hedge wash** overprints Nell, the gate and the bull
+   (PEN).
+5. Nell's "it follows the horse" line lands after the mount (FIRST
+   HOUR); a toy in THE COMMON with a score, and the bull loose again
+   in the field (THINGS).
+
+Done after round 4 (see `CHANGELOG.md` "Fixed after round 4"): the
+list always comes; a called horse jumps a fence; E at the bench is
+answered; the controls line prints at the bench.
 
 What every critic still names, and what a fix costs:
 - **Small, done as they came up:** the opening by any exit; E always
@@ -85,6 +119,34 @@ What every critic still names, and what a fix costs:
   the walker and the figure stands inside props (PEN); a universal
   touch verb every drawn thing answers (THINGS); Marget, Joan and Val
   do not walk and work the way Nell does; each land's own moving life.
+
+## 2a. Running the gate on the owner's machine (2026-09-16)
+
+- `tools/play-server.mjs` needs a Chromium. Playwright 1.62 looks for
+  headless shell 1234; the machine has 1228. Either
+  `npx playwright install chromium`, or
+  `PW_CHROMIUM=~/Library/Caches/ms-playwright/chromium_headless_shell-1228/chrome-headless-shell-mac-x64/chrome-headless-shell`
+  in the server's environment (`tools/pw.mjs` reads it).
+- The desktop app's in-app browser sends keydown with an empty
+  `e.code`; the game reads `e.code`. It cannot drive the walk. And
+  when its pane is hidden `requestAnimationFrame` stops, the loader
+  never lets go. Use the harness for play; the in-app browser only to
+  look. `.claude/launch.json` starts `npm run dev` on 5173 for that.
+- A round costs about 1.4M tokens: the cold player ~250k (ninety
+  commands, 77 screenshots), each critic ~200k (reads every frame).
+  One agent at a time (the owner's amendment).
+- A sub-agent may be refused the Write tool ("return findings as
+  text"): round 5's cold player was. Tell it to return the report as
+  its final message and save it yourself to `play-gate/round-N/` (for
+  the critic) and `design/reset/rounds/round-N/`. The cold player also
+  ran out of commands at gameSec 220 on this machine; ask for fewer
+  screenshots per command, not fewer seconds.
+- `tools/check-verbs.mjs` is stale since the reset (112 failures, from
+  its first section); it is not a gate.
+- The harness clears `localStorage` on every load: a reload is a fresh
+  game. `node tools/play.mjs eval` can teleport
+  (`__inklands.char.teleport(x, z)`) and step
+  (`__inklands.step(1/30, n)`) when a check needs a place, not a play.
 
 ## 2b. The owner's notes (2026-09-12, played on a phone, no sheet)
 
@@ -157,7 +219,11 @@ folder, to build story.
 
 **The story rebuild comes first (owner, 2026-09-16: "proceed"). One item
 per session, in order, each ending with the cold player and the critic
-from `THE-GATE.md`:**
+from `THE-GATE.md`.** Item 1 is built; **item 2 (Tier 1) is next.**
+Round 4's arch and map labels rode along with item 1; Brim's
+bystanders ride with Tier 1's Marget. Round 5's open list (`CHANGELOG.md`
+"Named and not done") rides where an item touches it: the hedge's
+drawn edge and the strangers' prompts are the two a first minute meets.
 
 0. ~~**The first five minutes on the story of record**~~ **BUILT,
    2026-09-16** (`src/world/opening.ts`, `regions/meadow.ts`, the name
@@ -180,10 +246,15 @@ from `THE-GATE.md`:**
    second note; the pull. The old opening (`src/world/opening.ts`)
    is replaced, not patched. Gate: the cold player says what the game
    wants inside sixty seconds and names three of the twelve.
-1. **The three verbs the arc stands on**: SIT (a held press with a
-   visible fidget until the end), "I'LL HANDLE IT" (a dialogue option
-   everywhere, always works, always costs someone visibly), and
-   crossing a line out in the notebook.
+1. ~~**The three verbs the arc stands on**~~ **BUILT, 2026-09-17**
+   (`CHANGELOG.md` "The three verbs"): SIT is a held press with a
+   fidget (`App.trySit`); "I'LL HANDLE IT" is an answer strip
+   (`world/handle.ts`, `ui/replies.ts`), live at Nell's gate and
+   Morrow's bridge, with `JobSpec.offer` waiting for every promise;
+   a line of THE LIST is crossed out by holding it down
+   (`world/crossout.ts`). Left: each tier hangs its own offers; Joan's
+   SIT DOWN card door still sits at once (Tier 4); the cost does not
+   yet compound at the gathering (item 6).
 2. **Tier 1 promises** (Wick, Nell, Marget) as built in `08` §9, each
    with its turn, its choice, its visible change, and its call
    reconnected. The jobs registry (`src/world/jobs/`) is re-hung on
@@ -203,15 +274,13 @@ from `THE-GATE.md`:**
 The pillar items that follow (camera, pen, things, phone) are done
 inside these sessions where the story needs them, not before.
 
-1. **Run the gate again** (round 3+): `THE-GATE.md` top to bottom on
-   this branch — cold player, then the six critics. Round 2 used the
-   whole usage window on one cold player and six critics (the PEN
-   critic finished on the last request), so budget for exactly that
-   and the fixes. Keep fixing the three things named most. T1 and T2
-   hold as of round 2; T3 is 0 of 6, so the loop is not done.
-   Round 2's fixes (the gate, the bump line, Joan's name, LOOK AT, the
-   off-screen bubbles) are built and pushed but have not been played
-   cold yet.
+1. **Run the gate again** (round 5+): `THE-GATE.md` top to bottom —
+   cold player, then the six critics, one agent at a time. Keep fixing
+   the three things named most (§2 has round 4's). T1 and T2 hold as
+   of rounds 2, 3 and 4; T3 is 0 of 6 every round, so the loop is not
+   done. Round 4's after-fixes (the list always comes, the horse jumps
+   a fence, E at the bench, the controls line) are built and pushed
+   but have not been played cold yet.
 2. **THE CAMERA moves for the world.** A crane on every border crossing
    (pull back and rise, then settle behind the figure), an opening
    shot from the Common that frames Brim, the Downs, Maple Court and

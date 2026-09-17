@@ -9,7 +9,7 @@ import {
   fistStoneTexture, wellRopeTexture, wellBucketTexture,
   leafLitterDecal, reedsTexture, ropeSwingTexture, swallowTexture,
   keepVistaTexture,
-  nellTexture, fieldGateTexture, bullTexture, seaGlintTexture, millSmokeTexture,
+  nellTexture, nellSatTexture, fieldGateTexture, bullTexture, seaGlintTexture, millSmokeTexture,
   cityTowersTexture, maypoleTexture, fairBoardTexture,
 } from '../textures-common';
 import { goatTexture } from '../textures-wood';
@@ -246,6 +246,9 @@ export const common = {
   note: { second: false },
   /** Nell at the gate (the job and after) rather than at her line. */
   nellAtGate: false,
+  /** THE THREE VERBS: he said he would handle it, and she sat down on
+   *  her basket by the line. She stays sat. */
+  nellSat: false,
   goat,
   /** Put the opening back where a fresh page has it: the harness's. */
   reset() {
@@ -258,6 +261,7 @@ export const common = {
     this.walkby.on = false;
     this.note.second = false;
     this.nellAtGate = false;
+    this.nellSat = false;
     goat.reset();
   },
   /** SET OUT: the bull is loose on the green and grazing, and it does
@@ -630,12 +634,15 @@ export const buildMeadow: RegionBuilder = (ctx) => {
    * after it, she stands at the gate itself. */
   const NELL_LINE = { x: HEDGE_X - 8.5, z: 86.2 };
   const NELL_GATE = { x: HEDGE_X - 2.4, z: 82.6 };
-  const nellAt = () => (common.nellAtGate ? NELL_GATE : NELL_LINE);
+  const NELL_BASKET = { x: NELL_LINE.x - 1.6, z: NELL_LINE.z + 0.8 };
+  const nellAt = () => (common.nellSat ? NELL_BASKET : common.nellAtGate ? NELL_GATE : NELL_LINE);
   const NELL = { get x() { return nellAt().x; }, get z() { return nellAt().z; } };
   const nellPoses = [0, 1, 2].map((p) =>
     ctx.standee(nellTexture(1630 + p, p as 0 | 1 | 2), 1.15, 1.9, NELL.x, NELL.z, { face: 'keep' }));
+  const nellSatM = ctx.standee(nellSatTexture(1634), 1.15, 1.9, NELL_BASKET.x, NELL_BASKET.z, { face: 'keep' });
+  nellSatM.visible = false;
   /* ---- VOICE: where Nell is drawn, for the talk prompt ---- */
-  npcs.track('nell', () => ({ x: nellPoses[common.nell.pose].position.x, z: nellAt().z, present: platform.land !== 'meadow' }));
+  npcs.track('nell', () => ({ x: common.nellSat ? NELL_BASKET.x : nellPoses[common.nell.pose].position.x, z: nellAt().z, present: platform.land !== 'meadow' }));
 
   /* THE BULL: four drawings, one showing, mirrored to face its way —
    * the fourth is the night's, lying down (Session 17). */
@@ -893,7 +900,11 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       B.face = ux < 0 ? -1 : 1;
       /* IT NEVER TOUCHES YOU: it will not step inside two strides.
        * Loose and on foot, it reaches you, and that is the knock. */
-      const keep = B.loose && !B.follow ? 1.1 : B.follow ? 3.0 : 2.3;
+      /* gate round 5: after it has knocked you over twice it has said
+       * what it had to say, and it keeps off: a bull stood on the walker
+       * hid him for most of a session */
+      const knockable = B.loose && !B.follow && B.knocks < 2;
+      const keep = knockable ? 1.1 : B.follow ? 3.0 : 2.3;
       const step = Math.min(speed * dt, Math.max(0, td), Math.max(0, bd - keep));
       const [nx, nz] = clampField(B.x + ux * step, B.z + uz * step);
       const moved = Math.hypot(nx - B.x, nz - B.z);
@@ -912,7 +923,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       } else if (bd <= keep + 0.05 || td < 0.35) {
         B.state = 'balk'; B.t = 0; B.balks++;
         say('bull-snort');
-        if (B.loose && bd <= keep + 0.6) {
+        if (knockable && bd <= keep + 0.6) {
           /* THE KNOCK: it reached you. App rocks the walker, takes the
            * hat, and the walker says it knows him. */
           B.knocks++;
@@ -1011,12 +1022,14 @@ export const buildMeadow: RegionBuilder = (ctx) => {
     const nellGone = platform.land === 'meadow';
     for (let p = 0; p < 3; p++) {
       const m = nellPoses[p];
-      m.visible = p === N.pose && !nellGone;
+      m.visible = p === N.pose && !nellGone && !common.nellSat;
       m.position.x = NELL.x + nellOff * -nellFace;
       m.position.z = NELL.z;
       m.position.y = ctx.groundY(m.position.x, NELL.z);
       m.scale.x = nellFace < 0 ? 1 : -1;
     }
+    nellSatM.visible = common.nellSat && !nellGone;
+    if (nellSatM.visible) nellSatM.position.y = ctx.groundY(NELL_BASKET.x, NELL_BASKET.z);
 
     /* ================================================================ *
      * THE GOAT — `company.ts`'s rule, drawn. It follows; it stops at
@@ -1448,6 +1461,15 @@ export const MEADOW_POIS: WorldPOI[] = [
     },
   },
   {
+    /* THE THREE VERBS: "I'll handle it." The gate is his to shut: E
+     * here, on the horse or off it, once the bull is well in. */
+    x: HEDGE_X - 0.4, z: 82.2, radius: 9,
+    prompt: 'SHUT THE GATE',
+    get enabled() { return opening.gateKey; },
+    set enabled(_v: boolean) { /* the opening decides */ },
+    onInteract: () => { opening.shutGate(); },
+  } as unknown as WorldPOI,
+  {
     /* NELL (Session 16, `THE-WAITS` §9, `THE-FUN-PASS` §6). Her place
      * is the gate. Before you have the fourth name it is a note in the
      * plainest register in the game; with it, it is a card with two
@@ -1460,7 +1482,10 @@ export const MEADOW_POIS: WorldPOI[] = [
     /* the name reads from across the green: the cold player rode the
      * hedge for a minute not knowing which gap was the gate */
     labelReach: 30, labelHeight: 3.2,
-    prompt: 'LEAN ON THE GATE WITH HER',
+    /* THE THREE VERBS: while the gate is his to shut, the key shuts it */
+    get enabled() { return !opening.gateKey; },
+    set enabled(_v: boolean) { /* the opening decides */ },
+    prompt: () => (common.nellSat ? 'LEAN ON THE GATE' : 'LEAN ON THE GATE WITH HER'),
     note: {
       title: 'the field gate',
       body: () => common.gate.shut

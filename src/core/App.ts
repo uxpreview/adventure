@@ -57,6 +57,8 @@ import { say, shout } from '../ui/speech';
 import { toast } from '../ui/toast';
 import { withHint } from '../world/lines';
 import { letterBench } from '../ui/lettering'; /* ---- PEN ---- */
+import { repliesOpen, pickReply } from '../ui/replies'; /* THE THREE VERBS */
+import { crossout } from '../world/crossout';
 /* ---- FIRST HOUR: the scripted opening (`src/world/opening.ts`) ---- */
 import { opening, OPENING_POIS } from '../world/opening';
 import { nellsCapTexture } from '../world/textures-opening';
@@ -237,7 +239,7 @@ export class App {
         def.onInteract = () => this.act(def);
         if (def.sit) {
           const p = def.prompt;
-          def.prompt = () => (this.seat === def ? 'STAND UP' : (typeof p === 'function' ? p() : p) ?? 'sit');
+          def.prompt = () => (this.seat === def ? 'STAND UP' : this.sitTry?.def === def ? 'HOLD IT. STAY SAT.' : (typeof p === 'function' ? p() : p) ?? 'sit');
         }
       }
       this.poi.add(def);
@@ -297,7 +299,9 @@ export class App {
     this.poi.add({
       get x() { return self.horse.pos.x; },
       get z() { return self.horse.pos.y; },
-      get enabled() { return !self.bicycle.aboard && !self.boat.aboard && !self.train.aboard; },
+      /* THE THREE VERBS: when the gate is his to shut, the key at the
+       * gate is the gate's, even from the saddle */
+      get enabled() { return !self.bicycle.aboard && !self.boat.aboard && !self.train.aboard && !(self.horse.aboard && opening.gateKey); },
       radius: 6.0, /* gate round 2: "the mount band is so narrow finding it costs five moves" */
       prompt: () => !this.horse.aboard ? 'GET ON THE HORSE'
         : Math.hypot(this.char.vel.x, this.char.vel.z) > 0.8 ? 'WHOA' : 'GET OFF',
@@ -350,6 +354,11 @@ export class App {
       whistleTo: (x, z) => { this.audio.init(); this.audio.event('whistle'); this.horse.call(x, z); },
       sitOnBench: () => this.sitAt('THE BENCH'),
       openName: (submit) => this.ui.openName(submit),
+      stepAside: (x, z) => {
+        this.char.teleport(x, z, this.char.heading);
+        this.char.setGround(this.terrain.heightAt(x, z), this.terrain.normalAt(x, z));
+        if (this.horse.aboard) this.horse.setAt(x, z);
+      },
       nameOpen: () => this.ui.nameOpen,
       openList: () => notebook.openTo('THE LIST'),
       notebookOpen: () => this.voice.open,
@@ -391,6 +400,7 @@ export class App {
     });
 
     this.input.onInteract(() => {
+      if (!this.started) return; // Enter on the title is not a press in the world
       /* ---- VOICE: the key closes the notebook first ---- */
       if (this.voice.open) {
         this.voice.close();
@@ -406,6 +416,7 @@ export class App {
       }
       // a choice card is closed by choosing, or by walking away
       if (this.ui.choiceOpen || this.ui.nameOpen) return;
+      if (this.sitTry) return; /* THE THREE VERBS: the press that began the sit */
       if (this.seat) {
         this.standUp();
         return;
@@ -413,7 +424,9 @@ export class App {
       if (this.activePoi) this.activePoi.def.onInteract?.();
       else this.nothingInReach(); /* ---- VOICE (gate round 1): E is always answered ---- */
     });
-    this.ui.onPromptClick = () => this.activePoi?.def.onInteract?.();
+    /* THE THREE VERBS: the prompt under a thumb is the key, held or not */
+    this.ui.onPromptClick = () => this.input.fireInteract();
+    this.ui.onPromptHold = (down) => { this.input.promptHeld = down; };
 
     this.ui.onToggleSound = () => {
       this.audio.init();
@@ -829,6 +842,14 @@ export class App {
           btns[i]?.click();
         },
         choiceOpen: () => this.ui.choiceOpen,
+        /* ---- THE THREE VERBS, for the harness ---- */
+        replies: () => repliesOpen(),
+        reply: (i: number) => pickReply(i),
+        handled: () => notebook.handled,
+        crossed: () => notebook.crossed,
+        crossOut: (id: string) => crossout.cross(id),
+        holdE: (on: boolean) => { this.input.holdInteract = on; if (on) this.input.fireInteract(); },
+        sitTry: () => (this.sitTry ? +(this.sitTry.t / this.sitTry.need).toFixed(2) : null),
         /** Close an open card without choosing, for a shoot list that
          *  opened one for the picture (Session 20). */
         closeChoice: () => this.ui.closeChoice(),
@@ -1108,7 +1129,70 @@ export class App {
       this.voice.touched(def); /* VOICE */
       return;
     }
-    if (def.sit) this.sitDown(def);
+    if (def.sit) this.trySit(def);
+  }
+
+  /* ================================================================ *
+   * THE THREE VERBS — SIT IS A HELD PRESS (story of record §2: "the sit
+   * verb takes effort, a held press, a visible fidget, until the end").
+   * A press puts him on the seat and he will not stay: down, half up,
+   * a look either way, a knee going, a pencil line drawing itself under
+   * the prompt. Hold the key through it and he is sat. Let go early and
+   * he is up again with a reason. At Joan's table it takes twice as
+   * long. After the gathering it takes nothing.
+   * ================================================================ */
+  private sitTry: { def: WorldPOI; t: number; need: number } | null = null;
+  private sitTaught = false;
+  private sitExcuse = 0;
+  private static SIT_EXCUSES = ['In a minute.', 'Can\'t. Not yet.', 'There\'s things to do.', 'I\'ll sit when it\'s done.'];
+  private sitNeed(def: WorldPOI): number {
+    if (knowledge.has('end:sat-down')) return 0;
+    // a seat that moves (the swing, the office chair) is a toy, not a rest
+    if (def.sit!.follow) return 0;
+    return regionAt(def.sit!.x, def.sit!.z).id === 'downs' ? 4.4 : 2.2;
+  }
+  private trySit(def: WorldPOI) {
+    if (!def.sit || this.boat.aboard || this.train.aboard) return;
+    const need = this.sitNeed(def);
+    if (need <= 0) { this.sitDown(def); return; }
+    const sx = def.sit.x;
+    const sz = def.sit.z;
+    this.sitFrom = { x: this.char.pos.x, z: this.char.pos.z };
+    this.char.teleport(sx, sz, this.char.heading);
+    this.char.setGround(this.terrain.heightAt(sx, sz), this.terrain.normalAt(sx, sz));
+    this.char.setSitting(true);
+    this.char.fidget = 0.001;
+    this.sitTry = { def, t: 0, need };
+    this.ui.setHold(0);
+  }
+  private sitFrom = { x: 0, z: 0 };
+  private tickSitTry(dt: number) {
+    const s = this.sitTry;
+    if (!s) return;
+    const stepping = Math.hypot(this.input.move.x, this.input.move.y) > 0.3;
+    if (this.input.interactHeld && !stepping) {
+      s.t += dt;
+      this.char.fidget = Math.min(0.999, Math.max(0.001, s.t / s.need));
+      this.ui.setHold(s.t / s.need);
+      if (s.t >= s.need) {
+        this.sitTry = null;
+        this.ui.setHold(null);
+        this.char.fidget = 0;
+        this.sitDown(s.def);
+      }
+      return;
+    }
+    // let go: up again, where he came from, with a reason
+    this.sitTry = null;
+    this.ui.setHold(null);
+    this.char.setSitting(false);
+    this.char.teleport(this.sitFrom.x, this.sitFrom.z, this.char.heading);
+    this.char.setGround(this.terrain.heightAt(this.sitFrom.x, this.sitFrom.z), this.terrain.normalAt(this.sitFrom.x, this.sitFrom.z));
+    say('walker', App.SIT_EXCUSES[this.sitExcuse++ % App.SIT_EXCUSES.length]);
+    if (!this.sitTaught || this.sitExcuse % 3 === 0) {
+      this.sitTaught = true;
+      this.ui.showHint('ontouchstart' in window ? 'hold the prompt to stay sat' : 'hold E to stay sat', 4200);
+    }
   }
 
   /* ================================================================ *
@@ -1916,6 +2000,7 @@ export class App {
      * cares what time it is — the mixer, the lamps in Brim, whatever
      * Session 7 hangs a routine on — reads `daylight.clock` directly and
      * never comes through here (see world/daylight.ts). */
+    this.tickSitTry(dt); /* ---- THE THREE VERBS: the held sit ---- */
     /* ---- THINGS (gate round 1): a wait runs the day at WAIT_TIME with
      * the walker standing; the thing coming, a step, or leaving the
      * place ends it. ---- */

@@ -45,7 +45,12 @@ export type NotebookSave = {
    *  bench; and whether the first page has been read yet. */
   name?: string | null;
   listShown?: boolean;
+  /** THE THREE VERBS: list lines he crossed out himself (by line id),
+   *  and every time he said I'LL HANDLE IT, in order. */
+  crossed?: string[];
+  handled?: Handled[];
 };
+export type Handled = { who: string; what: string; cost: string; day: number };
 
 const HEARD_CAP = 40;
 
@@ -66,6 +71,10 @@ class Notebook {
   name: string | null = null;
   /** Whether the first page (THE LIST) is readable yet. */
   listShown = false;
+  /** Lines of THE LIST crossed out by hand, not kept. */
+  crossed: string[] = [];
+  /** I'LL HANDLE IT, every time, and what it cost. */
+  handled: Handled[] = [];
   private activeId: string | null = null;
   /** Set when anything changed, so App persists without polling. */
   dirty = false;
@@ -178,6 +187,31 @@ class Notebook {
     this.changed();
   }
 
+  /** Take a pin off the map (a line crossed out takes its place with it). */
+  unplace(label: string) {
+    const key = label.toUpperCase();
+    const i = this.places.findIndex((p) => p.label === key && !p.seen);
+    if (i < 0) return;
+    this.places.splice(i, 1);
+    this.changed();
+  }
+
+  /* ---- the three verbs --------------------------------------------- */
+  /** A line of THE LIST, crossed out in his own hand. The notebook does
+   *  not object. */
+  crossOut(id: string): boolean {
+    if (this.crossed.includes(id)) return false;
+    this.crossed.push(id);
+    this.changed();
+    return true;
+  }
+
+  /** I'LL HANDLE IT: written down with what it cost. */
+  handle(who: string, what: string, cost: string) {
+    this.handled.push({ who, what, cost, day: dayNow() });
+    this.changed();
+  }
+
   placeNamed(label: string): Place | null {
     const key = label.toUpperCase();
     return this.places.find((p) => p.label === key) ?? null;
@@ -244,6 +278,7 @@ class Notebook {
       jobs: this.jobs, heard: this.heardList, places: this.places, found: this.foundMap,
       choices: this.choices, scores: this.scores, learned: this.learned, activeId: this.activeId, npcs: this.npcs,
       name: this.name, listShown: this.listShown,
+      crossed: this.crossed, handled: this.handled,
     };
   }
 
@@ -260,6 +295,8 @@ class Notebook {
     this.npcs = s.npcs ?? {};
     this.name = s.name ?? null;
     this.listShown = !!s.listShown;
+    this.crossed = s.crossed ?? [];
+    this.handled = s.handled ?? [];
     for (const fn of this.listeners) fn();
   }
 

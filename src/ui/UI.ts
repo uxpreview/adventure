@@ -1,4 +1,6 @@
 import { letterEl, S } from './lettering';
+import { rng, line as inkLine } from '../engine/ink';
+import { PENCIL } from '../engine/palette';
 
 /**
  * The chrome — every word hand-lettered through the stroke library,
@@ -40,6 +42,7 @@ export class UI {
   onWear: (() => string | null) | null = null;
   onOpenMap: ((width: number) => HTMLCanvasElement) | null = null;
   onPromptClick: (() => void) | null = null;
+  onPromptHold: ((down: boolean) => void) | null = null;
   /* ---- VOICE: the notebook's key and button, and its line ---- */
   onToggleNotebook: (() => void) | null = null;
   onCloseNotebook: (() => void) | null = null;
@@ -104,7 +107,17 @@ export class UI {
     this.labelRoot = el('labels', this.root);
     this.promptEl = el('prompt lettered', this.root);
     this.promptEl.id = 'prompt';
-    this.promptEl.addEventListener('click', () => this.onPromptClick?.());
+    /* THE PROMPT IS PRESSED, NOT CLICKED: the act fires as the thumb
+     * goes down, and `onPromptHold` says whether it is still down, so a
+     * sit can be the same held press under a thumb as it is on a key. */
+    this.promptEl.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      this.onPromptHold?.(true);
+      this.onPromptClick?.();
+    });
+    for (const ev of ['pointerup', 'pointercancel', 'pointerleave'] as const) {
+      this.promptEl.addEventListener(ev, () => this.onPromptHold?.(false));
+    }
 
     this.joyEl = el('joy', this.root);
     this.joyEl.id = 'joy';
@@ -357,6 +370,38 @@ export class UI {
     this.blinking = false;
   }
 
+  /* THE HELD PRESS, DRAWN: a ballpoint line that draws itself under the
+   * prompt while the key is down, left to right, and is gone when it is
+   * let go. `null` takes it away. */
+  private holdEl: HTMLCanvasElement | null = null;
+  private holdStep = -1;
+  setHold(k: number | null) {
+    if (k === null) {
+      this.holdEl?.classList.remove('show');
+      this.holdStep = -1;
+      return;
+    }
+    if (!this.holdEl) {
+      const c = document.createElement('canvas');
+      c.width = 280; c.height = 20;
+      c.className = 'hold-line';
+      this.root.appendChild(c);
+      this.holdEl = c;
+    }
+    const c = this.holdEl;
+    c.style.left = this.promptEl.style.left;
+    c.style.top = this.promptEl.style.top;
+    c.classList.add('show');
+    const step = Math.floor(Math.max(0, Math.min(1, k)) * 28);
+    if (step === this.holdStep) return;
+    this.holdStep = step;
+    const ctx = c.getContext('2d')!;
+    ctx.clearRect(0, 0, c.width, c.height);
+    // the pencil rule it has to reach the end of, and the ink so far
+    inkLine(ctx, 6, 10, 274, 11, rng(77), { width: 2, alpha: 0.5, color: PENCIL, jitter: 1, passes: 1 });
+    if (step > 0) inkLine(ctx, 6, 10, 6 + 268 * (step / 28), 10.5, rng(78), { width: 4.5, alpha: 0.95, jitter: 1.6, passes: 2 });
+  }
+
   showHint(text: string, holdMs = 4200) {
     /* The hint is the control list and the control list got longer when
      * running arrived. It is one lettered line on a canvas, which does
@@ -541,6 +586,11 @@ export class UI {
     /* the key that was being pressed when the card came up is not the
      * first letter of a name */
     window.setTimeout(() => { this.nameInput.focus(); this.nameInput.value = ''; this.letterName(); }, 260);
+    /* gate round 5: and neither is the E of somebody still trying to
+     * talk to Nell a moment after it came up */
+    window.setTimeout(() => {
+      if (/^e+$/i.test(this.nameInput.value)) { this.nameInput.value = ''; this.letterName(); }
+    }, 1100);
   }
 
   private letterName() {

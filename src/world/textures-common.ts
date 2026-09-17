@@ -719,6 +719,33 @@ export function wallTowerTexture(seed: number): THREE.CanvasTexture {
 }
 
 /**
+ * THE WAY THROUGH AN ARCH, on the ground (gate round 4): the passage's
+ * own shadow and the dark of trodden stone, run out a few strides
+ * either side of the wall, so an arch drawn as faint as its wall still
+ * reads as the one dark way through it. Long axis is the way through.
+ */
+export function gatePassageDecal(seed: number): THREE.CanvasTexture {
+  return makeTexture(128, 256, seed, (ctx, r) => {
+    const g = ctx.createLinearGradient(0, 0, 0, 256);
+    g.addColorStop(0, 'rgba(35,38,51,0)');
+    g.addColorStop(0.3, 'rgba(35,38,51,0.42)');
+    g.addColorStop(0.5, 'rgba(35,38,51,0.62)');
+    g.addColorStop(0.7, 'rgba(35,38,51,0.42)');
+    g.addColorStop(1, 'rgba(35,38,51,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(30, 0); ctx.lineTo(98, 0); ctx.lineTo(112, 256); ctx.lineTo(16, 256);
+    ctx.closePath();
+    ctx.fill();
+    // the ruts of three hundred years of carts, along the way through
+    for (let i = 0; i < 9; i++) {
+      const x = 34 + r() * 60;
+      line(ctx, x, 40 + r() * 40, x + (r() - 0.5) * 8, 180 + r() * 50, r, { width: 1.3, alpha: 0.4, passes: 1, jitter: 1.4 });
+    }
+  });
+}
+
+/**
  * The south gate of Brim, rebuilt as the poster's centerpiece: square
  * towers (the draft's capsule drums read as balloons up close), real
  * battlements, string courses, the arch with its portcullis forever
@@ -1056,6 +1083,34 @@ export function nellTexture(seed: number, pose: 0 | 1 | 2): THREE.CanvasTexture 
       line(ctx, 60, 118, 64, 150, r, { width: 2.2, alpha: 0.85 });
     }
     // a scarf, which is the one thing that tells her from the others
+    stroke(ctx, [[hx - 8, hy + 14], [hx + 2, hy + 20], [hx + 12, hy + 14]], r,
+      { width: 2.4, alpha: 0.7, passes: 1, color: '#8f4a52' });
+  });
+}
+
+/**
+ * NELL, SAT DOWN (the three verbs): on her upturned washing basket,
+ * hands in her lap, because he said he would handle it. The same coat,
+ * the same scarf, half the height.
+ */
+export function nellSatTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(96, 160, seed, (ctx, r) => {
+    const hx = 46;
+    const hy = 66;
+    scribbleCircle(ctx, hx, hy, 14, r, { width: 2, alpha: 0.85 }, 1.1);
+    stroke(ctx, [[hx - 10, hy + 6], [hx - 12, hy + 18]], r, { width: 2.2, alpha: 0.7, passes: 1 });
+    // the coat, folded at the lap
+    poly(ctx, [[32, 82], [28, 122], [66, 122], [60, 82]], r, { width: 2, alpha: 0.85 });
+    // thighs forward, shins down
+    stroke(ctx, [[34, 120], [72, 118], [74, 150]], r, { width: 2.2, alpha: 0.85 });
+    stroke(ctx, [[40, 124], [64, 126], [62, 150]], r, { width: 2.2, alpha: 0.8 });
+    // hands in her lap
+    stroke(ctx, [[32, 90], [40, 110], [58, 112]], r, { width: 1.8, alpha: 0.8 });
+    stroke(ctx, [[60, 90], [64, 106], [56, 114]], r, { width: 1.8, alpha: 0.8 });
+    // the basket, upturned: a wicker trapezoid with its weave
+    poly(ctx, [[18, 124], [12, 152], [58, 152], [52, 124]], r, { width: 2, alpha: 0.8 });
+    for (let i = 0; i < 4; i++) line(ctx, 15, 130 + i * 6, 55, 130 + i * 6, r, { width: 1, alpha: 0.4, passes: 1 });
+    for (let i = 0; i < 5; i++) line(ctx, 20 + i * 8, 125, 17 + i * 9, 151, r, { width: 1, alpha: 0.35, passes: 1 });
     stroke(ctx, [[hx - 8, hy + 14], [hx + 2, hy + 20], [hx + 12, hy + 14]], r,
       { width: 2.4, alpha: 0.7, passes: 1, color: '#8f4a52' });
   });
