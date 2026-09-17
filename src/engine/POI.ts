@@ -47,6 +47,9 @@ export type POIDef = {
   /** Only wins when no other prompt is in reach (Session 15: the thing
    *  in the walker's hand). */
   weak?: boolean;
+  /** Units taken off this place's distance when prompts contend: a
+   *  horse that was whistled for beats the stile it landed beside. */
+  bias?: number;
   /** Internal: remembered state across a blanket suppression. */
   userWasEnabled?: boolean;
 };
@@ -201,8 +204,11 @@ export class POIManager {
         p.labelEl.classList.toggle('show', show);
         if (show) shown.push({ p, d });
       }
-      if (inR && p.def.onInteract && !p.def.weak && d < best) {
-        best = d;
+      /* a thing that has just been sent for (the whistled horse) is
+       * nearer than it stands: `bias` is taken off its distance */
+      const dd = d - (p.def.bias ?? 0);
+      if (inR && p.def.onInteract && !p.def.weak && dd < best) {
+        best = dd;
         active = p;
       }
     }

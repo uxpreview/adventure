@@ -1380,7 +1380,10 @@ export const buildCastle: RegionBuilder = (ctx) => {
    * with a road between them and grass come up through the road
    * beyond. Down, it is a decal, and a decal does not turn.
    * ================================================================ */
-  for (const dx of [-CHAIN.halfW, CHAIN.halfW]) ctx.standee(chainPostTexture(1060 + (dx > 0 ? 1 : 0)), 1.0, 2.7, CHAIN.x + dx, CHAIN.z, { solid: 0.5 });
+  /* (the bollards are not solid on their own account: a foot sliding
+   * along the chain has to come off its end and round, not stick on a
+   * post; the chain's own barrier stops at them) */
+  for (const dx of [-CHAIN.halfW, CHAIN.halfW]) ctx.standee(chainPostTexture(1060 + (dx > 0 ? 1 : 0)), 1.0, 2.7, CHAIN.x + dx, CHAIN.z);
   /* a third, shorter, in the crown of the road: end on, a chain is its
    * posts, and three in a row read as a line where two read as one */
   ctx.standee(chainPostTexture(1059), 0.8, 2.0, CHAIN.x, CHAIN.z);

@@ -308,6 +308,9 @@ export class App {
        * gate is the gate's, even from the saddle */
       get enabled() { return !self.bicycle.aboard && !self.boat.aboard && !self.train.aboard && !(self.horse.aboard && opening.gateKey); },
       radius: 6.0, /* gate round 2: "the mount band is so narrow finding it costs five moves" */
+      /* sent for, it is what the key is for: the note on the bench and
+       * the stile it jumped beside were nearer, and won the prompt */
+      get bias() { return !self.horse.aboard && (opening.stage === 'horse' || self.elapsed - self.horseCalledAt < 14) ? 1.7 : 0; },
       prompt: () => !this.horse.aboard ? 'GET ON THE HORSE'
         : Math.hypot(this.char.vel.x, this.char.vel.z) > 0.8 ? 'WHOA' : 'GET OFF',
       onInteract: () => this.horseKey(),
@@ -1637,11 +1640,13 @@ export class App {
   private horseRefuses(x: number, z: number): boolean {
     return this.terrain.blockedAt(x, z) || barriers.blocks(x, z);
   }
+  private horseCalledAt = -99;
   /** The whistle: the horse comes if it can hear you. */
   private whistle() {
     if (!this.started || this.char.frozen || this.horse.aboard) return;
     this.audio.init();
     this.audio.event('whistle');
+    this.horseCalledAt = this.elapsed;
     if (!this.horse.call(this.char.pos.x, this.char.pos.z)) {
       this.ui.showHint('the horse is too far to hear you', 2600);
     }

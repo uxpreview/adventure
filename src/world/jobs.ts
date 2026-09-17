@@ -13,7 +13,8 @@ import * as T from './jobs/triggers';
 import type { JobSpec } from './jobs/triggers';
 import { handle } from './handle'; /* THE THREE VERBS */
 import { TIER1_JOBS } from './jobs/tier1';
-import { tier1 } from './tier1';
+import { tier1, hourKnown } from './tier1';
+import { clock } from './daylight';
 import { THE_LIST } from './thelist';
 import { CIVIC_JOBS } from './jobs/civic';
 import { WILDS_JOBS } from './jobs/wilds';
@@ -292,9 +293,16 @@ export const JOB_POIS: WorldPOI[] = [
     /* THE BELFRY BENCH: a seat in the yard, so Marget's hour can be
      * waited for at six times the pace. */
     x: -61.5, z: -46, radius: 3.4, label: 'THE BELFRY BENCH', labelHeight: 2.6,
-    prompt: 'SIT ON THE BENCH',
+    /* TIER 1: the bench is the first thing in the yard a foot reaches,
+     * and until the lamps have been seen its verb is the yard's: wait */
+    prompt: () => (hourKnown() ? 'SIT ON THE BENCH' : 'WAIT HERE FOR THE LAMPS'),
+    wait: {
+      until: () => hourKnown() || clock.lamp > 0.3,
+      hint: 'waiting in the yard for the lamps — step away to stop',
+      done: 'The lamps. One hand on that clock agrees with them.',
+    },
     sit: { x: -61.5, z: -46 },
-  },
+  } as unknown as WorldPOI,
 ];
 
 export const THINGS_POIS: WorldPOI[] = [...JOB_POIS, ...STAMP_POIS, ...TOY_POIS];
