@@ -47,9 +47,9 @@ export type OpeningStage = 'off' | 'bench' | 'named' | 'bull' | 'horse' | 'home'
 export type OpeningSave = { stage: OpeningStage; said: number; gateMine?: boolean };
 
 /** Where you wake: a bench on the green between the road and Nell's
- *  gate, facing the road. The note is on its east end. */
+ *  gate, facing the road. The note is tacked to its east upright. */
 export const BENCH = { x: -26, z: 92 };
-export const BENCH_NOTE = { x: -23.7, z: 91.6 };
+export const BENCH_NOTE = { x: BENCH.x + 1.24, z: BENCH.z };
 /** The milestone at the Common's south border (the meadow draws it). */
 export const MILESTONE = { x: -46.6, z: 119.2 };
 
@@ -117,6 +117,8 @@ export type OpeningCtx = {
   /** Put the walker (and whatever he is riding) a step aside. */
   stepAside: (x: number, z: number) => void;
   nameOpen: () => boolean;
+  /** Ease the look toward a place, once; a hand on the lens cancels it. */
+  lookAt: (x: number, z: number) => void;
   openList: () => void;
   notebookOpen: () => boolean;
 };
@@ -653,6 +655,15 @@ class Opening {
           this.mountedOnce = true;
           npcs.mute('nell', false);
           notebook.step(JOB_ID, 1);
+          /* THE LENS TURNS TO THE GATE, ONCE (the owner, 2026-09-17: "the
+           * camera is always facing one direction unless the user moves
+           * it"). The hedge runs away from a lens looking north and the
+           * gate is a gap in it seen end on. Up in the saddle, at the
+           * press that put him there, the look eases round to the gate
+           * with Nell in it, and since the walk is relative to the lens,
+           * forward is the gate. A hand on the lens cancels it, and it
+           * never happens twice. */
+          c.lookAt(PIN_GATE.x, PIN_GATE.z);
           /* THE THREE VERBS: her part is the gate, and she offers it.
            * Unanswered, she does it, as she always would have. */
           handle.offer({

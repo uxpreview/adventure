@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { towardLens, cameraRight } from '../../engine/billboard';
 import { ringTexture, loopsTexture, rng } from '../../engine/ink';
+import { makeStandee } from '../../engine/props';
 import { hayBaleTexture, logTexture, wheatDecal } from '../textures';
 import {
   leanGrassTexture, tallGrassTexture, driftFlowersTexture, commonOakTexture,
@@ -9,7 +10,7 @@ import {
   fistStoneTexture, wellRopeTexture, wellBucketTexture,
   leafLitterDecal, reedsTexture, ropeSwingTexture, swallowTexture,
   keepVistaTexture,
-  nellTexture, nellSatTexture, fieldGateTexture, bullTexture, seaGlintTexture, millSmokeTexture,
+  nellTexture, nellSatTexture, bullTexture, seaGlintTexture, millSmokeTexture,
   cityTowersTexture, maypoleTexture, fairBoardTexture,
 } from '../textures-common';
 import { goatTexture } from '../textures-wood';
@@ -24,7 +25,7 @@ import { barriers } from '../barriers';
 import { Follower } from '../company';
 import { knowledge } from '../knowledge';
 import { opening, MILESTONE, BENCH, BENCH_NOTE } from '../opening'; /* THE FIRST FIVE MINUTES */
-import { borderStoneTexture, benchTexture, pinnedNoteTexture, laundryLineTexture, morrowTexture } from '../textures-opening';
+import { borderStoneTexture, benchTexture, pinnedNoteTexture, laundryLineTexture, morrowTexture, hedgeBushTexture, gatePostTexture, gateLeafTexture } from '../textures-opening';
 import { SPEC_BY_ID } from '../layout';
 import { platform } from '../../engine/Eight15';
 import { npcs } from '../npc'; /* VOICE */
@@ -545,25 +546,54 @@ export const buildMeadow: RegionBuilder = (ctx) => {
     { x: 9, kind: 2 }, { x: 16, kind: 0 }, { x: 23, kind: 3 },
     { x: 30, kind: 0 }, { x: 37, kind: 1 },
   ];
+  /* THE FIELD'S EDGE STAYS WHERE IT IS (the owner, 2026-09-17: "even
+   * when I move it, the fence rotates"). Each panel used to lean up to
+   * fifty degrees toward the lens about its own middle, so an orbit
+   * opened a louvre of false gaps along a fence that has one stile and
+   * no gap. The panels are fixed planes on the fence's own line now,
+   * and a post stands at every joint: a fence seen along its length is
+   * a row of posts, and a post turned to the lens has not moved. */
   fenceRun.forEach((seg, i) =>
-    ctx.standee(longFenceTexture(440 + i, seg.kind), 7, 2.6, seg.x + 3.5,
-      FENCE_Z + Math.sin(i * 1.7) * 0.8));
-  /* THE HEDGE RETURN: the field's west side, so the bull's stop there
-   * is a thing you can see and not a line you cannot. Hedgerow masses
-   * stepped south, the way the gate fields' hedges are stepped north —
-   * a hedge that runs away from the camera is a column of hedge, and it
-   * reads — with the gate in the gap between the second and the third. */
-  ctx.standee(hedgerowTexture(1612), 12, 5.6, HEDGE_X, 69);
-  ctx.standee(hedgerowTexture(1613), 11, 5.2, HEDGE_X - 0.4, 76.5);
-  ctx.standee(hedgerowTexture(1615, true), 11, 5.2, HEDGE_X + 0.3, 88);
-  ctx.standee(hedgerowTexture(1614), 12, 5.6, HEDGE_X, 96);
-  ctx.standee(hedgerowTexture(1616), 11, 5.0, HEDGE_X - 0.3, 103);
-  /* THE GATE: its frame — two posts and a rail either side, one fence
-   * panel's worth — and the leaf, open and shut, two drawings, one
-   * showing. */
-  ctx.standee(longFenceTexture(1609, 4), 7, 2.6, GATE.x, GATE.z + 0.3);
-  const gateOpen = ctx.standee(fieldGateTexture(1610, false), 2.6, 2.6, GATE.x, GATE.z + 0.35);
-  const gateShut = ctx.standee(fieldGateTexture(1611, true), 2.6, 2.6, GATE.x, GATE.z + 0.35);
+    ctx.standee(longFenceTexture(440 + i, seg.kind), 7, 2.6, seg.x + 3.5, FENCE_Z, { face: 'fixed' }));
+  for (let i = 0; i <= fenceRun.length; i++) {
+    ctx.standee(gatePostTexture(1770 + i, true), 0.42, 2.1, -12 + i * 7, FENCE_Z + 0.02);
+  }
+  /* THE HEDGE RETURN: the field's west side, and the one gap in it.
+   *
+   * The owner, 2026-09-17: "I can never find the gate entrance to get
+   * the bull through." It was five hedgerow cards twelve units wide,
+   * each turned to the lens about its own middle: a fan of blobs with
+   * a gap between every pair from any bearing, the gate's frame drawn
+   * east-west across a hedge that runs north-south, and a leaf under
+   * three units wide in a six-unit gap. Now it is a row of round
+   * bushes on the barrier's own line (`HEDGE` above), shoulder to
+   * shoulder, with exactly one break in it, and the break is the gate:
+   * two capped posts taller than the hedge, a worn track through on
+   * the ground (a decal does not turn), and a five-bar leaf that is a
+   * fixed plane, swung into the field while it is open and across the
+   * posts when Nell shuts it. */
+  {
+    const hr = rng(1612); // its own dice: the builder's roll on from here unchanged
+    const bush = (z: number, n: number) =>
+      ctx.standee(hedgeBushTexture(1612 + n), 3.4 + hr() * 0.5, 2.5 + hr() * 0.4, HEDGE_X + (hr() - 0.5) * 0.5, z);
+    let n = 0;
+    for (let z = FENCE_Z + 1.2; z < GATE.z - 4.2; z += 2.5) bush(z, n++);
+    for (let z = GATE.z + 4.4; z < 104.5; z += 2.5) bush(z, n++);
+  }
+  for (const dz of [-3.2, 3.2]) ctx.standee(gatePostTexture(1609 + (dz > 0 ? 1 : 0)), 0.72, 3.6, GATE.x, GATE.z + dz);
+  ctx.decal(wornGroundDecal(1606), 13, 5.4, GATE.x - 1, GATE.z, 0, 0.75);
+  ctx.decal(wheelRutsDecal(1607), 12, 4.6, GATE.x - 8, GATE.z + 0.4, 0.06, 0.6);
+  ctx.decal(wheelRutsDecal(1608), 10, 4.4, GATE.x + 6, GATE.z - 0.2, -0.05, 0.5);
+  /* THE LEAF. A plane's own x runs along (cos θ, −sin θ): open, it is
+   * hung on the north post and lies eighteen degrees off due east,
+   * into the field, clear of the way through and never edge-on to a
+   * lens looking north or east; shut, it lies on the hedge's line. */
+  const LEAF_W = 5.9;
+  const openTurn = -0.32;
+  const gateOpen = ctx.standee(gateLeafTexture(1610), LEAF_W, 1.9,
+    GATE.x + 0.2 + Math.cos(openTurn) * LEAF_W * 0.5, GATE.z - 3.2 - Math.sin(openTurn) * LEAF_W * 0.5,
+    { rotY: openTurn, face: 'fixed' });
+  const gateShut = ctx.standee(gateLeafTexture(1611), LEAF_W, 1.9, GATE.x, GATE.z, { rotY: Math.PI / 2, face: 'fixed' });
   gateShut.visible = false;
   /* FIRST HOUR: THE MILESTONE at the south border, on the verge of the
    * king's road, a stride short of Maple Court. The place that reads it
@@ -609,12 +639,21 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   /* ---- THE FIRST FIVE MINUTES: the bench, the note, the washing ---- *
    * You wake sitting on the bench on the green, under the note; Nell
    * is at her washing line by the gate. */
-  ctx.standee(benchTexture(1750), 3.2, 1.6, BENCH.x, BENCH.z, { face: 'run' });
+  const benchMesh = ctx.standee(benchTexture(1750), 3.2, 1.6, BENCH.x, BENCH.z, { face: 'run' });
   ctx.decal(wornGroundDecal(1751), 5, 3.2, BENCH.x, BENCH.z + 0.6, 0.1, 0.4);
   const noteFirst = pinnedNoteTexture(1752, false);
   const noteSecond = pinnedNoteTexture(1753, true);
-  const noteMesh = ctx.standee(noteFirst, 0.52, 0.6, BENCH_NOTE.x, BENCH_NOTE.z - 0.2);
-  noteMesh.position.y += 1.02;
+  /* THE NOTE IS PINNED TO THE BENCH (the owner, 2026-09-17: "the note
+   * by the bench is just floating there"). It stood 0.7 past the
+   * bench's end, a unit up, on nothing. It is the bench's child now, its
+   * tack on the top of the east upright, so it turns as the bench does
+   * and cannot come off it. Bench-local: the upright is 1.24 right of
+   * the middle and 1.36 tall (`benchTexture`). */
+  const noteMesh = makeStandee(noteFirst, 0.5, 0.58);
+  noteMesh.position.set(BENCH_NOTE.x - BENCH.x, 0.84, 0.05);
+  noteMesh.rotation.z = -0.08;
+  noteMesh.renderOrder = 2;
+  benchMesh.add(noteMesh);
   const noteMat = noteMesh.material as THREE.MeshBasicMaterial;
   let noteShown = false;
   ctx.standee(laundryLineTexture(1754), 5.4, 2.5, HEDGE_X - 7.6, 89.6, { face: 'run' });

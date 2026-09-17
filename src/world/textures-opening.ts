@@ -163,3 +163,81 @@ export function morrowTexture(seed: number, pose: 0 | 1): THREE.CanvasTexture {
     }
   });
 }
+
+/* ---- THE FIELD'S EDGE, DRAWN SO IT STAYS WHERE IT IS ------------------ *
+ * The owner, 2026-09-17: "I can never find the gate entrance to get the
+ * bull through." The hedge was five wide cards that each turned to the
+ * lens about their own middles, so from every bearing it was a fan of
+ * blobs with a gap between every pair, and the one real gap was one of
+ * six. A hedge is a line on the ground. These are the pieces of one
+ * that reads as the same line from anywhere: round bushes (a round
+ * thing turned to the lens has not moved), posts (the same), and a
+ * leaf that is a fixed plane and does not turn at all. */
+
+/** One bush of the hedge: round, so facing the lens is not a move. */
+export function hedgeBushTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(112, 96, seed, (ctx, r) => {
+    const blob = (cx: number, cy: number, rx: number, ry: number, alpha: number) => {
+      const pts: [number, number][] = [];
+      for (let i = 0; i < 14; i++) {
+        const a = (i / 14) * Math.PI * 2;
+        const k = 0.88 + r() * 0.2;
+        pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]);
+      }
+      fillPoly(ctx, pts, WASH.forest, alpha);
+    };
+    blob(56, 60, 50, 32, 0.34);
+    blob(56 + (r() - 0.5) * 14, 50, 36, 24, 0.22);
+    // one billowing contour, down to the ground at both ends
+    const top: [number, number][] = [[5, 92], [3, 66]];
+    let x = 6;
+    while (x < 100) {
+      x += 14 + r() * 12;
+      top.push([Math.min(x, 106), 24 + r() * 14 + Math.abs(x - 56) * 0.22]);
+    }
+    top.push([109, 66], [107, 92]);
+    stroke(ctx, top, r, { width: 2, alpha: 0.7, jitter: 2.4 });
+    for (let i = 0; i < 5; i++) {
+      scribbleCircle(ctx, 18 + r() * 76, 48 + r() * 30, 3 + r() * 3.5, r, { width: 1, alpha: 0.2, jitter: 1.4, passes: 1 }, 1.6);
+    }
+    hatch(ctx, 10, 72, 92, 18, 0.55, 6, r, { alpha: 0.1 });
+    line(ctx, 10, 93, 48, 94, r, { width: 1.6, alpha: 0.45, passes: 1 }, 3);
+    line(ctx, 62, 94, 102, 93, r, { width: 1.6, alpha: 0.45, passes: 1 }, 3);
+  });
+}
+
+/** A gatepost: stout, taller than the hedge, a cap on it. `fence`
+ *  draws the long fence's plain post instead. */
+export function gatePostTexture(seed: number, fence = false): THREE.CanvasTexture {
+  return makeTexture(32, 160, seed, (ctx, r) => {
+    if (fence) {
+      stroke(ctx, [[16 + (r() - 0.5) * 3, 156], [16, 8 + r() * 6]], r, { width: 3, alpha: 0.85 });
+      for (let i = 0; i < 3; i++) stroke(ctx, [[10 + r() * 12, 156], [11 + r() * 12, 138 - r() * 10]], r, { width: 1.2, alpha: 0.5, passes: 1 });
+      return;
+    }
+    fillPoly(ctx, [[9, 26], [23, 26], [24, 156], [8, 156]], WASH.sand, 0.55);
+    stroke(ctx, [[8, 156], [9, 26], [23, 26], [24, 156]], r, { width: 2.6, alpha: 0.92 });
+    // the cap
+    stroke(ctx, [[5, 26], [16, 8], [27, 26], [5, 26]], r, { width: 2.4, alpha: 0.92 });
+    hatch(ctx, 10, 34, 12, 116, 0.2, 9, r, { width: 0.9, alpha: 0.22 });
+    // the hinge irons
+    line(ctx, 8, 58, 26, 58, r, { width: 2, alpha: 0.7, passes: 1 });
+    line(ctx, 8, 120, 26, 120, r, { width: 2, alpha: 0.7, passes: 1 });
+    for (let i = 0; i < 4; i++) stroke(ctx, [[3 + r() * 26, 157], [4 + r() * 26, 142 - r() * 8]], r, { width: 1.2, alpha: 0.5, passes: 1 });
+  });
+}
+
+/** The gate's leaf, flat on: five bars, a brace, the two stiles. It is
+ *  one drawing; open and shut are where the plane stands. */
+export function gateLeafTexture(seed: number): THREE.CanvasTexture {
+  return makeTexture(256, 88, seed, (ctx, r) => {
+    line(ctx, 8, 84, 8, 10, r, { width: 3, alpha: 0.9 });
+    line(ctx, 248, 84, 248, 16, r, { width: 2.6, alpha: 0.88 });
+    for (let i = 0; i < 5; i++) {
+      const y = 20 + i * 15;
+      line(ctx, 8, y, 248, y + (r() - 0.5) * 3, r, { width: 2.3 - i * 0.1, alpha: 0.85, passes: 1 }, 5);
+    }
+    line(ctx, 10, 80, 246, 22, r, { width: 2.2, alpha: 0.75 });
+    line(ctx, 128, 20, 129, 80, r, { width: 1.8, alpha: 0.7, passes: 1 });
+  });
+}
