@@ -6,6 +6,16 @@ import { fallbackAsk } from '../ui/notebook';
 import { knowledge } from './knowledge';
 import { THE_LIST } from './thelist';
 import { handle } from './handle'; /* THE THREE VERBS */
+import { cameraRight } from '../engine/billboard';
+
+/** Which way a world direction lies on the screen, in a player's words. */
+function screenWay(dx: number, dz: number): 'LEFT' | 'RIGHT' | 'AHEAD' | 'BEHIND' {
+  const [rx, rz] = cameraRight();
+  const side = dx * rx + dz * rz;
+  const ahead = dx * rz - dz * rx; // forward is right turned a quarter left
+  if (Math.abs(side) >= Math.abs(ahead)) return side > 0 ? 'RIGHT' : 'LEFT';
+  return ahead > 0 ? 'AHEAD' : 'BEHIND';
+}
 import type { WorldPOI } from './regions';
 import type { RegionId } from './layout';
 
@@ -104,6 +114,8 @@ export type OpeningCtx = {
   whistleTo: (x: number, z: number) => void;
   sitOnBench: () => void;
   openName: (submit: (name: string) => void) => void;
+  /** Put the walker (and whatever he is riding) a step aside. */
+  stepAside: (x: number, z: number) => void;
   nameOpen: () => boolean;
   openList: () => void;
   notebookOpen: () => boolean;
@@ -150,8 +162,12 @@ class Opening {
     this.nudges = [
       {
         id: 'brim-wall', held: 0, last: -99,
-        test: (x, z, land) => ((land === 'meadow' || land === 'kingdom') && z < -2 && z > -17 && Math.abs(x + 45) > 2.6)
-          ? `BRIM'S GATE IS ${x < -45 ? 'EAST' : 'WEST'} ALONG THE WALL, ON THE ROAD` : null,
+        /* gate round 4: it fired ten strides from the arch and sent the
+         * walker past it, in compass words a free camera makes
+         * meaningless (the owner, 2026-09-12). Now: only well off the
+         * gate, and LEFT / RIGHT / AHEAD / BEHIND as the screen has it. */
+        test: (x, z, land) => ((land === 'meadow' || land === 'kingdom') && z < -2 && z > -17 && Math.abs(x + 45) > 14)
+          ? `BRIM'S GATE IS ${screenWay(-45 - x, 0)} ALONG THE WALL, UNDER ITS NAME` : null,
       },
       {
         id: 'shut-gate', held: 0, last: -99,
@@ -264,7 +280,7 @@ class Opening {
       case 'bull':
         return pick(['Mind the bull. It knows you.', 'RUN.']);
       case 'horse':
-        if (this.gateMine) return pick(['Your gate. You said.', 'Well in, then shut it. E, at the gate.']);
+        if (this.gateMine) return pick(['Your gate. You said.', 'Ride through it with him behind you. Once he\'s past the posts, E at the gate.', 'Past the posts. Then E. I\'m sat.']);
         return pick([
           'Get on the horse. It follows the horse. Bring it in through this gate, and I\'ll shut it behind it.',
           'In through the gate, well in. I\'ll do the rest.',
@@ -281,6 +297,33 @@ class Opening {
   private onNellTalk() {
     this.said++;
     this.save();
+    /* gate round 5: FAIL FORWARD. He said he would handle it and has
+     * come back to her twice with the bull still out: she offers again.
+     * Taking help is always on the table; the basket stays where she
+     * left it. */
+    if (this.gateMine && this.stage === 'horse' && this.said >= 2 && this.ctx) {
+      const c = this.ctx;
+      handle.offer({
+        id: `nell-gate-again-${this.said}`, who: 'NELL', speaker: this.nell,
+        line: 'Shall I get the gate after all?',
+        yes: {
+          label: 'GO ON, NELL. YOU GET IT.', said: 'Go on, Nell.', reply: 'There. That wasn\'t hard to say.',
+          run: () => {
+            this.gateMine = false;
+            c.common.nellSat = false;
+            c.common.nellAtGate = true;
+            this.save();
+          },
+        },
+        mine: {
+          reply: 'Suit yourself. Past the posts, then E.',
+          what: 'STILL MINE',
+          cost: 'NELL STAYS SAT.',
+          run: () => { /* she was already sat */ },
+        },
+        seconds: 12, unanswered: 'nothing',
+      });
+    }
   }
 
   /* ---- the bench --------------------------------------------------- */
@@ -295,7 +338,12 @@ class Opening {
   private askName() {
     if (!this.ctx || this.stage !== 'bench') return;
     if (this.name) { this.named(this.name, true); return; }
-    this.nellSays('What do I call you? — You don\'t know. Course you don\'t.', 3.2);
+    /* gate round 5: the question queued behind her E-lines and came
+     * after the name. It is said now, and she takes no other talk till
+     * it is answered. */
+    npcs.mute('nell', true);
+    const who = this.nell;
+    if (who) { say(who, 'What do I call you? — You don\'t know. Course you don\'t.', { hold: 3.2, now: true }); notebook.heard('NELL', 'What do I call you? — You don\'t know. Course you don\'t.'); }
     this.after(2.2, () => {
       if (!this.ctx || this.stage !== 'bench') return;
       this.ctx.openName((name) => this.named(name, false));
@@ -305,6 +353,7 @@ class Opening {
   private named(name: string, reloaded: boolean) {
     if (!this.ctx) return;
     this.ctx.data().name = name;
+    npcs.mute('nell', false);
     notebook.setName(name);
     this.ctx.persist();
     this.go('named');
@@ -353,8 +402,11 @@ class Opening {
   /** E at the gate, when the gate is his. It always works, if he does it. */
   shutGate() {
     if (!this.gateKey) return;
-    if (!this.bullIn) { say('walker', 'Not yet. He\'s not in.'); return; }
-    if (this.inGap) { say('walker', 'Not with me stood in it.'); return; }
+    if (!this.bullIn) {
+      say('walker', 'Not yet. He\'s this side of it. Through the gate first, him behind me.', { now: true });
+      return;
+    }
+    if (this.inGap && this.ctx) this.ctx.stepAside(this.ctx.walker().x < HEDGE_X ? HEDGE_X - 3.2 : HEDGE_X + 3.2, PIN_GATE.z + 3.6);
     handle.withdraw();
     this.penned();
   }
@@ -450,7 +502,7 @@ class Opening {
         yes: { label: 'NOT YET.', said: 'Not yet.', reply: 'Didn\'t think so.' },
         mine: {
           reply: 'Already handled.',
-          what: 'THE BRIDGE',
+          what: 'THE BRIDGE IS MINE',
           cost: 'MORROW DOES NOT LOOK ROUND. THE DOG GOES WITH HIM.',
           run: () => { W.dogPause = -1; W.dogPaused = true; },
         },
@@ -606,17 +658,17 @@ class Opening {
           handle.offer({
             id: 'nell-gate', who: 'NELL', speaker: this.nell,
             line: 'Bring him in through this gate, well in. I\'ll shut it behind him.',
-            yes: { label: 'GO ON, THEN.' },
+            yes: { label: 'YOU SHUT IT, NELL.', said: 'You shut it, Nell.' },
             mine: {
               reply: 'Course you will.',
-              what: 'THE GATE',
+              what: 'I SHUT THE GATE MYSELF',
               cost: 'NELL SITS DOWN ON HER BASKET. THE GATE IS YOURS.',
               run: () => {
                 this.gateMine = true;
                 c.common.nellAtGate = false;
                 c.common.nellSat = true;
                 this.save();
-                toast('LEAD HIM WELL IN. THEN E AT THE GATE SHUTS IT.', 'learned');
+                toast('LEAD HIM THROUGH THE GATE. E AT THE GATE SHUTS IT BEHIND HIM.', 'learned');
               },
             },
             seconds: 9,
@@ -631,14 +683,18 @@ class Opening {
         const inGap = Math.abs(w.z - PIN_GATE.z) < 3.4 && Math.abs(w.x - HEDGE_X) < 2.4;
         /* his gate: "in" is past the posts, because a bull on a gallop's
          * tail is only ever a few strides behind the horse going out */
-        this.bullIn = b.loose && b.x > HEDGE_X + 2.5 && b.x < FIELD.maxX - 0.5 && b.z > FIELD.minZ + 0.3 && b.z < FIELD.maxZ - 0.5;
+        /* gate round 5: the cold player tried ten times and never shut it.
+         * The bull keeps pace with anything, so "in" is AT THE POSTS OR
+         * PAST THEM, and a walker stood in the gap is stepped aside by
+         * the leaf. It always works, if he does it. */
+        this.bullIn = b.loose && b.x > HEDGE_X - 1.2 && b.x < FIELD.maxX - 0.5 && b.z > FIELD.minZ + 0.3 && b.z < FIELD.maxZ - 0.5;
         this.inGap = inGap;
         if (this.gateMine) {
           /* his gate: nothing shuts it but him. If he has forgotten, it
            * says so once in a while. */
           if (this.bullIn) {
             this.gateNudge += dt;
-            if (this.gateNudge > 7) { this.gateNudge = -20; toast('HE IS IN. THE GATE IS YOURS: E AT THE GATE.', 'place'); }
+            if (this.gateNudge > 3 && this.gateKey) { this.gateNudge = -20; toast('HE IS THROUGH. E AT THE GATE, NOW.', 'place'); }
           } else if (this.gateNudge > 0) this.gateNudge = 0;
         } else if (bullIn && !inGap && b.loose) this.penned();
         else if (c.common.gate.shut && !b.loose) this.penned();

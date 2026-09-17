@@ -54,7 +54,7 @@ Run the pillars and the loop **one at a time, one agent at a time, over as
 many sessions as it takes.** A cold player and then one critic in sequence
 is fine. The brief's goal is unchanged; only the shape of the work is.
 
-## 2. Where it stands (2026-09-16, branch `claude/next-session-r4gate`, on main after PR #29)
+## 2. Where it stands (2026-09-17, branch `claude/next-session-r4gate`; main is PR #29)
 
 Play it: https://adventure-git-claude-next-session-r4gate-ryankm.vercel.app
 (Vercel rebuilds `adventure-git-<branch>-ryankm.vercel.app` on every push
@@ -70,6 +70,7 @@ the title, no parameters:
 | 2 | 8/10 — holds | yes | 0 of 6 |
 | 3 | 8/10 — holds (first five minutes) | yes | not run |
 | 4 | 7/10 — holds | yes | 0 of 6 |
+| 5 | 9/10 — holds (the three verbs) | yes | 0 of 1 (FIRST HOUR only) |
 
 Round 1's cold player never met Nell. Round 2's could not get through
 Brim's south gate. Round 3 (the rebuilt opening) rode fifteen metres of
@@ -80,7 +81,14 @@ on Brim's wall walking under the South Gate twice, and never got THE
 LIST (a wait added that session; fixed after the round). Each round's
 fixes are in `CHANGELOG.md`; reports in `design/reset/rounds/round-N/`.
 
-**What round 4's critics name most, in order, none done:**
+Round 5 (2026-09-17, after the three verbs) chose I'LL HANDLE IT at
+thirty seconds and could not shut the gate in ten tries; it never saw
+Morrow or the list. Fixed after the round (the gate always works, Nell
+offers again, a press is answered now, the bull keeps off); **not yet
+played cold.** Round 4's items 1 and 2 below are built as of round 5's
+fixes and also not yet played cold.
+
+**What round 4's critics name most, in order (1 and 2 built 2026-09-17):**
 1. **The South Gate arch** is drawn as faint as its wall; the player
    walked under it twice. The "BRIM'S GATE IS WEST ALONG THE WALL"
    nudge fires while standing at it (3 critics).
@@ -203,11 +211,11 @@ folder, to build story.
 
 **The story rebuild comes first (owner, 2026-09-16: "proceed"). One item
 per session, in order, each ending with the cold player and the critic
-from `THE-GATE.md`.** Open for the owner: whether round 4's top three
-(the South Gate arch, the map's labels, Brim's bystanders; §2) go
-before story item 1 or inside it. Each is a session's worth; the arch
-and the nudge together are the smallest. Until the owner says, item 1
-is next and the round-4 list rides along where an item touches it.
+from `THE-GATE.md`.** Item 1 is built; **item 2 (Tier 1) is next.**
+Round 4's arch and map labels rode along with item 1; Brim's
+bystanders ride with Tier 1's Marget. Round 5's open list (`CHANGELOG.md`
+"Named and not done") rides where an item touches it: the hedge's
+drawn edge and the strangers' prompts are the two a first minute meets.
 
 0. ~~**The first five minutes on the story of record**~~ **BUILT,
    2026-09-16** (`src/world/opening.ts`, `regions/meadow.ts`, the name

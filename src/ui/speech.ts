@@ -157,8 +157,11 @@ function open(who: Speaker, text: string, opts: { hold?: number; then?: () => vo
  * speaker's x/z are read live every frame, so an object with getters
  * follows its figure.
  */
-export function say(who: Speaker, text: string, opts: { hold?: number; then?: () => void } = {}) {
+export function say(who: Speaker, text: string, opts: { hold?: number; then?: () => void; now?: boolean } = {}) {
   const key = keyOf(who);
+  /* gate round 5: a line that ANSWERS A PRESS is said now, over whatever
+   * the speaker was in the middle of — a queued answer reads as a dead key */
+  if (opts.now) hush(who);
   if (live.has(key)) {
     const q = queues.get(key) ?? [];
     q.push({ who, text, opts });
@@ -166,6 +169,14 @@ export function say(who: Speaker, text: string, opts: { hold?: number; then?: ()
     return;
   }
   open(who, text, opts);
+}
+
+/** Stop a speaker mid-line and drop what they had queued. */
+export function hush(who: Speaker) {
+  const key = keyOf(who);
+  const b = live.get(key);
+  if (b) { b.el.remove(); live.delete(key); }
+  queues.delete(key);
 }
 
 /** A world line, unattributed, across the top of the page. */

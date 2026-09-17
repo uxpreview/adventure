@@ -30,7 +30,7 @@ import {
 } from '../textures-office';
 import {
   brimWallTexture, wallTowerTexture, brimGateTexture, gatePennantTexture,
-  wornGroundDecal, wheelRutsDecal, longFenceTexture,
+  wornGroundDecal, wheelRutsDecal, longFenceTexture, gatePassageDecal,
   hedgerowTexture, reedsTexture, swallowTexture,
 } from '../textures-common';
 import {
@@ -286,6 +286,11 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   /* gate round 2: the arch admits 5.2 of its 13 units, not 3.2 — the cold
    * player pushed at the wall four units off the road for forty seconds */
   const southGate = ctx.standee(brimGateTexture(810), 13, 13, -45, -12.5, { solid: { gap: 5.2 } });
+  /* gate round 4: the arch was drawn as faint as its wall and the cold
+   * player walked under it twice. The passage is trodden dark, from
+   * well out on the Common side to well in, so the way through reads
+   * as a dark tongue on the ground from along the wall. */
+  ctx.decal(gatePassageDecal(813), 6.2, 22, -45, -10.5, 0, 1);
   const pennantL = ctx.standee(gatePennantTexture(811), 1.5, 3, -49.1, -13.2);
   const pennantR = ctx.standee(gatePennantTexture(812), 1.5, 3, -40.9, -13.0);
   ctx.hang(pennantL, 10.3);
@@ -765,7 +770,10 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     // the arch courtesy fades: hold while walker OR camera is in the
     // gate plane (the camera trails 12 units south)
     const sNear = passFade(px, pz, -45, -27, -8);
-    sgMat.opacity = 1 - sNear * 0.92;
+    /* gate round 4: at 8% the towers were "translucent panels" and the
+     * arch was not there to be seen. It thins to let the walker show
+     * through it, and no further. */
+    sgMat.opacity = 1 - sNear * 0.5;
     pLMat.opacity = pRMat.opacity = 1 - sNear * 0.8;
     const nNear = passFade(px, pz, -45, -172, -153);
     ngMat.opacity = 1 - nNear * 0.92;
@@ -908,6 +916,9 @@ export const KINGDOM_POIS: WorldPOI[] = [
   },
   {
     x: -45, z: -14, radius: 8, label: 'THE SOUTH GATE',
+    /* gate round 4: the name reads from along the wall, over the arch */
+    labelReach: 46, labelHeight: 6,
+    prompt: 'LOOK AT THE SOUTH GATE',
     note: {
       title: 'the south gate',
       body: 'the portcullis has been up so long the chain has gone stiff in its housing. either the kingdom has no enemies, or its enemies have given it up too, and everyone has agreed to be civil about it.',

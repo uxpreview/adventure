@@ -354,6 +354,11 @@ export class App {
       whistleTo: (x, z) => { this.audio.init(); this.audio.event('whistle'); this.horse.call(x, z); },
       sitOnBench: () => this.sitAt('THE BENCH'),
       openName: (submit) => this.ui.openName(submit),
+      stepAside: (x, z) => {
+        this.char.teleport(x, z, this.char.heading);
+        this.char.setGround(this.terrain.heightAt(x, z), this.terrain.normalAt(x, z));
+        if (this.horse.aboard) this.horse.setAt(x, z);
+      },
       nameOpen: () => this.ui.nameOpen,
       openList: () => notebook.openTo('THE LIST'),
       notebookOpen: () => this.voice.open,

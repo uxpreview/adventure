@@ -84,6 +84,79 @@ down: struck, toast, and the shout after. E tapped at the bench: "In a
 minute.", hold E to stay sat. E held: fidget at 0.5, sat at 2.2 s,
 STAND UP. No page errors.
 
+### The gate, round 5 (2026-09-17, build `ec600b2`, desktop, from the title)
+
+One cold player, then one critic (THE FIRST HOUR), in sequence. Reports
+in `design/reset/rounds/round-5/`.
+
+**Before (round 4):** T1 7/10, T2 yes, critics 0 of 6.
+**After (round 5):** **T1 holds, 9/10** at sixty seconds ("lead the bull
+through the field gate and shut it"; the large goal 4/10). **T2 holds**:
+"It's a pencil-drawn little open world where you wake up on a park
+bench three years after you said you'd be back in an hour, and
+everyone's a bit short with you about it. The writing is dry and lovely
+and the world notices what you do, but the first job, getting a bull
+through a gate, had me going in circles for more than two minutes and I
+never did shut the thing." Three next: press 1 and watch Nell shut the
+gate; ride north through Brim's gate; follow the signpost's 8:15 arm.
+Scores: understandable 5, alive 8, fun 4, beautiful 8. **T3: THE FIRST
+HOUR — VERDICT: REFERENCE** (1 critic run; 0 of 1). The loop is not done.
+
+The cold player chose I'LL HANDLE IT at thirty seconds and then spent
+gameSec 44 to 189 failing to shut the gate: ten tries, "Not yet. He's
+not in." under a "✓ SHUT THE GATE" toast every time, the bull glued to
+it on foot and keeping pace with a gallop, HE IS IN and "Not with me
+stood in it" in the same second. It never saw Morrow, the list, the
+held sit or the cross-out. Best moment: the note, and Nell's next line
+being about the note.
+
+### Fixed after round 5
+
+**The gate always works, if he does it.** "In" is the bull at the posts
+or past them, not five units beyond; a walker stood in the gap is
+stepped aside by the leaf instead of refused; the refusal says what is
+missing ("Not yet. He's this side of it. Through the gate first, him
+behind me.") and is no longer ticked as done (the gate's key is its own
+`onInteract`, not a `touch`). Replayed the cold player's own way, on
+foot with the bull alongside: shut on the first press.
+
+**Fail forward.** Ask Nell twice with the gate still yours and she
+offers again: "Shall I get the gate after all?" GO ON, NELL. YOU GET
+IT: "There. That wasn't hard to say.", she gets up and stands in the
+gate, and the pen is hers as before. Unanswered, nothing changes
+(`Offer.unanswered`).
+
+**The answers say what they are.** YOU SHUT IT, NELL. / I'LL HANDLE IT.
+(I SHUT THE GATE MYSELF). An answer hushes the line it answers, so her
+old bubble is not left up.
+
+**A press is answered now.** A talk line replaces whatever the speaker
+was in the middle of (`say(..., { now })`, `hush`): the first two E's on
+Nell read as a dead key because her answer queued behind her timed
+lines. "What do I call you?" is said now and Nell takes no other talk
+until the name is given, so it cannot arrive after it. A stray E typed
+into the name card in its first second is dropped.
+
+**The bull keeps off.** After two knocks it has said what it had to
+say and stands a stride and a half off, not on the walker.
+
+**Round 4's first two, built.** THE SOUTH GATE: the passage is trodden
+dark from well out on the Common to well in (`gatePassageDecal`), the
+gate thins to half, not to 8%, its name reads from forty-six units, and
+the wall nudge says LEFT / RIGHT / AHEAD / BEHIND by the screen, only
+from fourteen units off the gate ("BRIM'S GATE IS RIGHT ALONG THE WALL,
+UNDER ITS NAME"). THE MAP: labels are placed nearest-first, search
+outward in rings for clear room with a pencil leader, stay inside the
+frame, and one with no room goes without; THE COMMON / THE BENCH / THE
+NOTE / THE FIELD GATE each read at the start.
+
+**Named and not done:** hedges as see-through blobs with no drawn edge
+(the PEN's occluders, again); world labels far from their owners and
+over each other; the carter and the handcart man have no prompt; the
+well answers a shout with a sound and nothing on screen; the large goal
+is a guess until the list (the cold player never reached it); the map
+button keeps its focus ring.
+
 ### Left for the tiers
 
 Every promise hangs its own offer on `JobSpec.offer` (none of the old

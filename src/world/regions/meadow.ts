@@ -900,7 +900,11 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       B.face = ux < 0 ? -1 : 1;
       /* IT NEVER TOUCHES YOU: it will not step inside two strides.
        * Loose and on foot, it reaches you, and that is the knock. */
-      const keep = B.loose && !B.follow ? 1.1 : B.follow ? 3.0 : 2.3;
+      /* gate round 5: after it has knocked you over twice it has said
+       * what it had to say, and it keeps off: a bull stood on the walker
+       * hid him for most of a session */
+      const knockable = B.loose && !B.follow && B.knocks < 2;
+      const keep = knockable ? 1.1 : B.follow ? 3.0 : 2.3;
       const step = Math.min(speed * dt, Math.max(0, td), Math.max(0, bd - keep));
       const [nx, nz] = clampField(B.x + ux * step, B.z + uz * step);
       const moved = Math.hypot(nx - B.x, nz - B.z);
@@ -919,7 +923,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
       } else if (bd <= keep + 0.05 || td < 0.35) {
         B.state = 'balk'; B.t = 0; B.balks++;
         say('bull-snort');
-        if (B.loose && bd <= keep + 0.6) {
+        if (knockable && bd <= keep + 0.6) {
           /* THE KNOCK: it reached you. App rocks the walker, takes the
            * hat, and the walker says it knows him. */
           B.knocks++;
@@ -1463,7 +1467,7 @@ export const MEADOW_POIS: WorldPOI[] = [
     prompt: 'SHUT THE GATE',
     get enabled() { return opening.gateKey; },
     set enabled(_v: boolean) { /* the opening decides */ },
-    touch: () => { opening.shutGate(); },
+    onInteract: () => { opening.shutGate(); },
   } as unknown as WorldPOI,
   {
     /* NELL (Session 16, `THE-WAITS` §9, `THE-FUN-PASS` §6). Her place

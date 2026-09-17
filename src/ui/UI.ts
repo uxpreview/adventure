@@ -586,6 +586,11 @@ export class UI {
     /* the key that was being pressed when the card came up is not the
      * first letter of a name */
     window.setTimeout(() => { this.nameInput.focus(); this.nameInput.value = ''; this.letterName(); }, 260);
+    /* gate round 5: and neither is the E of somebody still trying to
+     * talk to Nell a moment after it came up */
+    window.setTimeout(() => {
+      if (/^e+$/i.test(this.nameInput.value)) { this.nameInput.value = ''; this.letterName(); }
+    }, 1100);
   }
 
   private letterName() {

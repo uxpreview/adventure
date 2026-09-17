@@ -1,4 +1,4 @@
-import { say, type Speaker } from '../ui/speech';
+import { say, hush, type Speaker } from '../ui/speech';
 import { openReplies, closeReplies } from '../ui/replies';
 import { toast } from '../ui/toast';
 import { notebook } from './notebook';
@@ -34,6 +34,9 @@ export type Offer = {
   mine: { reply: string; what: string; cost: string; run: (count: number) => void };
   /** How long the answers stay up. */
   seconds?: number;
+  /** Unanswered: they do their part (the default), or nothing happens
+   *  and the offer can be made again. */
+  unanswered?: 'yes' | 'nothing';
 };
 
 class Handle {
@@ -58,24 +61,30 @@ class Handle {
     const yes = () => {
       this.answered.add(o.id);
       if (o.yes.said) say('walker', o.yes.said);
-      if (o.yes.reply && o.speaker) { say(o.speaker, o.yes.reply); notebook.heard(o.who, o.yes.reply); }
+      if (o.yes.reply && o.speaker) { say(o.speaker, o.yes.reply, { now: true }); notebook.heard(o.who, o.yes.reply); }
+      else if (o.speaker) hush(o.speaker);
       o.yes.run?.();
     };
     openReplies([
       { label: o.yes.label, pick: yes },
       {
-        label: HANDLE_LABEL,
+        /* gate round 5: "handle what?" The answer names what becomes yours */
+        label: `${HANDLE_LABEL} (${o.mine.what})`,
         pick: () => {
           this.answered.add(o.id);
           say('walker', 'I\'ll handle it.');
-          if (o.speaker) { say(o.speaker, o.mine.reply); notebook.heard(o.who, o.mine.reply); }
+          if (o.speaker) { say(o.speaker, o.mine.reply, { now: true }); notebook.heard(o.who, o.mine.reply); }
           notebook.handle(o.who, o.id, o.mine.cost);
           notebook.chose(`handled:${o.id}`, `I'LL HANDLE IT — ${o.mine.what}`, o.mine.cost);
           toast(o.mine.cost, 'plain');
           o.mine.run(this.count);
         },
       },
-    ], o.seconds ?? 10, () => { this.answered.add(o.id); o.yes.run?.(); });
+    ], o.seconds ?? 10, () => {
+      if (o.unanswered === 'nothing') return;
+      this.answered.add(o.id);
+      o.yes.run?.();
+    });
   }
 
   /** Take the answers off the page (the moment has gone). */

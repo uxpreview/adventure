@@ -275,7 +275,7 @@ class Npcs {
     const struck = crossout.lineFor(id, s);
     if (struck) {
       s.crossedSaid = true;
-      say(n.speaker, struck);
+      say(n.speaker, struck, { now: true });
       notebook.heard(n.def.name, struck);
       notebook.dirty = true;
       return;
@@ -283,7 +283,7 @@ class Npcs {
     const lines = n.def.lines(s);
     if (!lines.length) return;
     const line = lines[s.said % lines.length];
-    say(n.speaker, line);
+    say(n.speaker, line, { now: true });
     notebook.heard(n.def.name, line);
     // the first meeting; then, next time, what they want
     if (s.phase === 'idle') {

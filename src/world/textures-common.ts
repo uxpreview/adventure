@@ -719,6 +719,33 @@ export function wallTowerTexture(seed: number): THREE.CanvasTexture {
 }
 
 /**
+ * THE WAY THROUGH AN ARCH, on the ground (gate round 4): the passage's
+ * own shadow and the dark of trodden stone, run out a few strides
+ * either side of the wall, so an arch drawn as faint as its wall still
+ * reads as the one dark way through it. Long axis is the way through.
+ */
+export function gatePassageDecal(seed: number): THREE.CanvasTexture {
+  return makeTexture(128, 256, seed, (ctx, r) => {
+    const g = ctx.createLinearGradient(0, 0, 0, 256);
+    g.addColorStop(0, 'rgba(35,38,51,0)');
+    g.addColorStop(0.3, 'rgba(35,38,51,0.42)');
+    g.addColorStop(0.5, 'rgba(35,38,51,0.62)');
+    g.addColorStop(0.7, 'rgba(35,38,51,0.42)');
+    g.addColorStop(1, 'rgba(35,38,51,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(30, 0); ctx.lineTo(98, 0); ctx.lineTo(112, 256); ctx.lineTo(16, 256);
+    ctx.closePath();
+    ctx.fill();
+    // the ruts of three hundred years of carts, along the way through
+    for (let i = 0; i < 9; i++) {
+      const x = 34 + r() * 60;
+      line(ctx, x, 40 + r() * 40, x + (r() - 0.5) * 8, 180 + r() * 50, r, { width: 1.3, alpha: 0.4, passes: 1, jitter: 1.4 });
+    }
+  });
+}
+
+/**
  * The south gate of Brim, rebuilt as the poster's centerpiece: square
  * towers (the draft's capsule drums read as balloons up close), real
  * battlements, string courses, the arch with its portcullis forever

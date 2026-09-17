@@ -292,8 +292,21 @@ export function renderMap(state: {
     const active = notebook.active();
     const jobPin = active?.pin?.label ?? null;
     const pins = [...notebook.places];
-    // the job's pin last, so it is drawn on top and its label wins
-    pins.sort((a, b) => (a.label === jobPin ? 1 : 0) - (b.label === jobPin ? 1 : 0));
+    /* gate round 4 (and the owner, 2026-09-12): where places cluster the
+     * labels piled into one smudge, because a label with no clear spot
+     * took the one under its foot regardless. Now the labels are placed
+     * in order of who needs theirs most (the job's pin, then the places
+     * nearest the walker), each searches outward in rings for clear
+     * room and is tied back to its pin with a pencil leader, and one
+     * that finds none within reach goes without: its pin is still there. */
+    const hereX = state.here ? state.here[0] : 0;
+    const hereZ = state.here ? state.here[1] : 0;
+    pins.sort((a, b) => {
+      const ja = a.label === jobPin ? 0 : 1;
+      const jb = b.label === jobPin ? 0 : 1;
+      if (ja !== jb) return ja - jb;
+      return Math.hypot(a.x - hereX, a.z - hereZ) - Math.hypot(b.x - hereX, b.z - hereZ);
+    });
     const pinInk = smallMap ? Math.min(ink, 1.7) : ink;
     // the you-are-here scribble is drawn after the pins; keep the
     // labels off it all the same
@@ -332,9 +345,33 @@ export function renderMap(state: {
         [px + rad + 4, py - lh / 2], [px - rad - 4 - lw, py - lh / 2], [px - lw / 2, py - rad - lh - 2],
         [px - lw / 2, pz + 3], [px + rad + 4, pz + 3], [px - rad - 4 - lw, pz + 3],
       ];
-      const spot = tries.find(([lx, ly]) => clear({ l: lx, r: lx + lw, t: ly, b: ly + lh })) ?? tries[3];
+      const onSheet = (lx: number, ly: number) => lx >= pad + 4 && ly >= pad + 4 && lx + lw <= W - pad - 4 && ly + lh <= H - pad - 4; // inside the drawn frame
+      let spot = tries.find(([lx, ly]) => onSheet(lx, ly) && clear({ l: lx, r: lx + lw, t: ly, b: ly + lh })) ?? null;
+      let led = false;
+      if (!spot) {
+        // outward in rings, sixteen bearings each, nearest clear room wins
+        search: for (const ring of [rad + 16, rad + 30, rad + 46, rad + 64, rad + 84]) {
+          for (let k = 0; k < 16; k++) {
+            const a = (k / 16) * Math.PI * 2 + 0.3;
+            const cx = px + Math.cos(a) * (ring + lw * 0.5 * Math.abs(Math.cos(a)));
+            const cy = py + Math.sin(a) * (ring + lh * 0.5);
+            const lx = cx - lw / 2;
+            const ly = cy - lh / 2;
+            if (!onSheet(lx, ly)) continue;
+            if (clear({ l: lx, r: lx + lw, t: ly, b: ly + lh })) { spot = [lx, ly]; led = true; break search; }
+          }
+        }
+      }
+      // the pin itself takes room, named or not
+      placed.push({ l: px - rad, r: px + rad, t: py - rad, b: pz });
+      if (!spot) { if (!bold) continue; spot = tries[3]; }
       const [lx, ly] = spot;
       placed.push({ l: lx, r: lx + lw, t: ly, b: ly + lh });
+      if (led) {
+        const ex = Math.max(lx, Math.min(px, lx + lw));
+        const ey = Math.max(ly, Math.min(py, ly + lh));
+        line(ctx, px, py, ex, ey, r, { width: 1, alpha: 0.45, color: PENCIL, passes: 1, jitter: 0.6 });
+      }
       ctx.drawImage(lc, lx, ly, lw, lh);
     }
   }
