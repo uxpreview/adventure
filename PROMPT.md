@@ -54,12 +54,12 @@ Run the pillars and the loop **one at a time, one agent at a time, over as
 many sessions as it takes.** A cold player and then one critic in sequence
 is fine. The brief's goal is unchanged; only the shape of the work is.
 
-## 2. Where it stands (2026-09-17, branch `claude/next-session-r4gate`; main is PR #29)
+## 2. Where it stands (2026-09-17, branch `claude/next-session-r4gate`; main is PR #30)
 
 Play it: https://adventure-git-claude-next-session-r4gate-ryankm.vercel.app
 (Vercel rebuilds `adventure-git-<branch>-ryankm.vercel.app` on every push
-to a branch.) PRs #23 to #29 are merged; main is the story of record's
-first five minutes plus the gate's rounds on it.
+to a branch.) PRs #23 to #30 are merged; main is the story of record's
+first five minutes, the three verbs, and the gate's rounds on them.
 
 The gate (`design/reset/THE-GATE.md`) rounds so far, all desktop, from
 the title, no parameters:
@@ -87,6 +87,34 @@ Morrow or the list. Fixed after the round (the gate always works, Nell
 offers again, a press is answered now, the bull keeps off); **not yet
 played cold.** Round 4's items 1 and 2 below are built as of round 5's
 fixes and also not yet played cold.
+
+**The owner played it by hand after round 5 (2026-09-17), twice, and
+both sets of notes are fixed and not yet played cold** (`CHANGELOG.md`
+"The owner's four" and "One voice at a time"):
+- *Could not find the gate; the fence rotates; the note floats; GET ON
+  THE HORSE is the button and the horse is not.* The hedge is a row of
+  round bushes on the barrier's line with one gap, two capped posts and
+  a fixed five-bar leaf; the field's long fence is fixed planes with a
+  post at every joint (every other `run` fence in the world still
+  leans to the lens and will draw the same complaint); the note is the
+  bench's child; a click or tap on the thing a prompt is about is the
+  press (`App.thingUnder`). **And the lens turns to the gate once, at
+  the mount** (`OpeningCtx.lookAt`, through `Look.recentre`, cancelled
+  by any hand on the lens). That is the one exception to the brief's
+  "never a turn the player did not ask for", and it is the owner's.
+- *In the first ten seconds a ton of things pop up, and not only on a
+  phone.* ONE VOICE AT A TIME: the answer line is one line with a
+  queue and waits while a card or a land's name has the page
+  (`ui/toast.ts`, `holdToasts`); a job says one thing per event; a
+  bubble on a phone stops under the objective and the answer line;
+  no place is named under a bubble; the bench's minute is Nell's alone
+  (`opening.quiet`, `notebook.hush`). Anything new that speaks goes
+  through these, and says its thing once.
+- Left from those two: on a phone Nell stands off the right edge of
+  the frame at the bench, so her bubbles pin to the edge (move the
+  washing line nearer, or start the look a few degrees east); seated
+  through the bull's release, the prompt reads READ THE NOTE while the
+  press still stands him up.
 
 **What round 4's critics name most, in order (1 and 2 built 2026-09-17):**
 1. **The South Gate arch** is drawn as faint as its wall; the player
