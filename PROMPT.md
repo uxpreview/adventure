@@ -367,3 +367,85 @@ Keep the pen (no image, font or audio assets, ever). `npm run build` green
 before every commit. Small labelled insertions in `src/core/App.ts`. Every
 visible word hand-lettered with its text as `aria-label`. The only play
 instruction is the URL. Do not argue with the cold player or the critic.
+
+## 5. The prompt for the next session (paste it as it is)
+
+```
+Read PROMPT.md, GAME.md and CHANGELOG.md, then design/reset/THE-GATE.md.
+For story read design/foundation/01 and 08 and nothing else in that
+folder. Nothing under design/archive/ binds.
+
+You are on main at the PR that merged claude/tier-1-promises. Branch
+before the first commit.
+
+FIRST, TWO SMALL THINGS ROUND 6 LEFT (an hour, not the session):
+- T1 fell to 6/10 at sixty seconds because THE LIST opens at ~130. Bring
+  it inside the first minute: shorten the wait before Morrow's walk, or
+  have Nell say "twelve" before he comes. Do not add a voice: move one.
+- Round 6's fixes have never been played cold and nobody cold has met
+  Wick. Play square -> king's road north -> chain -> Wick yourself on
+  the harness, no teleports, before building anything.
+
+THE JOB THIS SESSION: PROMPT.md §3 item 3, TIER 2 PROMISES (Val, Brack,
+Holt) as built in foundation/08 §9: the faded footprints, the lantern,
+the canyon and the Flats. Each promise gets its turn, its choice, its
+visible change, its reveal (4 to 6 show THAT HE LEFT, on foot, on
+purpose) and its call reconnected. Build them the way Tier 1 is built:
+jobs/tier2.ts with promise: true on the list's own lines, what people
+say by the step of their promise in a world/tier2.ts, the land and the
+promise meeting in a state file with no imports. The old steps on
+those three lines go (Val's says hedge and her steps say ride to the
+keep). Every promise hangs an I'LL HANDLE IT on JobSpec.offer with a
+cost you can see, for good. The unlocks ship small: the clippers, the
+lantern, the boat. One item, this session, end to end. Do not start
+Tier 3.
+
+RULES THAT STAND (PROMPT.md §2 has the detail):
+- ONE VOICE AT A TIME. promise:* knowledge is silent; a touch that
+  answers itself sets answers: true; a promise kept in front of its
+  person is theirs to say. No job announces itself three ways. Check
+  every new beat on the portrait rig as well as desktop.
+- A THING I HAVE TO FIND MUST READ FROM EVERY CAMERA BEARING. Fixed
+  planes on their own line, two faces if it is lettered, posts that
+  read as a row end on, a decal for what lies on the ground. The gap
+  in Val's hedge and the lantern on the bank are this rule's: look at
+  each from north, east, south and west before calling it built.
+- DIRECTION LIVES IN THE WORLD. Round 6 lost two minutes in a square
+  with a map open. A place a promise sends me to has a board at the
+  mouth of its road, a trodden way on the ground, and a name that
+  reads from far off. No compass words.
+- A MOUNT NEVER FAILS SILENTLY. If Tier 2 adds the boat or touches the
+  bicycle, a refused move says why and a called mount lands on ground
+  it can leave.
+- A click or tap on the thing is the press (App.thingUnder); verify
+  one new interactable. The lens turned for the world exactly once.
+  Do not add another without asking me.
+- The second job being a WAIT is 08's and stays; Tier 2's tasks are
+  played verbs (cut, carry, walk somebody somewhere), not waits.
+
+HOW TO WORK:
+- One agent at a time, never parallel (the usage window).
+- Play it on the harness, not the in-app browser: tools/play-server.mjs
+  with PW_CHROMIUM set as in PROMPT.md §2a; --rig portrait for the
+  phone. Start the dev server from .claude/launch.json, not from Bash;
+  if it has died overnight start it again the same way. A source edit
+  reloads the harness page and the game starts over: batch your edits,
+  then play. This machine cannot run two harnesses at once.
+  __inklands.setHour(h, true) runs the clock; without true it pins it
+  and a WAIT never ends.
+- When Tier 2 plays end to end on the harness from the title, run the
+  gate: one cold player, then the FIRST HOUR critic, in sequence, per
+  THE-GATE.md. A sub-agent may be refused Write; have it return the
+  report as its final message and save it yourself to play-gate/round-7/
+  and design/reset/rounds/round-7/. Ask for fewer screenshots per
+  command, not fewer seconds. Make no source edit while the cold player
+  plays. Fix what they name and say what you did not fix.
+
+DONE MEANS: npm run build green; Val, Brack and Holt each playable from
+the title with no parameter, and Wick met on foot; CHANGELOG.md has one
+page on what changed and what the cold player said; PROMPT.md §2, §3
+and §5 updated for the session after; committed and pushed to the
+branch; the Vercel branch URL in your last message. Open a PR only when
+I say so. Report faithfully: what you checked, on which rig, and what
+you did not.
+```
