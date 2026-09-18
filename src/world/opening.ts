@@ -1,6 +1,7 @@
 import { notebook } from './notebook';
 import { npcs, type NpcState } from './npc';
-import { say, type Speaker } from '../ui/speech';
+import { say, shout, beckon, inFrame, type Speaker } from '../ui/speech';
+import type { Page } from '../ui/converse';
 import { toast } from '../ui/toast';
 import { fallbackAsk } from '../ui/notebook';
 import { knowledge } from './knowledge';
@@ -44,7 +45,7 @@ import type { RegionId } from './layout';
 
 export type OpeningStage = 'off' | 'bench' | 'named' | 'bull' | 'horse' | 'home' | 'list' | 'done';
 
-export type OpeningSave = { stage: OpeningStage; said: number; gateMine?: boolean };
+export type OpeningSave = { stage: OpeningStage; said: number; gateMine?: boolean; homeTalked?: boolean };
 
 /** Where you wake: a bench on the green between the road and Nell's
  *  gate, facing the road. The note is tacked to its east upright. */
@@ -149,6 +150,16 @@ class Opening {
   /** THE THREE VERBS: "I'll handle it." The gate is his to shut. */
   gateMine = false;
   private gateNudge = 0;
+  /** SHE WAITS TO BE ASKED (the owner, 2026-09-18). Nell calls across
+   *  the green once and the mark goes up over her; what she has to say
+   *  is a conversation, and it starts when the walker goes and asks. */
+  private called = false;
+  private callAcc = 0;
+  private calls = 0;
+  /** After the gate: she has had her say, or has not yet. */
+  private homeTalked = false;
+  private homeWaited = 0;
+  private listWaited = 0;
 
   /* ---- wiring --------------------------------------------------- */
   install(ctx: OpeningCtx) {
@@ -158,6 +169,7 @@ class Opening {
       this.stage = s.stage;
       this.said = s.said ?? 0;
       this.gateMine = !!s.gateMine;
+      this.homeTalked = !!s.homeTalked;
     }
     if (this.active) this.takeNell();
     notebook.hush = this.quiet;
@@ -198,6 +210,9 @@ class Opening {
     this.whistled = false;
     this.mountedOnce = false;
     this.gateMine = false;
+    this.homeTalked = false;
+    this.called = false;
+    this.calls = 0;
     this.settled = true;
     this.go('bench');
     this.ctx.common.wake();
@@ -243,7 +258,7 @@ class Opening {
 
   private save() {
     if (!this.ctx) return;
-    this.ctx.data().opening = { stage: this.stage, said: this.said, gateMine: this.gateMine };
+    this.ctx.data().opening = { stage: this.stage, said: this.said, gateMine: this.gateMine, homeTalked: this.homeTalked };
     this.ctx.persist();
   }
 
@@ -273,6 +288,9 @@ class Opening {
     this.origLines = n.def.lines;
     n.def.lines = (s) => this.nellLines(s);
     n.def.onTalk = () => this.onNellTalk();
+    n.def.converse = () => this.nellConverse();
+    /* a bull is loose: she says her line over her head and he keeps his feet */
+    n.def.barks = () => this.stage === 'named' || this.stage === 'bull' || this.stage === 'horse';
   }
 
   private giveNellBack() {
@@ -280,7 +298,10 @@ class Opening {
     if (!n || !this.origLines) return;
     n.def.lines = this.origLines;
     n.def.onTalk = undefined;
+    n.def.converse = undefined;
+    n.def.barks = undefined;
     this.origLines = null;
+    this.wave(false);
   }
 
   private nellLines(s: NpcState): string[] {
@@ -336,35 +357,80 @@ class Opening {
           cost: 'NELL STAYS SAT.',
           run: () => { /* she was already sat */ },
         },
-        seconds: 12, unanswered: 'nothing',
+        seconds: 12, unanswered: 'nothing', live: true,
       });
     }
   }
 
   /* ---- the bench --------------------------------------------------- */
+  private waving = false;
+  private wave(on: boolean) {
+    const who = this.nell;
+    if (who) beckon(who, on);
+    if (this.waving !== on) { this.waving = on; fallbackAsk.refresh(); }
+  }
+
+  /** She calls across, once, and then she waits to be asked. */
+  private call() {
+    if (!this.ctx || this.stage !== 'bench' || this.called) return;
+    this.called = true;
+    this.callAcc = 0;
+    this.nellSays('Oh. You\'re back.', 3.2);
+    this.wave(true);
+    fallbackAsk.refresh();
+  }
+
   private greet() {
     /* the land's card has the page for its three seconds, alone; then
-     * she speaks, a line at a time, and nothing speaks over her */
-    this.after(3.8, () => this.nellSays('Oh. You\'re back.'));
-    this.after(7.2, () => this.nellSays('You said you\'d only be gone an hour.'));
-    this.after(10.8, () => this.nellSays('It\'s been three years.', 3.2));
-    this.after(14.4, () => this.askName());
+     * she calls, and the controls come, because now there is somewhere
+     * to walk to */
+    this.after(3.8, () => this.call());
+    this.after(7.4, () => { if (this.stage === 'bench') this.controls(); });
+  }
+
+  private controls() {
+    this.ctx?.showHint(this.ctx.touch
+      ? 'drag low to walk · drag high to look'
+      : 'wasd to walk · drag to look · E or a click to act', 7000);
+  }
+
+  /** What Nell has to say when she is asked, by stage. Null: her lines. */
+  private nellConverse(): { pages: Page[]; then?: () => void } | null {
+    const who = this.nell;
+    if (!who || !this.ctx) return null;
+    const nell = (text: string): Page => ({ who, text });
+    if (this.stage === 'bench') {
+      this.called = true;
+      this.wave(false);
+      if (this.name) return { pages: [nell(`${this.name}. You\'re back, then.`)], then: () => this.named(this.name, true) };
+      return {
+        pages: [
+          { who: 'walker', text: 'Do I know you?' },
+          nell('You said you\'d only be gone an hour.'),
+          nell('It\'s been three years.'),
+          nell('What do I call you? — You don\'t know. Course you don\'t.'),
+        ],
+        /* the card comes when she has finished asking, and he has read it */
+        then: () => this.askName(),
+      };
+    }
+    if (this.stage === 'home' && !this.homeTalked) {
+      return {
+        pages: [
+          nell(this.gateMine ? 'All of it, on your own. Same as ever.' : 'I was beginning to think you weren\'t coming back.'),
+          nell('Keep the horse. You always did.'),
+        ],
+        then: () => this.heardNellOut(),
+      };
+    }
+    return null;
   }
 
   private askName() {
     if (!this.ctx || this.stage !== 'bench') return;
     if (this.name) { this.named(this.name, true); return; }
-    /* gate round 5: the question queued behind her E-lines and came
-     * after the name. It is said now, and she takes no other talk till
-     * it is answered. */
     npcs.mute('nell', true);
-    const who = this.nell;
-    if (who) { say(who, 'What do I call you? — You don\'t know. Course you don\'t.', { hold: 3.2, now: true }); notebook.heard('NELL', 'What do I call you? — You don\'t know. Course you don\'t.'); }
-    /* the card comes when she has finished asking, not over her */
-    this.after(3.5, () => {
-      if (!this.ctx || this.stage !== 'bench') return;
-      this.ctx.openName((name) => this.named(name, false));
-    });
+    this.ctx.openName((name) => this.named(name, false));
   }
 
   private named(name: string, reloaded: boolean) {
@@ -374,20 +440,28 @@ class Opening {
     notebook.setName(name);
     this.ctx.persist();
     this.go('named');
+    this.wave(false);
     if (!reloaded) {
       this.nellSays(`${name}, then. Right.`, 2.4);
       toast(`WRITTEN ON THE COVER: ${name.toUpperCase()}`, 'learned');
     }
-    /* the controls, when there is about to be something to walk away
-     * from, and with the page to themselves */
-    this.after(2.8, () => this.ctx?.showHint(this.ctx.touch
-      ? 'drag low to walk · drag high to look'
-      : 'wasd to walk · drag to look · E or a click to act', 6000));
     this.after(4.0, () => {
       if (!this.ctx) return;
       this.ctx.common.bull.hold = false;
       this.go('bull');
     });
+  }
+
+  /** After the gate, she has been heard out: the horse is his, and the
+   *  green gets on with its evening (Morrow). */
+  private heardNellOut() {
+    if (this.homeTalked) return;
+    this.homeTalked = true;
+    this.wave(false);
+    this.save();
+    fallbackAsk.refresh();
+    toast('H WHISTLES THE HORSE', 'learned');
+    this.after(2.5, () => { this.walkbyDue = true; });
   }
 
   /* ---- the job ---------------------------------------------------- */
@@ -445,19 +519,20 @@ class Opening {
     const w = this.ctx.walker();
     const inside = w.x > HEDGE_X && w.z > FIELD.minZ && w.z < FIELD.maxZ && w.x < FIELD.maxX;
     /* said last, and held, so the next line does not paint over it */
-    if (inside) this.after(13.0, () => this.nellSays('You\'re in with it. Stile\'s at the top of the field, north.', 5));
+    if (inside) this.after(6.0, () => this.nellSays('You\'re in with it. Stile\'s at the top of the field, north.', 5));
     notebook.step(JOB_ID, 2);
     notebook.complete(JOB_ID, 'It went in. It always did, for you.');
     this.go('home');
-    this.after(1.2, () => this.nellSays('There. That\'s more like you.', 3));
-    this.after(4.6, () => this.nellSays(this.gateMine
-      ? 'All of it, on your own. Same as ever.'
-      : 'I was beginning to think you weren\'t coming back.', 4));
-    this.after(9.0, () => {
-      this.nellSays('Keep the horse. You always did.', 3.5);
-      toast('H WHISTLES THE HORSE', 'learned');
+    /* one line called over the gate, and the mark: the rest is hers to
+     * say when he comes and asks. It was three lines on a clock, read or
+     * not, and then a boy and a notebook on top of them. */
+    this.homeTalked = false;
+    this.homeWaited = 0;
+    this.after(1.2, () => {
+      this.nellSays('There. That\'s more like you.', 3);
+      if (!this.homeTalked) this.wave(true);
+      fallbackAsk.refresh();
     });
-    this.after(11.5, () => { this.walkbyDue = true; });
   }
 
   /** Morrow's walk is for the walker to see: it waits until they are
@@ -518,7 +593,9 @@ class Opening {
     wb.mpose = Math.floor(W.t / 0.32) % 2;
     const w = c.walker();
     const md = Math.hypot(w.x - m.x, w.z - m.z);
-    if (!W.said && md < 16) {
+    /* he asks where he can be seen asking: in the frame, not from the
+     * corner of the page */
+    if (!W.said && md < 16 && inFrame({ x: wb.mx, z: wb.mz })) {
       W.said = true;
       const morrow = { name: 'MORROW', get x() { return wb.mx; }, get z() { return wb.mz; } };
       /* THE THREE VERBS: he asks, and does not stop for the answer */
@@ -532,7 +609,7 @@ class Opening {
           cost: 'MORROW DOES NOT LOOK ROUND. THE DOG GOES WITH HIM.',
           run: () => { W.dogPause = -1; W.dogPaused = true; },
         },
-        seconds: 7,
+        seconds: 9, live: true,
       });
     }
     // the dog: behind him, until it notices you; then it stops, and
@@ -569,17 +646,25 @@ class Opening {
     this.go('list');
     notebook.listShown = true;
     notebook.dirty = true;
-    toast('N — YOUR NOTEBOOK', 'learned');
+    /* THE NOTEBOOK IS HIS TO OPEN. It used to open itself over whatever
+     * he was doing. Now the walker says it, the objective line says how,
+     * and it opens itself only for somebody who has let half a minute go. */
+    say('walker', 'The notebook. Under my coat.', { hold: 3.5 });
+    toast(this.ctx.touch ? 'TAP NOTEBOOK' : 'N — YOUR NOTEBOOK', 'learned');
     this.listWasOpen = false;
-    this.after(1.2, () => { this.ctx?.openList(); });
+    this.listWaited = 0;
   }
 
-  private tickList() {
+  private tickList(dt: number) {
     const c = this.ctx;
     if (!c) return;
     const open = c.notebookOpen();
     if (open) { this.listWasOpen = true; return; }
-    if (!this.listWasOpen) return;
+    if (!this.listWasOpen) {
+      this.listWaited += dt;
+      if (this.listWaited > 30) { this.listWaited = -999; c.openList(); }
+      return;
+    }
     // the page is shut again: the world opens
     this.go('done');
     for (const l of THE_LIST) notebook.place(l.pin.label, l.pin.x, l.pin.z, { quiet: true });
@@ -589,7 +674,13 @@ class Opening {
     this.after(2.0, () => {
       try { window.dispatchEvent(new CustomEvent('inklands:event', { detail: 'brim-bell' })); } catch { /* no ears */ }
     });
-    this.after(3.4, () => this.nellSays('That\'s the bell. Morrow rings it. He\'s had the hour wrong for three years.', 6));
+    this.after(3.4, () => {
+      const line = 'That\'s the bell. Morrow rings it. He\'s had the hour wrong for three years.';
+      const who = this.nell;
+      // in earshot she says it; a field away, the world does
+      if (who && say(who, line, { hold: 6 })) notebook.heard('NELL', line);
+      else shout('BRIM\'S BELL. IT HAS THE HOUR WRONG.');
+    });
     this.after(7.0, () => {
       this.giveNellBack();
       npcs.set('nell', { phase: 'met' });
@@ -606,7 +697,8 @@ class Opening {
       case 'bench':
         c.common.wake();
         c.sitOnBench();
-        this.after(2.5, () => this.askName());
+        this.after(2.5, () => this.call());
+        this.after(6, () => { if (this.stage === 'bench') this.controls(); });
         break;
       case 'named':
         c.common.loose();
@@ -630,7 +722,8 @@ class Opening {
         c.common.nellSat = this.gateMine;
         c.common.pen();
         if (!notebook.list().find((j) => j.id === JOB_ID)?.complete) notebook.complete(JOB_ID);
-        this.after(3, () => { this.walkbyDue = true; });
+        if (this.homeTalked) this.after(3, () => { this.walkbyDue = true; });
+        else this.after(1.5, () => { this.wave(true); fallbackAsk.refresh(); });
         break;
       case 'list':
         c.common.nellSat = this.gateMine;
@@ -661,6 +754,16 @@ class Opening {
     const land = c.regionId();
     const b = c.common.bull;
     switch (this.stage) {
+      case 'bench': {
+        /* she calls again, twice, and then leaves it: the mark stays */
+        if (!this.called || this.calls >= 2 || c.nameOpen()) break;
+        this.callAcc += dt;
+        if (this.callAcc > 24) {
+          this.callAcc = 0;
+          this.nellSays(['Well? Come over here, then.', 'I\'m not shouting it across the green.'][this.calls++], 3.2);
+        }
+        break;
+      }
       case 'bull': {
         if (b.state === 'charge' && !this.saidRun) {
           this.saidRun = true;
@@ -706,7 +809,7 @@ class Opening {
                 toast('LEAD HIM THROUGH THE GATE. E AT THE GATE SHUTS IT BEHIND HIM.', 'learned');
               },
             },
-            seconds: 9,
+            seconds: 9, live: true,
           });
         }
         /* PENNED: the bull is well inside the field — five units past
@@ -736,11 +839,18 @@ class Opening {
         break;
       }
       case 'home':
+        /* the list always comes (gate round 4): a walker who never goes
+         * back to her still gets Morrow, and the horse is still his */
+        if (!this.homeTalked) {
+          this.homeWaited += dt;
+          const far = Math.hypot(w.x - BENCH.x, w.z - BENCH.z) > 60;
+          if (this.homeWaited > 50 || far) this.heardNellOut();
+        }
         this.tickWalkbyWait(dt);
         this.tickWalkby(dt);
         break;
       case 'list':
-        this.tickList();
+        this.tickList(dt);
         break;
       default:
         break;
@@ -772,7 +882,9 @@ class Opening {
    *  list whose person is not done with you. */
   private fallback(): { name: string; want: string } | null {
     if (!this.ctx) return null;
-    if (this.stage === 'bench') return null; // she is talking; there is nothing to go and do
+    if (this.stage === 'bench') return this.waving ? { name: 'NELL', want: 'GO AND TALK TO HER' } : null;
+    if (this.stage === 'home') return this.waving ? { name: 'NELL', want: 'GO AND TALK TO HER' } : null;
+    if (this.stage === 'list') return { name: 'YOUR NOTEBOOK', want: this.ctx.touch ? 'TAP NOTEBOOK' : 'N OPENS IT' };
     if (this.stage === 'bull') return this.saidRun ? { name: 'NELL', want: 'RUN' } : null;
     if (this.stage !== 'done') return null;
     const w = this.ctx.walker();

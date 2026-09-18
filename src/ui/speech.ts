@@ -32,6 +32,8 @@ type Queued = { who: Speaker; text: string; opts: { hold?: number; then?: () => 
 const FADE_S = 0.45;
 /** Where a head is, over the feet. */
 const HEAD = 2.15;
+/** How far a spoken line carries. */
+const EARSHOT = 42;
 
 let root: HTMLElement | null = null;
 let camera: THREE.PerspectiveCamera | null = null;
@@ -71,14 +73,21 @@ export function installSpeech(o: {
 const keyOf = (who: Speaker) => (who === 'walker' ? 'walker' : who.name);
 
 /** Draw the bubble: paper, a wobbly outline, a tail, the words. */
-function drawBubble(text: string): { canvas: HTMLCanvasElement; w: number; h: number } {
+function drawBubble(text: string, name: string | null): { canvas: HTMLCanvasElement; w: number; h: number } {
   const dpr = DPR();
   const tall = window.innerWidth / window.innerHeight < 0.8;
   const px = tall ? 11.5 : 12;
   const maxW = Math.max(140, Math.min(tall ? 230 : 260, window.innerWidth - 48));
   const t = letterCanvas(text, { ...S.voice(px), maxWidth: maxW, color: INK, alpha: 0.9 });
-  const tw = t.width / dpr;
-  const th = t.height / dpr;
+  /* WHO SAID THAT (the owner, 2026-09-18: "I saw a chat bubble in the
+   * corner of my screen but wasn't sure where it was coming from"). A
+   * person's line has their name written small over it, so a bubble
+   * pinned to the edge of the page still says whose it is. */
+  const n = name ? letterCanvas(name, { ...S.quiet(8.5), color: INK, alpha: 0.72 }) : null;
+  const nw = n ? n.width / dpr : 0;
+  const nh = n ? n.height / dpr + 1 : 0;
+  const tw = Math.max(t.width / dpr, nw);
+  const th = t.height / dpr + nh;
   const pad = 7;
   const tail = 14;
   const w = Math.ceil(tw + pad * 2);
@@ -126,7 +135,8 @@ function drawBubble(text: string): { canvas: HTMLCanvasElement; w: number; h: nu
   ctx.fillStyle = 'rgba(247, 244, 235, 0.93)';
   ctx.fill();
   stroke(ctx, pts, r, { width: 1.5, alpha: 0.88, jitter: 0.9, passes: 2, color: INK });
-  ctx.drawImage(t, pad, pad, tw, th);
+  if (n) ctx.drawImage(n, pad, pad - 1, nw, nh - 1);
+  ctx.drawImage(t, pad, pad + nh, t.width / dpr, t.height / dpr);
   c.style.width = `${w}px`;
   c.style.height = `${h}px`;
   return { canvas: c, w, h };
@@ -138,7 +148,7 @@ function open(who: Speaker, text: string, opts: { hold?: number; then?: () => vo
   const el = document.createElement('div');
   el.className = 'bubble';
   el.setAttribute('aria-label', text);
-  const d = drawBubble(text);
+  const d = drawBubble(text, who === 'walker' ? null : who.name);
   el.appendChild(d.canvas);
   root.appendChild(el);
   const b: Bubble = { key, who, text, hold: opts.hold ?? holdFor(text), t: 0, el, w: d.w, h: d.h, then: opts.then, out: false };
@@ -158,8 +168,15 @@ function open(who: Speaker, text: string, opts: { hold?: number; then?: () => vo
  * speaker's x/z are read live every frame, so an object with getters
  * follows its figure.
  */
-export function say(who: Speaker, text: string, opts: { hold?: number; then?: () => void; now?: boolean } = {}) {
+export function say(who: Speaker, text: string, opts: { hold?: number; then?: () => void; now?: boolean } = {}): boolean {
   const key = keyOf(who);
+  /* OUT OF EARSHOT, NOT SAID. A line from somebody a field away used to
+   * be pinned to the edge of the page, from nowhere. The caller is told,
+   * so the world can say it another way if it matters. */
+  if (who !== 'walker' && walkerPos) {
+    const p = walkerPos();
+    if (Math.hypot(who.x - p.x, who.z - p.z) > EARSHOT) return false;
+  }
   /* gate round 5: a line that ANSWERS A PRESS is said now, over whatever
    * the speaker was in the middle of — a queued answer reads as a dead key */
   if (opts.now) hush(who);
@@ -167,9 +184,10 @@ export function say(who: Speaker, text: string, opts: { hold?: number; then?: ()
     const q = queues.get(key) ?? [];
     q.push({ who, text, opts });
     queues.set(key, q);
-    return;
+    return true;
   }
   open(who, text, opts);
+  return true;
 }
 
 /** Stop a speaker mid-line and drop what they had queued. */
@@ -214,11 +232,12 @@ function place(b: Bubble) {
   let sx = (v.x * 0.5 + 0.5) * window.innerWidth;
   let sy = (-v.y * 0.5 + 0.5) * window.innerHeight;
   if (behind) {
-    /* a speaker behind the lens: the line is pinned at the top of the
-     * page, called from off it — not over the walker's head, where the
-     * cold player (gate round 2) read Nell's lines as their own */
-    sx = window.innerWidth * 0.5;
-    sy = 0;
+    /* a speaker behind the lens: the line is pinned to the side of the
+     * page they are on, beside the walker and never over his head, where
+     * the cold player (gate round 2) read Nell's lines as their own. (A
+     * point behind the lens projects mirrored, so its side is the other.) */
+    sx = v.x < 0 ? window.innerWidth : 0;
+    sy = window.innerHeight * 0.42;
   }
   const hw = b.w * 0.5;
   const pad = 8;
@@ -233,6 +252,93 @@ function place(b: Bubble) {
   b.el.style.top = `${sy}px`;
 }
 
+/* ---- SOMEBODY WANTS A WORD ------------------------------------------
+ * The mark every game hangs over a head: this person has something to
+ * say, and it will wait until you go and ask. It is seen from across a
+ * land, and when they are off the page it sits at the edge they are
+ * past, so it is also the way to them. */
+type Mark = { who: Exclude<Speaker, 'walker'>; el: HTMLElement; w: number; h: number };
+const marks = new Map<string, Mark>();
+
+function drawMark(): { canvas: HTMLCanvasElement; w: number; h: number } {
+  const dpr = DPR();
+  const w = 26;
+  const h = 36;
+  const c = document.createElement('canvas');
+  c.width = Math.ceil(w * dpr);
+  c.height = Math.ceil(h * dpr);
+  c.style.width = `${w}px`;
+  c.style.height = `${h}px`;
+  const ctx = c.getContext('2d')!;
+  ctx.scale(dpr, dpr);
+  const r = rng(3907);
+  const pts: [number, number][] = [];
+  for (let i = 0; i <= 14; i++) {
+    const a = -Math.PI / 2 + (i / 14) * Math.PI * 2;
+    pts.push([13 + Math.cos(a) * 11, 13 + Math.sin(a) * 11]);
+  }
+  // the tail, cut into the bottom of the ring
+  pts.splice(8, 0, [16, 23.5], [13, 34], [10.5, 23.8]);
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(247, 244, 235, 0.95)';
+  ctx.fill();
+  stroke(ctx, pts, r, { width: 1.5, alpha: 0.9, jitter: 0.6, passes: 2, color: INK });
+  stroke(ctx, [[13, 6], [13.3, 15.5]], r, { width: 2.6, alpha: 0.95, jitter: 0.3, passes: 2, color: INK });
+  stroke(ctx, [[12.6, 19.4], [13.6, 20.2]], r, { width: 2.8, alpha: 0.95, jitter: 0.2, passes: 2, color: INK });
+  return { canvas: c, w, h };
+}
+
+/** Hang the mark over somebody, or take it down. */
+export function beckon(who: Speaker, on: boolean) {
+  if (!root || who === 'walker') return;
+  const have = marks.get(who.name);
+  if (!on) { have?.el.remove(); marks.delete(who.name); return; }
+  if (have) return;
+  const el = document.createElement('div');
+  el.className = 'bubble beckon';
+  el.setAttribute('aria-label', `${who.name} HAS SOMETHING TO SAY`);
+  const d = drawMark();
+  el.appendChild(d.canvas);
+  root.appendChild(el);
+  marks.set(who.name, { who, el, w: d.w, h: d.h });
+}
+
+/** Who has the mark over them (the harness reads this). */
+export function beckoning(): string[] {
+  return [...marks.keys()];
+}
+
+function placeMark(m: Mark, quiet: boolean) {
+  if (!camera) return;
+  // their own line is up, or a conversation has the page: no mark
+  const show = !quiet && !live.has(m.who.name);
+  m.el.classList.toggle('show', show);
+  if (!show) return;
+  const x = m.who.x;
+  const z = m.who.z;
+  const y = (groundAt ? groundAt(x, z) : 0) + (m.who.y ?? HEAD) + 0.45;
+  v.set(x, y, z).project(camera);
+  let sx = (v.x * 0.5 + 0.5) * window.innerWidth;
+  let sy = (-v.y * 0.5 + 0.5) * window.innerHeight;
+  if (v.z > 1) { sx = v.x < 0 ? window.innerWidth : 0; sy = window.innerHeight * 0.42; }
+  const pad = 10;
+  const tall = window.innerWidth / window.innerHeight < 0.8;
+  sx = Math.min(Math.max(sx, m.w * 0.5 + pad), window.innerWidth - m.w * 0.5 - pad);
+  sy = Math.min(Math.max(sy, m.h + (tall ? 108 : 46)), window.innerHeight - 120);
+  m.el.style.left = `${sx}px`;
+  m.el.style.top = `${sy}px`;
+}
+
+/** Whether somebody is in the frame, so a line is only said where it is seen. */
+export function inFrame(who: { x: number; z: number; y?: number }): boolean {
+  if (!camera) return false;
+  v.set(who.x, (groundAt ? groundAt(who.x, who.z) : 0) + (who.y ?? HEAD), who.z).project(camera);
+  return v.z < 1 && Math.abs(v.x) < 0.92 && Math.abs(v.y) < 0.92;
+}
+
 /** Every bubble on the page, so a place's name is not written under one. */
 export function speechEls(): HTMLElement[] {
   const out: HTMLElement[] = [];
@@ -241,7 +347,8 @@ export function speechEls(): HTMLElement[] {
 }
 
 /** Once a frame: follow speakers, time the holds, run the queues. */
-export function tickSpeech(dt: number) {
+export function tickSpeech(dt: number, quiet = false) {
+  for (const m of marks.values()) placeMark(m, quiet);
   for (const [key, b] of live) {
     b.t += dt;
     place(b);
@@ -272,6 +379,8 @@ export function clearSpeech() {
   for (const b of live.values()) b.el.remove();
   live.clear();
   queues.clear();
+  for (const m of marks.values()) m.el.remove();
+  marks.clear();
   shoutEl?.classList.remove('show');
   shoutT = -1;
 }

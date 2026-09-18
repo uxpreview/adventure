@@ -110,6 +110,14 @@ both sets of notes are fixed and not yet played cold** (`CHANGELOG.md`
   no place is named under a bubble; the bench's minute is Nell's alone
   (`opening.quiet`, `notebook.hush`). Anything new that speaks goes
   through these, and says its thing once.
+- **The owner's third play (2026-09-18): a talk waits for you**
+  (`CHANGELOG.md` "A talk waits for you"). Conversations are started
+  by the player and read a press at a time (`ui/converse.ts`); people
+  with something to say wear a mark and wait (`speech.beckon`); barks
+  (`say`) are one short line and never the only copy of an objective.
+  **Every tier's content hangs on this: a promise is asked for, turned
+  and answered in conversations, not timed bubbles.** Not yet played
+  cold.
 - Left from those two: on a phone Nell stands off the right edge of
   the frame at the bench, so her bubbles pin to the edge (move the
   washing line nearer, or start the look a few degrees east); seated

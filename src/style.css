@@ -777,3 +777,36 @@ body {
     padding: 12px 12px 12px 14px;
   }
 }
+
+/* ---------- A CONVERSATION: one line at a time, at the foot of the page ---------- */
+.talk {
+  position: absolute;
+  left: 50%;
+  bottom: max(30px, calc(env(safe-area-inset-bottom) + 24px));
+  transform: translateX(-50%) rotate(-0.3deg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+  z-index: 36;
+  cursor: pointer;
+  touch-action: none;
+}
+.talk.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.talk.answering {
+  cursor: default;
+}
+.talk canvas {
+  display: block;
+  max-width: calc(100vw - 20px);
+  height: auto;
+}
+.bubble.beckon.show {
+  animation: beckon-bob 1.1s ease-in-out infinite;
+}
+@keyframes beckon-bob {
+  0%, 100% { margin-top: 0; }
+  50% { margin-top: -5px; }
+}

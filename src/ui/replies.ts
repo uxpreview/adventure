@@ -40,9 +40,11 @@ function choose(i: number) {
 }
 
 /** Put answers on the page for `seconds`; unanswered, `expire` runs. */
-export function openReplies(replies: Reply[], seconds = 10, expire?: () => void) {
+export function openReplies(replies: Reply[], seconds = 10, expire?: () => void, abovePx?: number) {
   if (!strip) return;
   closeReplies();
+  /* a conversation's answers sit on top of its panel, however tall */
+  strip.style.bottom = abovePx ? `${Math.round(abovePx)}px` : '';
   current = replies.slice(0, 3);
   ttl = seconds;
   onExpire = expire ?? null;
