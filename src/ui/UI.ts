@@ -157,7 +157,7 @@ export class UI {
 
     /* THE WAIT BUTTON (Tier 1): not on the page until Marget's line is
      * kept; then it passes the time wherever he stands. T on the keys. */
-    this.waitBtn = el('hud-btn', this.hud, 'button');
+    this.waitBtn = el('hud-btn wait-btn', this.hud, 'button');
     this.waitBtn.style.display = 'none';
     letterEl(this.waitBtn, 'wait', S.button(11));
     this.waitBtn.addEventListener('click', () => this.onWait?.());

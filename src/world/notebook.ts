@@ -241,10 +241,10 @@ class Notebook {
   }
 
   /* ---- choices ---------------------------------------------------- */
-  chose(id: string, what: string, consequence: string) {
+  chose(id: string, what: string, consequence: string, quiet = false) {
     if (this.choices.some((c) => c.id === id)) return;
     this.choices.push({ id, what, consequence, day: dayNow() });
-    toast(`YOU CHOSE: ${what}`, 'done');
+    if (!quiet) toast(`YOU CHOSE: ${what}`, 'done');
     this.changed();
   }
 

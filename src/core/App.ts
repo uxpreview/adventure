@@ -1313,6 +1313,7 @@ export class App {
   private stuckFor = 0;
   private stuckSaidAt = -10;
   private stuckN = 0;
+  private static HORSE_STUCK_LINES = ['He won\'t take that. Round it.', 'Not on a horse. Round it, or get off.', 'He\'s a horse, not a key.'];
   private static STUCK_LINES = ['Solid.', 'Not through there.', 'That\'s a wall. Round it, then.', 'No.'];
   /* ---- VOICE (gate round 1): E WITH NOTHING IN REACH IS STILL ANSWERED.
    * The cold player stood on a carter, a townsperson and a banner,
@@ -1588,6 +1589,13 @@ export class App {
       this.char.rowing = true;
       this.char.maxSpeed = App.HORSE.max;
       this.char.runMult = App.HORSE.run;
+      /* gate round 6: a called horse jumps a fence and came to rest ON
+       * its line (two and a half units short of the walker, who stood a
+       * stride from it). Mounted there every step was refused, in every
+       * direction, with no message, twice in ten minutes. If the horse
+       * stands where a rider cannot, the rider mounts where he stands:
+       * the horse is brought to him. */
+      if (this.horseRefuses(this.horse.pos.x, this.horse.pos.y)) this.horse.setAt(this.char.pos.x, this.char.pos.z);
       this.char.teleport(this.horse.pos.x, this.horse.pos.y, this.char.heading);
       this.snapCamera();
       return;
@@ -1638,7 +1646,9 @@ export class App {
   }
 
   private horseRefuses(x: number, z: number): boolean {
-    return this.terrain.blockedAt(x, z) || barriers.blocks(x, z);
+    /* gate round 6: "I rode the horse into somebody's dining room three
+     * times." A room is for feet. */
+    return this.terrain.blockedAt(x, z) || barriers.blocks(x, z) || rooms.at(x, z) !== null;
   }
   private horseCalledAt = -99;
   /** The whistle: the horse comes if it can hear you. */
@@ -2085,7 +2095,7 @@ export class App {
      * Session 7 hangs a routine on — reads `daylight.clock` directly and
      * never comes through here (see world/daylight.ts). */
     this.tickSitTry(dt); /* ---- THE THREE VERBS: the held sit ---- */
-    this.ui.setWaitShown(this.started && canWait()); /* ---- TIER 1: WAIT, once earned ---- */
+    this.ui.setWaitShown(this.started && canWait() && !repliesOpen().length); /* ---- TIER 1: WAIT, once earned ---- */
     /* ---- THINGS (gate round 1): a wait runs the day at WAIT_TIME with
      * the walker standing; the thing coming, a step, or leaving the
      * place ends it. ---- */
@@ -2261,7 +2271,9 @@ export class App {
     if (this.stuckFor > 1.1 && this.elapsed - this.stuckSaidAt > 7) {
       this.stuckSaidAt = this.elapsed;
       this.stuckFor = 0;
-      say('walker', App.STUCK_LINES[this.stuckN++ % App.STUCK_LINES.length]);
+      /* a rider is told it is the horse that will not (gate round 6) */
+      const lines = this.horse.aboard ? App.HORSE_STUCK_LINES : App.STUCK_LINES;
+      say('walker', lines[this.stuckN++ % lines.length]);
     }
 
     /* ---- THE BOAT ---------------------------------------------------- *
@@ -2315,7 +2327,9 @@ export class App {
        * to the far side of the long fence, it stood there); ridden, it
        * refuses what a walker refuses */
       (x, z) => this.horse.aboard ? this.horseRefuses(x, z) : this.terrain.blockedAt(x, z),
-      (x, z) => this.terrain.heightAt(x, z)
+      (x, z) => this.terrain.heightAt(x, z),
+      /* and it does not come to rest on a fence's own line */
+      (x, z) => barriers.blocks(x, z)
     );
     if (this.horse.hoofbeat && this.started
       && Math.hypot(this.char.pos.x - this.horse.pos.x, this.char.pos.z - this.horse.pos.y) < 70) {

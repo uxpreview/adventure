@@ -232,6 +232,9 @@ class Tier1 {
     }));
   }
 
+  /** He is on his way down to the chain. */
+  get wickGoing(): boolean { return greyweather.wick.goal === 'out'; }
+
   /** He has walked down to it: off the hook it comes. */
   private tickChain() {
     const w = greyweather.wick;
@@ -361,7 +364,7 @@ class Tier1 {
   private strike() {
     const n = brimHour() || 8;
     ringBell(n);
-    const bell: Speaker = { name: 'THE BELL', x: BELFRY.x, z: BELFRY.z, y: 9 };
+    const bell: Speaker = { name: 'THE BELL', x: BELFRY.x, z: BELFRY.z, y: 4.5 };
     say(bell, `${'BONG. '.repeat(3)}— ${HOUR_WORD[n as 8 | 11]}.`, { hold: 4.5 });
   }
 

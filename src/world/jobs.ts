@@ -73,12 +73,15 @@ const BY_ID = new Map(SPECS.map((s) => [s.id, s]));
  *  wait decided at a card. The 8:15 reads this; the notebook shows it. */
 export function landsDone(): number {
   let n = 0;
-  const jobs = notebook.list();
-  for (const spec of REGION_SPECS) {
-    const id = spec.id as RegionId;
-    if (jobs.some((j) => j.land === id && j.complete) || (!PROMISE_LANDS.has(id) && knowledge.decided(id))) n++;
-  }
+  for (const spec of REGION_SPECS) if (landKept(spec.id as RegionId)) n++;
   return n;
+}
+/** Whether a land's line is kept: its job done, or (for a land whose
+ *  promise is not rebuilt yet) its old wait decided. One rule, so the
+ *  count on the toast and the strikes on THE LIST agree (gate round 6:
+ *  "3 OF 12 KEPT" at the tarn with two lines struck). */
+export function landKept(id: string): boolean {
+  return notebook.list().some((j) => j.land === id && j.complete) || (!PROMISE_LANDS.has(id) && knowledge.decided(id));
 }
 export const LANDS_TOTAL = 12;
 
@@ -191,6 +194,9 @@ class Jobs {
       if (T.armedAt(spec.id, i) < 0) T.arm(spec.id, i);
       T.current.jobId = spec.id;
       T.current.step = i;
+      /* a step whose words hang on an answer (who takes the chain down)
+       * is re-lettered when the answer changes them */
+      if (typeof step.text === 'function' && step.text() !== j.steps[i]) notebook.job(this.jobDef(spec, i));
       if (!step.when()) continue;
       step.onDone?.();
       if (i + 1 >= spec.steps.length) this.complete(spec);

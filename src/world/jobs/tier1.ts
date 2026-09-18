@@ -38,7 +38,8 @@ export const WICK_JOB: JobSpec = {
     {
       text: () => (has(K.roadLeft) ? 'CARRY WICK\'S WORD DOWN TO MARGET, IN BRIM SQUARE'
         : has(K.wickSat) ? 'TAKE THE CHAIN DOWN YOURSELF, AT THE CHAIN'
-          : 'WICK IS WALKING DOWN TO UNHOOK THE CHAIN'),
+          : tier1.wickGoing ? 'WICK IS WALKING DOWN TO UNHOOK THE CHAIN'
+            : 'THE CHAIN COMES DOWN. ANSWER WICK.'),
       when: any(known(K.chainDown), known(K.wordCarried)),
       pin: () => (has(K.roadLeft) ? { x: MARGET_STALL.x, z: MARGET_STALL.z - 7, label: 'BRIM SQUARE' } : { x: CHAIN.x, z: CHAIN.z, label: 'THE CHAIN' }),
     },

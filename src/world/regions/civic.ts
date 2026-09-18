@@ -84,7 +84,7 @@ import { npcs } from '../npc'; /* VOICE */
 /* ---- TIER 1 (`world/tier1.ts`): Wick's road, Marget's debt ---- */
 import {
   chainPostTexture, roadChainTexture, chainDownDecal, overgrownRoadDecal, mountingBlockTexture, coldBrazierTexture,
-  stallCoverTexture, brimFolkTexture, margetSatTexture, hallWallTexture, hallFloorDecal, palletTexture,
+  stallCoverTexture, brimFolkTexture, margetSatTexture, hallWallTexture, hallFloorDecal, palletTexture, roadBoardTexture,
   type BrimFolk,
 } from '../textures-tier1';
 import {
@@ -538,6 +538,16 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   belfrySet11.visible = false;
   ctx.decal(stoneWearDecal(1481, true), 9, 7, -66, -38, 0.7, 0.6);
   ctx.standee(benchTexture(1482), 3.2, 1.6, -61, -40, { rotY: -0.3 });
+  /* gate round 6: "the lamps came on in dialogue but I saw no lamp light
+   * anywhere". The hour is settled in this yard by watching the lamps,
+   * and the nearest lamp was forty units off behind a terrace. One
+   * stands in the yard now, lit with the square's first. */
+  ctx.standee(lamppostTexture(1469), 1.8, 6.3, -57.4, -45.6);
+  const yardGlow = ctx.standee(lampGlowTexture(1468), 5.2, 5.2, -57.4, -45.6);
+  ctx.hang(yardGlow, 4.4);
+  (yardGlow.material as THREE.MeshBasicMaterial).transparent = true;
+  (yardGlow.material as THREE.MeshBasicMaterial).depthWrite = false;
+  yardGlow.renderOrder = 3;
   ctx.decal(stoneWearDecal(1483, true), 7, 5, -58, -34, 1.4, 0.45);
 
   /* -- THE ORCHARD CLOSE --------------------------------------------- */
@@ -613,6 +623,18 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   northRun.push(ctx.standee(wallTowerTexture(1571), 6.2, 8, -6 + (r() - 0.5) * 3, -155.8, { solid: true }));
   const northGate = ctx.standee(brimGateTexture(1572), 11.5, 11.5, -45, -156.5, { solid: { gap: 4.6 } });
   ctx.decal(wheelRutsDecal(1573), 11, 5.5, -45, -148, Math.PI / 2, 0.6);
+  /* gate round 6: the cold player spent two minutes along the square's
+   * north row looking for the way to Wick and left by the Wood Gate. The
+   * king's road north leaves the square between two terraces that turn
+   * to the lens, and nothing on the ground said so. It is trodden dark
+   * now from the square's edge to the North Gate (a decal does not
+   * turn), and a board stands at its mouth. */
+  ctx.decal(gatePassageDecal(1575), 6.4, 30, -45, -113, 0, 0.95);
+  ctx.decal(gatePassageDecal(1576), 6.4, 30, -45, -141, 0, 0.95);
+  ctx.standee(roadBoardTexture(1577, 'KING\'S ROAD', 'NORTH GATE · GREYWEATHER'), 3.4, 2.7, -40.2, -99.4);
+  /* and one at the mouth of the belfry yard, on the king's road: the
+   * cold player hunted the belfry twice with the map */
+  ctx.standee(roadBoardTexture(1578, 'THE BELFRY', 'AND ITS YARD'), 3.0, 2.4, -51.6, -37.6);
 
   /* -- folk and the four gate banners -------------------------------- */
   const folk = ctx.field(doodleFolkTexture(870), 16, { w: 1.15, h: 1.9 });
@@ -729,6 +751,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
       shiftRound(LAMPLIGHTER_DUSK, -3);
       shiftRound(LAMPLIGHTER_DAWN, -3);
     }
+    lightUp([yardGlow], Math.max(clock.lamp, lampShift ? 1 : 0) * lampLit(0, h));
     lit.forEach((m, i) => {
       const on = lampLit(i, h);
       /* a lamp lit in daylight is still a lamp lit, and it has to READ
@@ -1042,7 +1065,7 @@ export const KINGDOM_POIS: WorldPOI[] = [
      * the cross holding the hour still calls the market the way it has
      * since Session 7; the card is the way to see every door before
      * one is taken. Nothing here says which was right. */
-    x: -64, z: -42, radius: 7, label: 'THE BELFRY',
+    x: -64, z: -42, radius: 7, label: 'THE BELFRY', labelReach: 44, labelHeight: 9,
     /* TIER 1 (`foundation/08` §9.3): wait in the yard till the lamps
      * come on and one hand agrees with them; then say which hand is
      * right. Two doors, and somebody in Brim is wrong for good under
@@ -1117,6 +1140,9 @@ export const KINGDOM_POIS: WorldPOI[] = [
     },
   },
   { x: 50, z: -110, radius: 7, label: 'THE WOOD GATE' },
+  /* gate round 6: the way north out of the square has a name on it */
+  { x: -45, z: -103, radius: 6, label: 'THE KING\'S ROAD NORTH', labelReach: 34, labelHeight: 4.2 },
+  { x: -45, z: -152, radius: 7, label: 'THE NORTH GATE', labelReach: 40, labelHeight: 6 },
   {
     /* MARGET'S TABLE (Session 23). The note reads the hour the way
      * the stall does: by day the room is empty and scrubbed, and at
@@ -1410,6 +1436,7 @@ export const buildCastle: RegionBuilder = (ctx) => {
   /* AND THE FIRES, SEEN FROM BRIM, once the road is open: the same two
    * fires, drawn large and high enough to clear the town's north wall.
    * The castle to Brim, by sight. */
+  const fireBaseY = [BRAZIERS.west, BRAZIERS.east].map((b) => ctx.groundY(b.x, b.z));
   const farFires = [BRAZIERS.west, BRAZIERS.east].map((b, i) => {
     const m = ctx.standee(lampGlowTexture(1067 + i), 8, 8, b.x, b.z);
     ctx.hang(m, 3.2);
@@ -1727,6 +1754,8 @@ export const buildCastle: RegionBuilder = (ctx) => {
       farFires.forEach((m, i) => {
         const s = far ? 1 : 0.5;
         m.scale.set(s, s, 1);
+        // near, the halo sits on the basket; from Brim it rides high to clear the wall
+        m.position.y = fireBaseY[i] + (far ? 3.2 : 0.2); // a standee stands on its feet: the halo's centre is half its height up
         lightUp([m], (far || near) ? fireLit(i, h) * Math.max(clock.lamp, 0.5) * (far ? 0.9 : 0.75) : 0);
       });
       if (open !== pilgrimsOpen) {
@@ -1798,7 +1827,7 @@ export const buildCastle: RegionBuilder = (ctx) => {
       let tx = sat ? WICK_BLOCK.x : WICK_POST.x;
       let tz = sat ? WICK_BLOCK.z : WICK_POST.z;
       if (out) { tx = WICK_AT_CHAIN.x; tz = WICK_AT_CHAIN.z; }
-      else if (dusk) {
+      else if (dusk && (!sat || (h >= 18.9 && h < 18.98))) {
         if (h >= 18.9 && h < 18.94) { tx = BRAZIERS.west.x + 1.1; tz = BRAZIERS.west.z + 1.5; }
         else if (h >= 18.94 && h < 18.98) { tx = BRAZIERS.east.x - 1.1; tz = BRAZIERS.east.z + 1.5; }
         else { tx = WICK_WATCH.x; tz = WICK_WATCH.z; }
@@ -1827,11 +1856,11 @@ export const buildCastle: RegionBuilder = (ctx) => {
       g.x = wk.x;
       g.z = wk.z;
       g.present = show;
-      g.watching = show && dusk && !moving && (h >= 18.98 || h < 5.3) && !out;
+      g.watching = show && dusk && !sat && !moving && (h >= 18.98 || h < 5.3) && !out;
       wickStand.visible = show;
       if (show) {
         wickStand.position.set(wk.x, ctx.groundY(wk.x, wk.z), wk.z);
-        const pose = moving ? (Math.floor(wk.t / 0.3) % 2 ? 1 : 5) : sat && !out && !dusk ? 3 : 0;
+        const pose = moving ? (Math.floor(wk.t / 0.3) % 2 ? 1 : 5) : sat && !out && Math.hypot(wk.x - WICK_BLOCK.x, wk.z - WICK_BLOCK.z) < 0.3 ? 3 : 0;
         const map = wickMaps[pose as 0 | 1 | 3 | 5];
         if (wickStandMat.map !== map) { wickStandMat.map = map; wickStandMat.needsUpdate = true; }
         const faceLeft = moving ? dx < 0 : px < wk.x;

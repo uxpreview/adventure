@@ -347,3 +347,16 @@ export function palletTexture(seed: number): THREE.CanvasTexture {
     line(ctx, 98, 20, 148, 20, r, { width: 1, alpha: 0.5, passes: 1 });
   });
 }
+
+/** A road board on two legs: what stands at the mouth of a road and
+ *  says where it goes. No arms (a lens-facing arm points nowhere). */
+export function roadBoardTexture(seed: number, top: string, under: string): THREE.CanvasTexture {
+  return makeTexture(224, 176, seed, (ctx, r) => {
+    line(ctx, 52, 172, 56, 96, r, { width: 2.6, alpha: 0.88, color: TIMBER });
+    line(ctx, 172, 172, 168, 96, r, { width: 2.6, alpha: 0.88, color: TIMBER });
+    fillPoly(ctx, [[18, 16], [206, 12], [208, 100], [16, 104]], CREAM, 0.92);
+    poly(ctx, [[18, 16], [206, 12], [208, 100], [16, 104]], r, { width: 2.4, alpha: 0.92, color: TIMBER });
+    letteringFit(ctx, top, 30, 56, 164, 26, r, { alpha: 0.92, crooked: 0.45 });
+    letteringFit(ctx, under, 30, 88, 164, 16, r, { alpha: 0.75, crooked: 0.55 });
+  });
+}

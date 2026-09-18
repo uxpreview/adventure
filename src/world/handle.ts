@@ -60,6 +60,10 @@ class Handle {
     }
     const yes = () => {
       this.answered.add(o.id);
+      /* gate round 6: CHOICES said "no choices yet" after Nell's card had
+       * been answered. Letting them is a choice too; it is written down,
+       * and not said (the person's doing it is the saying) */
+      notebook.chose(`let:${o.id}`, `${o.yes.label}`, `said to ${o.who.toLowerCase()}`, true);
       if (o.yes.said) say('walker', o.yes.said);
       if (o.yes.reply && o.speaker) { say(o.speaker, o.yes.reply, { now: true }); notebook.heard(o.who, o.yes.reply); }
       else if (o.speaker) hush(o.speaker);

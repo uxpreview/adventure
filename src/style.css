@@ -391,7 +391,9 @@ body {
 .replies {
   position: absolute;
   left: 50%;
-  bottom: clamp(176px, 27vh, 230px);
+  /* gate round 6: at a quarter of the way up they were lettered across
+   * the walker. They go under his feet, above the hint line. */
+  bottom: 58px;
   transform: translateX(-50%);
   display: flex;
   flex-direction: row;
@@ -784,6 +786,13 @@ body {
   .objective {
     top: max(60px, calc(env(safe-area-inset-top) + 52px));
     max-width: 88vw;
+  }
+  /* the HUD's row is full on a phone: WAIT, once it is earned, goes in
+     the lower band by the right thumb (App hides it while answers are up) */
+  .hud-btn.wait-btn {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(18px, env(safe-area-inset-bottom));
   }
   .nb-page {
     height: min(640px, 82vh);
