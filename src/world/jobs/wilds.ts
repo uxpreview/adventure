@@ -9,7 +9,7 @@ import {
  */
 
 export const BRACK_JOB: JobSpec = {
-  id: 'job:brack', land: 'forest', giver: 'brack', name: 'THE STILL WATER',
+  id: 'job:brack', land: 'forest', giver: 'brack', line: 'brack', name: 'THE STILL WATER',
   pin: { x: 150, z: -195, label: 'THE TARN' },
   reward: 'A STONE THAT SKIMS, AT THE TARN',
   shout: 'IN THE PENWOOD, A MAN TURNS ROUND',
@@ -21,7 +21,7 @@ export const BRACK_JOB: JobSpec = {
 };
 
 export const HOLT_JOB: JobSpec = {
-  id: 'job:holt', land: 'canyon', giver: 'holt', name: 'THE RIVERHEAD',
+  id: 'job:holt', land: 'canyon', giver: 'holt', line: 'holt', name: 'THE RIVERHEAD',
   pin: { x: 301, z: -106, label: 'THE RIVERHEAD' },
   reward: 'A BOAT THE RIGHT WAY UP',
   shout: 'IN SPLITROCK, A BOAT COMES OFF ITS TRESTLES',
@@ -34,7 +34,7 @@ export const HOLT_JOB: JobSpec = {
 };
 
 export const AMOS_JOB: JobSpec = {
-  id: 'job:amos', land: 'desert', giver: 'amos', name: 'THE NIGHT WALK',
+  id: 'job:amos', land: 'desert', giver: 'amos', line: 'amos', name: 'THE NIGHT WALK',
   pin: { x: 305, z: 55, label: 'THE OASIS' },
   reward: 'THE LID OFF THE CISTERN',
   shout: 'ON THE FLATS, A LID COMES OFF',
@@ -47,7 +47,7 @@ export const AMOS_JOB: JobSpec = {
 };
 
 export const JOAN_JOB: JobSpec = {
-  id: 'job:joan', land: 'downs', giver: 'joan', name: 'THE SECOND PLACE',
+  id: 'job:joan', land: 'downs', giver: 'joan', line: 'joan', name: 'THE SECOND PLACE',
   pin: { x: 134.5, z: 12.5, label: 'THE HEADLAND' },
   reward: 'BREAD, PASSED',
   shout: 'ON THE DOWNS, A SECOND PLACE IS TAKEN',

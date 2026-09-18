@@ -1,7 +1,7 @@
 import { rng, stroke } from '../engine/ink';
 import { INK } from '../engine/palette';
 import { letterCanvas, S } from './lettering';
-import { openReplies, closeReplies, type Reply } from './replies';
+import { openReplies, closeReplies, repliesTop, type Reply } from './replies';
 import { hush, type Speaker } from './speech';
 
 /**
@@ -140,12 +140,14 @@ function show() {
   // whoever is talking here is not also talking over their own head
   hush(page.who);
   try { window.dispatchEvent(new CustomEvent('inklands:event', { detail: 'speech' })); } catch { /* nothing to hear */ }
+  /* the question, and under it the answers: read downward, like a page */
+  panel.style.bottom = '';
   if (answers) {
-    const box = panel.getBoundingClientRect();
     openReplies(t.opts.replies!.map((r) => ({
       label: r.label,
       pick: () => end(r.pick),
-    })), Infinity, undefined, window.innerHeight - box.top + 10);
+    })), Infinity);
+    panel.style.bottom = `${Math.round(repliesTop() + 10)}px`;
   }
 }
 

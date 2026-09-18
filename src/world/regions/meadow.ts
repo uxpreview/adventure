@@ -29,6 +29,7 @@ import { borderStoneTexture, benchTexture, pinnedNoteTexture, laundryLineTexture
 import { SPEC_BY_ID } from '../layout';
 import { platform } from '../../engine/Eight15';
 import { npcs } from '../npc'; /* VOICE */
+import { tier1 } from '../tier1'; /* TIER 1: the well is the Common's call */
 import type { RegionBuilder, WorldPOI } from './index';
 
 function say(name: string) {
@@ -656,7 +657,11 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   benchMesh.add(noteMesh);
   const noteMat = noteMesh.material as THREE.MeshBasicMaterial;
   let noteShown = false;
-  ctx.standee(laundryLineTexture(1754), 5.4, 2.5, HEDGE_X - 7.6, 89.6, { face: 'run' });
+  /* round 5's leftover: on a phone she stood off the right edge of the
+   * bench's frame (26.5 degrees across) and her bubbles pinned to the
+   * edge. The line is 2.6 nearer the bench and Nell stands at its near end:
+   * two units east of the bench and six north, inside the portrait frame at rest. */
+  ctx.standee(laundryLineTexture(1754), 5.4, 2.5, HEDGE_X - 10.2, 88.6, { face: 'run' });
   const morrow = new Creature(ctx, 'morrow', 'meadow', [0, 1].map((p) => morrowTexture(1760 + p, p as 0 | 1)), 1.0, 1.75, -56, 60);
   const morrowDog = new Creature(ctx, 'morrows-dog', 'meadow', [0, 1, 2, 3].map((p) => dachshundTexture(1765 + p, p as 0 | 1 | 2 | 3)), 2.2, 1.1, -58, 60.6);
   morrow.hide();
@@ -671,7 +676,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   /* THE FIRST FIVE MINUTES: she is at her washing line, a few steps
    * west of the gate, where the bench can see her; for the job, and
    * after it, she stands at the gate itself. */
-  const NELL_LINE = { x: HEDGE_X - 8.5, z: 86.2 };
+  const NELL_LINE = { x: HEDGE_X - 12.0, z: 85.8 };
   const NELL_GATE = { x: HEDGE_X - 2.4, z: 82.6 };
   const NELL_BASKET = { x: NELL_LINE.x - 1.6, z: NELL_LINE.z + 0.8 };
   const nellAt = () => (common.nellSat ? NELL_BASKET : common.nellAtGate ? NELL_GATE : NELL_LINE);
@@ -1180,6 +1185,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
     if (well.answerAt >= 0 && t >= well.answerAt) {
       well.answerAt = -1;
       say(well.kind === 'stone' ? 'well-plink' : 'well-answer');
+      if (well.kind === 'shout') tier1.wellAnswered(WELL.x, WELL.z);
       flinch = Math.max(flinch, 2.2);
       // and the answer brings it back up — or, for a stone, jiggles
       // the bucket on its rope, so the plink is seen as well as heard
@@ -1416,8 +1422,12 @@ export const MEADOW_POIS: WorldPOI[] = [
      * half units, which is a throw from the path at a walk. */
     x: -57, z: 45, radius: 3.4, label: 'THE OLD WELL',
     prompt: 'SHOUT DOWN THE WELL',
+    answers: true,
     touch: () => {
       say('well-shout');
+      /* TIER 1: the Common's call, where you can read it (gate round 5:
+       * "the well answers a shout with a sound and nothing on screen") */
+      tier1.wellShouted(-57, 45);
       well.answerAt = -2; // set by the builder off its own clock, below
       well.kind = 'shout';
       well.lift = true;   // the swallows lift at the shout, not only at the answer

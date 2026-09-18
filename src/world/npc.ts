@@ -7,7 +7,7 @@ import { notebook } from './notebook';
 import { say, type Speaker } from '../ui/speech';
 import { converse, type Page } from '../ui/converse';
 import type { Reply } from '../ui/replies';
-import { PEOPLE, FOLK_BY_ROLE, FOLK_BY_LAND, type NpcPhase, type PersonDef } from './lines';
+import { PEOPLE, FOLK_BY_ROLE, FOLK_BY_LAND, BRIM_FOLK, FOLK_NAMES, FENN_AT_ELEVEN, type NpcPhase, type PersonDef } from './lines';
 import type { RegionId } from './layout';
 import { crossout } from './crossout'; /* THE THREE VERBS */
 
@@ -82,7 +82,9 @@ function roleOf(id: string): { who: string; pool: string[] | null } {
   for (const [prefix, lines] of FOLK_BY_ROLE) {
     if (id.startsWith(prefix) && prefix.length > role.length) { role = prefix; pool = lines; }
   }
-  const who = (role || id).replace(/-\d+$/, '').replace(/-/g, ' ').replace(/^THE /i, '').toUpperCase();
+  const who = FOLK_NAMES[role] ?? (role || id).replace(/-\d+$/, '').replace(/-/g, ' ').replace(/^THE /i, '').toUpperCase();
+  /* TIER 1: under ELEVEN the lamplighter is the one who is wrong for good */
+  if (role === 'the-lamplighter' && knowledge.has('door:the-clock-set-to-eleven') && knowledge.has('promise:marget:rung')) pool = FENN_AT_ELEVEN;
   return { who, pool };
 }
 
@@ -421,6 +423,19 @@ export function defineThePeople() {
     npcs.define({
       id: p.id, name: p.name, land: p.land, figures: p.figures, want: p.want,
       lines: (s) => linesFor(p, s),
+    });
+  }
+  /* TIER 1: six people in Brim Square with names; the land says where
+   * they stand (`npcs.track`), and what they say turns on Marget's bell */
+  for (const f of BRIM_FOLK) {
+    npcs.define({
+      id: f.id, name: f.name, land: 'kingdom',
+      lines: (s) => {
+        if (s.phase === 'idle') return [f.hello];
+        const called = knowledge.has('promise:marget:rung') || knowledge.has('reason:brim');
+        if (!called) return f.before;
+        return knowledge.has('door:the-clock-set-to-eleven') ? f.eleven : f.eight;
+      },
     });
   }
 }

@@ -25,6 +25,8 @@ type Bubble = {
   w: number;
   then?: () => void;
   out: boolean;
+  /** How far off the speaker was when the line was said (earshot). */
+  d0?: number;
 };
 
 type Queued = { who: Speaker; text: string; opts: { hold?: number; then?: () => void } };
@@ -168,14 +170,15 @@ function open(who: Speaker, text: string, opts: { hold?: number; then?: () => vo
  * speaker's x/z are read live every frame, so an object with getters
  * follows its figure.
  */
-export function say(who: Speaker, text: string, opts: { hold?: number; then?: () => void; now?: boolean } = {}): boolean {
+export function say(who: Speaker, text: string, opts: { hold?: number; then?: () => void; now?: boolean; far?: boolean } = {}): boolean {
   const key = keyOf(who);
   /* OUT OF EARSHOT, NOT SAID. A line from somebody a field away used to
    * be pinned to the edge of the page, from nowhere. The caller is told,
    * so the world can say it another way if it matters. */
-  if (who !== 'walker' && walkerPos) {
+  if (who !== 'walker' && walkerPos && !opts.far) {
     const p = walkerPos();
-    if (Math.hypot(who.x - p.x, who.z - p.z) > EARSHOT) return false;
+    // (`then` still runs: what hangs on a line does not hang on its being heard)
+    if (Math.hypot(who.x - p.x, who.z - p.z) > EARSHOT) { opts.then?.(); return false; }
   }
   /* gate round 5: a line that ANSWERS A PRESS is said now, over whatever
    * the speaker was in the middle of — a queued answer reads as a dead key */
@@ -351,6 +354,17 @@ export function tickSpeech(dt: number, quiet = false) {
   for (const m of marks.values()) placeMark(m, quiet);
   for (const [key, b] of live) {
     b.t += dt;
+    /* OUT OF EARSHOT: a line said to a man who has since walked off (or
+     * ridden: a horse does thirty units in the time a long line holds)
+     * is not carried along the top of the page after him. A voice that
+     * was far when it spoke (the bell, a shout across the green) is
+     * measured from where he was then. */
+    if (b.who !== 'walker' && walkerPos && !b.out) {
+      const w = walkerPos();
+      const d = Math.hypot(b.who.x - w.x, b.who.z - w.z);
+      if (b.d0 === undefined) b.d0 = d;
+      else if (d > Math.max(45, b.d0 + 25)) b.t = Math.max(b.t, b.hold);
+    }
     place(b);
     if (!b.out && b.t > b.hold) {
       b.out = true;

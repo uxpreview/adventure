@@ -40,11 +40,9 @@ function choose(i: number) {
 }
 
 /** Put answers on the page for `seconds`; unanswered, `expire` runs. */
-export function openReplies(replies: Reply[], seconds = 10, expire?: () => void, abovePx?: number) {
+export function openReplies(replies: Reply[], seconds = 10, expire?: () => void) {
   if (!strip) return;
   closeReplies();
-  /* a conversation's answers sit on top of its panel, however tall */
-  strip.style.bottom = abovePx ? `${Math.round(abovePx)}px` : '';
   current = replies.slice(0, 3);
   ttl = seconds;
   onExpire = expire ?? null;
@@ -66,6 +64,21 @@ export function closeReplies() {
   onExpire = null;
   strip.classList.remove('show');
   strip.textContent = '';
+}
+
+/** How much of the foot of a tall page the answers have, so the prompt
+ *  can be lettered above them and not under them. */
+export function repliesLift(): number {
+  if (!strip || !current.length) return 0;
+  if (window.innerWidth / window.innerHeight >= 0.8) return 0;
+  return strip.offsetHeight + 22;
+}
+
+/** Where the top of the answers is, up from the foot of the page, so a
+ *  conversation's question can be written over them. */
+export function repliesTop(): number {
+  if (!strip || !current.length) return 0;
+  return window.innerHeight - strip.getBoundingClientRect().top;
 }
 
 export function repliesOpen(): string[] {

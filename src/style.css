@@ -391,7 +391,9 @@ body {
 .replies {
   position: absolute;
   left: 50%;
-  bottom: clamp(176px, 27vh, 230px);
+  /* gate round 6: at a quarter of the way up they were lettered across
+   * the walker. They go under his feet, above the hint line. */
+  bottom: 58px;
   transform: translateX(-50%);
   display: flex;
   flex-direction: row;
@@ -407,6 +409,19 @@ body {
 .replies.show {
   opacity: 1;
   pointer-events: auto;
+}
+/* on a phone the answers go under the thumb, at the foot of the page,
+ * one over the other: along the middle they were lettered across the
+ * walker (and the horse under him). The prompt lifts to clear them
+ * (`POIManager.promptLift`). */
+@media (max-aspect-ratio: 4/5) {
+  .replies {
+    bottom: 10px;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .reply-btn { padding: 6px 12px 4px; }
 }
 .reply-btn {
   background: rgba(247, 244, 235, 0.94);
@@ -771,6 +786,13 @@ body {
   .objective {
     top: max(60px, calc(env(safe-area-inset-top) + 52px));
     max-width: 88vw;
+  }
+  /* the HUD's row is full on a phone: WAIT, once it is earned, goes in
+     the lower band by the right thumb (App hides it while answers are up) */
+  .hud-btn.wait-btn {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(18px, env(safe-area-inset-bottom));
   }
   .nb-page {
     height: min(640px, 82vh);

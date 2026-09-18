@@ -16,6 +16,9 @@ export type JobDef = {
   reward?: string;
   land?: RegionId;
   pin?: { x: number; z: number; label: string };
+  /** THE TWELVE LINES: the line of THE LIST this job hangs on,
+   *  verbatim. The page heads the job with it once the list is read. */
+  line?: string;
 };
 
 export type Job = JobDef & {
@@ -238,10 +241,10 @@ class Notebook {
   }
 
   /* ---- choices ---------------------------------------------------- */
-  chose(id: string, what: string, consequence: string) {
+  chose(id: string, what: string, consequence: string, quiet = false) {
     if (this.choices.some((c) => c.id === id)) return;
     this.choices.push({ id, what, consequence, day: dayNow() });
-    toast(`YOU CHOSE: ${what}`, 'done');
+    if (!quiet) toast(`YOU CHOSE: ${what}`, 'done');
     this.changed();
   }
 

@@ -44,7 +44,9 @@ export const PEOPLE: PersonDef[] = [
       idle: ['You\'re back, then.'],
       met: [
         'Three years. I hung that washing out the day you went and I\'ve hung it out every day since.',
-        'The bull\'s yours to mind as much as mine. It always was. You just never let anyone else.',
+        /* THE TURN (`foundation/08` §9.2), said on either road */
+        'I could always pen him myself, you know. I stopped when you started. You never noticed.',
+        'Shout down the well if you want the Common. It answers. Late. Everything round here does.',
         'Morrow\'s got a copy of your notebook. He got most of it wrong. He\'s fifteen.',
         'Joan\'s laid two plates every night for three years. I\'d go and sit at one of them, if I were you.',
       ],
@@ -52,34 +54,15 @@ export const PEOPLE: PersonDef[] = [
       done: ['Keep the horse. You always did.'],
     },
   },
+  /* TIER 1: what Marget and Wick say comes from `tier1.ts`, by the step
+   * their promise is on. These are what an empty registry would hear. */
   {
-    id: 'marget', name: 'MARGET', land: 'kingdom', want: 'THE BELFRY',
-    lines: {
-      idle: ['Stall\'s shut. It\'s been shut since the argument. Don\'t ask which argument.'],
-      met: [
-        'Two hands on that belfry clock and they don\'t agree. Nobody here has a thing to check them against.',
-        'I\'ll open when this town knows what o\'clock it is. Not before.',
-      ],
-      asked: ['Read the cross first, so you know what a market is for. Then wait at THE BELFRY till the lamps come on. One hand will agree with them. Come and tell me which.'],
-      done: ['There. Was that so hard? Forty years.', 'Cloth\'s out. Take a yard of the red. It suits you.'],
-      'chose:door:the-bell-rings-it': ['Let the bell say it. Fine. The bell says eight, so I\'m open at eight.'],
-      'chose:door:the-clock-set-to-eight': ['Eight. Yes. I always said eight. Stall\'s open, then.'],
-      'chose:door:the-clock-set-to-eleven': ['Eleven? Eleven is not an hour a market opens at. They can chalk the board all they like. I\'m not coming.'],
-    },
+    id: 'marget', name: 'MARGET', land: 'kingdom',
+    lines: { idle: ['You owe me for five stalls.'], met: ['You owe me for five stalls.'], asked: [], done: ['We\'re square.'] },
   },
   {
-    id: 'wick', name: 'WICK', land: 'castle', want: 'THE MOAT POOL', figures: ['wick', 'wick-evening'],
-    lines: {
-      idle: ['Four banners. There\'s meant to be five. Don\'t look at me, I only hang them.'],
-      met: [
-        'The king\'s off his plinth. Nobody pushed him. He was leaning for years.',
-        'I do the poles, morning and evening. Somebody has to.',
-      ],
-      asked: ['There\'s a wet banner down by THE MOAT POOL. Carry it up to the loft and hang it on the peg. Mind — it\'s heavy. Then come and find me.'],
-      done: ['Five. That\'s five. Brim\'s red on the fifth pole. I said it\'d be the red.', 'Twenty years of poles. You did one. It counts.'],
-      'chose:door:the-king-restored': ['Back on his plinth. Then I\'m relieved. Twenty years of poles. I\'ll sit down now, if it\'s all the same.'],
-      'chose:door:the-king-left': ['Leave him lying. He was heading that way anyway. I\'ll keep doing the poles.'],
-    },
+    id: 'wick', name: 'WICK', land: 'castle', figures: ['wick', 'wick-evening'],
+    lines: { idle: ['It\'s nothing.'], met: ['It\'s nothing.'], asked: [], done: ['Hall\'s open. Fire\'s in.'] },
   },
   {
     id: 'pye', name: 'PYE', land: 'beach', want: 'THE MARK', figures: ['pye'],
@@ -209,6 +192,60 @@ export const PEOPLE: PersonDef[] = [
   },
 ];
 
+/* ------------------------------------------------------------------ *
+ * SIX PEOPLE IN BRIM SQUARE, WITH NAMES (gate round 4: "only Marget has
+ * a name or a line"). What they say turns on Marget's promise: before
+ * the bell is rung at an hour anybody knows, and after it, by the hand
+ * that was said to be right. Dorrie is the one who is wrong for good
+ * under EIGHT; under ELEVEN it is Fenn, the lamplighter, below.
+ * ------------------------------------------------------------------ */
+export type BrimFolkDef = { id: string; name: string; hello: string; before: string[]; eight: string[]; eleven: string[] };
+export const BRIM_FOLK: BrimFolkDef[] = [
+  {
+    id: 'hob', name: 'HOB', hello: 'You\'re back. Mind the broom.',
+    before: ['Swept round these stalls every morning for three years. Never once had to sweep up after a market.', 'Marget fronted the lot. Five stalls, for your gathering. She\'ll not mention it twice.'],
+    eight: ['Peelings. Straw. Onion skins. I\'ve never been so happy.', 'Your rounds, the week before. She did them. She\'d kill me for saying.'],
+    eleven: ['Peelings. Straw. Onion skins. I\'ve never been so happy.', 'Your rounds, the week before. She did them. She\'d kill me for saying.'],
+  },
+  {
+    id: 'dorrie', name: 'DORRIE', hello: 'Bread\'s ready at eleven. It\'s always ready at eleven.',
+    before: ['There\'s never a market to bring it to, mind. But it\'s ready.', 'Eleven\'s the hour. My mother baked for eleven.'],
+    eight: ['Eight, they\'ve decided. My bread\'s ready at eleven. It\'ll be ready at eleven till I\'m dead.', 'I\'ve put my cover back on. They can buy yesterday\'s.'],
+    eleven: ['Eleven! I TOLD them. Thirty years I told them. Have a loaf. Have two.', 'Ask Fenn what time he lit the lamps. Go on. Ask him.'],
+  },
+  {
+    id: 'pell', name: 'PELL', hello: 'This cheese was young when I set the stall out.',
+    before: ['It\'s got opinions now.', 'Set out every morning, covered every night, three years. Never sold a rind.'],
+    eight: ['Sold a whole wheel before the bell had stopped. To Tolly. He\'s been sat there three years waiting to buy it.'],
+    eleven: ['Sold a whole wheel before the bell had stopped. To Tolly. He\'s been sat there three years waiting to buy it.'],
+  },
+  {
+    id: 'bryn', name: 'BRYN', hello: 'She fronted my stall too. I never paid her either, so don\'t look at me.',
+    before: ['Blue doesn\'t sell in Brim. Red sells in Brim. I sell blue.'],
+    eight: ['Sold a yard of blue. A YARD. To a pilgrim. Doesn\'t count, but I\'m counting it.'],
+    eleven: ['Sold a yard of blue. A YARD. To a pilgrim. Doesn\'t count, but I\'m counting it.'],
+  },
+  {
+    id: 'cass', name: 'CASS', hello: 'You\'re him. You\'re shorter than they said.',
+    before: ['I was nine at the gathering. There was a bull on the table. Best day of my life.', 'Morrow says he\'s got it handled. Morrow always says that.'],
+    eight: ['Is there going to be another one? With the bull?'],
+    eleven: ['Fenn lit the lamps at four. Broad daylight. Nobody said a word. I nearly died.'],
+  },
+  {
+    id: 'tolly', name: 'TOLLY', hello: 'I came for the gathering. Walked two days.',
+    before: ['Didn\'t seem worth going home till it happened.', 'Three years on this bench. The pigeons know me.'],
+    eight: ['Bought a cheese. First thing I\'ve bought in three years. I might go home now. I might not.'],
+    eleven: ['Bought a cheese. First thing I\'ve bought in three years. I might go home now. I might not.'],
+  },
+];
+/** Unnamed folk who have a name after all, by routine prefix. */
+export const FOLK_NAMES: Record<string, string> = { 'the-lamplighter': 'FENN' };
+/** Fenn, under ELEVEN: he goes by the clock, which is what he is for. */
+export const FENN_AT_ELEVEN = [
+  'Lamps at the hour, by the clock. It\'s what the clock\'s for. ...Light\'s a bit strong for it, I grant you.',
+  'Nobody\'s said anything. So it must be right.',
+];
+
 /** Which named person speaks for a land's choice. */
 export const WAIT_PERSON: Record<RegionId, string> = {
   meadow: 'nell', kingdom: 'marget', castle: 'wick', beach: 'pye', ocean: 'wren', forest: 'brack',
@@ -294,12 +331,15 @@ export const FOLK_BY_LAND: Record<RegionId, string[]> = {
  * THE DOORS: what the card says will happen, and what the world says
  * afterwards when nobody is near enough to say it themselves.
  * ------------------------------------------------------------------ */
-export const CONSEQUENCES: Record<string, { hint: string; shout: string }> = {
+export const CONSEQUENCES: Record<string, { hint: string; shout: string; /** read back by the world, never by the person (a promise's person has their own say) */ world?: boolean }> = {
   'door:the-cart-turned-north': { hint: 'the cart is loaded and goes north; Nell goes with it', shout: 'ON THE COMMON, A CART TURNS NORTH' },
   'door:the-cart-pushed': { hint: 'the cart is yours; push it to a border and it stays', shout: 'A CART STANDS AT THE EDGE OF THE COMMON' },
   'door:the-bell-rings-it': { hint: 'the bell settles the hour; Marget opens', shout: 'IN BRIM, THE BELL RINGS EIGHT' },
-  'door:the-clock-set-to-eight': { hint: 'market called at eight; Marget opens', shout: 'IN BRIM, A MARKET IS CALLED FOR EIGHT' },
-  'door:the-clock-set-to-eleven': { hint: 'market called at eleven; Marget never opens', shout: 'IN BRIM, A MARKET IS CALLED, AND ONE STALL STAYS SHUT' },
+  /* TIER 1: which hand is right, and who is wrong for good */
+  'door:the-clock-set-to-eight': { hint: 'the lamps\' hour; Dorrie the baker is wrong for good', shout: 'IN BRIM, BOTH HANDS SAY EIGHT. A BAKER SAYS OTHERWISE.', world: true },
+  'door:the-clock-set-to-eleven': { hint: 'the other hand\'s hour; Fenn the lamplighter is wrong for good', shout: 'IN BRIM, BOTH HANDS SAY ELEVEN. NOBODY TELLS THE LAMPLIGHTER.', world: true },
+  'door:the-road-opened': { hint: 'the chain comes down; anybody can walk up and see him waiting', shout: 'AT GREYWEATHER, THE KING\'S ROAD IS OPEN. ANYBODY CAN WATCH HIM LIGHT HIS FIRES.', world: true },
+  'door:the-road-left': { hint: 'the chain stays; his word goes by you, on foot, like before', shout: 'AT GREYWEATHER, THE CHAIN STAYS UP. NOBODY WILL SEE HIM WAIT.', world: true },
   'door:the-king-restored': { hint: 'Wick is relieved of his poles', shout: 'AT GREYWEATHER, THE KING IS BACK ON HIS PLINTH' },
   'door:the-king-left': { hint: 'nothing changes; Wick keeps hanging banners', shout: 'AT GREYWEATHER, THE KING STAYS DOWN' },
   'door:the-eighth-pot': { hint: 'an eighth pot goes out on a new bearing', shout: 'OFF LONGSHORE, AN EIGHTH POT GOES OUT' },

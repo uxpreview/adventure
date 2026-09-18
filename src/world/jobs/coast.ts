@@ -9,7 +9,7 @@ import { type JobSpec, reach, known, decided } from './triggers';
  */
 
 export const PYE_JOB: JobSpec = {
-  id: 'job:pye', land: 'beach', giver: 'pye', name: 'THE EIGHTH POT',
+  id: 'job:pye', land: 'beach', giver: 'pye', line: 'pye', name: 'THE EIGHTH POT',
   pin: { x: -300, z: -8, label: 'THE MARK' },
   reward: 'AN EIGHTH POT ON A NEW BEARING',
   shout: 'OFF LONGSHORE, AN EIGHTH POT GOES OUT',
@@ -26,7 +26,7 @@ export const PYE_JOB: JobSpec = {
 };
 
 export const WREN_JOB: JobSpec = {
-  id: 'job:wren', land: 'ocean', giver: 'wren', name: 'THE SECOND MARK',
+  id: 'job:wren', land: 'ocean', giver: 'wren', line: 'wren', name: 'THE SECOND MARK',
   pin: { x: -258, z: -24, label: 'THE END OF THE BAR' },
   reward: 'A LINE WITH TWO ENDS',
   shout: 'ON THE WIDE BLUE, A SECOND MARK GOES DOWN',
