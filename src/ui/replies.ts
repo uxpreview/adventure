@@ -66,6 +66,14 @@ export function closeReplies() {
   strip.textContent = '';
 }
 
+/** How much of the foot of a tall page the answers have, so the prompt
+ *  can be lettered above them and not under them. */
+export function repliesLift(): number {
+  if (!strip || !current.length) return 0;
+  if (window.innerWidth / window.innerHeight >= 0.8) return 0;
+  return strip.offsetHeight + 22;
+}
+
 export function repliesOpen(): string[] {
   return current.map((r) => r.label);
 }

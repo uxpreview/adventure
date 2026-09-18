@@ -103,7 +103,8 @@ export class Horse {
    * take, so a called horse stops at a bank rather than wading.
    */
   update(dt: number, y: number, heading: number, speed: number,
-    refuses: (x: number, z: number) => boolean, ground: (x: number, z: number) => number) {
+    refuses: (x: number, z: number) => boolean, ground: (x: number, z: number) => number,
+    noRest: (x: number, z: number) => boolean = () => false) {
     this.hoofbeat = false;
     let moved = 0;
     if (!this.aboard && this.coming) {
@@ -112,7 +113,9 @@ export class Horse {
       const dx = c.x - this.pos.x;
       const dz = c.z - this.pos.y;
       const d = Math.hypot(dx, dz);
-      if (d < 2.6 || c.t > 40) {
+      /* called over a fence, it keeps coming until it stands on ground a
+       * rider can ride off (gate round 6) */
+      if ((d < 2.6 && !(noRest(this.pos.x, this.pos.y) && d > 0.5)) || c.t > 40) {
         this.coming = null;
       } else {
         const step = Math.min(d, CALLED_TROT * dt);

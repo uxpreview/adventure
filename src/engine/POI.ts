@@ -47,6 +47,9 @@ export type POIDef = {
   /** Only wins when no other prompt is in reach (Session 15: the thing
    *  in the walker's hand). */
   weak?: boolean;
+  /** Units taken off this place's distance when prompts contend: a
+   *  horse that was whistled for beats the stile it landed beside. */
+  bias?: number;
   /** Internal: remembered state across a blanket suppression. */
   userWasEnabled?: boolean;
 };
@@ -155,6 +158,12 @@ export class POIManager {
   /** Names stay off the page and the prompt stays on it: somebody is
    *  talking and the places can wait (the bench's minute). */
   quietLabels = false;
+  /** What the key does right now, when it is not the nearest place's
+   *  verb (App: STAND UP while seated). Null: the place's own prompt. */
+  keySays: (() => string | null) | null = null;
+  /** On a tall page, what is lettered along its foot (the answers to a
+   *  person) and how high: the prompt goes above it. */
+  promptLift: (() => number) | null = null;
 
   /** Returns the active interactable POI (for the interact key). */
   update(charPos: THREE.Vector3): POI | null {
@@ -195,8 +204,11 @@ export class POIManager {
         p.labelEl.classList.toggle('show', show);
         if (show) shown.push({ p, d });
       }
-      if (inR && p.def.onInteract && !p.def.weak && d < best) {
-        best = d;
+      /* a thing that has just been sent for (the whistled horse) is
+       * nearer than it stands: `bias` is taken off its distance */
+      const dd = d - (p.def.bias ?? 0);
+      if (inR && p.def.onInteract && !p.def.weak && dd < best) {
+        best = dd;
         active = p;
       }
     }
@@ -252,8 +264,13 @@ export class POIManager {
 
     if (active) {
       const p = active.def.prompt;
+      /* THE PROMPT SAYS WHAT THE KEY DOES. Sat down, the key stands him
+       * up whatever is nearest (the note tacked to the bench was nearer
+       * than the bench, and the prompt read READ THE NOTE over a key
+       * that stood him up): App says so here. */
+      const says = this.keySays?.() ?? null;
       /* gate round 2: a place with a card and no verb says LOOK AT <it>, not "look" */
-      letterEl(this.promptEl, (typeof p === 'function' ? p() : p) ?? (active.def.label ? `LOOK AT ${active.def.label}` : 'LOOK'), S.voice(11.5));
+      letterEl(this.promptEl, says ?? (typeof p === 'function' ? p() : p) ?? (active.def.label ? `LOOK AT ${active.def.label}` : 'LOOK'), S.voice(11.5));
       this.promptEl.classList.add('show');
       /* AND THE PROMPT IS WRITTEN BESIDE THE THING, ON THE OPEN PAGE.
        *
@@ -435,7 +452,7 @@ export class POIManager {
      * is the PROMPT that is a control. */
     if (tall && el === this.promptEl) {
       sx = window.innerWidth * 0.5;
-      sy = window.innerHeight - Math.max(96, window.innerHeight * 0.13);
+      sy = window.innerHeight - Math.max(96, window.innerHeight * 0.13, this.promptLift?.() ?? 0);
     } else {
       sy = Math.min(Math.max(sy, hh + pad), window.innerHeight - pad);
     }

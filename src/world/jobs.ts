@@ -12,6 +12,10 @@ import { monsters } from './monsters';
 import * as T from './jobs/triggers';
 import type { JobSpec } from './jobs/triggers';
 import { handle } from './handle'; /* THE THREE VERBS */
+import { TIER1_JOBS } from './jobs/tier1';
+import { tier1, hourKnown } from './tier1';
+import { clock } from './daylight';
+import { THE_LIST } from './thelist';
 import { CIVIC_JOBS } from './jobs/civic';
 import { WILDS_JOBS } from './jobs/wilds';
 import { COAST_JOBS } from './jobs/coast';
@@ -30,8 +34,15 @@ import { COAST_JOBS } from './jobs/coast';
  * the consequence out loud — the person's own line if they are near,
  * the land's shout if not.
  *
- * Nell's job belongs to FIRST HOUR; it is not here, and `landsDone`
- * counts it like any other job in the notebook.
+ * THE TWELVE LINES. Every job hangs on a line of THE LIST
+ * (`thelist.ts`), in his order, and the notebook heads it with that
+ * line verbatim. Tier 1 (`jobs/tier1.ts`) is rebuilt on the story of
+ * record: a PROMISE is the job from the first word its person says to
+ * him, and only doing it keeps it. The other nine hang on their lines
+ * with the steps they had, until their tier's session.
+ *
+ * Nell's line is the opening's (`opening.ts` gives and ticks it); it
+ * is not here, and `landsDone` counts it like any other job.
  */
 
 export type { JobSpec };
@@ -49,7 +60,12 @@ export type JobsCtx = {
   started: () => boolean;
 };
 
-const SPECS: JobSpec[] = [...CIVIC_JOBS, ...WILDS_JOBS, ...COAST_JOBS];
+/** The registry, in the list's own order. */
+const SPECS: JobSpec[] = [...TIER1_JOBS, ...CIVIC_JOBS, ...WILDS_JOBS, ...COAST_JOBS]
+  .sort((a, b) => THE_LIST.findIndex((l) => l.id === a.line) - THE_LIST.findIndex((l) => l.id === b.line));
+const LINE_OF = new Map(THE_LIST.map((l) => [l.id, l.line]));
+/** Lands whose promise is rebuilt: a card's old door does not keep it. */
+const PROMISE_LANDS = new Set<string>(SPECS.filter((s) => s.promise).map((s) => s.land));
 const BY_GIVER = new Map(SPECS.map((s) => [s.giver, s]));
 const BY_ID = new Map(SPECS.map((s) => [s.id, s]));
 
@@ -57,12 +73,15 @@ const BY_ID = new Map(SPECS.map((s) => [s.id, s]));
  *  wait decided at a card. The 8:15 reads this; the notebook shows it. */
 export function landsDone(): number {
   let n = 0;
-  const jobs = notebook.list();
-  for (const spec of REGION_SPECS) {
-    const id = spec.id as RegionId;
-    if (jobs.some((j) => j.land === id && j.complete) || knowledge.decided(id)) n++;
-  }
+  for (const spec of REGION_SPECS) if (landKept(spec.id as RegionId)) n++;
   return n;
+}
+/** Whether a land's line is kept: its job done, or (for a land whose
+ *  promise is not rebuilt yet) its old wait decided. One rule, so the
+ *  count on the toast and the strikes on THE LIST agree (gate round 6:
+ *  "3 OF 12 KEPT" at the tarn with two lines struck). */
+export function landKept(id: string): boolean {
+  return notebook.list().some((j) => j.land === id && j.complete) || (!PROMISE_LANDS.has(id) && knowledge.decided(id));
 }
 export const LANDS_TOTAL = 12;
 
@@ -86,18 +105,26 @@ class Jobs {
     toys.init({ scene: ctx.scene, groundAt: ctx.groundAt, waterAt: ctx.waterAt, walker: ctx.walker, bicycle: ctx.bicycle, root: ctx.root });
     monsters.init({ scene: ctx.scene, groundAt: ctx.groundAt, walker: ctx.walker, wake: ctx.wake, blink: ctx.blink, started: ctx.started, mounted: ctx.mounted });
     this.doneWas = landsDone();
+    tier1.install(ctx.walker);
   }
 
   /* ---- giving ------------------------------------------------------ */
   private afterTalk(id: string) {
     T.noteTalk(id);
+    tier1.talked(id);
     const spec = BY_GIVER.get(id);
     if (!spec) return;
     const s = npcs.state(id);
     const have = notebook.list().find((j) => j.id === spec.id);
-    if (!have && s.phase === 'asked') this.give(spec);
+    /* a promise is the job from the first word; the rest still ask twice */
+    if (!have && (spec.promise || s.phase === 'asked')) {
+      this.give(spec);
+      if (spec.firstTalkCounts) T.arm(spec.id, 0, 0.001);
+    }
     // done with you: a hint at the nearest stamp still out
-    if ((have?.complete || s.phase === 'done') && stamps.count < 12) {
+    /* (a promise's person has things of their own to say first: the
+     * stamp comes up every third time) */
+    if ((have?.complete || s.phase === 'done') && stamps.count < 12 && (!spec.promise || s.said % 3 === 0)) {
       const p = npcs.positionOf(id);
       const hint = stamps.hint(p?.x ?? 0, p?.z ?? 0);
       const speaker = npcs.speakerOf(id);
@@ -124,18 +151,23 @@ class Jobs {
   /** The notebook's entry for a job whose next step is `i`: pinned
    *  where that step happens, or where the job as a whole does. */
   private jobDef(spec: JobSpec, i: number) {
-    const pin = spec.steps[i]?.pin ?? spec.pin;
+    const sp = spec.steps[i]?.pin;
+    const pin = (typeof sp === 'function' ? sp() : sp) ?? spec.pin;
     return {
       id: spec.id, name: spec.name, giver: npcs.get(spec.giver)?.def.name ?? spec.giver.toUpperCase(),
-      steps: spec.steps.map((st) => st.text), reward: spec.reward, land: spec.land, pin,
+      steps: spec.steps.map((st) => (typeof st.text === 'function' ? st.text() : st.text)),
+      reward: spec.reward, land: spec.land, pin,
+      line: LINE_OF.get(spec.line),
     };
   }
 
   /** Gate round 1: a step with its own place moves the pin there. */
   private pinStep(spec: JobSpec, i: number) {
-    const pin = spec.steps[i]?.pin;
-    if (!pin) return;
-    notebook.place(pin.label, pin.x, pin.z, { quiet: true });
+    const sp = spec.steps[i]?.pin;
+    const pin = typeof sp === 'function' ? sp() : sp;
+    const dynamic = typeof spec.steps[i]?.text === 'function';
+    if (!pin && !dynamic) return;
+    if (pin) notebook.place(pin.label, pin.x, pin.z, { quiet: true });
     notebook.job(this.jobDef(spec, i));
   }
 
@@ -152,6 +184,9 @@ class Jobs {
 
     for (const spec of SPECS) {
       const j = notebook.list().find((x) => x.id === spec.id);
+      /* a place that starts it: the chain, read, is the old road */
+      if (!j && spec.startsAt && notebook.listShown
+        && Math.hypot(w.x - spec.startsAt.x, w.z - spec.startsAt.z) < spec.startsAt.r) this.give(spec);
       if (!j || j.complete) continue;
       const i = j.done;
       const step = spec.steps[i];
@@ -159,18 +194,24 @@ class Jobs {
       if (T.armedAt(spec.id, i) < 0) T.arm(spec.id, i);
       T.current.jobId = spec.id;
       T.current.step = i;
+      /* a step whose words hang on an answer (who takes the chain down)
+       * is re-lettered when the answer changes them */
+      if (typeof step.text === 'function' && step.text() !== j.steps[i]) notebook.job(this.jobDef(spec, i));
       if (!step.when()) continue;
       step.onDone?.();
       if (i + 1 >= spec.steps.length) this.complete(spec);
       else {
+        /* the words first (what is next may hang on what was chosen),
+         * then the tick, so the objective line letters the right step */
+        this.pinStep(spec, i + 1);
         notebook.step(spec.id, i + 1);
         T.arm(spec.id, i + 1);
-        this.pinStep(spec, i + 1);
       }
     }
 
     // a land decided at a card without the job: its person is done too
     for (const spec of SPECS) {
+      if (spec.promise) continue; // only doing it keeps it
       const s = npcs.state(spec.giver);
       if (s.phase !== 'done' && knowledge.decided(spec.land)) {
         npcs.set(spec.giver, { phase: 'done' });
@@ -185,6 +226,7 @@ class Jobs {
       toast(`${n} OF ${LANDS_TOTAL} KEPT`, 'job');
     }
 
+    tier1.tick(dt);
     stamps.tick(this.elapsed);
     toys.tick(dt);
     monsters.tick(dt);
@@ -204,6 +246,7 @@ class Jobs {
   /** The consequence, said: the person's line if they are near, the
    *  world's shout if not. */
   private readBack(spec: JobSpec) {
+    const text = typeof spec.shout === 'function' ? spec.shout() : spec.shout;
     const n = npcs.get(spec.giver);
     if (n && T.nearPerson(spec.giver)) {
       const lines = n.def.lines(npcs.state(spec.giver));
@@ -214,10 +257,12 @@ class Jobs {
         npcs.state(spec.giver).said = 1;
         notebook.dirty = true;
       }
-      window.setTimeout(() => shout(spec.shout), 0);
+      /* ONE VOICE: a promise kept in front of its person is theirs to
+       * say; the world only says it when nobody is there to */
+      if (!spec.promise) window.setTimeout(() => shout(text), 0);
       return;
     }
-    shout(spec.shout);
+    shout(text);
   }
 
   /* ---- for the harness ------------------------------------------- */
@@ -254,9 +299,16 @@ export const JOB_POIS: WorldPOI[] = [
     /* THE BELFRY BENCH: a seat in the yard, so Marget's hour can be
      * waited for at six times the pace. */
     x: -61.5, z: -46, radius: 3.4, label: 'THE BELFRY BENCH', labelHeight: 2.6,
-    prompt: 'SIT AND WAIT FOR THE LAMPS',
+    /* TIER 1: the bench is the first thing in the yard a foot reaches,
+     * and until the lamps have been seen its verb is the yard's: wait */
+    prompt: () => (hourKnown() ? 'SIT ON THE BENCH' : 'WAIT HERE FOR THE LAMPS'),
+    wait: {
+      until: () => hourKnown() || clock.lamp > 0.3,
+      hint: 'waiting in the yard for the lamps — step away to stop',
+      done: 'The lamps. One hand on that clock agrees with them.',
+    },
     sit: { x: -61.5, z: -46 },
-  },
+  } as unknown as WorldPOI,
 ];
 
 export const THINGS_POIS: WorldPOI[] = [...JOB_POIS, ...STAMP_POIS, ...TOY_POIS];

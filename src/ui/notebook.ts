@@ -6,7 +6,7 @@ import { notebook, type Job } from '../world/notebook';
 import { npcs, type NpcState } from '../world/npc';
 import { UI } from './UI';
 /* ---- THINGS: the finale's count and the stamps' impressions ---- */
-import { landsDone, LANDS_TOTAL } from '../world/jobs';
+import { landsDone, landKept, LANDS_TOTAL } from '../world/jobs';
 import { STAMP_COLLECTION } from '../world/stamps';
 import { stampImpression } from '../world/textures-monsters';
 /* ---- THE FIRST FIVE MINUTES: the first page ---- */
@@ -215,12 +215,11 @@ export class NotebookPage {
         }
         push(this.lineEl('list-head', LIST_HEAD, 'head', w));
         push(this.lineEl('list-how', 'hold a line down to cross it out. it is your book.', 'quiet', w));
-        const jobs = notebook.list();
         THE_LIST.forEach((l, i) => {
           /* a line is crossed out when he crossed it out, or when the
            * land's job is done: the notebook keeps its own score */
           const byHand = notebook.crossed.includes(l.id);
-          const kept = !!l.kept || byHand || jobs.some((j) => j.land === l.land && j.complete);
+          const kept = !!l.kept || byHand || landKept(l.land);
           const row = document.createElement('div');
           row.className = `nb-list-row${kept ? ' kept' : ''}`;
           row.dataset.line = l.id;
@@ -371,12 +370,18 @@ export class NotebookPage {
   }
 
   private jobEl(j: Job, active: boolean, w: number): HTMLElement {
-    const key = `job|${j.id}|${j.done}|${j.complete}|${active}`;
+    /* THE TWELVE LINES: once the first page has been read, a job that
+     * hangs on a line of it is headed by that line, verbatim, in his
+     * own hand; the steps under it are what keeping it takes */
+    const hung = notebook.listShown && j.line ? j.line : null;
+    const key = `job|${j.id}|${j.done}|${j.complete}|${active}|${hung ? 1 : 0}|${j.steps[j.done] ?? ''}`;
     let wrap = this.cache.get(key);
     if (wrap) return wrap;
     wrap = document.createElement('div');
     wrap.className = `nb-job${j.complete ? ' complete' : ''}${active ? ' active' : ''}`;
-    const head = this.lineEl(`jobhead|${j.giver}|${j.name}`, `${j.giver} — ${j.name}`, 'head', w - 24);
+    const head = hung
+      ? this.lineEl(`jobline-head|${j.id}|${hung}`, hung, 'voice', w - 24)
+      : this.lineEl(`jobhead|${j.giver}|${j.name}`, `${j.giver} — ${j.name}`, 'head', w - 24);
     const headWrap = document.createElement('div');
     headWrap.className = 'nb-jobhead';
     if (active && !j.complete) {

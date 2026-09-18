@@ -91,6 +91,7 @@ export class Voice {
   }
 
   touched(def: WorldPOI) {
+    if (def.answers) return; // it has said its own piece
     const p = def.prompt;
     const prompt = (typeof p === 'function' ? p() : p) ?? 'TOUCH';
     this.touch = { def, prompt, t: 0, held: things.held, worn: worn.current, moved: false };
@@ -109,6 +110,7 @@ export class Voice {
   private learned(id: string) {
     if (!this.ctx.started()) return;
     if (id.startsWith('door:')) return;
+    if (id.startsWith('promise:')) return; // TIER 1: a promise's own bookkeeping is never a toast
     if (id.startsWith('name:')) {
       // standing in a land is the region card's job, not a toast's
       if (id === `name:${this.ctx.regionId()}`) return;
@@ -273,7 +275,7 @@ export class Voice {
       const pos = npcs.positionOf(id);
       const w = this.ctx.walker();
       const near = pos && pos.present && Math.hypot(pos.x - w.x, pos.z - w.z) < 45;
-      if (n && near) {
+      if (n && near && !CONSEQUENCES[r.door]?.world) {
         const lines = n.def.lines(npcs.state(id));
         const line = lines[0];
         say(n.speaker, line);

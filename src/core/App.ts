@@ -57,13 +57,14 @@ import { say, shout, speechEls } from '../ui/speech';
 import { toast, holdToasts } from '../ui/toast';
 import { withHint } from '../world/lines';
 import { letterBench } from '../ui/lettering'; /* ---- PEN ---- */
-import { repliesOpen, pickReply } from '../ui/replies'; /* THE THREE VERBS */
+import { repliesOpen, pickReply, repliesLift } from '../ui/replies'; /* THE THREE VERBS */
 import { crossout } from '../world/crossout';
 /* ---- FIRST HOUR: the scripted opening (`src/world/opening.ts`) ---- */
 import { opening, OPENING_POIS } from '../world/opening';
 import { nellsCapTexture } from '../world/textures-opening';
 /* ---- THINGS: jobs, stamps, toys, monsters (`src/world/jobs.ts`) ---- */
 import { jobs, THINGS_POIS } from '../world/jobs';
+import { canWait } from '../world/tier1'; /* TIER 1: WAIT is earned */
 import { redScarfTexture, postmasterCapTexture } from '../world/textures-monsters';
 
 const ALL_POIS: WorldPOI[] = [
@@ -228,6 +229,10 @@ export class App {
     // through the map button or across a region card
     this.poi.reserved = this.ui.chrome;
 
+    /* seated, the key stands him up, and the prompt says so whatever
+     * place is nearest (round 5's leftover: READ THE NOTE on the bench) */
+    this.poi.keySays = () => (this.seat ? 'STAND UP' : null);
+    this.poi.promptLift = () => repliesLift();
     // every point of interest exists from the start; distance hides them
     for (const def of ALL_POIS) {
       const verb = def.choice || def.note || def.touch || def.sit;
@@ -303,6 +308,9 @@ export class App {
        * gate is the gate's, even from the saddle */
       get enabled() { return !self.bicycle.aboard && !self.boat.aboard && !self.train.aboard && !(self.horse.aboard && opening.gateKey); },
       radius: 6.0, /* gate round 2: "the mount band is so narrow finding it costs five moves" */
+      /* sent for, it is what the key is for: the note on the bench and
+       * the stile it jumped beside were nearer, and won the prompt */
+      get bias() { return !self.horse.aboard && (opening.stage === 'horse' || self.elapsed - self.horseCalledAt < 14) ? 1.7 : 0; },
       prompt: () => !this.horse.aboard ? 'GET ON THE HORSE'
         : Math.hypot(this.char.vel.x, this.char.vel.z) > 0.8 ? 'WHOA' : 'GET OFF',
       onInteract: () => this.horseKey(),
@@ -542,7 +550,10 @@ export class App {
     /* ---- SCALE: H whistles the horse ---- */
     window.addEventListener('keydown', (e) => {
       if (e.code === 'KeyH' && !e.repeat) this.whistle();
+      /* ---- TIER 1: T passes the time, once Marget's line is kept ---- */
+      if (e.code === 'KeyT' && !e.repeat && !Input.typing(e)) this.waitAnywhere();
     });
+    this.ui.onWait = () => this.waitAnywhere();
 
     /* THE RUN, TAUGHT BY NECESSITY (Session 16). The bull's charge is
      * the first time the game asks the walker to run somewhere
@@ -1267,6 +1278,29 @@ export class App {
     return `wearing: ${d ? d.name.toLowerCase() : 'nothing'}`;
   }
 
+  /* ================================================================ *
+   * TIER 1 · WAIT (what Marget's promise unlocks, `foundation/08` §9.3:
+   * "WAIT (passing time)"). Until then a wait is a place's verb (the
+   * belfry yard, the braziers). After it, T or the HUD's button passes
+   * the time wherever he stands, until a step. Pressed again, it stops.
+   * ================================================================ */
+  private waitAnywhere() {
+    if (!this.started || !canWait() || this.char.frozen) return;
+    if (this.waiting) {
+      this.waiting = null;
+      this.ui.hideHint();
+      toast('YOU STOPPED WAITING', 'plain');
+      return;
+    }
+    if (this.seat || this.sitTry || this.horse.aboard || this.bicycle.aboard || this.boat.aboard || this.train.aboard) return;
+    this.waiting = {
+      x: this.char.pos.x, z: this.char.pos.z, radius: 3,
+      wait: { until: () => false, hint: 'waiting — a step stops it', done: '' },
+    } as WorldPOI;
+    this.ui.showHint(this.waiting.wait!.hint, 180000);
+    toast('YOU WAIT. THE DAY RUNS FAST.', 'plain');
+  }
+
   private static SIT_TIME = 6;
   /* ---- THINGS (gate round 1): a WAIT at a place. Forty-eight times:
    * from mid-morning to the lamps is about twenty game-seconds, with
@@ -1279,6 +1313,7 @@ export class App {
   private stuckFor = 0;
   private stuckSaidAt = -10;
   private stuckN = 0;
+  private static HORSE_STUCK_LINES = ['He won\'t take that. Round it.', 'Not on a horse. Round it, or get off.', 'He\'s a horse, not a key.'];
   private static STUCK_LINES = ['Solid.', 'Not through there.', 'That\'s a wall. Round it, then.', 'No.'];
   /* ---- VOICE (gate round 1): E WITH NOTHING IN REACH IS STILL ANSWERED.
    * The cold player stood on a carter, a townsperson and a banner,
@@ -1554,6 +1589,13 @@ export class App {
       this.char.rowing = true;
       this.char.maxSpeed = App.HORSE.max;
       this.char.runMult = App.HORSE.run;
+      /* gate round 6: a called horse jumps a fence and came to rest ON
+       * its line (two and a half units short of the walker, who stood a
+       * stride from it). Mounted there every step was refused, in every
+       * direction, with no message, twice in ten minutes. If the horse
+       * stands where a rider cannot, the rider mounts where he stands:
+       * the horse is brought to him. */
+      if (this.horseRefuses(this.horse.pos.x, this.horse.pos.y)) this.horse.setAt(this.char.pos.x, this.char.pos.z);
       this.char.teleport(this.horse.pos.x, this.horse.pos.y, this.char.heading);
       this.snapCamera();
       return;
@@ -1604,13 +1646,17 @@ export class App {
   }
 
   private horseRefuses(x: number, z: number): boolean {
-    return this.terrain.blockedAt(x, z) || barriers.blocks(x, z);
+    /* gate round 6: "I rode the horse into somebody's dining room three
+     * times." A room is for feet. */
+    return this.terrain.blockedAt(x, z) || barriers.blocks(x, z) || rooms.at(x, z) !== null;
   }
+  private horseCalledAt = -99;
   /** The whistle: the horse comes if it can hear you. */
   private whistle() {
     if (!this.started || this.char.frozen || this.horse.aboard) return;
     this.audio.init();
     this.audio.event('whistle');
+    this.horseCalledAt = this.elapsed;
     if (!this.horse.call(this.char.pos.x, this.char.pos.z)) {
       this.ui.showHint('the horse is too far to hear you', 2600);
     }
@@ -2049,6 +2095,7 @@ export class App {
      * Session 7 hangs a routine on — reads `daylight.clock` directly and
      * never comes through here (see world/daylight.ts). */
     this.tickSitTry(dt); /* ---- THE THREE VERBS: the held sit ---- */
+    this.ui.setWaitShown(this.started && canWait() && !repliesOpen().length); /* ---- TIER 1: WAIT, once earned ---- */
     /* ---- THINGS (gate round 1): a wait runs the day at WAIT_TIME with
      * the walker standing; the thing coming, a step, or leaving the
      * place ends it. ---- */
@@ -2224,7 +2271,9 @@ export class App {
     if (this.stuckFor > 1.1 && this.elapsed - this.stuckSaidAt > 7) {
       this.stuckSaidAt = this.elapsed;
       this.stuckFor = 0;
-      say('walker', App.STUCK_LINES[this.stuckN++ % App.STUCK_LINES.length]);
+      /* a rider is told it is the horse that will not (gate round 6) */
+      const lines = this.horse.aboard ? App.HORSE_STUCK_LINES : App.STUCK_LINES;
+      say('walker', lines[this.stuckN++ % lines.length]);
     }
 
     /* ---- THE BOAT ---------------------------------------------------- *
@@ -2278,7 +2327,9 @@ export class App {
        * to the far side of the long fence, it stood there); ridden, it
        * refuses what a walker refuses */
       (x, z) => this.horse.aboard ? this.horseRefuses(x, z) : this.terrain.blockedAt(x, z),
-      (x, z) => this.terrain.heightAt(x, z)
+      (x, z) => this.terrain.heightAt(x, z),
+      /* and it does not come to rest on a fence's own line */
+      (x, z) => barriers.blocks(x, z)
     );
     if (this.horse.hoofbeat && this.started
       && Math.hypot(this.char.pos.x - this.horse.pos.x, this.char.pos.z - this.horse.pos.y) < 70) {
