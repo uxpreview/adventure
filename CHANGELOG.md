@@ -1,5 +1,188 @@
 # CHANGELOG
 
+## Tier 1 promises: Wick, Nell, Marget (2026-09-17)
+
+Branch `claude/tier-1-promises`. `PROMPT.md` §3 item 2, on the story of
+record (`design/foundation/08` §9, promises 1 to 3). `npm run build`
+green. Played on the harness from the title, desktop and `--rig
+portrait`; what was checked on which is at the end.
+
+### What changed
+
+**The registry hangs on the twelve lines.** Every job in
+`src/world/jobs/` carries the id of its line of THE LIST (`JobSpec.line`)
+and the registry is kept in the list's order. Once the first page has
+been read, the JOBS page heads a job with its line verbatim, in his
+hand ("Marget. I owe her. Pay it."), and the steps under it are what
+keeping it takes. Nell's job (the opening's) hangs on line 2 the same
+way. Tier 1 is `jobs/tier1.ts`: a PROMISE is the job from the first word
+its person says to him (or from a place that starts it: reading the
+chain starts Wick's), and only doing it keeps it; an old card's door no
+longer counts a Tier 1 land as kept. The other nine hang on their lines
+with the steps they had until their tier's session. What the Tier 1
+people say and do is `world/tier1.ts`; what the lands draw is
+`regions/civic.ts`; the two meet in `world/tier1-state.ts`.
+
+**1. WICK. The old road.** A chain across the king's road below the
+avenue, bollard to bollard, with a board in his hand: ROAD CLOSED. IT IS
+NOTHING. — W. Grass has come up through the road beyond it, and the
+pilgrims come up as far as the chain, stand, and go back. Wick is at his
+post by the west brazier all day now (he was only on the page for his
+two banner rounds), and out in front of the fires from dusk to his
+morning round. Ask him: "It's nothing." Ask again: be at the fires at
+dusk. WAIT FOR DUSK at the braziers; he comes out under the gate, lights
+west then east, stands out in front facing down the hill, "There. Lit."
+"Now the bell." "...No. Well. Not tonight." THE TURN, asked: the fires
+are not for the king; they are the castle's call to Brim, the bell was
+to ring back, it never has, and he chained the road so nobody would see
+him wait. THE CHOICE is a card taken at the man: OPEN THE ROAD, or LEAVE
+IT CHAINED. CARRY HIS WORD YOURSELF. Open: he offers to walk down and
+unhook it (YOU TAKE IT DOWN, WICK. / I'LL HANDLE IT: he sits down on the
+mounting block for good and the chain is yours, E at the chain). The
+chain lies in the road, the grass goes, the pilgrims climb to the gate
+again, and the two fires show large from Brim and the Common after dark
+(the castle to Brim, by sight). Chained: "Tell Marget the castle's lit",
+and the job ends at her stall: "You, on foot. Same as ever." Either way
+THE HALL opens: the keep has a door, a fire that is in, a settle to sit
+at, a pallet (SLEEP TILL MORNING). If Marget's bell has been rung and he
+has told you what the fires are for, he hears it: "That's the bell. At
+an hour."
+
+**2. NELL. The bull** is the opening, unchanged. Her turn ("I could
+always pen him myself, you know. I stopped when you started.") is said
+on either road now, not only after I'LL HANDLE IT. The Common's call is
+the well: SHOUT DOWN THE WELL letters HELLO? over the walker, ". . .
+hello?" comes up out of the well three seconds late, and once the bull
+is home Nell answers it from her line ("I heard that. The whole Common
+heard that. That's what it's for.").
+
+**3. MARGET. The debt.** "You owe me for five stalls." Asked again he
+turns his pockets out (half a sandwich) and she sets the price: get the
+market called. WAIT in the belfry yard till the lamps come on (the
+bench in the yard waits too); SAY WHICH HAND IS RIGHT is a card with two
+doors, and somebody in Brim is wrong for good under either: EIGHT, and
+Dorrie the baker keeps her cover on with AT ELEVEN chalked on it;
+ELEVEN, and Fenn the lamplighter lights the square at four in the
+afternoon. TELL MARGET THE HOUR: she offers to ring it (YOU RING IT,
+MARGET: she walks down the king's road to the yard, rings it, walks
+back; I'LL HANDLE IT: she sits down on a crate behind her stall for good
+and the rope is yours). BONG. BONG. BONG. The covers that have been tied
+over the five stalls for three years come off, the board is chalked,
+and the bell rings at that hour every day after. YOURS: WAIT (T, or the
+HUD's new button, passes the time anywhere). THE TURN is not hers to
+say: a few seconds after, Hob, sweeping by her stall, says it. "She did
+your rounds the week before, you know. The ones you couldn't get to.
+Never said. That's the debt."
+
+**Brim's bystanders** (round 4, item 3). Six people in the square have
+names, drawings of their own and lines that turn on the bell: HOB (the
+broom), DORRIE (the baker who keeps eleven), PELL (the cheese), BRYN
+(blue cloth), CASS (twelve, a hoop), TOLLY (came for the gathering, has
+not gone home). The lamplighter is FENN.
+
+**One voice at a time.** A promise's bookkeeping (`promise:*`) is never
+a YOU LEARNED toast. A touch that answers itself on the page (the well,
+the rope, the chain) is not ticked back as a toast as well
+(`WorldPOI.answers`). A promise kept in front of its person is theirs to
+say and the world's shout stays quiet. The bell's strokes have the page
+to themselves before what they change is said. Wick's dusk lines wait
+for each other. A bubble is not carried along the top of the page after
+a walker who has gone out of earshot.
+
+**The two leftovers, and three things the play found.** Seated, the
+prompt says STAND UP whatever is nearest (it read READ THE NOTE over a
+key that stood him up). Nell and her washing line are 2.6 nearer the
+bench: inside the portrait frame at rest, her bubbles over her and not
+pinned to the edge (Morrow's path goes west of the line). On a phone the
+answers to a person are lettered at the foot of the page, one over the
+other, and the prompt lifts above them (they were across the rider).
+The whistled horse wins the prompt over the note on the bench and the
+stile it jumps beside. A foot sliding along the chain comes off its end.
+
+**Harness.** Nothing new; `__inklands.setHour(h, true)` runs the clock
+from `h` (without `true` it pins it, and a WAIT never ends).
+
+### The gate, round 6 (2026-09-17/18, build `39fdf1e`, desktop, from the title)
+
+One cold player, then one critic (THE FIRST HOUR), in sequence. Reports
+in `design/reset/rounds/round-6/`.
+
+**Before (round 5):** T1 9/10, T2 yes, critics 0 of 1.
+**After (round 6):** **T1 6/10 at sixty seconds, 9/10 at 134** (when the
+list opened): below the line at the minute, by one. It said: "I left
+three years ago saying I'd be back in an hour, there are twelve things I
+owe, and I'm to go round and put them right." **T2 holds:** "You wake on
+a bench in a pencil-drawn world, three years late for a note you left
+yourself, with a list of twelve people you owe things to, and you go
+round putting each thing right with a horse, a notebook and a fence with
+a sense of humour. Every job is small (get a bull home; settle a debt by
+waiting for the lamps and ringing a bell) but each leaves the town
+visibly different, and the writing on the little cards is the good kind
+of dry." Three next: skim a stone at the tarn; find Wick and the closed
+old road; stay out at night to see the monsters and try a door. Scores:
+understandable 6, alive 8, fun 6, beautiful 9. **T3: THE FIRST HOUR —
+VERDICT: REFERENCE** (0 of 1). The loop is not done.
+
+It penned the bull at 41 seconds (Nell shut the gate), rode to Brim, and
+kept **Marget's promise end to end with no help**: owed for five stalls,
+waited in the yard, chose EIGHT, said I'LL HANDLE IT, rang the bell
+itself, pressed T through the night, and came back to the market on.
+Best moment: "finding the market actually on: bread on the trestles, a
+cart rolling, the signs changed, Marget sitting down as promised, then
+Hob's 'She did them. She'd kill me for saying.'" It never reached Wick:
+it could not find the way north out of the square and left by the Wood
+Gate. Worst moment: "sitting on a horse that would not move, in front of
+a fence, with no message", twice; and it rode into Marget's house three
+times. The critic: forty seconds that teach like A Short Hike, then a
+horse that fails silently, a second job that is literally WAIT, a KEPT
+counter that moved for arriving at the tarn, and direction that lives on
+a map whose labels float off their pins.
+
+### Fixed after round 6
+
+**The horse.** Called, it does not come to rest on a fence's own line;
+if it ever stands where a rider cannot ride, he mounts where he stands
+and the horse is brought to him. It refuses rooms. A rider pushing at
+something is told it is the horse that will not. **KEPT is one rule**
+(`jobs.landKept`): the toast's count and the strikes on THE LIST agree.
+**Direction in the world:** the king's road north out of Brim Square is
+trodden dark to the North Gate with a board at its mouth (KING'S ROAD ·
+NORTH GATE · GREYWEATHER) and a name over it; a board at the mouth of
+the belfry yard; THE BELFRY's name reads from forty-four units. **A lamp
+stands in the belfry yard**, lit with the square's first. The answers to
+a person are under the walker's feet on desktop too. Letting somebody do
+their part is written under CHOICES, quietly. On a phone WAIT sits by
+the right thumb (the HUD's row was full).
+
+**Named and not done:** the second job is a wait (it is 08's, and what it
+unlocks is WAIT; the critic wants a played verb); the camera "turns as I
+walk" in town (occlusion, not a recentre: the CAMERA pillar); map labels
+off their pins; NIGHT. THE MONSTERS ARE OUT with no monster in Brim and
+no door that answers; the skim board is at the tarn and the stone at the
+fence; a pigeon does not flinch at a stone; place banner over a bubble;
+HUD buttons faint over buildings; a NELL label pinned to one screen spot
+during the chase. T1 at sixty seconds: the list still arrives at ~130.
+
+### Checked, and on which rig
+
+Desktop harness, from the title, no parameters. **Without teleports:**
+bench, name, bull, horse, gate, over the stile, H, the horse jumps the
+fence and wins the prompt, ride to Brim through the South Gate, Marget
+twice, run to the yard; and after round 6, the square to the chain up
+the king's road on foot, round the chain's end, Wick. **With teleports
+between places:** both of Marget's doors and both answers to her offer,
+Hob's turn, the covers, WAIT; Wick from the chain, both doors, all three
+ends (he unhooks it; I take it down and he sits; chained, the word
+carried to Marget), the hall; the well and Nell. The chain from north,
+east, south and west. A click on the belfry rang the bell
+(`App.thingUnder`, no extra code). **Portrait rig:** the bench's frame
+with Nell in it, the answers at the foot of the page, Marget's two
+talks, the chain, Wick's two talks and the turn, the road card, the
+WAIT button. **Not checked:** Wick's I'LL HANDLE IT and the hall on the
+portrait rig; the bell's daily ring and Wick hearing it; Fenn's
+afternoon lamps, the pilgrims turning back at the chain and the fires
+seen from Brim were read in the code, not watched; round 6's fixes have not been played cold; sound.
+
 ## One voice at a time (2026-09-17)
 
 The owner, on a phone, five screenshots: "In the first 10 seconds of

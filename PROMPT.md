@@ -54,12 +54,13 @@ Run the pillars and the loop **one at a time, one agent at a time, over as
 many sessions as it takes.** A cold player and then one critic in sequence
 is fine. The brief's goal is unchanged; only the shape of the work is.
 
-## 2. Where it stands (2026-09-17, branch `claude/next-session-r4gate`; main is PR #30)
+## 2. Where it stands (2026-09-18, branch `claude/tier-1-promises`; main is PR #31)
 
-Play it: https://adventure-git-claude-next-session-r4gate-ryankm.vercel.app
+Play it: https://adventure-git-claude-tier-1-promises-ryankm.vercel.app
 (Vercel rebuilds `adventure-git-<branch>-ryankm.vercel.app` on every push
-to a branch.) PRs #23 to #30 are merged; main is the story of record's
-first five minutes, the three verbs, and the gate's rounds on them.
+to a branch.) PRs #23 to #31 are merged; main is the story of record's
+first five minutes, the three verbs, and the gate's rounds on them. The
+branch adds Tier 1 (Wick, Nell, Marget); no PR until the owner says.
 
 The gate (`design/reset/THE-GATE.md`) rounds so far, all desktop, from
 the title, no parameters:
@@ -71,6 +72,7 @@ the title, no parameters:
 | 3 | 8/10 — holds (first five minutes) | yes | not run |
 | 4 | 7/10 — holds | yes | 0 of 6 |
 | 5 | 9/10 — holds (the three verbs) | yes | 0 of 1 (FIRST HOUR only) |
+| 6 | 6/10 at 60 s, 9/10 at 134 s — **one short** (Tier 1) | yes | 0 of 1 (FIRST HOUR only) |
 
 Round 1's cold player never met Nell. Round 2's could not get through
 Brim's south gate. Round 3 (the rebuilt opening) rode fifteen metres of
@@ -87,6 +89,29 @@ Morrow or the list. Fixed after the round (the gate always works, Nell
 offers again, a press is answered now, the bull keeps off); **not yet
 played cold.** Round 4's items 1 and 2 below are built as of round 5's
 fixes and also not yet played cold.
+
+Round 6 (2026-09-18, Tier 1) kept Marget's promise end to end with no
+help (waited for the lamps, chose EIGHT, said I'LL HANDLE IT, rang the
+bell, came back to the market on: its best moment) and never reached
+Wick: it could not find the way north out of Brim Square. The called
+horse froze twice on a fence's line with no message. T1 was 6 at sixty
+seconds and 9 when the list opened at 134: **the list arrives too late
+for T1.** Fixed after the round (`CHANGELOG.md` "Fixed after round 6":
+the horse, KEPT as one rule, boards and a trodden road north, a lamp in
+the yard); **not yet played cold.**
+
+**Tier 1 as built (2026-09-18):** `world/tier1.ts` (what Wick and Marget
+say and do, by the step of their promise; the well), `jobs/tier1.ts`
+(the two jobs), `world/tier1-state.ts` (where the promise and the land
+meet), `regions/civic.ts` (the chain, the fires, Wick's standing
+drawing, the hall; the covers, the named six, Marget's walk, the bell),
+`textures-tier1.ts`. Every `JobSpec` carries its `line` of THE LIST and
+the notebook heads the job with it verbatim; `promise: true` means the
+job is given at the first word (or at `startsAt`) and only doing it
+keeps the land. `promise:*` knowledge is silent. A touch that answers
+itself sets `answers: true`. WAIT (T, the HUD's button) is
+`promise:verb-wait`. A dev-server edit reloads the harness page: batch
+edits, then play.
 
 **The owner played it by hand after round 5 (2026-09-17), twice, and
 both sets of notes are fixed and not yet played cold** (`CHANGELOG.md`
@@ -110,11 +135,9 @@ both sets of notes are fixed and not yet played cold** (`CHANGELOG.md`
   no place is named under a bubble; the bench's minute is Nell's alone
   (`opening.quiet`, `notebook.hush`). Anything new that speaks goes
   through these, and says its thing once.
-- Left from those two: on a phone Nell stands off the right edge of
-  the frame at the bench, so her bubbles pin to the edge (move the
-  washing line nearer, or start the look a few degrees east); seated
-  through the bull's release, the prompt reads READ THE NOTE while the
-  press still stands him up.
+- Left from those two, both done with Tier 1: Nell and her line are
+  inside the portrait frame at the bench; seated, the prompt says
+  STAND UP.
 
 **What round 4's critics name most, in order (1 and 2 built 2026-09-17):**
 1. **The South Gate arch** is drawn as faint as its wall; the player
@@ -247,9 +270,9 @@ folder, to build story.
 
 **The story rebuild comes first (owner, 2026-09-16: "proceed"). One item
 per session, in order, each ending with the cold player and the critic
-from `THE-GATE.md`.** Item 1 is built; **item 2 (Tier 1) is next.**
+from `THE-GATE.md`.** Items 0 to 2 are built; **item 3 (Tier 2) is next.**
 Round 4's arch and map labels rode along with item 1; Brim's
-bystanders ride with Tier 1's Marget. Round 5's open list (`CHANGELOG.md`
+bystanders rode with Tier 1's Marget. Round 5's open list (`CHANGELOG.md`
 "Named and not done") rides where an item touches it: the hedge's
 drawn edge and the strangers' prompts are the two a first minute meets.
 
@@ -283,10 +306,20 @@ drawn edge and the strangers' prompts are the two a first minute meets.
    (`world/crossout.ts`). Left: each tier hangs its own offers; Joan's
    SIT DOWN card door still sits at once (Tier 4); the cost does not
    yet compound at the gathering (item 6).
-2. **Tier 1 promises** (Wick, Nell, Marget) as built in `08` §9, each
-   with its turn, its choice, its visible change, and its call
-   reconnected. The jobs registry (`src/world/jobs/`) is re-hung on
-   the twelve lines verbatim.
+2. ~~**Tier 1 promises** (Wick, Nell, Marget)~~ **BUILT, 2026-09-18**
+   (`CHANGELOG.md` "Tier 1 promises"): each with its turn, its choice,
+   its visible change and its call; the registry hung on the twelve
+   lines verbatim; Brim's six named. Left: round 6's fixes are not
+   played cold; nobody cold has met Wick yet; the second job is a wait
+   and the critic wants a played verb; the relay's cross-calls (Wick
+   hearing the bell, the fires seen from Brim) were not watched; the
+   other nine jobs hang on their lines with their OLD steps (Val's line
+   says hedge and her steps say ride to the keep) until their tiers;
+   `door:the-king-restored` still relieves Wick of his rounds (archive
+   content beside the promise). **T1:** the list opens at ~130 s and
+   the cold player's sixty-second answer is a 6 without it; bring the
+   list forward (Morrow's walk waits 11 s after the gate, then walks
+   ~25 s) or let Nell say "twelve" inside the first minute.
 3. **Tier 2** (Val, Brack, Holt): the faded footprints, the lantern, the
    canyon and the Flats.
 4. **Tier 3** (Amos, Pye, Wren): the rain table, the eighth pot and the
