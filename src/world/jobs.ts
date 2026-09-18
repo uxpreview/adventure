@@ -3,6 +3,7 @@ import { notebook } from './notebook';
 import { npcs } from './npc';
 import { knowledge } from './knowledge';
 import { say, shout } from '../ui/speech';
+import { converse } from '../ui/converse';
 import { toast } from '../ui/toast';
 import { REGION_SPECS, type RegionId } from './layout';
 import type { WorldPOI } from './regions';
@@ -95,12 +96,7 @@ class Jobs {
     /* THE TALK, WRAPPED: every conversation goes through here so a job
      * can be given at the ask, a talk can tick a step, and a person
      * whose job is done can hint at a stamp. */
-    const orig = npcs.talk.bind(npcs);
-    npcs.talk = (id: string) => {
-      const heardBefore = notebook.heardList.length;
-      orig(id);
-      if (notebook.heardList.length !== heardBefore) this.afterTalk(id);
-    };
+    npcs.onTalked = (id) => this.afterTalk(id);
     stamps.init(ctx.scene, ctx.groundAt);
     toys.init({ scene: ctx.scene, groundAt: ctx.groundAt, waterAt: ctx.waterAt, walker: ctx.walker, bicycle: ctx.bicycle, root: ctx.root });
     monsters.init({ scene: ctx.scene, groundAt: ctx.groundAt, walker: ctx.walker, wake: ctx.wake, blink: ctx.blink, started: ctx.started, mounted: ctx.mounted });
@@ -128,7 +124,7 @@ class Jobs {
       const p = npcs.positionOf(id);
       const hint = stamps.hint(p?.x ?? 0, p?.z ?? 0);
       const speaker = npcs.speakerOf(id);
-      if (hint && speaker) say(speaker, hint);
+      if (hint && speaker) converse([{ who: speaker, text: hint }]);
     }
   }
 

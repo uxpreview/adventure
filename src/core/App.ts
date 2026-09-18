@@ -58,7 +58,10 @@ import { toast, holdToasts } from '../ui/toast';
 import { withHint } from '../world/lines';
 import { letterBench } from '../ui/lettering'; /* ---- PEN ---- */
 import { repliesOpen, pickReply, repliesLift } from '../ui/replies'; /* THE THREE VERBS */
+import { conversing, advanceConverse, converseState } from '../ui/converse'; /* A CONVERSATION */
+import { beckoning } from '../ui/speech';
 import { crossout } from '../world/crossout';
+import { handle } from '../world/handle';
 /* ---- FIRST HOUR: the scripted opening (`src/world/opening.ts`) ---- */
 import { opening, OPENING_POIS } from '../world/opening';
 import { nellsCapTexture } from '../world/textures-opening';
@@ -344,6 +347,8 @@ export class App {
       seated: () => this.seat !== null,
       regionId: () => this.region.id,
       started: () => this.started,
+      walkerName: () => this.save.data.name ?? '',
+      touch: 'ontouchstart' in window,
     });
     this.ui.onCloseNotebook = () => this.voice.close();
     /* ---- FIRST HOUR: the opening reads the world and drives Nell ---- */
@@ -413,6 +418,8 @@ export class App {
 
     this.input.onInteract(() => {
       if (!this.started) return; // Enter on the title is not a press in the world
+      /* ---- A CONVERSATION: the press is the next line, and nothing else ---- */
+      if (advanceConverse()) return;
       /* ---- VOICE: the key closes the notebook first ---- */
       if (this.voice.open) {
         this.voice.close();
@@ -453,7 +460,8 @@ export class App {
         downs.delete(e.pointerId);
         if (!d || !this.started || !this.input.enabled) return;
         if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 10 || performance.now() - d.t > 450) return;
-        if (this.thingUnder(e.clientX, e.clientY)) this.input.fireInteract();
+        /* ---- A CONVERSATION: a tap anywhere on the page is the next line ---- */
+        if (conversing() || this.thingUnder(e.clientX, e.clientY)) this.input.fireInteract();
       });
     }
     /* THE THREE VERBS: the prompt under a thumb is the key, held or not */
@@ -880,6 +888,10 @@ export class App {
         /* ---- THE THREE VERBS, for the harness ---- */
         replies: () => repliesOpen(),
         reply: (i: number) => pickReply(i),
+        /* ---- A CONVERSATION, for the harness: the line up, and who waits to be asked ---- */
+        talkLine: () => converseState(),
+        offer: (o: Parameters<typeof handle.offer>[0]) => handle.offer(o),
+        beckoning: () => beckoning(),
         handled: () => notebook.handled,
         crossed: () => notebook.crossed,
         crossOut: (id: string) => crossout.cross(id),
@@ -2144,6 +2156,7 @@ export class App {
     this.char.frozen = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen || this.ui.nameOpen || !this.started
       || this.ui.blinking;
     if (this.voice.open) this.char.frozen = true; /* VOICE: the notebook has the screen */
+    if (conversing()) this.char.frozen = true; /* A CONVERSATION: he stands and listens */
     // a step stands you up; the prompt says so, and so does a thumb
     if (this.seat && Math.hypot(this.input.move.x, this.input.move.y) > 0.3) {
       this.standUp();
@@ -2690,12 +2703,12 @@ export class App {
     if (this.started) {
       // a card is up: the world's own writing stays behind it
       this.poi.suppressed = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen || this.ui.nameOpen;
-      if (this.voice.open) this.poi.suppressed = true; /* VOICE */
+      if (this.voice.open || conversing()) this.poi.suppressed = true; /* VOICE; A CONVERSATION */
       /* ONE VOICE AT A TIME (the owner, 2026-09-17). A card or a land's
        * name has the page: the answer line waits. A bubble is on the
        * page: no place is named under it. Somebody is talking to a man
        * on a bench: the places keep their names to themselves. */
-      holdToasts(this.ui.noteOpen || this.ui.mapOpen || this.ui.nameOpen || this.ui.cardUp);
+      holdToasts(this.ui.noteOpen || this.ui.mapOpen || this.ui.nameOpen || this.ui.cardUp || conversing());
       this.poi.reserved = [...this.ui.chrome, ...speechEls()];
       this.poi.quietLabels = opening.quiet;
       if (this.ui.nameOpen) this.ui.hideHint();

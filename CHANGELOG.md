@@ -1,5 +1,85 @@
 # CHANGELOG
 
+## A talk waits for you (2026-09-18)
+
+The owner, by hand: "There's something to be said for the player
+clicking the dialog to continue, so they have time to fully read what
+they are saying. The same thing for choosing to interact and have a
+conversation with someone. [...] I was heading north and I saw a chat
+bubble in the corner of my screen but wasn't sure where it was coming
+from but the conversation continued and I was completely lost on what
+this new objective was. Think of how this is handled in all other
+games." `npm run build` green; played on the harness, desktop and the
+portrait rig, from the title through the list; not yet played cold.
+
+**Two kinds of talk, the way other games have them.** A BARK
+(`say()`): one short line over a head, on a timer; colour, a call
+across a green, RUN. A CONVERSATION (`ui/converse.ts`): the player
+starts it, the walker stops, and the lines come one at a time in one
+panel at the foot of the page under the speaker's name, each waiting
+for a press (E, Space, Enter, a click, a tap on the panel or anywhere
+on the page). A mark in the corner says more to come or that is all.
+Answers on the last line have no clock. **The rule: anything that
+hands over a job, a name or a choice is a conversation; a bark is
+never the only copy of anything the player has to know.**
+
+**Somebody wants a word** (`speech.beckon`). A drawn "!" over a head,
+seen from across a land; when the person is off the page it sits at
+the edge they are past, so it is also the way to them. It comes down
+when they have been heard out.
+
+**TALK is a conversation** (`npc.talk`). One talk walks a stranger all
+the way to what they want: the hello, the grumble, the ask, a press
+each. It used to be three separate presses of timed bubbles, and the
+job was given a press BEFORE the ask was heard. The job, its pin and
+the objective now arrive when the last line has been read
+(`npcs.onTalked`). Unnamed folk answer in the panel too. `NpcDef` has
+`converse` (a person's own conversation for their state) and `barks`
+(no time to stand and talk: one line over the head, as before).
+
+**The bench waits.** Nell calls once ("Oh. You're back."), the mark
+goes up, the objective reads NELL — GO AND TALK TO HER, and the
+controls print because now there is somewhere to walk to. She calls
+twice more, a while apart, then leaves it. Asked, she says the rest
+("Do I know you?" is the walker's, from the story of record), the name
+card comes when the last line has been read, and the bull after that.
+While the bull is loose her TALK is a bark and nothing stops.
+
+**After the gate, the same.** One line called over the gate and the
+mark; "I was beginning to think..." and "Keep the horse" are a
+conversation when he goes and asks, and Morrow's walk waits for it
+(fifty seconds or sixty units away and it comes anyway: the list
+always comes). Morrow only asks when he is in the frame. The notebook
+no longer opens itself over whatever the player is doing: the walker
+says it, the objective says N OPENS IT (TAP NOTEBOOK), and it opens
+itself only after thirty seconds of being ignored.
+
+**Whose bubble is that.** Every person's bark has their name lettered
+small over the words. A speaker behind the lens is pinned to the side
+of the page they are on, not top-centre. A bark from beyond earshot
+(42 units) is not said at all, and `say()` tells the caller so: the
+bell line falls back to the world's own line when Nell is a field
+away.
+
+**Offers** (`handle.offer`): `live: true` is the old shape (a bark and
+answers on a clock: Nell's gate from the saddle, Morrow who does not
+stop). The default is now a conversation with answers that wait; every
+job's `offer` gets that.
+
+**Tier 1, on the same rule** (merged after it was built on timed
+bubbles). Wick's why ("Three years I've lit them...") and Marget's ask
+("Pay it the other way...") are the next page of the talk, not a
+seven-second bubble; "Tell Marget the castle's lit" is read; the chain
+and the bell are offered as conversations with answers that wait, the
+question over the answers; Hob's turn is not said at a man walking
+past: he calls ("Here. A word."), wears the mark, and tells it when
+asked. Nell's answer to the well carries across the green (`far`).
+
+Named and not done: a monster does not wait for a conversation to end
+(night, outdoors); the panel's words are written at once, not
+letter by letter; `readBack` and the door reactions are still barks,
+which is right for feedback, but they are the next place to look if a
+cold player misses a consequence.
 ## Tier 1 promises: Wick, Nell, Marget (2026-09-17)
 
 Branch `claude/tier-1-promises`. `PROMPT.md` §3 item 2, on the story of

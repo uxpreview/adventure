@@ -5,6 +5,8 @@ import { clock } from './daylight';
 import { knowledge } from './knowledge';
 import { notebook } from './notebook';
 import { say, type Speaker } from '../ui/speech';
+import { converse, type Page } from '../ui/converse';
+import type { Reply } from '../ui/replies';
 import { PEOPLE, FOLK_BY_ROLE, FOLK_BY_LAND, BRIM_FOLK, FOLK_NAMES, FENN_AT_ELEVEN, type NpcPhase, type PersonDef } from './lines';
 import type { RegionId } from './layout';
 import { crossout } from './crossout'; /* THE THREE VERBS */
@@ -44,6 +46,12 @@ export type NpcDef = {
   at?: ((hour: number) => { x: number; z: number }) | { x: number; z: number };
   lines: (state: NpcState) => string[];
   onTalk?: (state: NpcState) => void;
+  /** A conversation of this person's own for the state they are in (the
+   *  opening writes Nell's), instead of the lines by phase. */
+  converse?: (state: NpcState) => { pages: Page[]; replies?: Reply[]; then?: () => void } | null;
+  /** No time to stand and talk (a bull is loose): TALK gets one line
+   *  over their head, now, and the walker keeps his feet. */
+  barks?: () => boolean;
   /** Routine ids (`life.ts` Figures) that draw this person. */
   figures?: string[];
   /** The POI label their `asked` line names, for the pin. */
@@ -101,6 +109,8 @@ class Npcs {
   private muted = new Set<string>();
   /** The walker, for `near` and for a reaction's earshot. */
   walker: { x: number; z: number } = { x: 0, z: 0 };
+  /** A talk is over, every line of it read (THINGS gives its jobs here). */
+  onTalked: ((id: string) => void) | null = null;
 
   /** Give the registry the POI manager. People defined before this
    *  get their POIs now. */
@@ -273,35 +283,64 @@ class Npcs {
       return;
     }
     const s = this.state(id);
+    /* A TALK IS A CONVERSATION (the owner, 2026-09-18). The walker
+     * stops, the lines come one at a time at the foot of the page, each
+     * waits for a press, and what the talk gives (a job, a pin) is given
+     * when the last of it has been read. */
+    const who = n.speaker;
+    const done = () => this.onTalked?.(id);
     /* THE THREE VERBS: a line crossed out by hand has been heard of */
     const struck = crossout.lineFor(id, s);
     if (struck) {
       s.crossedSaid = true;
-      say(n.speaker, struck, { now: true });
       notebook.heard(n.def.name, struck);
       notebook.dirty = true;
+      converse([{ who, text: struck }], { then: done });
       return;
     }
-    const lines = n.def.lines(s);
-    if (!lines.length) return;
-    const line = lines[s.said % lines.length];
-    say(n.speaker, line, { now: true });
-    notebook.heard(n.def.name, line);
-    // the first meeting; then, next time, what they want
-    if (s.phase === 'idle') {
-      s.phase = 'met';
-      s.said = 0;
-    } else if (s.phase === 'met' && n.def.want && !s.doors.length && !knowledge.decided(n.def.land)) {
-      s.phase = 'asked';
-      s.said = 0;
-      s.want = n.def.want;
-    } else {
-      s.said++;
+    const own = n.def.converse?.(s);
+    if (own) {
+      for (const p of own.pages) if (p.who !== 'walker') notebook.heard(n.def.name, p.text);
+      converse(own.pages, { replies: own.replies, then: () => { own.then?.(); done(); } });
+      return;
     }
-    // a line that names a place pins it
-    if (n.def.want && line.includes(n.def.want)) this.pin(n.def.want);
+    /* one talk walks a stranger all the way to what they want: the hello,
+     * the grumble, the ask. It used to be three presses, and the job was
+     * given a press before the ask was heard. */
+    const barks = n.def.barks?.() ?? false;
+    const pages: Page[] = [];
+    for (let k = 0; k < (barks ? 1 : 3); k++) {
+      const lines = n.def.lines(s);
+      if (!lines.length) break;
+      const line = lines[s.said % lines.length];
+      pages.push({ who, text: line });
+      notebook.heard(n.def.name, line);
+      const was = s.phase;
+      // the first meeting; then what they want
+      if (s.phase === 'idle') {
+        s.phase = 'met';
+        s.said = 0;
+      } else if (s.phase === 'met' && n.def.want && !s.doors.length && !knowledge.decided(n.def.land)) {
+        s.phase = 'asked';
+        s.said = 0;
+        s.want = n.def.want;
+      } else {
+        s.said++;
+      }
+      // a line that names a place pins it
+      if (n.def.want && line.includes(n.def.want)) this.pin(n.def.want);
+      const onTheWay = n.def.want && (was === 'idle' || (was === 'met' && s.phase === 'asked'));
+      if (!onTheWay) break;
+    }
+    if (!pages.length) return;
     notebook.dirty = true;
-    n.def.onTalk?.(s);
+    if (barks) {
+      say(who, pages[0].text, { now: true });
+      n.def.onTalk?.(s);
+      done();
+      return;
+    }
+    converse(pages, { then: () => { n.def.onTalk?.(s); done(); } });
   }
 
   /** A place within four units of a person with a choice still open. */
@@ -360,7 +399,7 @@ class Npcs {
     this.folkCount.set(f, k + 1);
     const line = pool[k % pool.length];
     const who = r.who;
-    say({ name: who, get x() { return f.mesh.position.x; }, get z() { return f.mesh.position.z; } }, line);
+    converse([{ who: { name: who, get x() { return f.mesh.position.x; }, get z() { return f.mesh.position.z; } }, text: line }]);
     notebook.heard(who, line);
   }
 }

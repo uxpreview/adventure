@@ -1,5 +1,6 @@
 import { say, hush, type Speaker } from '../ui/speech';
 import { openReplies, closeReplies } from '../ui/replies';
+import { converse } from '../ui/converse';
 import { toast } from '../ui/toast';
 import { notebook } from './notebook';
 
@@ -32,7 +33,11 @@ export type Offer = {
   /** I'LL HANDLE IT: what they say back, what it is that is now yours,
    *  what it cost (for the notebook), and the cost itself, seen. */
   mine: { reply: string; what: string; cost: string; run: (count: number) => void };
-  /** How long the answers stay up. */
+  /** Asked on the move (a bull behind you, a boy who does not stop): a
+   *  line over their head and answers on a clock. Otherwise an offer is
+   *  a conversation: the walker stops and the answers wait. */
+  live?: boolean;
+  /** How long a live offer's answers stay up. */
   seconds?: number;
   /** Unanswered: they do their part (the default), or nothing happens
    *  and the offer can be made again. */
@@ -54,37 +59,47 @@ class Handle {
 
   offer(o: Offer) {
     if (this.done(o.id)) return;
-    if (o.line && o.speaker) {
-      say(o.speaker, o.line, { hold: Math.max(4, (o.seconds ?? 10) * 0.6) });
-      notebook.heard(o.who, o.line);
-    }
+    if (o.line) notebook.heard(o.who, o.line);
+    /* what is said back, and what they say to that: over heads on the
+     * move, or the next lines of the conversation standing still */
+    const back = (said: string | undefined, reply: string | undefined) => {
+      if (reply) notebook.heard(o.who, reply);
+      if (o.live) {
+        if (said) say('walker', said);
+        if (reply && o.speaker) say(o.speaker, reply, { now: true });
+        else if (o.speaker) hush(o.speaker);
+        return;
+      }
+      if (reply && o.speaker) converse([{ who: o.speaker, text: reply }]);
+    };
     const yes = () => {
       this.answered.add(o.id);
       /* gate round 6: CHOICES said "no choices yet" after Nell's card had
        * been answered. Letting them is a choice too; it is written down,
        * and not said (the person's doing it is the saying) */
       notebook.chose(`let:${o.id}`, `${o.yes.label}`, `said to ${o.who.toLowerCase()}`, true);
-      if (o.yes.said) say('walker', o.yes.said);
-      if (o.yes.reply && o.speaker) { say(o.speaker, o.yes.reply, { now: true }); notebook.heard(o.who, o.yes.reply); }
-      else if (o.speaker) hush(o.speaker);
+      back(o.yes.said, o.yes.reply);
       o.yes.run?.();
     };
-    openReplies([
+    const mine = () => {
+      this.answered.add(o.id);
+      back('I\'ll handle it.', o.mine.reply);
+      notebook.handle(o.who, o.id, o.mine.cost);
+      notebook.chose(`handled:${o.id}`, `I'LL HANDLE IT — ${o.mine.what}`, o.mine.cost);
+      toast(o.mine.cost, 'plain');
+      o.mine.run(this.count);
+    };
+    const replies = [
       { label: o.yes.label, pick: yes },
-      {
-        /* gate round 5: "handle what?" The answer names what becomes yours */
-        label: `${HANDLE_LABEL} (${o.mine.what})`,
-        pick: () => {
-          this.answered.add(o.id);
-          say('walker', 'I\'ll handle it.');
-          if (o.speaker) { say(o.speaker, o.mine.reply, { now: true }); notebook.heard(o.who, o.mine.reply); }
-          notebook.handle(o.who, o.id, o.mine.cost);
-          notebook.chose(`handled:${o.id}`, `I'LL HANDLE IT — ${o.mine.what}`, o.mine.cost);
-          toast(o.mine.cost, 'plain');
-          o.mine.run(this.count);
-        },
-      },
-    ], o.seconds ?? 10, () => {
+      /* gate round 5: "handle what?" The answer names what becomes yours */
+      { label: `${HANDLE_LABEL} (${o.mine.what})`, pick: mine },
+    ];
+    if (!o.live && o.speaker) {
+      converse([{ who: o.speaker, text: o.line ?? 'Well?' }], { replies });
+      return;
+    }
+    if (o.line && o.speaker) say(o.speaker, o.line, { hold: Math.max(4, (o.seconds ?? 10) * 0.6) });
+    openReplies(replies, o.seconds ?? 10, () => {
       if (o.unanswered === 'nothing') return;
       this.answered.add(o.id);
       o.yes.run?.();

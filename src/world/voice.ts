@@ -5,6 +5,7 @@ import type { WorldPOI } from './regions';
 import { installSpeech, tickSpeech, say, shout } from '../ui/speech';
 import { toast, tickToasts } from '../ui/toast';
 import { installReplies, tickReplies } from '../ui/replies'; /* THE THREE VERBS */
+import { installConverse, tickConverse, conversing } from '../ui/converse'; /* A CONVERSATION */
 import { crossout } from './crossout';
 import { NotebookPage } from '../ui/notebook';
 import { notebook } from './notebook';
@@ -37,6 +38,8 @@ export type VoiceCtx = {
   seated: () => boolean;
   regionId: () => RegionId;
   started: () => boolean;
+  walkerName: () => string;
+  touch: boolean;
 };
 
 type Reaction = { at: number; land: RegionId; door: string };
@@ -64,6 +67,7 @@ export class Voice {
   constructor(private ctx: VoiceCtx) {
     installSpeech({ root: ctx.ui.root, camera: ctx.camera, groundAt: ctx.groundAt, walker: ctx.walker });
     installReplies({ root: ctx.ui.root, blocked: () => ctx.ui.choiceOpen || ctx.ui.nameOpen || ctx.ui.noteOpen || ctx.ui.mapOpen || this.page.isOpen });
+    installConverse({ root: ctx.ui.root, walkerName: ctx.walkerName, touch: ctx.touch });
     this.page = new NotebookPage(ctx.ui);
     notebook.setDayClock(() => clock.day);
     npcs.attach(ctx.poi);
@@ -130,7 +134,10 @@ export class Voice {
 
   /* ---- the frame ------------------------------------------------------ */
   tick(dt: number) {
-    tickSpeech(dt);
+    tickConverse(dt);
+    /* a card or a conversation has the page: nobody's mark bobs over it */
+    const c = this.ctx.ui;
+    tickSpeech(dt, conversing() || c.choiceOpen || c.nameOpen || c.noteOpen || c.mapOpen || this.page.isOpen);
     tickToasts(dt);
     tickReplies(dt);
     if (!this.ctx.started()) return;

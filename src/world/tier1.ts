@@ -3,7 +3,8 @@ import { npcs, type NpcState } from './npc';
 import { knowledge } from './knowledge';
 import { handle } from './handle';
 import { clock } from './daylight';
-import { say, type Speaker } from '../ui/speech';
+import { beckon, say, type Speaker } from '../ui/speech';
+import { converse } from '../ui/converse'; /* A CONVERSATION */
 import {
   greyweather, brim, ringBell, BELFRY, BRAZIERS, MARGET_STALL,
 } from './tier1-state';
@@ -99,6 +100,7 @@ class Tier1 {
   private installed = false;
   private duskSaid = false;
   private hobDue = -1;
+  private hobWaits = false;
   private lastHour = -1;
 
   private after(sec: number, fn: () => void) {
@@ -118,6 +120,20 @@ class Tier1 {
     if (marget) {
       marget.def.lines = (s) => this.margetLines(s);
       marget.def.want = undefined;
+    }
+    const hob = npcs.get('hob');
+    if (hob) {
+      hob.def.converse = () => {
+        if (!this.hobWaits || has(K.covered)) return null;
+        const who = hob.speaker;
+        return {
+          pages: [
+            { who, text: 'She did your rounds the week before, you know. The ones you couldn\'t get to.' },
+            { who, text: 'Never said. That\'s the debt.' },
+          ],
+          then: () => { this.hobWaits = false; beckon(who, false); knowledge.learn(K.covered); },
+        };
+      };
     }
   }
 
@@ -211,7 +227,7 @@ class Tier1 {
     this.roadDecided = true;
     const who = this.speaker('wick');
     if (has(K.roadLeft)) {
-      if (who) this.after(1.0, () => { say(who, 'Chained, then. Then it goes by you, like it always did. Tell Marget the castle\'s lit.', { now: true }); notebook.heard('WICK', 'Tell Marget the castle\'s lit.'); });
+      if (who) this.after(1.0, () => { converse([{ who, text: 'Chained, then. Then it goes by you, like it always did.' }, { who, text: 'Tell Marget the castle\'s lit.' }]); notebook.heard('WICK', 'Tell Marget the castle\'s lit.'); });
       notebook.place('BRIM SQUARE', MARGET_STALL.x, MARGET_STALL.z - 7, { quiet: true });
       return;
     }
@@ -305,12 +321,13 @@ class Tier1 {
     if (id === 'wick' && stepOf(WICK) === 3) {
       const who = this.speaker('wick');
       const t = 'Three years I\'ve lit them. It\'s never rung. So I chained the road. A man lighting fires at nobody: you don\'t want that seen.';
-      if (who) { say(who, t, { hold: 7 }); notebook.heard('WICK', t); }
+      /* A CONVERSATION: the why is the next line of the talk, and waits */
+      if (who) { converse([{ who, text: t }]); notebook.heard('WICK', t); }
     }
     if (id === 'marget' && stepOf(MARGET) === 0) {
       const who = this.speaker('marget');
       const t = 'Pay it the other way: get my market called. Wait in THE BELFRY yard till the lamps come on. One hand on that clock will agree with them.';
-      if (who) { say(who, t, { hold: 7 }); notebook.heard('MARGET', t); }
+      if (who) { converse([{ who, text: t }]); notebook.heard('MARGET', t); }
     }
     if (id === 'marget') {
       const step = stepOf(MARGET);
@@ -381,13 +398,14 @@ class Tier1 {
       const hob = brim.folk.hob;
       if (hob && hob.present && this.near(hob.x, hob.z, 16)) {
         this.hobDue = -1;
-        knowledge.learn(K.covered);
+        /* A CONVERSATION: the turn is not said at a man walking past. Hob
+         * calls, the mark goes up over him, and he tells it when asked. */
         const who = this.speaker('hob');
-        const t = 'She did your rounds the week before, you know. The ones you couldn\'t get to. Never said. That\'s the debt.';
-        if (who) { say(who, t, { hold: 6.5 }); notebook.heard('HOB', t); }
+        if (who) { this.hobWaits = true; say(who, 'Here. A word.', { hold: 2.6 }); beckon(who, true); }
+        else knowledge.learn(K.covered);
       }
     }
-    if (has(K.rung) && !has(K.covered) && this.hobDue < 0) this.hobDue = this.elapsed + 4; // a reload
+    if (has(K.rung) && !has(K.covered) && this.hobDue < 0 && !this.hobWaits) this.hobDue = this.elapsed + 4; // a reload
   }
 
   /** THE BELL, AT A KNOWN HOUR, every day from now on: and if the
@@ -436,7 +454,7 @@ class Tier1 {
     ];
     const t = lines[Math.min(this.wellSaid++, lines.length - 1)];
     knowledge.learn(K.wellHeard);
-    this.after(3.2, () => { say(nell, t); notebook.heard('NELL', t); });
+    this.after(3.2, () => { say(nell, t, { far: true }); notebook.heard('NELL', t); });
   }
 
   /* ---- the frame ---------------------------------------------------- */

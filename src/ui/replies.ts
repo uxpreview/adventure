@@ -74,6 +74,13 @@ export function repliesLift(): number {
   return strip.offsetHeight + 22;
 }
 
+/** Where the top of the answers is, up from the foot of the page, so a
+ *  conversation's question can be written over them. */
+export function repliesTop(): number {
+  if (!strip || !current.length) return 0;
+  return window.innerHeight - strip.getBoundingClientRect().top;
+}
+
 export function repliesOpen(): string[] {
   return current.map((r) => r.label);
 }
