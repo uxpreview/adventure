@@ -4,7 +4,7 @@ import { drawn, Figure } from './life';
 import { clock } from './daylight';
 import { knowledge } from './knowledge';
 import { notebook } from './notebook';
-import { say, type Speaker } from '../ui/speech';
+import { say, beckoning, type Speaker } from '../ui/speech';
 import { converse, type Page } from '../ui/converse';
 import type { Reply } from '../ui/replies';
 import { PEOPLE, FOLK_BY_ROLE, FOLK_BY_LAND, BRIM_FOLK, FOLK_NAMES, FENN_AT_ELEVEN, type NpcPhase, type PersonDef } from './lines';
@@ -168,6 +168,11 @@ class Npcs {
        * so Joan reads across her sheaves and Marget across her square */
       labelReach: 14,
       prompt: `TALK TO ${n.def.name}`,
+      /* A TALK WAITS FOR YOU: somebody wearing the mark is nearer than
+       * they stand, so their prompt beats a note tacked to the thing
+       * they happen to be standing beside (the play of 2026-09-19: Nell
+       * waved at the field gate and E read the gate's card). */
+      get bias() { return beckoning().includes(n.def.name) ? 2.4 : 0; },
       get enabled() {
         if (self.muted.has(n.def.id)) return false;
         const p = self.positionOf(n.def.id);

@@ -40,6 +40,10 @@ export class Horse {
   hoofAcc = 0;
   /** True on a frame it took a hoofbeat's worth of ground. */
   hoofbeat = false;
+  /** A MOUNT NEVER FAILS SILENTLY: set on the frame a called horse gives
+   *  up because the page holds it, so whoever whistled is told. Read and
+   *  cleared by App. */
+  heldUp = false;
 
   private sprite: THREE.Mesh;
   private mat: THREE.MeshBasicMaterial;
@@ -127,7 +131,22 @@ export class Horse {
         if (!refuses(nx, this.pos.y)) mx = nx;
         if (!refuses(mx, nz)) mz = nz;
         moved = Math.hypot(mx - this.pos.x, mz - this.pos.y);
-        if (moved < step * 0.2) this.coming = null; // held by the page: it gives up
+        if (moved < step * 0.2) {
+          /* HELD BY THE PAGE. It was left standing in a hedge or in a
+           * gate's pier and every step at you is refused; it used to
+           * give up here, silently, and H did nothing at all (the play
+           * of 2026-09-19). It steps sideways out of the thing first,
+           * either way round, and only then gives up — and says so. */
+          const px = -dz / d;
+          const pz = dx / d;
+          let free = false;
+          for (const s of [1, -1]) {
+            const ax = this.pos.x + px * step * s;
+            const az = this.pos.y + pz * step * s;
+            if (!refuses(ax, az)) { mx = ax; mz = az; moved = step; free = true; break; }
+          }
+          if (!free) { this.coming = null; this.heldUp = true; }
+        }
         if (Math.abs(mx - this.pos.x) > 1e-4) this.face = mx > this.pos.x ? 1 : -1;
         this.pos.set(mx, mz);
         y = ground(mx, mz);

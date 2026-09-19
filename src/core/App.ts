@@ -2344,6 +2344,12 @@ export class App {
       /* and it does not come to rest on a fence's own line */
       (x, z) => barriers.blocks(x, z)
     );
+    /* A MOUNT NEVER FAILS SILENTLY: whistled, and the page will not let
+     * it come. It used to stand there and say nothing at all. */
+    if (this.horse.heldUp) {
+      this.horse.heldUp = false;
+      if (this.started) this.ui.showHint('the horse can\'t get through to you — go to it', 2800);
+    }
     if (this.horse.hoofbeat && this.started
       && Math.hypot(this.char.pos.x - this.horse.pos.x, this.char.pos.z - this.horse.pos.y) < 70) {
       this.audio.event('hooves', this.horse.aboard ? this.char.effort : 0.4);
