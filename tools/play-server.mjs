@@ -60,6 +60,7 @@ const KEY = {
   w: 'KeyW', a: 'KeyA', s: 'KeyS', d: 'KeyD', e: 'KeyE', m: 'KeyM', n: 'KeyN', q: 'KeyQ', r: 'KeyR', f: 'KeyF',
   t: 'KeyT', j: 'KeyJ', i: 'KeyI', c: 'KeyC', b: 'KeyB', h: 'KeyH', x: 'KeyX', z: 'KeyZ', p: 'KeyP', tab: 'Tab',
   shift: 'ShiftLeft', space: 'Space', esc: 'Escape', escape: 'Escape', enter: 'Enter',
+  backspace: 'Backspace', back: 'Backspace', del: 'Delete', delete: 'Delete',
   up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', ',': 'Comma', '.': 'Period',
   '1': 'Digit1', '2': 'Digit2', '3': 'Digit3', '4': 'Digit4',
 };

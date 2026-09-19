@@ -225,6 +225,11 @@ body {
 .hint.show {
   opacity: 1;
 }
+/* ONE VOICE AT A TIME (gate round 7): the answers live at the foot of
+   the page too, and three lines drawn on top of one another are none. */
+.hint.held {
+  visibility: hidden;
+}
 
 /* ---------- poi labels + prompt ---------- */
 .labels {
@@ -466,6 +471,9 @@ body {
 .name-input::placeholder { color: transparent; }
 .name-input:focus { border-bottom-color: #23262f; }
 .name-btn { align-self: flex-end; margin-top: 4px; }
+/* RUB IT OUT sits beside THAT'LL DO, quieter than it, because it is the
+   way back and not the way on (gate round 7). */
+.name-clear { align-self: flex-end; margin-top: 4px; margin-bottom: -26px; margin-right: 92px; opacity: 0.7; }
 
 /* ---------- map ---------- */
 .map-veil {

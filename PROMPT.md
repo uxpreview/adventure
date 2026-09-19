@@ -54,13 +54,14 @@ Run the pillars and the loop **one at a time, one agent at a time, over as
 many sessions as it takes.** A cold player and then one critic in sequence
 is fine. The brief's goal is unchanged; only the shape of the work is.
 
-## 2. Where it stands (2026-09-18, branch `claude/tier-1-promises`; main is PR #31)
+## 2. Where it stands (2026-09-19, branch `claude/continue-j5qoe2`; draft PR #34)
 
-Play it: https://adventure-git-claude-tier-1-promises-ryankm.vercel.app
+Play it: https://adventure-git-claude-continue-j5qoe2-ryankm.vercel.app
 (Vercel rebuilds `adventure-git-<branch>-ryankm.vercel.app` on every push
-to a branch.) PRs #23 to #31 are merged; main is the story of record's
-first five minutes, the three verbs, and the gate's rounds on them. The
-branch adds Tier 1 (Wick, Nell, Marget); no PR until the owner says.
+to a branch.) PRs #23 to #33 are merged; main is the story of record's
+first five minutes, the three verbs, Tier 1 (Wick, Nell, Marget) and a
+talk that waits for you. The branch adds **Tier 2** (Val, Brack, Holt)
+and round 6's two leftovers, as draft PR #34.
 
 The gate (`design/reset/THE-GATE.md`) rounds so far, all desktop, from
 the title, no parameters:
@@ -73,6 +74,7 @@ the title, no parameters:
 | 4 | 7/10 — holds | yes | 0 of 6 |
 | 5 | 9/10 — holds (the three verbs) | yes | 0 of 1 (FIRST HOUR only) |
 | 6 | 6/10 at 60 s, 9/10 at 134 s — **one short** (Tier 1) | yes | 0 of 1 (FIRST HOUR only) |
+| 7 | 7/10 — holds (Tier 2) | yes (four, not three) | 0 of 1 (FIRST HOUR only) |
 
 Round 1's cold player never met Nell. Round 2's could not get through
 Brim's south gate. Round 3 (the rebuilt opening) rode fifteen metres of
@@ -99,6 +101,25 @@ seconds and 9 when the list opened at 134: **the list arrives too late
 for T1.** Fixed after the round (`CHANGELOG.md` "Fixed after round 6":
 the horse, KEPT as one rule, boards and a trodden road north, a lamp in
 the yard); **not yet played cold.**
+
+Round 7 (2026-09-19, Tier 2) is the first round a cold player has kept
+a promise from a tier beyond the first: they found Val, chose I'LL
+HANDLE IT over asking June, dug the clippers out of three years of
+grass, cut the gap, sat in the chairs and gave the overflow to the green
+knowing it puts her light out. *"I could see the thing I'd done from
+twenty paces away."* T1 back to 7. The three things both they and the
+critic named first are fixed (`CHANGELOG.md` "Fixed after round 7": the
+name card, three lines drawn over one another at the foot of the page, a
+prompt that said LEAN and read a card). **The two they named that are
+not fixed are pillar-sized and are items below: nothing in the world
+points at a named place, and near-camera drawings are grey slabs.**
+
+**Tier 2 as built (2026-09-19):** `world/tier2.ts` (what Val, Brack and
+Holt say by the step of their promise; June, the last tree, Holt's
+walk), `jobs/tier2.ts` (the three jobs, each with an `offer.while`),
+`world/tier2-state.ts` (with no imports, like Tier 1's),
+`world/textures-tier2.ts`, and the lands in `regions/civic.ts`,
+`regions/meadow.ts` (the faded footprints) and `regions/wilds.ts`.
 
 **Tier 1 as built (2026-09-18):** `world/tier1.ts` (what Wick and Marget
 say and do, by the step of their promise; the well), `jobs/tier1.ts`
@@ -202,6 +223,16 @@ What every critic still names, and what a fix costs:
   screenshots per command, not fewer seconds.
 - `tools/check-verbs.mjs` is stale since the reset (112 failures, from
   its first section); it is not a gate.
+- **A sub-agent is refused the Write tool here.** Both of round 7's
+  handed their report back as their final message; the session saves it.
+- **The cold player runs out of commands, not game-seconds.** Round 7
+  spent forty-five minutes on fifty-nine game-seconds and then, told to
+  use long holds and to read the `text` list instead of opening every
+  PNG, did the next two hundred and fifty in half that. Say so up front.
+- **`vite preview` does not watch.** A source edit changes nothing in a
+  running harness; rebuild and restart the play server. While a cold
+  player is mid-play, build to a scratch `--outDir` so `dist/` does not
+  change under them.
 - The harness clears `localStorage` on every load: a reload is a fresh
   game. `node tools/play.mjs eval` can teleport
   (`__inklands.char.teleport(x, z)`) and step
@@ -278,9 +309,10 @@ folder, to build story.
 
 **The story rebuild comes first (owner, 2026-09-16: "proceed"). One item
 per session, in order, each ending with the cold player and the critic
-from `THE-GATE.md`.** Items 0 to 2 are built; **item 3 (Tier 2) is next.**
+from `THE-GATE.md`.** Items 0 to 3 are built; **item 4 (Tier 3) is next.**
 Round 4's arch and map labels rode along with item 1; Brim's
-bystanders rode with Tier 1's Marget. Round 5's open list (`CHANGELOG.md`
+bystanders rode with Tier 1's Marget; round 6's two leftovers rode with
+Tier 2. Round 5's open list (`CHANGELOG.md`
 "Named and not done") rides where an item touches it: the hedge's
 drawn edge and the strangers' prompts are the two a first minute meets.
 
@@ -328,8 +360,21 @@ drawn edge and the strangers' prompts are the two a first minute meets.
    the cold player's sixty-second answer is a 6 without it; bring the
    list forward (Morrow's walk waits 11 s after the gate, then walks
    ~25 s) or let Nell say "twelve" inside the first minute.
-3. **Tier 2** (Val, Brack, Holt): the faded footprints, the lantern, the
-   canyon and the Flats.
+3. ~~**Tier 2 promises** (Val, Brack, Holt)~~ **BUILT, 2026-09-19**
+   (`CHANGELOG.md` "Tier 2 promises"): `jobs/tier2.ts`, `world/tier2.ts`,
+   `world/tier2-state.ts`, `world/textures-tier2.ts`, and the lands in
+   `regions/civic.ts` (Maple Court), `regions/meadow.ts` (the faded
+   footprints on the Common) and `regions/wilds.ts` (the bank, the wood
+   gate, the channel, Holt's walk, Holt on the Flats). Every task is a
+   played verb; every promise hangs an I'LL HANDLE IT with an
+   `offer.while`; the two old cards (the three chairs' and the
+   trestles') are rebuilt as the promise's own choice, and the tarn's is
+   gone. New rules the building found are in §2b below and in §5's
+   RULES THAT STAND. Left: the portrait rig has not seen any of it; the
+   old cut through the bramble is a convenience and not a way, so the
+   clippers are thin; `door:the-boat-righted` and `door:the-oar-taken`
+   are still takeable beside the promise (archive content beside it, the
+   way `door:the-king-restored` is beside Wick's).
 4. **Tier 3** (Amos, Pye, Wren): the rain table, the eighth pot and the
    honest note, the fleet and the Vikings.
 5. **Tier 4** (Joan, the man at the crossing, Dennis): the second plate
@@ -343,32 +388,52 @@ drawn edge and the strangers' prompts are the two a first minute meets.
 The pillar items that follow (camera, pen, things, phone) are done
 inside these sessions where the story needs them, not before.
 
-1. **Run the gate again** (round 5+): `THE-GATE.md` top to bottom —
+1. **Run the gate again** (round 8+): `THE-GATE.md` top to bottom —
    cold player, then the six critics, one agent at a time. Keep fixing
-   the three things named most (§2 has round 4's). T1 and T2 hold as
-   of rounds 2, 3 and 4; T3 is 0 of 6 every round, so the loop is not
-   done. Round 4's after-fixes (the list always comes, the horse jumps
-   a fence, E at the bench, the controls line) are built and pushed
-   but have not been played cold yet.
-2. **THE CAMERA moves for the world.** A crane on every border crossing
+   the three things named most. T1 and T2 hold as of rounds 2, 3, 4, 5,
+   6 and 7; T3 is 0 every round, so the loop is not done.
+   **The cold player runs out of COMMANDS long before it runs out of
+   game-seconds on this machine** — round 7 took forty-five minutes to
+   reach fifty-nine game-seconds. Tell it two or three actions between
+   screenshots, long holds, and to read the `text` list rather than
+   open every PNG; it got to 308 after that.
+2. **NOTHING IN THE WORLD POINTS AT A NAMED PLACE** (round 7's cold
+   player and its critic, both, and the owner on 2026-09-12: *"with the
+   free camera it's easy to forget which way north is"*). *"The map
+   shows twelve destinations and my own position, but nothing in the
+   world points at them — no compass rose, no 'THE PUNT is that way'. I
+   navigated by reading x/z off the status line, which a real player
+   can't do."* And: forty game-seconds pressed against one invisible
+   fence with no visual hint they were inside an enclosure. The two
+   halves of the fix are a WAY (a trodden line on the ground toward the
+   pinned place, which Tier 1 and Tier 2 already do per-promise and
+   nothing does in general) and a FENCE YOU CAN SEE from inside it. The
+   "!" marker points and does not answer a click; it should do both.
+3. **THE CAMERA moves for the world.** A crane on every border crossing
    (pull back and rise, then settle behind the figure), an opening
    shot from the Common that frames Brim, the Downs, Maple Court and
    the sea, and occluders that dolly or line-fade instead of grey slabs.
    Two critics in two rounds named it first.
-3. **THE PEN's second half: depth.** The walker and people depth-sorted
+4. **THE PEN's second half: depth.** The walker and people depth-sorted
    against props (nobody inside a bull, a fence, a cart or a fountain);
    near buildings opaque and off the HUD; the figure whole at every
-   distance.
-4. **THINGS: one verb for everything.** A touch every drawn object
+   distance. Round 7: *"near-camera bushes and cows render as huge
+   semi-transparent blobs that swallow the whole screen, and at one
+   point a house was drawn straight through my character."*
+5. **THINGS: one verb for everything.** A touch every drawn object
    answers — sheaves topple, the bull startles, pigeons scatter, the
    signpost's arms spin — and the "push the cart yourself" branch as a
-   toy.
-5. **The gate on a phone.** The same with `--rig portrait`.
-6. **The open list** in `CHANGELOG.md` "Known and open", top to bottom.
-7. **The four missing reports**, one page each, from the diff:
+   toy. **And a toy that shows its score shows its verb**: round 7 read
+   BEST SKIM: NO BEST YET — THROW IT AT A RUN, OVER WATER on the
+   sandbar and could not find the stone.
+6. **The gate on a phone.** The same with `--rig portrait`. Tier 2's
+   beats were checked there one at a time (`CHANGELOG.md`); no round has
+   been run on it.
+7. **The open list** in `CHANGELOG.md` "Known and open", top to bottom.
+8. **The four missing reports**, one page each, from the diff:
    `git log --stat dcd1a6e..origin/wt/camera-2`, `…wt/pen-2`,
    `…wt/first-hour`, `…wt/things`.
-8. **The owner plays.** Nothing but the URL. Their notes beat every critic.
+9. **The owner plays.** Nothing but the URL. Their notes beat every critic.
 
 ## 4. Rules that stay
 Keep the pen (no image, font or audio assets, ever). `npm run build` green
@@ -383,77 +448,86 @@ Read PROMPT.md, GAME.md and CHANGELOG.md, then design/reset/THE-GATE.md.
 For story read design/foundation/01 and 08 and nothing else in that
 folder. Nothing under design/archive/ binds.
 
-You are on main at the PR that merged claude/tier-1-promises. Branch
-before the first commit.
+You are on the branch claude/continue-j5qoe2 (draft PR #34, Tier 2 and
+round 7). Branch again before the first commit, or keep going on it if
+the owner has not merged.
 
-FIRST, TWO SMALL THINGS ROUND 6 LEFT (an hour, not the session):
-- T1 fell to 6/10 at sixty seconds because THE LIST opens at ~130. Bring
-  it inside the first minute: shorten the wait before Morrow's walk, or
-  have Nell say "twelve" before he comes. Do not add a voice: move one.
-- Round 6's fixes have never been played cold and nobody cold has met
-  Wick. Play square -> king's road north -> chain -> Wick yourself on
-  the harness, no teleports, before building anything.
+THE JOB THIS SESSION: PROMPT.md §3 item 4, TIER 3 PROMISES (Amos, Pye,
+Wren) as built in foundation/08 §9: the rain table, the eighth pot and
+the honest note, the fleet and the Vikings. This is the tier where THE
+LIST IS WRONG and the player learns HOW he left — in his own
+handwriting, in a pot, on a bearing nobody rows. Build it the way Tier 2
+is built: jobs/tier3.ts with promise: true on the list's own lines, what
+people say by the step of their promise in a world/tier3.ts, the land
+and the promise meeting in a state file with no imports, a
+world/textures-tier3.ts. The old steps on those three lines go. Every
+promise hangs an I'LL HANDLE IT on JobSpec.offer with a cost you can see
+and an offer.while, so it is not made when the part is already done.
+One item, this session, end to end. Do not start Tier 4.
 
-THE JOB THIS SESSION: PROMPT.md §3 item 3, TIER 2 PROMISES (Val, Brack,
-Holt) as built in foundation/08 §9: the faded footprints, the lantern,
-the canyon and the Flats. Each promise gets its turn, its choice, its
-visible change, its reveal (4 to 6 show THAT HE LEFT, on foot, on
-purpose) and its call reconnected. Build them the way Tier 1 is built:
-jobs/tier2.ts with promise: true on the list's own lines, what people
-say by the step of their promise in a world/tier2.ts, the land and the
-promise meeting in a state file with no imports. The old steps on
-those three lines go (Val's says hedge and her steps say ride to the
-keep). Every promise hangs an I'LL HANDLE IT on JobSpec.offer with a
-cost you can see, for good. The unlocks ship small: the clippers, the
-lantern, the boat. One item, this session, end to end. Do not start
-Tier 3.
+WHAT ROUND 7 NAMED AND I DID NOT FIX (both pillar-sized; §3 items 2 and
+4). Do not take either on as well as Tier 3 — but do not make them
+worse, and where Tier 3 sends somebody a hundred units across a land,
+give that walk a board and a trodden way:
+- Nothing in the world points at a named place. The cold player
+  navigated by reading x/z off the status line and lost forty seconds
+  inside an invisible fence.
+- Near-camera drawings are grey slabs across the whole frame, and a
+  house was drawn through the walker.
 
-RULES THAT STAND (PROMPT.md §2 has the detail):
+RULES THAT STAND (PROMPT.md §2 has the detail; Tier 2 and round 7 added
+the middle five):
 - ONE VOICE AT A TIME. promise:* knowledge is silent; a touch that
   answers itself sets answers: true; a promise kept in front of its
-  person is theirs to say. No job announces itself three ways. Check
-  every new beat on the portrait rig as well as desktop.
-- A THING I HAVE TO FIND MUST READ FROM EVERY CAMERA BEARING. Fixed
-  planes on their own line, two faces if it is lettered, posts that
-  read as a row end on, a decal for what lies on the ground. The gap
-  in Val's hedge and the lantern on the bank are this rule's: look at
-  each from north, east, south and west before calling it built.
-- DIRECTION LIVES IN THE WORLD. Round 6 lost two minutes in a square
-  with a map open. A place a promise sends me to has a board at the
-  mouth of its road, a trodden way on the ground, and a name that
-  reads from far off. No compass words.
-- A MOUNT NEVER FAILS SILENTLY. If Tier 2 adds the boat or touches the
-  bicycle, a refused move says why and a called mount lands on ground
-  it can leave.
-- A click or tap on the thing is the press (App.thingUnder); verify
-  one new interactable. The lens turned for the world exactly once.
-  Do not add another without asking me.
-- The second job being a WAIT is 08's and stays; Tier 2's tasks are
-  played verbs (cut, carry, walk somebody somewhere), not waits.
+  person is theirs to say. ANSWERS ARE A CARD TOO: while somebody waits
+  to be answered, the toast line and the hint line hold their tongues.
+- A PLACE WITH A NOTE AND A TOUCH READS ITS NOTE. App.act takes the note
+  first and returns, so a place whose verb is a touch must not offer a
+  note while the verb is live (`get note()` returning undefined).
+- A PROMPT THAT NAMES A VERB DOES THAT VERB. LEAN ON THE GATE read a
+  card for five sessions and the cold player wrote it down as the thing
+  they wanted most and could not have.
+- NOTHING INTERACTABLE STANDS WITHIN 4 + ITS OWN RADIUS OF A PERSON. A
+  named person's talk place leans to a third of a stride from the
+  walker's feet, so they win every prompt inside four units.
+- A PERSON A LINE OF THE TWELVE NAMES IS ON THE PAGE WHILE THAT LINE IS
+  OPEN. Val was out of doors three and a half hours a day.
+- NOBODY IN THIS WORLD TALKS ABOUT THE SCREEN, and nothing says "units".
+- A THING I HAVE TO FIND MUST READ FROM EVERY CAMERA BEARING, and a
+  DRAWING STUCK ON A CLIFF READS AS A CRATE: draw the thing, not a panel
+  of it.
+- DIRECTION LIVES IN THE WORLD: a board at the mouth of the road, a
+  trodden way, a name that reads from far off. No compass words.
+- A MOUNT NEVER FAILS SILENTLY.
+- A click or tap on the thing is the press (App.thingUnder); verify one
+  new interactable. The lens is turned for the world exactly once, at
+  the mount, and that is the owner's. Do not add another.
+- Tier 3's tasks are played verbs. Amos's is 08's one reading; give him
+  something to do with it.
 
 HOW TO WORK:
 - One agent at a time, never parallel (the usage window).
-- Play it on the harness, not the in-app browser: tools/play-server.mjs
-  with PW_CHROMIUM set as in PROMPT.md §2a; --rig portrait for the
-  phone. Start the dev server from .claude/launch.json, not from Bash;
-  if it has died overnight start it again the same way. A source edit
-  reloads the harness page and the game starts over: batch your edits,
-  then play. This machine cannot run two harnesses at once.
-  __inklands.setHour(h, true) runs the clock; without true it pins it
-  and a WAIT never ends.
-- When Tier 2 plays end to end on the harness from the title, run the
-  gate: one cold player, then the FIRST HOUR critic, in sequence, per
-  THE-GATE.md. A sub-agent may be refused Write; have it return the
-  report as its final message and save it yourself to play-gate/round-7/
-  and design/reset/rounds/round-7/. Ask for fewer screenshots per
-  command, not fewer seconds. Make no source edit while the cold player
-  plays. Fix what they name and say what you did not fix.
+- Play it on the harness: tools/play-server.mjs with PW_CHROMIUM set as
+  in PROMPT.md §2a; --rig portrait for the phone, and check every new
+  beat there as well as on desktop. A source edit does NOT reload a
+  `vite preview` page — rebuild and restart the play server to get your
+  change into the game. When a cold player is mid-play, build to a
+  scratch outDir so dist/ does not change under them.
+- When Tier 3 plays end to end from the title, run the gate: one cold
+  player, then the FIRST HOUR critic, in sequence, per THE-GATE.md.
+  Save both to play-gate/round-8/ and design/reset/rounds/round-8/
+  yourself; the sub-agents are refused the Write tool and hand the
+  report back as their last message.
+- THE COLD PLAYER RUNS OUT OF COMMANDS, NOT GAME-SECONDS. Round 7 spent
+  forty-five minutes reaching fifty-nine. Tell it: long holds, two or
+  three actions between screenshots, read the `text` list instead of
+  opening every PNG, and aim at 300 game-seconds rather than 600.
+- Make no source edit while the cold player plays.
 
-DONE MEANS: npm run build green; Val, Brack and Holt each playable from
-the title with no parameter, and Wick met on foot; CHANGELOG.md has one
-page on what changed and what the cold player said; PROMPT.md §2, §3
-and §5 updated for the session after; committed and pushed to the
-branch; the Vercel branch URL in your last message. Open a PR only when
-I say so. Report faithfully: what you checked, on which rig, and what
-you did not.
+DONE MEANS: npm run build green; Amos, Pye and Wren each playable from
+the title with no parameter; CHANGELOG.md has one page on what changed
+and what the cold player said; PROMPT.md §2, §3 and §5 updated for the
+session after; committed and pushed; the Vercel branch URL in your last
+message. Report faithfully: what you checked, on which rig, and what you
+did not.
 ```

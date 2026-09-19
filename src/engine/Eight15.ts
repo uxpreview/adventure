@@ -146,8 +146,8 @@ type Left = 'cans' | 'pots';
 const PLATFORM_DOORS: Record<string, { empties?: string[]; leaves?: [string, Left] }> = {
   castle: { empties: ['door:the-king-restored'] },
   kingdom: { empties: ['door:the-clock-set-to-eight'] },
-  forest: { empties: ['door:the-oar-taken'] },
-  canyon: { empties: ['door:the-sea-has-no-bottom'] },
+  forest: { empties: ['door:the-lantern-carried'] },
+  canyon: { empties: ['door:the-channel-rigged', 'door:the-sea-has-no-bottom'] },
   desert: { leaves: ['fact:the-cistern-filled', 'cans'] },
   beach: { leaves: ['door:the-pots-hauled', 'pots'] },
   meadow: { empties: ['door:the-cart-pushed'] },

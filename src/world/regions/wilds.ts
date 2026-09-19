@@ -50,6 +50,18 @@ import { npcs } from '../npc'; /* VOICE */
 import { knowledge } from '../knowledge';
 import { events, registerRoutine, routine as routineNow } from '../events';
 import { things } from '../things';
+/* ---- TIER 2 (`world/tier2.ts`): Brack's lake, Holt's water ---- */
+import {
+  fadedPrintsDecal, lanternDownDecal, lanternTexture, woodGateTexture, lanternGlowTexture,
+  bramblesTexture, channelHeadTexture, channelBoardTexture, canyonBoardTexture, channelWaterDecal,
+} from '../textures-tier2';
+import {
+  BANK, WOOD_GATE, THICKET, CHANNEL, TRESTLES as T2_TRESTLES, splitrock, penwood,
+} from '../tier2-state';
+import {
+  tier2, clippersKept, lanternHung, lanternCarried, waterRuns, brackStep, holtStep,
+} from '../tier2';
+import { say as speak } from '../../ui/speech'; /* VOICE: a refusal that says why */
 import type { RegionBuilder, WorldPOI } from './index';
 
 /** Fire a named audio event up to the App without a plumbing run. */
@@ -209,7 +221,15 @@ const TARN = { x: 150, z: -195 };
 /** THE OAR (Session 21): the tarn boat's one, a carriable once the
  *  second door has been taken at the water, home on the shore by the
  *  boat, and gone for good once it is Hallows' twelfth. */
-things.register({ id: 'the-oar', kind: 'carriable', land: 'forest', home: { x: 140.2, z: -181.6 }, name: 'THE OAR' });
+things.register({ id: 'the-oar', kind: 'carriable', land: 'forest', home: { x: 140.2, z: -181.6 }, name: 'THE OAR', forGood: true });
+/** TIER 2 · THE LANTERN (`foundation/08` §9, promise 5): the wood
+ *  gate's, set down on the shingle at the north end of the tarn the
+ *  night it should have been lit, because whoever set it down was
+ *  going on into the dark and did not need it any more. Carried the
+ *  length of the wood road and hung back on its own bracket, or kept.
+ *  Both ends of that carry are in the Penwood, which is the only land
+ *  a thing may be in. */
+things.register({ id: 'the-lantern', kind: 'carriable', land: 'forest', home: { x: 140.6, z: -186.2 }, name: 'THE LANTERN', forGood: true });
 /** The forty units. Brack's, and the road's, and — from this session —
  *  the boundary of the only stand in the wood nobody has ever cut. */
 const FORTY = 40;
@@ -626,6 +646,67 @@ export const buildForest: RegionBuilder = (ctx) => {
   oarThing.mesh = oar;
 
   /* ================================================================ *
+   * TIER 2 · THE BANK (`foundation/08` §9, promise 5).
+   *
+   * The shingle at the north-west of the water. Three things on it and
+   * they are one sentence: the faded prints, going DOWN THE SHINGLE
+   * INTO THE WATER; the lantern, on its side where it was set down;
+   * and nothing else, because there is nothing else — there is nobody
+   * in that water, which is the turn.
+   *
+   * The prints are the same drawing as the ones on the Common, laid
+   * the other way about, and that is the whole argument: one man, one
+   * night, two hundred and eighty units apart.
+   * ================================================================ */
+  {
+    const BP = [0, 1].map((v) => fadedPrintsDecal(2930 + v, v === 1));
+    const line: [number, number, number][] = [
+      [134.4, -196.2, -1.06], [136.6, -192.4, -1.06], [138.8, -188.8, -1.02], [141.0, -185.4, -0.98],
+    ];
+    line.forEach(([x, z, rot], i) => ctx.decal(BP[i % 2], 9.5, 2.5, x, z, rot, i > 2 ? 0.34 : 0.46));
+  }
+  const lanternThing = things.get('the-lantern')!;
+  const lanternTex = lanternTexture(2932, false);
+  lanternThing.def.hand = lanternTex;
+  lanternThing.def.handSize = [0.42, 0.84];
+  const lanternDown = ctx.decal(lanternDownDecal(2931), 2.2, 1.5, BANK.x, BANK.z, 0.6, 0.94);
+  lanternThing.mesh = lanternDown;
+
+  /* TIER 2 · THE OVERGROWN WAY. The old cut from the round straight
+   * down to the shingle, three years under bramble. The clippers open
+   * it; without them the bank is still reachable the long way round by
+   * the boat, so nothing here is gated on Maple Court — it is only
+   * four hundred units shorter. */
+  const brambles = ctx.standee(bramblesTexture(2934, false), 7.4, 2.4, THICKET.x, THICKET.z, { rotY: -0.9 });
+  const bramblesCut = ctx.standee(bramblesTexture(2935, true), 7.4, 2.4, THICKET.x, THICKET.z, { rotY: -0.9 });
+  bramblesCut.visible = false;
+  for (const m of [brambles, bramblesCut]) (m.material as THREE.MeshBasicMaterial).transparent = true;
+
+  /* ================================================================ *
+   * TIER 2 · THE WOOD GATE, at the mouth of the road in from Brim.
+   *
+   * DIRECTION LIVES IN THE WORLD (this session's rule): a place a
+   * promise sends you to has a board at the mouth of its road and a
+   * name that reads from far off. Two posts, a bar across with THE
+   * PENWOOD cut into it, and on the west post a bracket that has been
+   * empty for three years.
+   * ================================================================ */
+  const woodGate = ctx.standee(woodGateTexture(2940), 9.6, 3.6, WOOD_GATE.x, WOOD_GATE.z, { face: 'run' });
+  const gateLantern = [false, true].map((lit) =>
+    ctx.standee(lanternTexture(2942 + (lit ? 1 : 0), lit), 0.5, 1.0, WOOD_GATE.x - 3.35, WOOD_GATE.z - 0.15));
+  for (const m of gateLantern) { ctx.hang(m, 1.55); m.visible = false; (m.material as THREE.MeshBasicMaterial).transparent = true; }
+  const gateGlow = ctx.standee(lanternGlowTexture(2944), 9, 9, WOOD_GATE.x - 3.2, WOOD_GATE.z);
+  ctx.hang(gateGlow, 1.2);
+  {
+    const m = gateGlow.material as THREE.MeshBasicMaterial;
+    m.transparent = true;
+    m.depthWrite = false;
+    m.opacity = 0;
+  }
+  gateGlow.renderOrder = 3;
+  void woodGate;
+
+  /* ================================================================ *
    * BRACK'S ROUND, dressed.
    *
    * The wear is ASYMMETRIC (THE-STRANGERS U18): the drawing is laid
@@ -795,6 +876,24 @@ export const buildForest: RegionBuilder = (ctx) => {
      * at the Penwood's stop, the man who has walked round this water
      * for forty years is standing on it (Session 14, `Eight15.ts`). */
     const gone = platform.land === 'forest';
+    /* TIER 2 · AND HE COMES DOWN TO THE LAST TREE, once. His own part,
+     * let: forty paces is further than he has been in three years, and
+     * he stands there with the water in front of him until the lantern
+     * is off the bank. Nothing says how much that cost him. */
+    const brackDown = knowledge.has('promise:brack:came') && brackStep() >= 1 && brackStep() < 5;
+    if (brackDown) {
+      /* THE LAST TREE, and it is thirty-eight units out, not twelve:
+       * he has never been inside forty and coming as far as he can is
+       * two paces past his own line, not into the middle of it. It is
+       * also well clear of the bank, because a person inside four
+       * units wins every prompt there is. */
+      const lx = TARN.x - 15.2;
+      const lz = TARN.z + 34.8;
+      for (const m of [brackWatch, brackTurn]) {
+        m.position.set(lx, ctx.groundY(lx, lz), lz);
+        m.rotation.y = Math.atan2(TARN.x - lx, TARN.z - lz);
+      }
+    }
     brackWatch.visible = !turned && !gone;
     brackTurn.visible = turned && !gone;
 
@@ -804,7 +903,8 @@ export const buildForest: RegionBuilder = (ctx) => {
      * once it is set with the others. And Brack does not turn — an oar
      * walked out of that water, which is the first thing that has ever
      * come out of it, and he was right. Nothing here says so. */
-    const oarTaken = knowledge.has('door:the-oar-taken');
+    const oarTaken = knowledge.has('door:the-oar-taken') || things.get('the-oar')!.state !== 'ground'
+      || knowledge.has('fact:the-twelfth-oar');
     const twelfth = knowledge.has('fact:the-twelfth-oar');
     tarnBoat.visible = !oarTaken;
     tarnBoatOarless.visible = oarTaken;
@@ -812,10 +912,44 @@ export const buildForest: RegionBuilder = (ctx) => {
     oarsTwelve.visible = twelfth;
     {
       const fp = things.flyPos(oarThing);
-      if (!oarTaken || twelfth) oar.visible = false;
+      if (twelfth || oarThing.state === 'gone') oar.visible = false;
       else if (fp) { oar.visible = true; oar.position.set(fp.x, fp.y, fp.z); }
       else if (oarThing.state === 'ground') { oar.visible = true; oar.position.set(oarThing.x, ctx.groundY(oarThing.x, oarThing.z), oarThing.z); }
       else oar.visible = false;
+    }
+
+    /* ================================================================ *
+     * TIER 2 · THE LANTERN, THE BRAMBLES AND THE WOOD GATE.
+     * ================================================================ */
+    {
+      /* the lantern, where the registry has it: on the shingle, in the
+       * air, in the hand (drawn by the walker then), or gone into a
+       * coat or onto a bracket for good */
+      const fp = things.flyPos(lanternThing);
+      if (fp) { lanternDown.visible = true; lanternDown.position.set(fp.x, fp.y, fp.z); }
+      else if (lanternThing.state === 'ground') {
+        lanternDown.visible = true;
+        lanternDown.position.set(lanternThing.x, ctx.groundY(lanternThing.x, lanternThing.z) + 0.04, lanternThing.z);
+      } else lanternDown.visible = false;
+
+      /* the old cut, opened: the clippers are his once Val's hedge has
+       * been through them, and this is the one other place in the
+       * world they are for */
+      const cut = knowledge.has('promise:brack:way-cut');
+      brambles.visible = !cut;
+      bramblesCut.visible = cut;
+
+      /* THE PENWOOD'S CALL, put back: the lantern on its own bracket,
+       * lit at dusk, every night, for a wood that has had nothing to
+       * answer with in three years. Kept instead, the bracket stays
+       * empty and the gate stays dark, and that is a door and not a
+       * failure. */
+      const hung = lanternHung();
+      const lit = hung && clock.lamp > 0.25;
+      gateLantern[0].visible = hung && !lit;
+      gateLantern[1].visible = lit;
+      (gateGlow.material as THREE.MeshBasicMaterial).opacity = lit ? 0.5 + Math.sin(penwood.lantern.t * 1.7) * 0.06 : 0;
+      gateGlow.visible = lit;
     }
 
     /* THE FACT IS EARNED BY ARRIVING. Inside twenty units of the water
@@ -973,6 +1107,86 @@ export const buildForest: RegionBuilder = (ctx) => {
 
 export const FOREST_POIS: WorldPOI[] = [
   {
+    /* TIER 2 · THE BANK. The shingle at the north end, where the
+     * prints go in. LOOK IN THE WATER is a played verb and the turn of
+     * the whole tier: there is nobody in it. */
+    x: BANK.x - 0.6, z: BANK.z - 0.8, radius: 6.5, label: 'THE BANK', labelHeight: 1.6, labelReach: 26,
+    get prompt() { return tier2.bankMine ? 'LOOK IN THE WATER' : 'LOOK AT THE SHINGLE'; },
+    answers: true,
+    touch: () => { tier2.lookInTheWater(); },
+    /* A PLACE WITH A NOTE AND A TOUCH READS ITS NOTE (`App.act` takes
+     * the note first and returns), so the note is not here until the
+     * verb has been done: LOOK IN THE WATER opened a card about the
+     * shingle and did nothing else (the play of 2026-09-19). */
+    get note() {
+      if (tier2.bankMine) return undefined;
+      return {
+      title: 'the bank',
+      body: () => (knowledge.has('promise:brack:on-purpose')
+        ? 'shingle, and a man\'s prints down it into black water, and no prints coming out, and nothing in the water. he waded in, crossed, and went on through the wood in the dark, and put the lantern down here because he was not coming back for it.'
+        : 'shingle at the north end, where nobody comes because the man on the road does not. prints down it into the water. something lying on its side further along.'),
+      };
+    },
+    set note(_v: unknown) { /* the promise decides */ },
+  } as unknown as WorldPOI,
+  {
+    /* TIER 2 · THE LANTERN, where it was set down three years ago —
+     * and it is not the verb here until the water has been looked in.
+     * It lies two units from the shingle the prints go down, and a
+     * nearer place wins the key, so PICK UP THE LANTERN used to sit on
+     * top of LOOK IN THE WATER, which is the wrong way round in every
+     * sense (the play of 2026-09-19). You look first. */
+    get x() { return things.get('the-lantern')!.x; },
+    get z() { return things.get('the-lantern')!.z; },
+    get enabled() { return !tier2.bankMine && things.get('the-lantern')!.state === 'ground'; },
+    set enabled(_v: boolean) { /* the water and the registry decide */ },
+    radius: 2.6, label: 'THE LANTERN', labelHeight: 1.3, labelReach: 18,
+    prompt: 'PICK UP THE LANTERN',
+    touch: () => { things.pickUp('the-lantern'); },
+  } as unknown as WorldPOI,
+  {
+    /* TIER 2 · THE OVERGROWN WAY, and the clippers are for it. Three
+     * years of bramble across the old cut from the round down to the
+     * shingle. Without the clippers the prompt says what is wanted
+     * rather than nothing (a refusal that says why). */
+    x: THICKET.x, z: THICKET.z, radius: 4.2, label: 'THE OLD CUT', labelHeight: 2.2, labelReach: 20,
+    get enabled() { return !knowledge.has('promise:brack:way-cut'); },
+    set enabled(_v: boolean) { /* once cut, it is a way and not a thing */ },
+    get prompt() { return clippersKept() ? 'CUT THE WAY THROUGH' : 'LOOK AT THE BRAMBLE'; },
+    answers: true,
+    touch: () => {
+      if (!clippersKept()) { speak('walker', 'Three years of it. I\'d want shears.', { now: true }); return; }
+      knowledge.learn('promise:brack:way-cut');
+      speak('walker', 'There. The old way down.', { now: true });
+    },
+  } as unknown as WorldPOI,
+  {
+    /* TIER 2 · THE WOOD GATE, and the bracket on its west post. With
+     * the lantern in hand this is the choice: the wood's call, or a
+     * light of your own. */
+    x: WOOD_GATE.x - 3.2, z: WOOD_GATE.z + 1.2, radius: 4.6, label: 'THE WOOD GATE', labelHeight: 3.2, labelReach: 34,
+    get prompt() { return tier2.gateMine ? 'HANG IT ON THE BRACKET' : 'LOOK AT THE BRACKET'; },
+    get choice() {
+      if (!tier2.gateMine) return undefined;
+      return {
+        title: 'the wood gate',
+        body: 'two posts, a bar with the wood\'s name cut into it, and a bracket on the west post with nothing on it. the hook is worn bright. this lantern is the thing that goes there, and it was carried out of here one night and never carried back. lit on that bracket it is how the penwood calls, and it is seen from the brim road. in a coat it is a light of your own after dark, in the only land in the world that has a dark.',
+        options: [
+          { label: 'HANG IT AND LIGHT IT', door: 'door:the-lantern-hung' },
+          { label: 'KEEP IT', door: 'door:the-lantern-carried' },
+        ],
+      };
+    },
+    note: {
+      title: 'the wood gate',
+      body: () => (lanternHung()
+        ? 'two posts and a bar with the wood\'s name on it, and a lit lantern on the west post, which is how this place says it is open. you can see it from the brim road, which is the point, and was always the point.'
+        : lanternCarried()
+          ? 'two posts and a bar with the wood\'s name on it. the bracket on the west post is empty and the hook is worn bright. the lantern that goes on it is in your coat.'
+          : 'two posts and a bar with the wood\'s name cut into it. there is a bracket on the west post with nothing on it, and the hook is worn bright from something that used to swing there.'),
+    },
+  } as unknown as WorldPOI,
+  {
     x: 78, z: -124, radius: 10, label: 'THE WOOD ROAD',
     note: {
       title: 'the wood road',
@@ -1006,20 +1220,13 @@ export const FOREST_POIS: WorldPOI[] = [
      * have since Session 10, and the card is not offered to them
      * afterwards. Nothing here says which was right. */
     x: 150, z: -195, radius: 26, label: 'THE TARN',
-    get prompt() {
-      if (!knowledge.decided('forest')) return 'GO DOWN TO THE WATER';
-      return 'LOOK AT THE WATER';
-    },
-    get choice() {
-      if (knowledge.decided('forest')) return undefined;
-      return {
-        body: 'still water, black, and it does not move when the wind does, and a path around it that everybody uses and nobody comes off. there is a rowboat on it with one oar, and the oar is newer than the boat, and forty paces back up the road a man has made eleven oars and never seen one. you could go down to the water. or you could go for the boat.',
-        options: [
-          { label: 'STAND AT THE WATER', door: 'door:the-water-stood' },
-          { label: 'TAKE THE OAR OUT OF THE BOAT', door: 'door:the-oar-taken' },
-        ],
-      };
-    },
+    /* TIER 2 (`foundation/08` §9, promise 5): the card that used to
+     * stand here is gone. What is at this water is a bank with a man's
+     * prints going into it and a lantern lying on the shingle, and
+     * neither of those is a menu. The oar is still in the boat and
+     * still carriable, because Hallows' twelfth is side content and
+     * side content is not the promise. */
+    prompt: 'LOOK AT THE WATER',
     note: {
       title: 'the tarn',
       body: () => {
@@ -1036,8 +1243,11 @@ export const FOREST_POIS: WorldPOI[] = [
      * once it is one of twelve. */
     get x() { return things.get('the-oar')!.x; },
     get z() { return things.get('the-oar')!.z; },
-    get enabled() { return knowledge.has('door:the-oar-taken') && things.get('the-oar')!.state === 'ground'; },
-    set enabled(_v: boolean) { /* the door and the registry decide */ },
+    /* TIER 2: it used to need the tarn's card, and the card is gone.
+     * The oar is in the boat, and anybody who has come down to this
+     * water can lift it out. */
+    get enabled() { return knowledge.has('fact:the-tarn') && things.get('the-oar')!.state === 'ground'; },
+    set enabled(_v: boolean) { /* the water and the registry decide */ },
     radius: 2.8,
     prompt: 'PICK UP THE OAR',
     touch: () => { things.pickUp('the-oar'); },
@@ -1402,8 +1612,41 @@ export const buildCanyon: RegionBuilder = (ctx) => {
   const holt = [0, 1, 2].map((p) =>
     ctx.standee(holtTexture(6220 + p, p as 0 | 1 | 2), 1.55, 2.65, BOAT.x - 5.5, BOAT.z + 1.5));
   for (const m of holt) (m.material as THREE.MeshBasicMaterial).transparent = true;
-  /* ---- VOICE: where Holt is drawn ---- */
-  npcs.track('holt', () => { const m = holt.find((v) => v.visible) ?? holt[0]; return { x: m.position.x, z: m.position.z, present: !!holt.find((v) => v.visible) }; });
+  /* ---- VOICE: where Holt is drawn. TIER 2: and once he is walking,
+   * he is wherever the promise has put him — which is behind you, all
+   * the way down the cut, until his own border stops him. Over the
+   * line he is the Flats' to draw (`buildFlats`). ---- */
+  npcs.track('holt', () => {
+    const H = splitrock.holt;
+    if (H.goal === 'walk') return { x: H.x, z: H.z, present: true };
+    const m = holt.find((v) => v.visible) ?? holt[0];
+    return { x: m.position.x, z: m.position.z, present: !!holt.find((v) => v.visible) };
+  });
+
+  /* ================================================================ *
+   * TIER 2 · THE CHANNEL (`foundation/08` §9, promise 6).
+   *
+   * He rigged the canyon a channel so it could spare water for the
+   * feast, and it was his alone, and when he went nobody knew which
+   * board went where. The head of it is cut into the head wall with
+   * two grooves and nothing in them; the board has leaned on the
+   * trestle ever since; and a white line across the slot says where
+   * the water used to stand.
+   * ================================================================ */
+  const channelDry = ctx.standee(channelHeadTexture(6320, false), 8.2, 5.1, CHANNEL.x, CHANNEL.z, { face: 'camera' });
+  const channelWet = ctx.standee(channelHeadTexture(6321, true), 8.2, 5.1, CHANNEL.x, CHANNEL.z, { face: 'camera' });
+  channelWet.visible = false;
+  const channelBoard = ctx.standee(channelBoardTexture(6322), 0.9, 1.5, T2_TRESTLES.x + 3.4, T2_TRESTLES.z - 1.2, { rotY: -0.5 });
+  for (const m of [channelDry, channelWet, channelBoard]) (m.material as THREE.MeshBasicMaterial).transparent = true;
+  /* the water, back in the bed: the ground changed, not a prop that
+   * arrived. Laid the length of the floor from the head to the mouth. */
+  const channelWater = [0, 1, 2, 3].map((i) =>
+    ctx.decal(channelWaterDecal(6324 + i), 7, 32, axisAt(-244 + i * 32), -244 + i * 32, 0, 0.6));
+  for (const m of channelWater) m.visible = false;
+
+  /* DIRECTION LIVES IN THE WORLD: a board at the mouth of the road in,
+   * so a promise that says "up the dry bed" has somewhere to point. */
+  ctx.standee(canyonBoardTexture(6328), 4.6, 2.3, 296.4, -116.6, { face: 'run' });
 
   /* ---- ODD, on the floor, with his line (Session 22, S5) ----------- */
   const odd = [0, 1].map((p) => ctx.standee(oddTexture(6240 + p, p as 0 | 1), 1.55, 2.65, ODD.x, ODD.z, { rotY: -0.1 }));
@@ -1478,7 +1721,10 @@ export const buildCanyon: RegionBuilder = (ctx) => {
 
     /* THE BOAT COMES OFF THE TRESTLES — on the card's first door now
      * (Session 21), told to him at the trestles holding the route. */
-    const rowed = knowledge.has('door:the-boat-righted');
+    /* TIER 2: and water in the bed takes it off them too — that is the
+     * promise's unlock, and it is the boat sitting in an inch of
+     * running water instead of on two trestles over a dry floor. */
+    const rowed = knowledge.has('door:the-boat-righted') || waterRuns();
     /* THE SECOND DOOR, READ BACK (`THE-FUN-PASS` §6): he was told the
      * sea has no bottom. The boat stays on the trestles and is not
      * oiled again; the marks are not gone over again and weather; and
@@ -1507,15 +1753,44 @@ export const buildCanyon: RegionBuilder = (ctx) => {
     const day = h > 5.8 && h < 20.4;
     const near = !told && Math.hypot(px - BOAT.x, pz - BOAT.z) < 15;
     const reading = !told && h > 12.2 && h < 13.6;
-    const pose = !day ? -1 : told ? 2 : near ? 2 : reading ? 1 : 0;
+    /* TIER 2 · WALKING. He has no day while he is walking with you: he
+     * is behind you, at whatever hour it is, until he is over the line
+     * and out of this land's drawing altogether. */
+    const H = splitrock.holt;
+    const walking = H.goal === 'walk' && !H.crossed;
+    /* TIER 2 · HE WAS NOT LET. He sits on the end of the trestle and
+     * does not go at the boat again; the cost of that answer is a man
+     * sitting down, in the one place you will walk past to get to the
+     * channel, for good. */
+    const sat = knowledge.has('promise:holt:sat');
+    const pose = walking ? (H.moving ? 0 : 2) : !day ? -1 : sat ? 2 : told ? 2 : near ? 2 : reading ? 1 : 0;
     for (let p = 0; p < 3; p++) {
-      holt[p].visible = p === pose && platform.land !== 'canyon';
-      const at = told
-        ? [HOUSE.x + 4.6, HOUSE.z + 3.2]
-        : p === 1
-          ? [HEAD.x - 3.2, HEAD.z + 4.4]
-          : [BOAT.x - 5.4 + Math.sin(t * 0.11) * 1.6, BOAT.z + 1.4 + Math.cos(t * 0.09) * 1.1];
+      holt[p].visible = p === pose && platform.land !== 'canyon' && !(H.goal === 'walk' && H.crossed);
+      const at = walking
+        ? [H.x, H.z]
+        : sat
+          ? [T2_TRESTLES.x + 1.8, T2_TRESTLES.z + 2.2]
+          : (knowledge.has('promise:holt:channel-his') && holtStep() >= 4)
+            ? [CHANNEL.x + 2.6, CHANNEL.z + 3.0]
+            : told
+              ? [HOUSE.x + 4.6, HOUSE.z + 3.2]
+              : p === 1
+                ? [HEAD.x - 3.2, HEAD.z + 4.4]
+                : [BOAT.x - 5.4 + Math.sin(t * 0.11) * 1.6, BOAT.z + 1.4 + Math.cos(t * 0.09) * 1.1];
       holt[p].position.set(at[0], ctx.groundY(at[0], at[1]), at[1]);
+      if (walking) holt[p].scale.x = H.face < 0 ? -1 : 1;
+    }
+    H.present = walking;
+
+    /* TIER 2 · THE CHANNEL. The board goes in by his hand or by yours;
+     * either way the water comes down the bed, and the bed is a
+     * drawing on the ground and not a prop. */
+    {
+      const runs = waterRuns();
+      channelDry.visible = !runs;
+      channelWet.visible = runs;
+      channelBoard.visible = !runs && !knowledge.has('promise:holt:set');
+      for (const m of channelWater) m.visible = runs;
     }
     houseDark.visible = day;
     houseLit.visible = !day;
@@ -1588,6 +1863,27 @@ export const buildCanyon: RegionBuilder = (ctx) => {
 };
 
 export const CANYON_POIS: WorldPOI[] = [
+  {
+    /* TIER 2 · THE HEAD OF THE CHANNEL. Reading it starts the promise
+     * whether or not you have met the man, the way the chain on the
+     * king's road does. With the choice taken your way, SET THE BOARD
+     * is the played verb and it is the last thing this promise wants. */
+    x: CHANNEL.x, z: CHANNEL.z + 2.2, radius: 5.4, label: 'THE CHANNEL HEAD', labelHeight: 3.0, labelReach: 30,
+    get prompt() { return tier2.boardMine ? 'SET THE BOARD' : 'LOOK AT THE SLOT'; },
+    answers: true,
+    touch: () => { tier2.setTheBoard(); },
+    /* the note waits for the verb, the same way the bank's does */
+    get note() {
+      if (tier2.boardMine) return undefined;
+      return {
+        title: 'the channel head',
+        body: () => (waterRuns()
+          ? 'a slot cut into the head wall with a board across the bottom of it and water coming through, steady, the width of a hand. it goes down the bed and out at the mouth. it has not done that in three years.'
+          : 'a slot cut into the head wall with two grooves down the sides and nothing in them. there is a white line across the back of it at about knee height, which is where water used to stand. somebody cut this by hand and did not write down how it worked.'),
+      };
+    },
+    set note(_v: unknown) { /* the promise decides */ },
+  } as unknown as WorldPOI,
   {
     /* THE PLANE, where it lies. Off while it is in the hand or in the
      * air; the registry decides. Reachable from arm's length, so the
@@ -1696,12 +1992,30 @@ export const CANYON_POIS: WorldPOI[] = [
      * no bottom — which is the thing at the end of the river, and the
      * thing `THE-STRANGERS` S5 was written to find out — and he stops
      * oiling. Short sentences: the card is in this land's register. */
+    /* TIER 2 (`foundation/08` §9, promise 6): the card here is the
+     * promise's now. You have been up and looked at what is left of
+     * his channel, and there are two ways to put water in it. One of
+     * them works this afternoon and nobody else ever learns it. The
+     * other is an hour on foot with a man who has not crossed his own
+     * border in three years. The river card is still under it, for a
+     * walker who rowed salt to source and has no promise open. */
     get prompt() {
+      if (holtStep() === 3) return 'SAY HOW THE WATER COMES';
       if (!knowledge.decided('canyon') && knowledge.has('route:the-river')) return 'TELL HIM WHAT YOU ROWED';
       return 'LOOK AT THE MARKS';
     },
     get choice() {
-      if (!knowledge.has('route:the-river')) return undefined;
+      if (holtStep() === 3) {
+        return {
+          title: 'the channel',
+          body: 'a boat, keel up, oiled, on trestles over a dry bed, and a board leaning on the end of them. forty units up the cut there is a slot in the head wall with two empty grooves in it. you know which board goes where and nobody else does. eighty units the other way, over a line this man has never crossed, there is an oasis and a man who walks to it every night with two cans.',
+          options: [
+            { label: 'RIG IT YOURSELF', door: 'door:the-channel-rigged' },
+            { label: 'WALK HOLT DOWN TO AMOS', door: 'door:the-lands-spoke' },
+          ],
+        };
+      }
+      if (!knowledge.has('route:the-river') || knowledge.decided('canyon')) return undefined;
       return {
         body: 'a boat, keel up, oiled. marks up the wall behind it, in the order things would float. you rowed the river, salt to source. it starts here. it ends in the sea, and the sea has no bottom that anybody has found. he would like to know about the river. he has not asked about the sea.',
         options: [
@@ -2046,9 +2360,21 @@ export const buildDesert: RegionBuilder = (ctx) => {
   ctx.standee(rainTableTexture(7103), 2.6, 3.1, CATCH.x - 5.6, CATCH.z + 3.4, { rotY: -0.22 });
   ctx.decal(crackedPanDecal(7104), 13, 13, CATCH.x - 4, CATCH.z - 1, 0.3, 0.5);
 
+  /* TIER 2 · A BOARD WHERE THE FLATS BEGIN. Holt's walk comes out of
+   * the canyon here and has a hundred and eighty units of nothing in
+   * front of it; the board says which nothing. */
+  ctx.standee(canyonBoardTexture(7160, 'THE BLEACH FLATS', 'THE CATCH, SOUTH'), 4.6, 2.3, 300.5, -92, { face: 'run' });
   const amos = [0, 1, 2].map((p) =>
     ctx.standee(amosTexture(7110 + p, p as 0 | 1 | 2), 1.6, 2.62, CATCH.x - 4, CATCH.z + 2));
   for (const m of amos) (m.material as THREE.MeshBasicMaterial).transparent = true;
+  /* TIER 2 · AND HOLT, once he is over the line. A companion may not
+   * have a position outside its own land, so the canyon stops drawing
+   * him at the border and the Flats start: he is the first person in
+   * this world to be on the wrong side of one, and it took being asked
+   * twice. */
+  const holtHere = [0, 1, 2].map((p) =>
+    ctx.standee(holtTexture(7130 + p, p as 0 | 1 | 2), 1.55, 2.65, CATCH.x - 7.2, CATCH.z + 3.4));
+  for (const m of holtHere) { m.visible = false; (m.material as THREE.MeshBasicMaterial).transparent = true; }
   /* ---- VOICE: where Amos is drawn ---- */
   npcs.track('amos', () => { const m = amos.find((v) => v.visible) ?? amos[0]; return { x: m.position.x, z: m.position.z, present: !!amos.find((v) => v.visible) }; });
 
@@ -2226,6 +2552,18 @@ export const buildDesert: RegionBuilder = (ctx) => {
     for (let p = 0; p < 3; p++) {
       amos[p].visible = p === pose && platform.land !== 'desert';
       amos[p].position.set(ax, ctx.groundY(ax, az), az);
+    }
+    /* TIER 2 · HOLT, over his own line, on the Flats. */
+    {
+      const H = splitrock.holt;
+      const here = H.goal === 'walk' && H.crossed;
+      const hp: 0 | 1 | 2 = H.arrived ? 2 : H.moving ? 0 : 1;
+      for (let p = 0; p < 3; p++) {
+        holtHere[p].visible = here && p === hp;
+        holtHere[p].position.set(H.x, ctx.groundY(H.x, H.z), H.z);
+        holtHere[p].scale.x = H.face < 0 ? -1 : 1;
+      }
+      if (here) H.present = true;
     }
 
     /* THE WEEDS. One wind, west to east, and the one on the fence has

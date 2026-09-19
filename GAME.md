@@ -11,9 +11,10 @@ a dog that has him now, and a gathering that failed once and happens again
 at the end without you running it.
 
 **The story of record is `design/foundation/08_Inklands_Story_Foundation_v1.md`.**
-The first five minutes and Tier 1 (Wick, Nell, Marget) are built on it
-(below). Every job hangs on its line of the list; the other nine people's
-steps are still the ones from before it until their tier's session.
+The first five minutes, Tier 1 (Wick, Nell, Marget) and Tier 2 (Val,
+Brack, Holt) are built on it (below). Every job hangs on its line of the
+list; the other six people's steps are still the ones from before it
+until their tier's session.
 
 ## The six pillars (the only rules)
 1. **You can always look.** Orbit, pitch and zoom are the player's. Never
@@ -69,6 +70,25 @@ steps are still the ones from before it until their tier's session.
   come off the stalls, the bell keeps the hour every day, WAIT is yours,
   and Hob tells you what the debt was. Six people in Brim Square have
   names and lines that turn on the bell.
+- **Tier 2 promises (`foundation/08` §9; `world/tier2.ts`,
+  `jobs/tier2.ts`).** The consequences of his methods, and every task in
+  it is a played verb. VAL: three chairs face a hedge that was planted
+  shut the day he did not come at three; the clippers are in the grass
+  by her steps, the gap is cut with them, and then the argument is back
+  and somebody has to take the overflow — the court, or the green and
+  her porch light goes off and the street follows. Through the cut gap,
+  on the Common, the first faded footprints, going west. BRACK: he will
+  not go within forty paces of the tarn; on the shingle the prints go
+  into the water and none come out and there is nobody in it, and the
+  wood gate's lantern is lying where it was set down. Hang it and light
+  it (the wood's call, seen from the Brim road) or keep it (a light of
+  your own after dark). HOLT: the channel he rigged is dry and nobody
+  else knows which board goes where; rig it yourself, or walk him down
+  to Amos on the Flats — he stops dead at his own border, and is the
+  first person in this world anybody has ever asked twice. Amos says
+  what he has been holding: he offered, that morning, at the bridge.
+  Yours from it: the clippers, the lantern, and a boat with water under
+  it.
 - **People.** Nell (Common), Marget (Brim), Wick (castle), Pye (beach), Wren
   (ocean), Brack (Penwood), Holt (canyon), Amos (Flats), Joan Harrow
   (Downs), Val (Maple Court), the man at the junction (Greyline), Dennis

@@ -1344,10 +1344,17 @@ export class App {
       if (d < p.def.radius * 2.6 && d < bd) { bd = d; best = p.def as WorldPOI; }
     }
     if (best) {
-      const pr = best.prompt;
-      const verb = (typeof pr === 'function' ? pr() : pr) ?? null;
-      const who = (best as { npc?: boolean }).npc ? (best.label ?? null) : null;
-      say('walker', who ? `Closer. ${who.charAt(0) + who.slice(1).toLowerCase()} is a step off.` : verb ? `Closer, and it says ${verb}.` : 'Closer.');
+      /* HE NAMES THE THING, NOT THE PROMPT (gate round 7). This used to
+       * read "Closer, and it says GET ON THE HORSE." — a man on a beach
+       * reading the HUD out loud, which the cold player wrote down as a
+       * bubble from nobody. Nobody in this world talks about the screen. */
+      const name = best.label ?? null;
+      const said = name ? `${name.charAt(0)}${name.slice(1).toLowerCase()}` : null;
+      const who = (best as { npc?: boolean }).npc ? said : null;
+      /* no verb after the name: "THE THREE CHAIRS is a step off" needs
+       * to know whether a place is singular, and no place here does */
+      say('walker', said ? `Closer. ${said} — a step off.` : 'Closer. Not quite.');
+      void who;
       return;
     }
     const lines = ['Nobody here to talk to.', 'Nothing to hand. Somewhere else, then.', 'Nothing here. The map has places.'];
@@ -2344,6 +2351,12 @@ export class App {
       /* and it does not come to rest on a fence's own line */
       (x, z) => barriers.blocks(x, z)
     );
+    /* A MOUNT NEVER FAILS SILENTLY: whistled, and the page will not let
+     * it come. It used to stand there and say nothing at all. */
+    if (this.horse.heldUp) {
+      this.horse.heldUp = false;
+      if (this.started) this.ui.showHint('the horse can\'t get through to you — go to it', 2800);
+    }
     if (this.horse.hoofbeat && this.started
       && Math.hypot(this.char.pos.x - this.horse.pos.x, this.char.pos.z - this.horse.pos.y) < 70) {
       this.audio.event('hooves', this.horse.aboard ? this.char.effort : 0.4);
@@ -2708,7 +2721,14 @@ export class App {
        * name has the page: the answer line waits. A bubble is on the
        * page: no place is named under it. Somebody is talking to a man
        * on a bench: the places keep their names to themselves. */
-      holdToasts(this.ui.noteOpen || this.ui.mapOpen || this.ui.nameOpen || this.ui.cardUp || conversing());
+      /* AND ANSWERS ARE A CARD TOO (gate round 7, frames 012 and 022:
+       * two answer buttons, a DONE toast and a control hint drawn on
+       * top of one another at the foot of the page, all three
+       * unreadable). While somebody is waiting to be answered, the
+       * answer line and the hint line hold their tongues. */
+      const answering = repliesOpen().length > 0;
+      holdToasts(this.ui.noteOpen || this.ui.mapOpen || this.ui.nameOpen || this.ui.cardUp || conversing() || answering);
+      this.ui.holdHint(answering || this.ui.cardUp || conversing());
       this.poi.reserved = [...this.ui.chrome, ...speechEls()];
       this.poi.quietLabels = opening.quiet;
       if (this.ui.nameOpen) this.ui.hideHint();

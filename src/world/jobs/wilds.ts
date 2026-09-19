@@ -4,34 +4,10 @@ import {
 } from './triggers';
 
 /**
- * THE JOBS OF THE WILD LANDS: Brack (the Penwood), Holt (Splitrock),
- * Amos (the Flats — and it needs the night), Joan Harrow (the Downs).
+ * THE JOBS OF THE WILD LANDS still to be rebuilt: Amos (the Flats —
+ * and it needs the night) and Joan Harrow (the Downs), Tiers 3 and 4.
+ * Brack and Holt are Tier 2 and live in `tier2.ts`.
  */
-
-export const BRACK_JOB: JobSpec = {
-  id: 'job:brack', land: 'forest', giver: 'brack', line: 'brack', name: 'THE STILL WATER',
-  pin: { x: 150, z: -195, label: 'THE TARN' },
-  reward: 'A STONE THAT SKIMS, AT THE TARN',
-  shout: 'IN THE PENWOOD, A MAN TURNS ROUND',
-  steps: [
-    { text: 'GO DOWN TO THE TARN AND STAND AT THE WATER', when: any(known('fact:the-tarn'), decided('forest')) },
-    { text: 'COME BACK UP AND TELL BRACK', when: talkedTo('brack') },
-  ],
-  onComplete: () => { toys.unlock('tarn-stone'); },
-};
-
-export const HOLT_JOB: JobSpec = {
-  id: 'job:holt', land: 'canyon', giver: 'holt', line: 'holt', name: 'THE RIVERHEAD',
-  pin: { x: 301, z: -106, label: 'THE RIVERHEAD' },
-  reward: 'A BOAT THE RIGHT WAY UP',
-  shout: 'IN SPLITROCK, A BOAT COMES OFF ITS TRESTLES',
-  steps: [
-    { text: 'FOLLOW THE DRY BED DOWN TO THE RIVERHEAD, WHERE THE WATER COMES OUT', when: reach(301, -106, 10) },
-    { text: 'COME BACK UP TO THE TRESTLES', when: reach(300, -232, 13) },
-    { text: 'TELL HOLT IT IS THE SAME RIVER', when: talkedTo('holt') },
-  ],
-  onComplete: () => { takeDoor('canyon', 'door:the-boat-righted', 'TOLD HOLT ABOUT THE RIVER'); },
-};
 
 export const AMOS_JOB: JobSpec = {
   id: 'job:amos', land: 'desert', giver: 'amos', line: 'amos', name: 'THE NIGHT WALK',
@@ -58,4 +34,4 @@ export const JOAN_JOB: JobSpec = {
   ],
 };
 
-export const WILDS_JOBS: JobSpec[] = [BRACK_JOB, HOLT_JOB, AMOS_JOB, JOAN_JOB];
+export const WILDS_JOBS: JobSpec[] = [AMOS_JOB, JOAN_JOB];
