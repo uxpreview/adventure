@@ -15,6 +15,8 @@ import type { JobSpec } from './jobs/triggers';
 import { handle } from './handle'; /* THE THREE VERBS */
 import { TIER1_JOBS } from './jobs/tier1';
 import { tier1, hourKnown } from './tier1';
+import { TIER2_JOBS } from './jobs/tier2';
+import { tier2 } from './tier2';
 import { clock } from './daylight';
 import { THE_LIST } from './thelist';
 import { CIVIC_JOBS } from './jobs/civic';
@@ -62,7 +64,7 @@ export type JobsCtx = {
 };
 
 /** The registry, in the list's own order. */
-const SPECS: JobSpec[] = [...TIER1_JOBS, ...CIVIC_JOBS, ...WILDS_JOBS, ...COAST_JOBS]
+const SPECS: JobSpec[] = [...TIER1_JOBS, ...TIER2_JOBS, ...CIVIC_JOBS, ...WILDS_JOBS, ...COAST_JOBS]
   .sort((a, b) => THE_LIST.findIndex((l) => l.id === a.line) - THE_LIST.findIndex((l) => l.id === b.line));
 const LINE_OF = new Map(THE_LIST.map((l) => [l.id, l.line]));
 /** Lands whose promise is rebuilt: a card's old door does not keep it. */
@@ -102,12 +104,14 @@ class Jobs {
     monsters.init({ scene: ctx.scene, groundAt: ctx.groundAt, walker: ctx.walker, wake: ctx.wake, blink: ctx.blink, started: ctx.started, mounted: ctx.mounted });
     this.doneWas = landsDone();
     tier1.install(ctx.walker);
+    tier2.install(ctx.walker);
   }
 
   /* ---- giving ------------------------------------------------------ */
   private afterTalk(id: string) {
     T.noteTalk(id);
     tier1.talked(id);
+    tier2.talked(id);
     const spec = BY_GIVER.get(id);
     if (!spec) return;
     const s = npcs.state(id);
@@ -116,6 +120,11 @@ class Jobs {
     if (!have && (spec.promise || s.phase === 'asked')) {
       this.give(spec);
       if (spec.firstTalkCounts) T.arm(spec.id, 0, 0.001);
+    }
+    /* their own part, offered in their own conversation */
+    if (this.pending.has(spec.id)) {
+      this.pending.delete(spec.id);
+      this.makeOffer(spec);
     }
     // done with you: a hint at the nearest stamp still out
     /* (a promise's person has things of their own to say first: the
@@ -134,14 +143,25 @@ class Jobs {
     notebook.activate(spec.id);
     T.arm(spec.id, 0);
     try { window.dispatchEvent(new CustomEvent('inklands:event', { detail: 'page' })); } catch { /* no ears */ }
-    /* THE THREE VERBS: the giver offers their own part with the job */
-    if (spec.offer) {
-      const n = npcs.get(spec.giver);
-      handle.offer({
-        id: spec.id, who: n?.def.name ?? spec.giver.toUpperCase(), speaker: n?.speaker ?? null,
-        line: spec.offer.line, yes: spec.offer.yes, mine: spec.offer.mine,
-      });
-    }
+    /* THE THREE VERBS: the giver offers their own part with the job —
+     * but IN THEIR OWN CONVERSATION. A job can be given by a place now
+     * (the chain on the king's road, the three chairs, the head of a
+     * dry channel), and an offer made by somebody two hundred units
+     * away, at a hedge, to a walker who has not met them, is a card in
+     * the way (the play of 2026-09-19). It waits for the talk. */
+    if (spec.offer) this.pending.add(spec.id);
+  }
+
+  /** Offers waiting for their person to be spoken to. */
+  private pending = new Set<string>();
+  private makeOffer(spec: JobSpec) {
+    if (!spec.offer) return;
+    if (spec.offer.while && !spec.offer.while()) return;
+    const n = npcs.get(spec.giver);
+    handle.offer({
+      id: spec.id, who: n?.def.name ?? spec.giver.toUpperCase(), speaker: n?.speaker ?? null,
+      line: spec.offer.line, yes: spec.offer.yes, mine: spec.offer.mine,
+    });
   }
 
   /** The notebook's entry for a job whose next step is `i`: pinned
@@ -223,6 +243,7 @@ class Jobs {
     }
 
     tier1.tick(dt);
+    tier2.tick(dt);
     stamps.tick(this.elapsed);
     toys.tick(dt);
     monsters.tick(dt);

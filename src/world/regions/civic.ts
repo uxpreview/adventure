@@ -92,6 +92,12 @@ import {
   HALL_DOOR, HALL_ROOM, BELFRY, MARGET_PATH,
 } from '../tier1-state';
 import { tier1, K, marketCalled, brimHour, roadOpen, duskAtTheFires, wickStep, margetStays, hourKnown } from '../tier1';
+/* ---- TIER 2 (`world/tier2.ts`): Val's hedge ---- */
+import {
+  clippersDecal, clippersHandTexture, gapPostTexture,
+} from '../textures-tier2';
+import { CLIPPERS as CLIPPERS_AT, HEDGE as HEDGE_AT, maple } from '../tier2-state';
+import { tier2, K as K2, gapCut, juneAtHedge, valStep } from '../tier2';
 import { bell } from '../../engine/Bicycle';
 import type { RegionBuilder, WorldPOI } from './index';
 import type { StandeeField } from '../../engine/StandeeField';
@@ -2277,6 +2283,12 @@ const VAL_ROOM = { minX: -83, maxX: -73, minZ: 121, maxZ: 127.6 };
 const BIKE_HOME = { x: -75.5, z: 161.5 };
 const BIKE_PARK = { x: -27.4, z: 145.8 };
 things.register({ id: 'the-small-bike', kind: 'pushable', land: 'neighborhood', home: BIKE_HOME, name: 'THE BIKE', shove: 5 });
+/** TIER 2 · THE CLIPPERS (`foundation/08` §9, promise 4): they went
+ *  down in the grass by Val's steps the week the hedge was planted
+ *  shut, and three years of grass have come up through the handles.
+ *  Picked up, carried to the hedge and used; then they are his, and an
+ *  overgrown way anywhere on the sheet can be cut. */
+things.register({ id: 'the-clippers', kind: 'carriable', land: 'neighborhood', home: { x: -79.8, z: 130.4 }, name: 'THE CLIPPERS', forGood: true });
 /** The three chairs, and the hedge they face (`WORLD-SYSTEMS` §10). */
 const CHAIRS = { x: -61, z: 134 };
 const HEDGE_Z = 126;
@@ -2463,6 +2475,26 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
   for (const m of [hedgeShut, hedgeCut]) {
     (m.material as THREE.MeshBasicMaterial).transparent = true;
   }
+  /* TIER 2 · TWO POSTS EITHER SIDE OF THE CUT. A gap in a hedge with
+   * nothing at its edges is a hole; a gap with a post at each shoulder
+   * is a gap somebody made, and it reads end on as two posts, which is
+   * the rule this tier is authored to. They go up when the cut is
+   * made and they stay up. */
+  const gapPosts = [-1, 1].map((s) =>
+    /* a post is a round thing and may face the lens: a fixed plane
+     * that narrow is a hairline from half the bearings you can stand
+     * at, and the rule this tier is authored to is that a thing a
+     * promise sends you to reads from all of them */
+    ctx.standee(gapPostTexture(8204 + s), 0.44, 2.3, CHAIRS.x + s * 1.5, HEDGE_Z - 0.25, { face: 'camera' }));
+  for (const m of gapPosts) { m.visible = false; (m.material as THREE.MeshBasicMaterial).transparent = true; }
+  /* TIER 2 · THE CLIPPERS, in the grass by her steps. A mark on the
+   * page and not a cutout, because they are lying down. */
+  const clipThing = things.get('the-clippers')!;
+  const clipHand = clippersHandTexture(8206);
+  clipThing.def.hand = clipHand;
+  clipThing.def.handSize = [0.5, 0.75];
+  const clipDown = ctx.decal(clippersDecal(8205), 2.6, 1.3, CLIPPERS_AT.x, CLIPPERS_AT.z, 0.4, 0.92);
+  clipThing.mesh = clipDown;
   /* Three chairs, and NOT at even spacing: somebody sat in them and
    * pushed them back, and the middle one is a little out of line with
    * the other two. Even spacing is the thing the bar forbids and it is
@@ -2517,6 +2549,12 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
     ctx.standee(juneTexture(8310 + p, p as 0 | 1), 1.15, 2.05,
       p === 0 ? JUNE_GATE.x - 2.2 : JUNE_FENCE.x, p === 0 ? JUNE_GATE.z + 1 : JUNE_FENCE.z));
   for (const m of june) (m.material as THREE.MeshBasicMaterial).transparent = true;
+  /* TIER 2 · AND JUNE AT THE FAR END OF THE HEDGE, once Val has been
+   * let ask her (`tier2.ts`, promise 4's offer). She is forty units up
+   * a road she has not walked in three years, and she stays. */
+  const juneAtEnd = ctx.standee(juneTexture(8312, 1), 1.15, 2.05, CHAIRS.x + 6.6, HEDGE_Z + 1.1);
+  juneAtEnd.visible = false;
+  (juneAtEnd.material as THREE.MeshBasicMaterial).transparent = true;
   /* THE FENCE AT THE END OF THE ROAD, and it runs ACROSS it.
    *
    * Round 5 laid it north–south along the border, which is where a
@@ -2743,7 +2781,10 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
       const dark = h < 6.6 || h > 18.6;
       const atRange = h >= 8.6 && h < 18.0;
       const byLamp = h >= 21.0 && h < 23.4;
-      const home = (atRange || byLamp) && platform.land !== 'neighborhood';
+      /* out at her own gate all day while her line is open: she is not
+       * also at the range (nobody is in two places at once) */
+      const home = (atRange || byLamp) && platform.land !== 'neighborhood'
+        && !(valStep() < 99 && h > 6.4 && h < 21.8);
       valHome.position.x = byLamp ? -75.4 : -79.3;
       valHome.position.z = byLamp ? 123.0 : 122.7;
       valHome.scale.x = byLamp ? -1 : 1;
@@ -2784,14 +2825,32 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
      * cut is a door, taken on a card with the castle's name); the hedge
      * at the bottom of this garden has a notch in it now, and through
      * the notch there is a ridge. */
-    const seen = knowledge.has('door:the-gap-cut');
+    /* TIER 2: the cut is made by a hand with clippers in it now, and
+     * the door at the chairs is which street takes the overflow. An old
+     * page that took the card keeps its gap (`gapCut`). */
+    const seen = gapCut();
     hedgeShut.visible = !seen;
     hedgeCut.visible = seen;
+    for (const m of gapPosts) m.visible = seen;
+    juneAtEnd.visible = juneAtHedge() && platform.land !== 'neighborhood';
+    /* THE CLIPPERS, where the registry has them: in the grass, or gone
+     * into a coat for good. */
+    clipDown.visible = clipThing.state === 'ground';
+    if (clipDown.visible) clipDown.position.set(clipThing.x, ctx.groundY(clipThing.x, clipThing.z) + 0.03, clipThing.z);
+    void maple;
 
     /* VAL'S DAY. Out at the gate in the evening, looking up her own
      * street; the bin, once, early. She is not in shot at night and she
      * is not in shot in the middle of the day. */
-    const pose = h > 18.2 && h < 20.8 ? 0 : h > 7.2 && h < 8.4 ? 1 : -1;
+    /* TIER 2 · AND SHE IS OUT AT HER GATE ALL DAY WHILE HER LINE IS
+     * OPEN. She has two hours of her own — the gate in the evening, the
+     * bin early — and a line of the twelve that says ASK VAL, with a
+     * woman indoors for twenty-two of them, is a line you cannot keep
+     * (Marget's is kept at her stall the same way). She takes her own
+     * two hours back once the hedge is settled. */
+    const valPromise = valStep() < 99;
+    const pose = h > 18.2 && h < 20.8 ? 0 : h > 7.2 && h < 8.4 ? 1
+      : valPromise && h > 6.4 && h < 21.8 ? 0 : -1;
     const valBoarding = platform.land === 'neighborhood';
     for (let p = 0; p < 2; p++) val[p].visible = p === pose && !valBoarding;
 
@@ -3007,31 +3066,57 @@ export const NEIGHBORHOOD_POIS: WorldPOI[] = [
     },
   },
   {
-    /* THE THREE CHAIRS — and from Session 20, where VAL's wait is a card
-     * with two doors (`THE-FUN-PASS` §6, `THE-WAITS` §3). Come back
-     * holding the castle's name and it is a choice: the gap is cut, or
-     * her light goes off. Nothing here says which was right. */
+    /* TIER 2 · THE CLIPPERS, where they lie. Off once they are in the
+     * hand, and gone for good once the gap has been cut with them. */
+    get x() { return things.get('the-clippers')!.x; },
+    get z() { return things.get('the-clippers')!.z; },
+    get enabled() { return things.get('the-clippers')!.state === 'ground'; },
+    set enabled(_v: boolean) { /* the registry decides */ },
+    radius: 2.6, label: 'THE CLIPPERS', labelHeight: 1.4, labelReach: 16,
+    prompt: 'PICK UP THE CLIPPERS',
+    touch: () => { things.pickUp('the-clippers'); },
+  } as unknown as WorldPOI,
+  {
+    /* TIER 2 · THE HEDGE, and CUT THE GAP is a played verb: you stand
+     * at it with the clippers in your hand and press. It is the one
+     * thing in this promise that is not a conversation. */
+    x: HEDGE_AT.x, z: HEDGE_AT.z + 1.6, radius: 3.6, label: 'THE HEDGE', labelHeight: 2.8, labelReach: 20,
+    get enabled() { return tier2.gapMine; },
+    set enabled(_v: boolean) { /* the hand decides */ },
+    prompt: 'CUT THE GAP',
+    answers: true,
+    touch: () => { tier2.cutTheGap(); },
+  } as unknown as WorldPOI,
+  {
+    /* THE THREE CHAIRS — and from Tier 2 (`foundation/08` §9, promise
+     * 4) the card is not the cutting. The cutting is done with a pair
+     * of clippers at the hedge. What the card is for is what the gap
+     * lets happen: the court and the green can see each other again,
+     * and the argument he promised to settle at three is back. One of
+     * them takes the overflow. The other one loses it for good, and
+     * nothing here says which was right. */
     x: -61, z: 139, radius: 8, label: 'THE THREE CHAIRS',
     get prompt() {
       const done = knowledge.has('door:the-gap-cut') || knowledge.has('door:the-light-off');
-      if (!done && knowledge.has('name:castle')) return 'TELL HER WHAT YOU SAW';
+      if (!done && gapCut()) return 'SIT DOWN AND SETTLE IT';
       return 'LOOK AT THE HEDGE';
     },
     get choice() {
-      if (!knowledge.has('name:castle')) return undefined;
+      if (!gapCut()) return undefined;
       return {
-        body: 'three chairs facing a hedge, and you have stood under greyweather, which is what the hedge is in the way of. val keeps the hedge, and the porch light, and the street. the hedge could be cut back to the gap that was in it. or the light could go off, which is the other thing she has been holding.',
+        body: 'three chairs facing a gap, and through the gap a hundred and eighty units of common, and past that a ridge with a castle on it. the green can see the court now and the court can see the green, so the argument nobody settled at three is back on: who takes the overflow. val will hold her light on for the court. she will turn it off for the green, and the street will go the same way, a house at a time.',
         options: [
-          { label: 'CUT THE GAP', door: 'door:the-gap-cut' },
-          { label: 'TURN HER LIGHT OFF', door: 'door:the-light-off' },
+          { label: 'THE COURT TAKES IT', door: 'door:the-gap-cut', sits: true },
+          { label: 'THE GREEN TAKES IT', door: 'door:the-light-off', sits: true },
         ],
       };
     },
     note: {
       title: 'the three chairs',
       body: () => {
-        if (knowledge.has('door:the-gap-cut')) return 'facing a gap in a hedge, and through the gap, on a clear day, a ridge with a castle on it, which is what every child on this road grew up looking at. somebody set the chairs out at this angle on purpose. it turns out they were right.';
-        if (knowledge.has('door:the-light-off')) return 'facing a hedge. the porch light at the head of the court is off. it is the first time it has been off in a long time, and the street has noticed, one house at a time.';
+        if (knowledge.has('door:the-gap-cut')) return 'facing a gap in a hedge, and through the gap, on a clear day, a ridge with a castle on it, which is what every child on this road grew up looking at. somebody set the chairs out at this angle on purpose. it turns out they were right. the court takes the overflow, and the porch light at the head of it is on.';
+        if (knowledge.has('door:the-light-off')) return 'facing a gap in a hedge. the green takes the overflow. the porch light at the head of the court is off, for the first time in a long time, and the street has noticed, one house at a time.';
+        if (gapCut()) return 'facing a gap in a hedge, two feet wide, cut this morning, with a post at each shoulder and the brash still on the grass. through it: the common, and somebody\'s faded marks going west across it. nobody has said yet who takes the overflow.';
         return 'facing a hedge. somebody set them out at this angle on purpose, and somebody has gone on cutting the hedge ever since, and both of those are true.';
       },
     },

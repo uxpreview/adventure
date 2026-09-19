@@ -26,6 +26,8 @@ import { Follower } from '../company';
 import { knowledge } from '../knowledge';
 import { opening, MILESTONE, BENCH, BENCH_NOTE } from '../opening'; /* THE FIRST FIVE MINUTES */
 import { borderStoneTexture, benchTexture, pinnedNoteTexture, laundryLineTexture, morrowTexture, hedgeBushTexture, gatePostTexture, gateLeafTexture } from '../textures-opening';
+/* ---- TIER 2 (`world/tier2.ts`): the faded footprints ---- */
+import { fadedPrintsDecal } from '../textures-tier2';
 import { SPEC_BY_ID } from '../layout';
 import { platform } from '../../engine/Eight15';
 import { npcs } from '../npc'; /* VOICE */
@@ -491,6 +493,34 @@ export const buildMeadow: RegionBuilder = (ctx) => {
   // the foot-path scuffs toward the well
   ctx.decal(wornGroundDecal(403), 6, 3.6, -50, 52, 0.85, 0.45);
   ctx.decal(wornGroundDecal(404), 5, 3.2, -54, 48, 0.8, 0.4);
+
+  /* ================================================================ *
+   * TIER 2 · THE FADED FOOTPRINTS (`foundation/08` §9, promises 4 to
+   * 6: the reveal is THAT HE LEFT, on foot, on purpose).
+   *
+   * It rained the night before the gathering, the only rain anyone
+   * remembers, and somebody walked west across this green in it, past
+   * the well, and down to the cove. Three years on, the marks are
+   * still in the ground, because nobody crosses the green there.
+   *
+   * They are DRAWN FROM THE FIRST MINUTE OF THE GAME and nothing calls
+   * attention to them. Val's gap is cut on a line that looks straight
+   * down at them, which is how they are found; Brack's bank is where
+   * they come out again, going into the water; and neither of those is
+   * needed to notice a line of prints on a green and follow it.
+   *
+   * A line of marks reads as a line of marks from any bearing, which
+   * is why the reveal of this tier is prints and not an object.
+   * ================================================================ */
+  {
+    const PRINT_LINE: [number, number][] = [
+      [-31, 90.5], [-42, 85.5], [-52.5, 81], [-62.5, 76.4], [-73, 72.5], [-84, 69], [-95.5, 65.5],
+    ];
+    const PRINTS = [0, 1].map((v) => fadedPrintsDecal(460 + v, v === 1));
+    PRINT_LINE.forEach(([x, z], i) => {
+      ctx.decal(PRINTS[i % 2], 11.5, 2.9, x, z, -0.42 + (i % 2 ? 0.05 : -0.04), 0.5);
+    });
+  }
 
   /* ---- THE OLD WELL ----------------------------------------------- */
   ctx.decal(wornGroundDecal(410), 9, 8, WELL.x, WELL.z, 1.2, 0.6);
@@ -1434,6 +1464,23 @@ export const MEADOW_POIS: WorldPOI[] = [
       /* The builder's clock is `t`; the POI has no clock. So the touch
        * asks for an answer and the builder schedules it on the next
        * frame: −2 means "due, not yet timed". */
+    },
+  },
+  {
+    /* TIER 2 · THE FADED FOOTPRINTS. Always here, named from the
+     * first minute, and explained by nobody: a line of marks going
+     * west across a green. What Val's gap does is aim you at them;
+     * what Brack's bank does is finish the sentence. */
+    x: -62.5, z: 76.4, radius: 6.5, label: 'THE FADED FOOTPRINTS', labelHeight: 1.2, labelReach: 26,
+    prompt: 'LOOK AT THE MARKS',
+    note: {
+      title: 'the faded footprints',
+      body: () => {
+        const water = knowledge.has('promise:brack:on-purpose');
+        const head = 'a line of prints across the green, going west, pressed into ground that was wet once and has not been since. one man, walking, not running. nobody has walked them out because nobody crosses the green here. ';
+        if (water) return head + 'they come out again on the shingle at the tarn, forty minutes north-east of here, and go into the water, and there is nobody in the water. so they go on out the far side, through the wood, in the dark, to the coast. they are yours.';
+        return head + 'they are the size of the boot you are standing in.';
+      },
     },
   },
   {

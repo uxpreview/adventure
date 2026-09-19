@@ -226,19 +226,18 @@ export const WAIT_ANSWERS: Partial<Record<string, Known>> = {
    *  obligation to use it. The second door calls the finish, once, and
    *  the fleet stops racing, and Wren is the reason there was a fleet. */
   ocean: 'door:the-second-mark',
-  /** BRACK: the tarn, and the road that is his circle. Earned by
-   *  arriving at the water, or by the card's first door, which is the
-   *  same thing said out loud (Session 21). The second door — the oar
-   *  out of the boat — is a door and not an answer: he keeps facing the
-   *  water, and now he has a reason. */
-  forest: 'fact:the-tarn',
-  /** HOLT (Session 21): the river that left is running forty units
-   *  away — and from this session it is told to him at the trestles,
-   *  on a card, and the boat comes off them on the door. The second
-   *  door tells him the sea has no bottom; he stops oiling and the
-   *  marks weather. `route:the-river` opens the card and answers
-   *  nothing by itself any more. */
-  canyon: 'door:the-boat-righted',
+  /** BRACK (Tier 2): the lantern off the bank, carried the length of
+   *  the wood road and hung back on its bracket at the gate, which is
+   *  the Penwood's call and is what he could not do himself. The second
+   *  door keeps it — a light of your own after dark, and the wood stays
+   *  dark — and is a door and not an answer. */
+  forest: 'door:the-lantern-hung',
+  /** HOLT (Tier 2): what the canyon needs is the Flats, and the two
+   *  lands have not spoken since he went. Answered by walking Holt
+   *  down there on foot, which is an hour and two men in front of each
+   *  other. The second door rigs the channel yourself: it works, the
+   *  water comes, and nobody learns it — a door and not an answer. */
+  canyon: 'door:the-lands-spoke',
   /** AMOS (Session 21): the water was always coming from somewhere on
    *  this sheet — and the lid comes off on a card now, at the catch,
    *  holding the fold. The second door fills the cistern from the
@@ -291,8 +290,8 @@ export const WAIT_DOORS: Record<string, Known[]> = {
   castle: ['door:the-king-restored'],
   beach: ['door:the-eighth-pot', 'door:the-pots-hauled'],
   ocean: ['door:the-second-mark', 'door:the-fleet-finished'],
-  forest: ['door:the-water-stood', 'door:the-oar-taken'],
-  canyon: ['door:the-boat-righted', 'door:the-sea-has-no-bottom'],
+  forest: ['door:the-lantern-hung', 'door:the-lantern-carried', 'door:the-water-stood', 'door:the-oar-taken'],
+  canyon: ['door:the-lands-spoke', 'door:the-channel-rigged', 'door:the-boat-righted', 'door:the-sea-has-no-bottom'],
   desert: ['door:the-lid-off', 'door:the-cistern-yours'],
   downs: ['door:the-seat-taken', 'door:the-setting-cleared'],
   neighborhood: ['door:the-gap-cut', 'door:the-light-off'],

@@ -69,6 +69,11 @@ export type JobSpec = {
    *  hang one on every promise. */
   offer?: {
     line: string;
+    /** While their part is still theirs to do. A job can be started by
+     *  a place now, so a walker can arrive at the bank, look in the
+     *  water and come back up to a man offering to come down with them
+     *  (the play of 2026-09-19). An offer nobody needs is not made. */
+    while?: () => boolean;
     yes: { label: string; reply?: string; run?: () => void };
     mine: { reply: string; what: string; cost: string; run: (count: number) => void };
   };

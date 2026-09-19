@@ -4,24 +4,12 @@ import {
 } from './triggers';
 
 /**
- * THE JOBS OF THE CIVIC LANDS still to be rebuilt: Val (Maple Court,
- * Tier 2), the man at the junction (Greyline) and Dennis (the Mile),
- * both Tier 4. Each hangs on its line of THE LIST; the steps are the
- * ones from before the story of record until its tier's session.
- * Marget and Wick are Tier 1 and live in `tier1.ts`.
+ * THE JOBS OF THE CIVIC LANDS still to be rebuilt: the man at the
+ * junction (Greyline) and Dennis (the Mile), both Tier 4. Each hangs on
+ * its line of THE LIST; the steps are the ones from before the story of
+ * record until its tier's session. Marget and Wick are Tier 1
+ * (`tier1.ts`); Val is Tier 2 (`tier2.ts`).
  */
-
-export const VAL_JOB: JobSpec = {
-  id: 'job:val', land: 'neighborhood', giver: 'val', line: 'val', name: 'THE GAP IN THE HEDGE',
-  pin: { x: -45, z: -234, label: 'THE KEEP' },
-  reward: 'A CHAIR THAT FACES SOMETHING',
-  shout: 'IN MAPLE COURT, A HEDGE HAS A GAP AGAIN',
-  steps: [
-    { text: 'RIDE THE BICYCLE UP THE KING\'S ROAD TO GREYWEATHER', when: any(known('name:castle'), reach(-45, -234, 14)) },
-    { text: 'COME BACK AND TELL HER AT THE THREE CHAIRS', when: decided('neighborhood') },
-  ],
-  doorEnds: true,
-};
 
 export const MAN_JOB: JobSpec = {
   id: 'job:the-man', land: 'city', giver: 'the-man', line: 'the-man', name: 'FOUR SECONDS',
@@ -48,4 +36,4 @@ export const DENNIS_JOB: JobSpec = {
   onComplete: () => { toys.unlock('office-plane'); },
 };
 
-export const CIVIC_JOBS: JobSpec[] = [VAL_JOB, MAN_JOB, DENNIS_JOB];
+export const CIVIC_JOBS: JobSpec[] = [MAN_JOB, DENNIS_JOB];
