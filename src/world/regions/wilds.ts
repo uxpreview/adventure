@@ -56,10 +56,10 @@ import {
   bramblesTexture, channelHeadTexture, channelBoardTexture, canyonBoardTexture, channelWaterDecal,
 } from '../textures-tier2';
 import {
-  BANK, WOOD_GATE, THICKET, CHANNEL, TRESTLES as T2_TRESTLES, CATCH as T2_CATCH, splitrock, penwood,
+  BANK, WOOD_GATE, THICKET, CHANNEL, TRESTLES as T2_TRESTLES, splitrock, penwood,
 } from '../tier2-state';
 import {
-  tier2, K as K2, clippersKept, lanternHung, lanternCarried, waterRuns, brackStep, holtStep,
+  tier2, clippersKept, lanternHung, lanternCarried, waterRuns, brackStep, holtStep,
 } from '../tier2';
 import { say as speak } from '../../ui/speech'; /* VOICE: a refusal that says why */
 import type { RegionBuilder, WorldPOI } from './index';

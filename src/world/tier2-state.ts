@@ -97,9 +97,3 @@ export const splitrock = {
 export const penwood = {
   lantern: { lit: false, t: 0 },
 };
-
-/** MAPLE COURT: the shears going through the hedge, once, so the land
- *  can draw the cut being made and not only its result. */
-export const maple = {
-  cutting: 0,
-};

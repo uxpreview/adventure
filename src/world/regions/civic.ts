@@ -96,8 +96,8 @@ import { tier1, K, marketCalled, brimHour, roadOpen, duskAtTheFires, wickStep, m
 import {
   clippersDecal, clippersHandTexture, gapPostTexture,
 } from '../textures-tier2';
-import { CLIPPERS as CLIPPERS_AT, HEDGE as HEDGE_AT, maple } from '../tier2-state';
-import { tier2, K as K2, gapCut, juneAtHedge, valStep } from '../tier2';
+import { CLIPPERS as CLIPPERS_AT, HEDGE as HEDGE_AT } from '../tier2-state';
+import { tier2, gapCut, juneAtHedge, valStep } from '../tier2';
 import { bell } from '../../engine/Bicycle';
 import type { RegionBuilder, WorldPOI } from './index';
 import type { StandeeField } from '../../engine/StandeeField';
@@ -2837,7 +2837,6 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
      * into a coat for good. */
     clipDown.visible = clipThing.state === 'ground';
     if (clipDown.visible) clipDown.position.set(clipThing.x, ctx.groundY(clipThing.x, clipThing.z) + 0.03, clipThing.z);
-    void maple;
 
     /* VAL'S DAY. Out at the gate in the evening, looking up her own
      * street; the bin, once, early. She is not in shot at night and she

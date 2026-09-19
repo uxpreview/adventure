@@ -6,9 +6,12 @@ import { toast } from '../ui/toast';
 import { beckon, say, shout, type Speaker } from '../ui/speech';
 import { converse } from '../ui/converse'; /* A CONVERSATION */
 import {
-  CHAIRS, HEDGE, BANK, WOOD_GATE, TARN, CATCH, CANYON_EDGE,
-  splitrock, penwood, maple, PRINTS_COMMON,
+  TARN, CATCH, CANYON_EDGE,
+  splitrock, penwood, PRINTS_COMMON,
 } from './tier2-state';
+
+/** The middle of the cut, where the echo is heard from. */
+const CUT_MIDDLE = { x: 303, z: -220 };
 
 /**
  * TIER 2: THE CONSEQUENCES OF HIS METHODS (`design/foundation/08` §9,
@@ -59,8 +62,6 @@ export const K = {
   lanternKept: 'door:the-lantern-carried',
   lantern: 'promise:brack:lantern',
   /* 6. HOLT */
-  holtWhy: 'promise:holt:why',
-  channelSeen: 'promise:holt:channel',
   holtSat: 'promise:holt:sat',
   channelMine: 'door:the-channel-rigged',
   holtWalks: 'door:the-lands-spoke',
@@ -217,7 +218,6 @@ class Tier2 {
   /** E at the hedge, with the clippers in hand. */
   cutTheGap() {
     if (!this.gapMine) return;
-    maple.cutting = 1;
     knowledge.learn(K.gapCut);
     /* the clippers go in the coat and stay there: an overgrown way
      * anywhere on the sheet can be cut from now on */
@@ -522,9 +522,8 @@ class Tier2 {
   private tickCalls(dt: number) {
     penwood.lantern.lit = has(K.lanternHung);
     penwood.lantern.t += dt;
-    if (maple.cutting > 0) maple.cutting = Math.max(0, maple.cutting - dt * 0.6);
     /* the echo, heard once, by anybody standing in the cut after it */
-    if (!this.echoSaid && waterRuns() && this.near(TARN.x * 0 + 303, -220, 60) && stepOf(HOLT) === 99) {
+    if (!this.echoSaid && waterRuns() && this.near(CUT_MIDDLE.x, CUT_MIDDLE.z, 60) && stepOf(HOLT) === 99) {
       this.echoSaid = true;
       shout('THE CUT ANSWERS YOU BACK, ON THE BEAT');
     }
@@ -543,7 +542,6 @@ class Tier2 {
     this.tickHolt(dt);
     this.tickLantern();
     this.tickCalls(dt);
-    void CHAIRS; void HEDGE; void BANK; void WOOD_GATE;
   }
 }
 

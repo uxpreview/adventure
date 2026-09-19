@@ -54,13 +54,14 @@ Run the pillars and the loop **one at a time, one agent at a time, over as
 many sessions as it takes.** A cold player and then one critic in sequence
 is fine. The brief's goal is unchanged; only the shape of the work is.
 
-## 2. Where it stands (2026-09-18, branch `claude/tier-1-promises`; main is PR #31)
+## 2. Where it stands (2026-09-19, branch `claude/continue-j5qoe2`; draft PR #34)
 
-Play it: https://adventure-git-claude-tier-1-promises-ryankm.vercel.app
+Play it: https://adventure-git-claude-continue-j5qoe2-ryankm.vercel.app
 (Vercel rebuilds `adventure-git-<branch>-ryankm.vercel.app` on every push
-to a branch.) PRs #23 to #31 are merged; main is the story of record's
-first five minutes, the three verbs, and the gate's rounds on them. The
-branch adds Tier 1 (Wick, Nell, Marget); no PR until the owner says.
+to a branch.) PRs #23 to #33 are merged; main is the story of record's
+first five minutes, the three verbs, Tier 1 (Wick, Nell, Marget) and a
+talk that waits for you. The branch adds **Tier 2** (Val, Brack, Holt)
+and round 6's two leftovers, as draft PR #34.
 
 The gate (`design/reset/THE-GATE.md`) rounds so far, all desktop, from
 the title, no parameters:
@@ -278,9 +279,10 @@ folder, to build story.
 
 **The story rebuild comes first (owner, 2026-09-16: "proceed"). One item
 per session, in order, each ending with the cold player and the critic
-from `THE-GATE.md`.** Items 0 to 2 are built; **item 3 (Tier 2) is next.**
+from `THE-GATE.md`.** Items 0 to 3 are built; **item 4 (Tier 3) is next.**
 Round 4's arch and map labels rode along with item 1; Brim's
-bystanders rode with Tier 1's Marget. Round 5's open list (`CHANGELOG.md`
+bystanders rode with Tier 1's Marget; round 6's two leftovers rode with
+Tier 2. Round 5's open list (`CHANGELOG.md`
 "Named and not done") rides where an item touches it: the hedge's
 drawn edge and the strangers' prompts are the two a first minute meets.
 
@@ -328,8 +330,21 @@ drawn edge and the strangers' prompts are the two a first minute meets.
    the cold player's sixty-second answer is a 6 without it; bring the
    list forward (Morrow's walk waits 11 s after the gate, then walks
    ~25 s) or let Nell say "twelve" inside the first minute.
-3. **Tier 2** (Val, Brack, Holt): the faded footprints, the lantern, the
-   canyon and the Flats.
+3. ~~**Tier 2 promises** (Val, Brack, Holt)~~ **BUILT, 2026-09-19**
+   (`CHANGELOG.md` "Tier 2 promises"): `jobs/tier2.ts`, `world/tier2.ts`,
+   `world/tier2-state.ts`, `world/textures-tier2.ts`, and the lands in
+   `regions/civic.ts` (Maple Court), `regions/meadow.ts` (the faded
+   footprints on the Common) and `regions/wilds.ts` (the bank, the wood
+   gate, the channel, Holt's walk, Holt on the Flats). Every task is a
+   played verb; every promise hangs an I'LL HANDLE IT with an
+   `offer.while`; the two old cards (the three chairs' and the
+   trestles') are rebuilt as the promise's own choice, and the tarn's is
+   gone. New rules the building found are in §2b below and in §5's
+   RULES THAT STAND. Left: the portrait rig has not seen any of it; the
+   old cut through the bramble is a convenience and not a way, so the
+   clippers are thin; `door:the-boat-righted` and `door:the-oar-taken`
+   are still takeable beside the promise (archive content beside it, the
+   way `door:the-king-restored` is beside Wick's).
 4. **Tier 3** (Amos, Pye, Wren): the rain table, the eighth pot and the
    honest note, the fleet and the Vikings.
 5. **Tier 4** (Joan, the man at the crossing, Dennis): the second plate
