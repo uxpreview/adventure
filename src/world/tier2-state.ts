@@ -58,7 +58,7 @@ export const THICKET = { x: 143.4, z: -171.6 };
 export const TRESTLES = { x: 306, z: -234 };
 /** THE HEAD OF THE CHANNEL: the cut he rigged, at the top of the dry
  *  bed, with the board out of it. */
-export const CHANNEL = { x: 303.4, z: -249.2 };
+export const CHANNEL = { x: 304.4, z: -250.4 };
 /** Amos's rain-catch, on the Flats (the land's own numbers). */
 export const CATCH = { x: 302, z: 95 };
 /** The line the canyon stops at, which is where Holt stops. */

@@ -1633,8 +1633,8 @@ export const buildCanyon: RegionBuilder = (ctx) => {
    * trestle ever since; and a white line across the slot says where
    * the water used to stand.
    * ================================================================ */
-  const channelDry = ctx.standee(channelHeadTexture(6320, false), 5.4, 3.4, CHANNEL.x, CHANNEL.z, { face: 'fixed', rotY: 0.08 });
-  const channelWet = ctx.standee(channelHeadTexture(6321, true), 5.4, 3.4, CHANNEL.x, CHANNEL.z, { face: 'fixed', rotY: 0.08 });
+  const channelDry = ctx.standee(channelHeadTexture(6320, false), 8.2, 5.1, CHANNEL.x, CHANNEL.z, { face: 'camera' });
+  const channelWet = ctx.standee(channelHeadTexture(6321, true), 8.2, 5.1, CHANNEL.x, CHANNEL.z, { face: 'camera' });
   channelWet.visible = false;
   const channelBoard = ctx.standee(channelBoardTexture(6322), 0.9, 1.5, T2_TRESTLES.x + 3.4, T2_TRESTLES.z - 1.2, { rotY: -0.5 });
   for (const m of [channelDry, channelWet, channelBoard]) (m.material as THREE.MeshBasicMaterial).transparent = true;
@@ -1770,7 +1770,7 @@ export const buildCanyon: RegionBuilder = (ctx) => {
         ? [H.x, H.z]
         : sat
           ? [T2_TRESTLES.x + 1.8, T2_TRESTLES.z + 2.2]
-          : knowledge.has('promise:holt:channel-his')
+          : (knowledge.has('promise:holt:channel-his') && holtStep() >= 4)
             ? [CHANNEL.x + 2.6, CHANNEL.z + 3.0]
             : told
               ? [HOUSE.x + 4.6, HOUSE.z + 3.2]
@@ -2360,6 +2360,10 @@ export const buildDesert: RegionBuilder = (ctx) => {
   ctx.standee(rainTableTexture(7103), 2.6, 3.1, CATCH.x - 5.6, CATCH.z + 3.4, { rotY: -0.22 });
   ctx.decal(crackedPanDecal(7104), 13, 13, CATCH.x - 4, CATCH.z - 1, 0.3, 0.5);
 
+  /* TIER 2 · A BOARD WHERE THE FLATS BEGIN. Holt's walk comes out of
+   * the canyon here and has a hundred and eighty units of nothing in
+   * front of it; the board says which nothing. */
+  ctx.standee(canyonBoardTexture(7160, 'THE BLEACH FLATS', 'THE CATCH, SOUTH'), 4.6, 2.3, 300.5, -92, { face: 'run' });
   const amos = [0, 1, 2].map((p) =>
     ctx.standee(amosTexture(7110 + p, p as 0 | 1 | 2), 1.6, 2.62, CATCH.x - 4, CATCH.z + 2));
   for (const m of amos) (m.material as THREE.MeshBasicMaterial).transparent = true;

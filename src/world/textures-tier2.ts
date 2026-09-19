@@ -248,21 +248,35 @@ export function bramblesTexture(seed: number, cut: boolean): THREE.CanvasTexture
  */
 export function channelHeadTexture(seed: number, running: boolean): THREE.CanvasTexture {
   return makeTexture(256, 160, seed, (ctx, r) => {
-    fillPoly(ctx, [[8, 158], [16, 22], [240, 18], [248, 158]], WASH.canyon, 0.6);
-    poly(ctx, [[8, 158], [16, 22], [240, 18], [248, 158]], r, { width: 2.6, alpha: 0.9 });
-    hatch(ctx, 22, 36, 212, 112, 0.14, 11, r, { width: 0.9, alpha: 0.22 });
-    // the slot, and the two grooves the board drops into
-    fillPoly(ctx, [[74, 154], [78, 62], [178, 60], [182, 154]], running ? '#9fb2b8' : '#efe9da', running ? 0.75 : 0.5);
-    poly(ctx, [[74, 154], [78, 62], [178, 60], [182, 154]], r, { width: 2.4, alpha: 0.92, color: '#3f4550' });
-    for (const x of [86, 170]) stroke(ctx, [[x, 150], [x + 1, 66]], r, { width: 2.2, alpha: 0.8, color: '#3f4550' });
+    /* NO PANEL. The head wall is already drawn; a filled rectangle
+     * stuck on it reads as a crate leaning against a cliff (the play
+     * of 2026-09-19). What is drawn here is the cut ITSELF: a dark
+     * slot, a lip of spoil under it, two grooves, and the tide line. */
+    const slot: [number, number][] = [[62, 150], [70, 44], [186, 40], [194, 150]];
+    fillPoly(ctx, slot, running ? '#87a3ad' : '#2e3138', running ? 0.7 : 0.55);
+    poly(ctx, slot, r, { width: 3.2, alpha: 0.95, color: '#23262c' });
+    /* the two grooves the board drops into, cut proud of the slot */
+    for (const x of [80, 178]) {
+      stroke(ctx, [[x, 146], [x + 2, 50]], r, { width: 3.4, alpha: 0.9, color: '#23262c' });
+      stroke(ctx, [[x + 7, 146], [x + 9, 52]], r, { width: 1.4, alpha: 0.45, color: '#23262c' });
+    }
+    /* the sill, and the spoil that came out of it, in front */
+    stroke(ctx, [[54, 150], [202, 150]], r, { width: 3.6, alpha: 0.92, color: '#23262c' });
+    for (let i = 0; i < 16; i++) {
+      scribbleCircle(ctx, 44 + r() * 170, 150 + r() * 8, 2 + r() * 4, r, { width: 1.2, alpha: 0.4 }, 1);
+    }
+    /* the cut's own chisel marks, so it is plainly a made thing */
+    hatch(ctx, 74, 56, 108, 86, 0.06, 13, r, { width: 0.9, alpha: 0.22 });
     if (running) {
-      for (let i = 0; i < 5; i++) {
-        const y = 78 + i * 16;
-        stroke(ctx, [[92, y], [120 + r() * 20, y + 4], [164, y - 2]], r, { width: 1.5, alpha: 0.5, color: '#4b6672', passes: 1 });
+      for (let i = 0; i < 6; i++) {
+        const y = 58 + i * 15;
+        stroke(ctx, [[84, y], [120 + r() * 24, y + 5], [180, y - 3]], r, { width: 1.6, alpha: 0.55, color: '#3c5b68', passes: 1 });
       }
+      /* and over the sill, down the bed */
+      stroke(ctx, [[110, 150], [118, 158]], r, { width: 2.2, alpha: 0.5, color: '#3c5b68', passes: 1 });
     } else {
-      // the tide line: where the water used to stand, and does not
-      stroke(ctx, [[80, 92], [178, 90]], r, { width: 1.8, alpha: 0.55, color: '#8b8168' });
+      // the tide line: where water used to stand, and does not
+      stroke(ctx, [[68, 86], [190, 82]], r, { width: 2.2, alpha: 0.7, color: '#d9d2bc' });
     }
   });
 }
@@ -278,15 +292,23 @@ export function channelBoardTexture(seed: number): THREE.CanvasTexture {
   });
 }
 
-/** A BOARD AT THE MOUTH OF THE CANYON ROAD: SPLITROCK, and under it,
- *  in a hand that is not the sign-writer's, HOLT'S CHANNEL — THIS WAY. */
-export function canyonBoardTexture(seed: number): THREE.CanvasTexture {
+/**
+ * A BOARD AT THE MOUTH OF A ROAD. DIRECTION LIVES IN THE WORLD (this
+ * session's rule): a place a promise sends me to has a board at the
+ * mouth of its road, a trodden way on the ground and a name that reads
+ * from far off, and no compass words except the one on the board.
+ *
+ * Two of them: SPLITROCK at the canyon mouth, and THE CATCH where the
+ * Flats begin — which is the pair of ends of Holt's walk, and the walk
+ * is two hundred units of nothing if neither end says so.
+ */
+export function canyonBoardTexture(seed: number, top = 'SPLITROCK', under = 'THE CHANNEL, NORTH'): THREE.CanvasTexture {
   return makeTexture(320, 160, seed, (ctx, r) => {
     stroke(ctx, [[152, 158], [154, 70]], r, { width: 3.2, alpha: 0.9, color: TIMBER });
     fillPoly(ctx, [[14, 18], [306, 12], [308, 74], [16, 80]], CREAM, 0.9);
     poly(ctx, [[14, 18], [306, 12], [308, 74], [16, 80]], r, { width: 2.6, alpha: 0.92, color: TIMBER });
-    letteringFit(ctx, 'SPLITROCK', 34, 50, 250, 30, r, { alpha: 0.92, crooked: 0.3 });
-    letteringFit(ctx, 'THE CHANNEL, NORTH', 36, 70, 240, 12, r, { alpha: 0.6, crooked: 0.7 });
+    letteringFit(ctx, top, 34, 50, 250, 30, r, { alpha: 0.92, crooked: 0.3 });
+    letteringFit(ctx, under, 36, 70, 240, 12, r, { alpha: 0.6, crooked: 0.7 });
   });
 }
 

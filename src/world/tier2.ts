@@ -101,6 +101,8 @@ class Tier2 {
   private timers: Timer[] = [];
   private walker: () => { x: number; z: number } = () => ({ x: 0, z: 0 });
   private installed = false;
+  /** Amos's one line, said once in a talk and not three times. */
+  private amosSaid = false;
 
   private after(sec: number, fn: () => void) {
     this.timers.push({ at: this.elapsed + sec, fn });
@@ -129,7 +131,11 @@ class Tier2 {
     if (amos) {
       const was = amos.def.lines;
       amos.def.lines = (s) => {
-        if (splitrock.holt.arrived && !has(K.amosSaw)) {
+        /* one talk walks a stranger through three lines (`npc.ts`), so
+         * a line that is the same every time is said three times over:
+         * his is said once, and then his own. */
+        if (splitrock.holt.arrived && !has(K.amosSaw) && !this.amosSaid) {
+          this.amosSaid = true;
           return ['You two. Together. ...I offered, you know. That morning, at the bridge. Cans in the cart and both hands free. You said you\'d handle it.'];
         }
         return was(s);
@@ -372,6 +378,10 @@ class Tier2 {
 
   /** Holt's part, let: he goes at the water himself, which is three
    *  years late and is still him going at it. */
+  /** Holt's part, let: he goes at the water himself. What that looks
+   *  like is him up at the head of his own channel once the way to do
+   *  it has been settled — not before, because before that neither of
+   *  you knows what it wants. */
   holtCarries() { knowledge.learn('promise:holt:channel-his'); }
   /** And not let: he sits down on the end of the trestle and stops
    *  oiling the boat, and stays there. */
@@ -411,7 +421,7 @@ class Tier2 {
     H.atEdge = false;
     H.crossed = true;
     const who = this.speaker('holt');
-    if (who) converse([{ who, text: 'Right. Well. You\'re asking, so.' }]);
+    if (who) { beckon(who, false); converse([{ who, text: 'Right. Well. You\'re asking, so.' }]); }
   }
 
   /** A talk with one of the three has just happened (`jobs.ts`). */
@@ -424,6 +434,7 @@ class Tier2 {
         if (who) { converse([{ who, text: t }]); notebook.heard('HOLT', t); }
       }
     }
+    if (id === 'amos') this.amosSaid = false;
     if (id === 'amos' && splitrock.holt.arrived && !has(K.amosSaw)) {
       knowledge.learn(K.amosSaw);
       const holt = this.speaker('holt');
@@ -499,7 +510,6 @@ class Tier2 {
       knowledge.learn(K.water);
       const who = this.speaker('holt');
       if (who) { beckon(who, false); this.after(1.2, () => converse([{ who, text: 'So that\'s an oasis. ...Right. We\'ll want a word about a pipe.' }])); }
-      this.after(6.0, () => shout('IN SPLITROCK, THE ECHO COMES BACK RIGHT'));
     }
   }
 

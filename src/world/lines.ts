@@ -352,7 +352,7 @@ export const CONSEQUENCES: Record<string, { hint: string; shout: string; /** rea
   /* ---- TIER 2 (`foundation/08` §9, promises 4 to 6) ---- */
   'door:the-lantern-hung': { hint: 'the wood gate is lit every night; Brack can turn round', shout: 'IN THE PENWOOD, THE LANTERN AT THE WOOD GATE IS LIT', world: true },
   'door:the-lantern-carried': { hint: 'the lantern is yours after dark; the wood stays dark', shout: 'IN THE PENWOOD, THE WOOD GATE STAYS DARK', world: true },
-  'door:the-lands-spoke': { hint: 'the Flats answer the canyon; the echo comes back right', shout: 'IN SPLITROCK, THE ECHO COMES BACK RIGHT', world: true },
+  'door:the-lands-spoke': { hint: 'walk him there; the Flats answer and the echo comes back right', shout: 'IN SPLITROCK, A MAN COMES DOWN OFF HIS OWN FLOOR', world: true },
   'door:the-channel-rigged': { hint: 'the water comes, and nobody else learns how', shout: 'IN SPLITROCK, A CHANNEL RUNS THAT ONLY YOU CAN MEND', world: true },
   'door:the-sea-has-no-bottom': { hint: 'Holt stops oiling; the marks weather', shout: 'IN SPLITROCK, NOBODY OILS THE BOAT ANY MORE' },
   'door:the-lid-off': { hint: 'the catch catches; Amos stops walking at night', shout: 'ON THE FLATS, A LID COMES OFF' },
