@@ -83,6 +83,9 @@ export class UI {
   private nameBody: HTMLElement;
   private namePreview: HTMLElement;
   private nameInput: HTMLInputElement;
+  private nameClear: HTMLElement;
+  /** When the name field went live, for the act key's grace period. */
+  private nameLiveAt = 0;
   private nameBtn: HTMLElement;
   private nameSubmit: ((name: string) => void) | null = null;
   private map: HTMLElement;
@@ -216,7 +219,28 @@ export class UI {
     this.nameInput.addEventListener('input', () => this.letterName());
     this.nameInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); this.submitName(); }
+      /* AND THE ACT KEY IS NOT A LETTER HERE, FOR A MOMENT (gate round
+       * 7). The card opens on the last press of a conversation and a
+       * player still tapping E to read on puts E's in their own name;
+       * the disable below catches the key that was down, this catches
+       * the two that come after it. A name really starting with E can
+       * be typed a second later, or after RUB IT OUT. */
+      if ((e.key === 'e' || e.key === 'E') && performance.now() < this.nameLiveAt + 1500) e.preventDefault();
       e.stopPropagation();
+    });
+    /* RUB IT OUT (gate round 7). The cold player's three E-presses, meant
+     * for Nell's dialogue, landed in this field and it named him
+     * "eeeWren" for the whole game; backspace did not save him. The
+     * field is now dead until it is ready (below), and there is a way
+     * back either way, because this is the most personal thing the game
+     * asks anybody and it asks it twenty seconds in. */
+    this.nameClear = el('choice-btn name-btn name-clear', nameCard, 'button');
+    letterEl(this.nameClear, 'rub it out', S.button(11.5));
+    this.nameClear.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.nameInput.value = '';
+      this.letterName();
+      this.nameInput.focus();
     });
     this.nameBtn = el('choice-btn name-btn', nameCard, 'button');
     letterEl(this.nameBtn, 'that\'ll do', S.button(11.5));
@@ -437,6 +461,16 @@ export class UI {
     this.hintLeft = holdMs / 1000;
   }
 
+  /** ONE VOICE AT A TIME (gate round 7): while somebody is waiting to
+   *  be answered, or a card has the page, the control line waits. It
+   *  is drawn at the foot of the page, which is where the answers are.
+   *  Its clock keeps running: a hint held past its time is old news. */
+  holdHint(on: boolean) {
+    if (on === this.hintHeld) return;
+    this.hintHeld = on;
+    this.hintEl.classList.toggle('held', on);
+  }
+  private hintHeld = false;
   private hintLeft = 0;
   /** Once a frame, from App: the hint's hold runs on the game's clock. */
   tickHint(dt: number) {
@@ -603,14 +637,20 @@ export class UI {
     this.nameVeil.classList.add('show');
     this.nameOpen = true;
     UI.chrome.open = true;
-    /* the key that was being pressed when the card came up is not the
-     * first letter of a name */
-    window.setTimeout(() => { this.nameInput.focus(); this.nameInput.value = ''; this.letterName(); }, 260);
-    /* gate round 5: and neither is the E of somebody still trying to
-     * talk to Nell a moment after it came up */
+    /* THE FIELD IS DEAD UNTIL IT IS READY (gate round 7). A card that
+     * opens under somebody's finger takes whatever they were pressing:
+     * two clears on a timer were not enough, because "eee" followed by
+     * a real name is not a run of E's any more. A disabled input cannot
+     * be typed into at all, so the keys that were meant for the
+     * conversation go nowhere, which is where they belong. */
+    this.nameInput.disabled = true;
     window.setTimeout(() => {
-      if (/^e+$/i.test(this.nameInput.value)) { this.nameInput.value = ''; this.letterName(); }
-    }, 1100);
+      this.nameInput.disabled = false;
+      this.nameInput.value = '';
+      this.nameLiveAt = performance.now();
+      this.letterName();
+      this.nameInput.focus();
+    }, 420);
   }
 
   private letterName() {

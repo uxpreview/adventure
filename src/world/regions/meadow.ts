@@ -1582,12 +1582,24 @@ export const MEADOW_POIS: WorldPOI[] = [
     get enabled() { return !opening.gateKey; },
     set enabled(_v: boolean) { /* the opening decides */ },
     prompt: () => (common.nellSat ? 'LEAN ON THE GATE' : 'LEAN ON THE GATE WITH HER'),
-    note: {
-      title: 'the field gate',
-      body: () => common.gate.shut
-        ? 'the gate is shut and the bull is behind it, looking at you the way it did before. nell hangs her washing on the line beside it and does not look at the bull, because she has never needed to.'
-        : 'the gate is open. it has been open for three years, because the one who was going to fix the catch said he would be an hour. the bull is out. nell hangs her washing beside it and says nothing about either.',
+    /* AND IT LEANS (gate round 7). The prompt has said LEAN since it was
+     * written and E read a description card instead, three times, and
+     * the cold player wrote it down as the thing they wanted most and
+     * could not have: *"the only prompt in the game that isn't a task —
+     * it's just standing next to someone"*. A prompt that names a verb
+     * does that verb. The card is what you notice WHILE you are leaning,
+     * so it is not offered until you have. */
+    sit: { x: HEDGE_X - 2.2, z: 83.8, lift: 0.28, learns: ['promise:nell:leaned'] },
+    get note() {
+      if (!knowledge.has('promise:nell:leaned')) return undefined;
+      return {
+        title: 'the field gate',
+        body: () => (common.gate.shut
+          ? 'the gate is shut and the bull is behind it, looking at you the way it did before. nell hangs her washing on the line beside it and does not look at the bull, because she has never needed to.'
+          : 'the gate is open. it has been open for three years, because the one who was going to fix the catch said he would be an hour. the bull is out. nell hangs her washing beside it and says nothing about either.'),
+      };
     },
+    set note(_v: unknown) { /* the lean decides */ },
   } as unknown as WorldPOI,
   {
     x: -95, z: 101, radius: 7, label: 'THE FAIR GROUND',

@@ -211,9 +211,16 @@ class Tier2 {
     knowledge.learn(K.juneRefused);
   }
 
-  /** Whether CUT THE GAP is the thing the key does here and now. */
+  /** Whether CUT THE GAP is the thing the key does here and now.
+   *
+   *  Any step of the promise will do, not only the one the notebook is
+   *  on: a man who cannot pass a broken thing, standing at a hedge with
+   *  a pair of clippers in his hand, does not go back across the court
+   *  to ask permission first. The steps catch up (`jobs.ts` ticks one a
+   *  frame) and the first one takes the cut as its answer. */
   get gapMine(): boolean {
-    return stepOf(VAL) === 2 && things.held === 'the-clippers' && !has(K.gapCut);
+    const st = stepOf(VAL);
+    return st >= 0 && st <= 2 && things.held === 'the-clippers' && !has(K.gapCut);
   }
   /** E at the hedge, with the clippers in hand. */
   cutTheGap() {

@@ -54,7 +54,9 @@ export const VAL_JOB: JobSpec = {
     },
   },
   steps: [
-    { text: 'ASK VAL WHY THREE CHAIRS FACE A HEDGE', when: talkedTo('val'), pin: { x: VAL_GATE.x, z: VAL_GATE.z, label: 'MAPLE COURT' } },
+    /* or cut it first and ask her after, which is exactly what he would
+     * do: the step takes the cut as its answer */
+    { text: 'ASK VAL WHY THREE CHAIRS FACE A HEDGE', when: any(talkedTo('val'), known(K.gapCut)), pin: { x: VAL_GATE.x, z: VAL_GATE.z, label: 'MAPLE COURT' } },
     { text: 'THE CLIPPERS ARE IN THE GRASS BY HER STEPS. PICK THEM UP.', when: holding('the-clippers'), pin: { x: CLIPPERS.x, z: CLIPPERS.z, label: 'THE CLIPPERS' } },
     { text: 'CUT THE GAP, AT THE HEDGE BELOW THE THREE CHAIRS', when: known(K.gapCut), pin: { x: HEDGE.x, z: HEDGE.z, label: 'THE HEDGE' } },
     {

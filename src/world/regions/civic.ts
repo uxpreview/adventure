@@ -3103,7 +3103,7 @@ export const NEIGHBORHOOD_POIS: WorldPOI[] = [
     get choice() {
       if (!gapCut()) return undefined;
       return {
-        body: 'three chairs facing a gap, and through the gap a hundred and eighty units of common, and past that a ridge with a castle on it. the green can see the court now and the court can see the green, so the argument nobody settled at three is back on: who takes the overflow. val will hold her light on for the court. she will turn it off for the green, and the street will go the same way, a house at a time.',
+        body: 'three chairs facing a gap, and through the gap the whole width of the common, and past that a ridge with a castle on it. the green can see the court now and the court can see the green, so the argument nobody settled at three is back on: who takes the overflow. val will hold her light on for the court. she will turn it off for the green, and the street will go the same way, a house at a time.',
         options: [
           { label: 'THE COURT TAKES IT', door: 'door:the-gap-cut', sits: true },
           { label: 'THE GREEN TAKES IT', door: 'door:the-light-off', sits: true },

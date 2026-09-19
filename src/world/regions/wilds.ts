@@ -221,7 +221,7 @@ const TARN = { x: 150, z: -195 };
 /** THE OAR (Session 21): the tarn boat's one, a carriable once the
  *  second door has been taken at the water, home on the shore by the
  *  boat, and gone for good once it is Hallows' twelfth. */
-things.register({ id: 'the-oar', kind: 'carriable', land: 'forest', home: { x: 140.2, z: -181.6 }, name: 'THE OAR' });
+things.register({ id: 'the-oar', kind: 'carriable', land: 'forest', home: { x: 140.2, z: -181.6 }, name: 'THE OAR', forGood: true });
 /** TIER 2 · THE LANTERN (`foundation/08` §9, promise 5): the wood
  *  gate's, set down on the shingle at the north end of the tarn the
  *  night it should have been lit, because whoever set it down was
