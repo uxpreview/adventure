@@ -91,6 +91,15 @@ export type ThingDef = {
    * only thing in the game that slows the walk that is not a hill.
    */
   heavy?: boolean;
+  /**
+   * AND GONE MEANS GONE (Tier 2). `consume` is used two ways now: for a
+   * thing that has been PUT somewhere for good — the oar with Hallows'
+   * eleven, the lantern on the wood gate's bracket — and for a thing
+   * that has gone into a coat and become the walker's, like the
+   * clippers. Neither of those should be lying in the grass again at
+   * first light, so the morning leaves them alone.
+   */
+  forGood?: boolean;
 };
 
 export type Thing = {
@@ -512,6 +521,7 @@ class Things {
   morning() {
     for (const t of this.map.values()) {
       if (t.def.kind !== 'carriable') continue;
+      if (t.state === 'gone' && t.def.forGood) continue;
       if (t.state === 'gone' || (t.state === 'ground' && t.stranded)) {
         t.x = t.def.home.x;
         t.z = t.def.home.z;

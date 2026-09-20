@@ -194,7 +194,13 @@ export class Voice {
         const t = things.get(this.held);
         const name = t?.def.name ?? this.held.toUpperCase();
         if (t?.state === 'flying') { toast(`THROWN: ${name}`, 'plain'); this.watching = this.held; }
-        else if (t?.state === 'gone') toast(`${name} — GONE`, 'plain');
+        /* AND A THING PUT WHERE IT BELONGS SAYS NOTHING (gate round 7).
+         * `forGood` is the oar set with Hallows' eleven, the lantern on
+         * the wood gate's bracket, the clippers going into a coat: the
+         * act that consumed it has already said what it was, and a
+         * second line contradicting it ("YOURS: THE CLIPPERS" then "THE
+         * CLIPPERS — GONE") is two voices at once. */
+        else if (t?.state === 'gone') { if (!t.def.forGood) toast(`${name} — GONE`, 'plain'); }
         else toast(`PUT DOWN: ${name}`, 'plain');
       }
       this.held = now;

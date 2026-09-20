@@ -148,6 +148,9 @@ class Opening {
   private walkbyWaited = 0;
   private walkbyRuns = 0;
   private listWasOpen = false;
+  /** How long the world has been in the `home` stage: the list does not
+   *  wait on Morrow for longer than this (T1). */
+  private homeAcc = 0;
   /** THE THREE VERBS: "I'll handle it." The gate is his to shut. */
   gateMine = false;
   private gateNudge = 0;
@@ -420,6 +423,11 @@ class Opening {
         pages: [
           nell(this.gateMine ? 'All of it, on your own. Same as ever.' : 'I was beginning to think you weren\'t coming back.'),
           nell('Keep the horse. You always did.'),
+          /* T1, gate round 6: the twelve were not named until the list
+           * opened at two minutes. This is her own line about the book,
+           * moved up off the repeat-press pile to where it is needed —
+           * the first minute. Nothing new speaks. */
+          nell('You had twelve things written down when you went. Twelve people. It\'ll still be in that book under your coat.'),
         ],
         then: () => this.heardNellOut(),
       };
@@ -460,9 +468,21 @@ class Opening {
     this.homeTalked = true;
     this.wave(false);
     this.save();
+    this.releaseMorrow();
+  }
+
+  /** Morrow's walk is due, and the horse is his. A TALK WAITS FOR YOU:
+   *  this used to be the same call as `heardNellOut`, so the twenty-
+   *  second fallback marked her heard out and took her conversation off
+   *  the page before the walker had got back round the hedge to her
+   *  (the play of 2026-09-19). The world moves on; she still waits. */
+  private morrowReleased = false;
+  private releaseMorrow() {
+    if (this.morrowReleased) return;
+    this.morrowReleased = true;
     fallbackAsk.refresh();
     toast('H WHISTLES THE HORSE', 'learned');
-    this.after(2.5, () => { this.walkbyDue = true; });
+    this.after(1.2, () => { this.walkbyDue = true; });
   }
 
   /* ---- the job ---------------------------------------------------- */
@@ -597,7 +617,7 @@ class Opening {
     const md = Math.hypot(w.x - m.x, w.z - m.z);
     /* he asks where he can be seen asking: in the frame, not from the
      * corner of the page */
-    if (!W.said && md < 16 && inFrame({ x: wb.mx, z: wb.mz })) {
+    if (!W.said && md < 24 && inFrame({ x: wb.mx, z: wb.mz })) {
       W.said = true;
       const morrow = { name: 'MORROW', get x() { return wb.mx; }, get z() { return wb.mz; } };
       /* THE THREE VERBS: he asks, and does not stop for the answer */
@@ -637,7 +657,9 @@ class Opening {
       // he went past and nobody was there to see it: once more, later,
       // unless they have left the green altogether
       const far = Math.hypot(w.x - BENCH.x, w.z - BENCH.z) > 60;
-      if (!W.said && this.walkbyRuns < 2 && !far) { this.after(6, () => { this.walkbyDue = true; }); return; }
+      /* he went past unseen: once more — but the notebook does not wait
+       * on him a second time (T1: the list must be inside the minute) */
+      if (!W.said && this.walkbyRuns < 2 && !far && this.homeAcc < 45) { this.after(4, () => { this.walkbyDue = true; }); return; }
       this.openTheList();
     }
   }
@@ -846,8 +868,12 @@ class Opening {
         if (!this.homeTalked) {
           this.homeWaited += dt;
           const far = Math.hypot(w.x - BENCH.x, w.z - BENCH.z) > 60;
-          if (this.homeWaited > 50 || far) this.heardNellOut();
+          /* T1, gate round 6 and the play of 2026-09-19: fifty seconds
+           * of nothing before Morrow even set off put the list past two
+           * minutes. The walk is a beat, not a gate. */
+          if (this.homeWaited > 20 || far) this.releaseMorrow();
         }
+        this.homeAcc += dt;
         this.tickWalkbyWait(dt);
         this.tickWalkby(dt);
         break;

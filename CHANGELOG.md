@@ -1,5 +1,218 @@
 # CHANGELOG
 
+## Tier 2 promises: Val, Brack, Holt (2026-09-19)
+
+`PROMPT.md` §3 item 3, and round 6's two leftovers before it.
+`npm run build` green; all three promises played end to end on the
+desktop harness from the title; the gate's round 7 below.
+
+### Round 6's two leftovers
+
+**THE LIST, inside the first minute.** T1 was a 6 at sixty seconds
+because the notebook opened at about 130. Played by hand on the harness
+this session it opened at **two hundred**, and the reason was three
+things at once: the "the list always comes" fallback was fifty seconds,
+firing it was the same call as hearing Nell out — so the fallback marked
+her heard out and took her conversation off the page before the walker
+had got back round the hedge to her — and the notebook then waited on
+two whole walks of Morrow's, neither of which he was seen on. Now:
+
+- Nell's own line about the book is moved up out of the repeat-press
+  pile into the conversation she has after the gate, and it names the
+  twelve: *"You had twelve things written down when you went. Twelve
+  people. It'll still be in that book under your coat."* **No new voice:
+  one moved.**
+- Morrow's walk is released after twenty seconds, not fifty, and
+  releasing it is no longer the same call as hearing her out
+  (`releaseMorrow` / `heardNellOut`). She keeps her mark and her
+  conversation until the walker actually comes back. A talk waits.
+- He asks from twenty-four units rather than sixteen, and the notebook
+  does not wait on a second walk once the stage has run forty-five
+  seconds.
+
+Played end to end after the change: **the twelve are named at 81 s and
+the list opens at 82.**
+
+**Round 6's fixes, played by hand.** Brim Square → the king's road north
+→ the chain → Wick, on foot, no teleports. The board at the mouth of the
+road, the trodden way, THE CHAIN reading from forty units and the South
+Gate arch all do their job; the promise starts at the chain without
+meeting the man; Wick's ask-twice turn plays. Two things the same walk
+found, both fixed:
+
+- **A called horse gave up silently.** Left standing in a hedge or a
+  gate's pier, every step at the whistle was refused and it stopped
+  coming, with no message; H did nothing at all, twice. It steps
+  sideways out of the thing first, either way round, and if it still
+  cannot come it says so. A mount never fails silently.
+- **A note card beat a person who was waving.** Nell stood at the field
+  gate with the mark over her head and E read the gate's card. Somebody
+  wearing the mark is nearer than they stand now (`bias`), so their talk
+  prompt wins where they are.
+
+### Tier 2 (`design/foundation/08` §9, promises 4 to 6)
+
+Built the way Tier 1 is: `jobs/tier2.ts` hangs each promise on its own
+line of THE LIST with `promise: true`, `tier2.ts` is what the three of
+them say by the step of their promise, and `tier2-state.ts` is where the
+lands and the promises meet, with no imports either way. The old steps
+on those three lines are gone — Val's said to ride to the keep, Brack's
+to stand at the water, Holt's to walk to the riverhead — and so are the
+two cards that stood in for them.
+
+**Every task here is a played verb.** You pick a pair of clippers out of
+three years of grass and cut a gap in a hedge with them; you carry a
+lantern the length of a wood road; you walk a man out of his own land.
+Nothing in this tier is a wait.
+
+**4. VAL. THE GAP IN THE HEDGE.** The clippers are in the grass at the
+foot of her steps where they went down the week the hedge was planted
+shut. THE TURN: the gap is not a view, it is a sightline, and a sightline
+is two streets able to see each other argue. THE CHOICE, at the three
+chairs, is not the cutting — the cutting is done with a pair of clippers
+at the hedge — it is who takes the overflow now: the court, and her
+porch light stays on; the green, and it goes off and the street follows,
+a house a day. HER PART is June, who holds the far end and stays up a
+road she has not walked in three years. THE REVEAL: from the cut gap,
+down on the Common, the first faded footprints, going west.
+
+**5. BRACK. THE LAKE.** He has watched the tarn for forty years and will
+not go within forty paces of it. THE TURN is on the shingle at the north
+end: the prints go down it into black water and none come out, and there
+is nobody in the water. He waded across and went on through the wood in
+the dark, and the wood gate's lantern is lying on the bank where he set
+it down because he was not coming back for it. THE CHOICE: hang it on
+its own bracket and light it, which is how the Penwood calls and is seen
+from the Brim road, or keep it — a light of your own in the only land in
+the world that has a dark. HIS PART is coming down to the last tree,
+which is thirty-eight units and further than he has been in three years.
+
+**6. HOLT. THE WATER.** He rigged the canyon a channel so it could spare
+water for the feast; it was his alone, and when he went nobody knew
+which board went where, and it dried. THE TURN: what the canyon needs is
+the Flats, who have an oasis, and the two lands have not spoken since.
+THE CHOICE: rig it yourself — it works this afternoon and nobody else
+ever learns it — or walk him down there, which is an hour on foot.
+**He stops dead at his own border like every companion in this world
+(`company.ts`), and he is the first one anybody has ever asked twice.**
+THE REVEAL is Amos's, said with Holt standing in front of him: *"I
+offered, you know. That morning, at the bridge. Cans in the cart and
+both hands free. You said you'd handle it."*
+
+**THE THREAD** is the faded footprints. They are drawn on the Common
+from the first minute of the game and nothing points at them; Val's gap
+is cut on a line that looks straight down at them; they come out again
+on Brack's shingle. One man, one night, two hundred and eighty units
+apart. Nobody explains them.
+
+**The unlocks ship small:** the clippers (kept, and one overgrown way in
+the Penwood opens with them — and it is not the only way down, and
+Brack's line says so), the lantern, and the boat off its trestles with
+water under it.
+
+**Direction lives in the world.** A board at the mouth of the canyon
+road (SPLITROCK — THE CHANNEL, NORTH), a board where the Flats begin
+(THE BLEACH FLATS — THE CATCH, SOUTH), and the wood gate itself is a
+board: two posts and a bar with THE PENWOOD cut into it, with the
+bracket on the west post.
+
+### What the playing found, and what it changed
+
+- **An offer is made in its person's own conversation.** A job can be
+  given by a place now, and Val offered to fetch June at a hedge two
+  hundred units from her, to a walker who had not met her. Offers wait
+  for the talk — and are not made at all when the part they offer is
+  already done (`JobSpec.offer.while`).
+- **A place with a note AND a touch read its note and did nothing
+  else** (`App.act` takes the note first and returns), so LOOK IN THE
+  WATER and SET THE BOARD opened cards about the shingle and the slot.
+  The note waits for the verb.
+- **A person inside four units wins every prompt there is**, because a
+  talk place leans to within a third of a stride of the walker's feet.
+  Nothing interactable may stand within `4 + its own radius` of anybody:
+  the clippers could not be picked up, twice.
+- **`things.consume` was undone every morning**, so a lantern hung on a
+  bracket for good was back on the shingle at first light (`forGood`).
+- **Val was out of doors three and a half hours a day.** A line of the
+  twelve that says ASK VAL needs her on her step while it is open; she
+  takes her own two hours back once the hedge is settled.
+- The head of Holt's channel was a filled panel standing against a cliff
+  and read as a crate. It is the cut itself now: a dark slot, two
+  grooves, a sill, the spoil that came out of it, and the tide line
+  where the water used to stand.
+
+### The gate, round 7
+
+One cold player from the title on the desktop rig, then the FIRST HOUR
+critic on the strip, blind, against *A Short Hike*. Reports in
+`design/reset/rounds/round-7/`.
+
+| | |
+|---|---|
+| **T1** | **7/10 at sixty seconds — holds.** (Round 6: 6.) *"I'd have said: I'm someone who walked out of this place three years ago and came back with no memory; I have a notebook and I'm meant to walk twelve lands and put right the things I left undone."* What they still did not have at sixty was whether twelve meant places, chores or people; that landed at 92. |
+| **T2** | **Holds.** Two sentences, and four things they wanted to do next when three were asked for. |
+| **T3** | **0 of 1. VERDICT: REFERENCE.** |
+
+**And a Tier 2 promise was kept cold, first time out.** They found Val,
+took I'LL HANDLE IT over asking June, found the clippers in the grass,
+cut the gap, sat in the chairs and gave the overflow to the green
+knowing it puts her light out, and told her to her face. *"Cutting the
+hedge left a visible gap in the geometry. I could see the thing I'd done
+from twenty paces away. That is the single best piece of feedback in the
+game."* Their best moment was not ours: they crossed Marget out of the
+notebook on a whim and, six game-minutes later on a beach, got
+*SOMEWHERE, MORROW WRITES MARGET INTO HIS OWN LIST.*
+
+Scores: understandable 8, alive 8, fun 7, beautiful 9.
+
+**Fixed after round 7**, the three both of them named first:
+
+- **The name card took keys that were not meant for it.** Three E-presses
+  meant for Nell's dialogue landed in the field and named the walker
+  "eeeWren" for the whole game, and there was no way back. The field is
+  *disabled* until it is ready, so the key that was down goes nowhere;
+  the act key is not a letter here for a second and a half after that,
+  because the card opens on the last press of a conversation and a
+  player still tapping E is the whole failure; and there is now **RUB IT
+  OUT** beside THAT'LL DO. Three strays produce one character instead of
+  three, and one press clears it. (Backspace could not be tested through
+  the harness, which had no key for it until this session added one.)
+- **Three lines drawn on top of one another at the foot of the page.**
+  Two answer buttons, a DONE toast and a control hint, all unreadable
+  (the critic: *"frame 012 smears four toasts and a two-option choice
+  into one illegible pile; 022 does it again"*). ONE VOICE AT A TIME now
+  counts answers as a card: while somebody is waiting to be answered,
+  the answer line and the control line hold their tongues.
+- **A prompt that said LEAN and read a card.** LEAN ON THE GATE WITH HER
+  gave the gate's description three times; the cold player wrote it down
+  as the thing they wanted most and could not have — *"the only prompt
+  in the game that isn't a task, it's just standing next to someone"*.
+  It leans. The card is what you notice while you are leaning, so it is
+  not offered until you have.
+
+And three smaller ones the same two found:
+
+- **The walker read the HUD out loud.** A near miss used to say *"Closer,
+  and it says GET ON THE HORSE."* Nobody in this world talks about the
+  screen: he names the thing.
+- **Two toasts for one act, contradicting each other**: YOURS: THE
+  CLIPPERS and then THE CLIPPERS — GONE. A thing put where it belongs
+  for good says nothing; the act that consumed it has already spoken.
+- **"a hundred and eighty units of common"** in the three chairs' card.
+  Units is a game term wearing a costume. (The older notes that say it
+  are left alone; that is a pass of its own.)
+
+**And one thing the portrait pass found**: a man who cannot pass a broken
+thing, standing at a hedge with clippers in his hand, was refused the cut
+because he had not gone back across the court to ask permission first.
+He cuts. The first step takes the cut as its answer.
+
+**Named and not fixed**, both pillar-sized and both written into
+`PROMPT.md` §3: nothing in the world points at a named place (*"I
+navigated by reading x/z off the status line, which a real player can't
+do"*, and forty game-seconds pressed against one invisible fence), and
+near-camera drawings are still grey slabs across the whole frame.
+
 ## A talk waits for you (2026-09-18)
 
 The owner, by hand: "There's something to be said for the player
