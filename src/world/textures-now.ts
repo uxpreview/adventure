@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {
-  makeTexture, stroke, line, scribbleCircle, hatch, type Ctx2D,
+  makeTexture, stroke, line, scribbleCircle, hatch, rng, type Ctx2D,
 } from '../engine/ink';
 import { PENCIL, WASH } from '../engine/palette';
 
@@ -140,6 +140,13 @@ function feather(ctx: Ctx2D, w: number, h: number, px: number) {
  *   1  the bungalow, wide and low, with a carport
  *   2  the chalet with the dormer, set the other way about
  */
+/** A court house's two colours, as `courtHouseTexture` picks them for
+ *  the same seed (its first two draws), so its box's other walls match. */
+export function courtHouseColors(seed: number): { siding: string; roof: string } {
+  const r = rng(seed);
+  return { siding: SIDING[Math.floor(r() * 4)], roof: ROOF[Math.floor(r() * 3)] };
+}
+
 export function courtHouseTexture(seed: number, v: 0 | 1 | 2): THREE.CanvasTexture {
   return makeTexture(256, 192, seed, (ctx, r) => {
     const siding = SIDING[Math.floor(r() * 4)];
@@ -231,10 +238,12 @@ export function courtHouseLitTexture(seed: number, v: 0 | 1 | 2): THREE.CanvasTe
  */
 export function valHouseTexture(seed: number): THREE.CanvasTexture {
   return makeTexture(256, 208, seed, (ctx, r) => {
-    fillPoly(ctx, [[40, 194], [40, 104], [214, 104], [214, 194]], '#d5d8cb', 0.62);
-    hardPoly(ctx, [[40, 194], [40, 104], [214, 104], [214, 194]], r, { width: 2.3, alpha: 0.92 });
-    fillPoly(ctx, [[28, 106], [128, 44], [228, 106]], ROOF[0], 0.52);
-    hardPoly(ctx, [[28, 106], [128, 44], [228, 106]], r, { width: 2.5, alpha: 0.92 });
+    // (2026-09-23) as wide as the kitchen behind it, which is the box
+    // the house is now (`regions/box.ts`): the walls run to x 10 and 246
+    fillPoly(ctx, [[10, 194], [10, 104], [246, 104], [246, 194]], '#d5d8cb', 0.62);
+    hardPoly(ctx, [[10, 194], [10, 104], [246, 104], [246, 194]], r, { width: 2.3, alpha: 0.92 });
+    fillPoly(ctx, [[2, 106], [128, 42], [254, 106]], ROOF[0], 0.52);
+    hardPoly(ctx, [[2, 106], [128, 42], [254, 106]], r, { width: 2.5, alpha: 0.92 });
     // the porch: roof, two posts, three steps, a rail each side
     hardPoly(ctx, [[86, 140], [86, 132], [178, 132], [178, 140]], r, { width: 2, alpha: 0.9 });
     for (const px of [92, 172]) line(ctx, px, 140, px, 184, r, { width: 2, alpha: 0.9 });
@@ -258,7 +267,7 @@ export function valHouseTexture(seed: number): THREE.CanvasTexture {
       }
     }
     for (let y = 112; y < 192; y += 11) {
-      line(ctx, 46, y, 208, y + (r() - 0.5) * 1.4, r, { width: 0.7, alpha: 0.15, passes: 1 });
+      line(ctx, 16, y, 240, y + (r() - 0.5) * 1.4, r, { width: 0.7, alpha: 0.15, passes: 1 });
     }
   });
 }

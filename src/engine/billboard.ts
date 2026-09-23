@@ -106,12 +106,14 @@ export function billboard(m: THREE.Object3D, base = 0, mode: BillboardMode = 'fr
   return m;
 }
 
-/** Register a mesh that turns exactly as another registered one does
- *  (a pencil ghost over a house). Falls back to facing the lens from
- *  `base` if the other is not registered. */
-export function billboardLike(m: THREE.Object3D, of: THREE.Object3D, base = 0) {
+/** Register a mesh that turns exactly as another one does (a pencil
+ *  ghost over a house). If the other is not registered it holds still,
+ *  and so does this one: a solid house keeps its line now (see
+ *  `standee` in world/regions/index.ts), and its ghost must too. */
+export function billboardLike(m: THREE.Object3D, of: THREE.Object3D) {
   const src = list.find((x) => x.m === of);
-  const e = src ? { m, base: src.base, keep: src.keep, run: src.run } : { m, base, keep: false, run: false };
+  if (!src) return m;
+  const e = { m, base: src.base, keep: src.keep, run: src.run };
   list.push(e);
   orient(e);
   return m;

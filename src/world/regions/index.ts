@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { flushBoxes } from './box';
 import { StandeeField, type StandeeFieldOpts } from '../../engine/StandeeField';
 import { makeStandee, makeDecal, disposeGroup } from '../../engine/props';
 import { billboard } from '../../engine/billboard';
@@ -62,8 +63,10 @@ export type BuildCtx = {
        * east (a person, an animal); 'run' turns at most fifty degrees
        * off its authored line (a fence, a wall, a hedge, bunting);
        * 'fixed' holds its authored rotY (a room's section walls).
-       * Unset: 'run' if it is wide and low (w ≥ 5 and h < ¾ w),
-       * 'camera' otherwise. */
+       * Unset: 'fixed' if it is solid across its whole width (a wall,
+       * a gatehouse, a house — see the note in `standee` below); else
+       * 'run' if it is wide and low (w ≥ 5 and h < ¾ w), 'camera'
+       * otherwise. */
       face?: 'camera' | 'keep' | 'run' | 'fixed' }) => THREE.Mesh;
   /** Ground decal at (x, z), lying along the page's surface. */
   decal: (tex: THREE.Texture, w: number, h: number, x: number, z: number, rotY?: number, opacity?: number) => THREE.Mesh;
@@ -347,8 +350,22 @@ export class World {
         const m = makeStandee(tex, w, h, opts.opacity ?? 1);
         m.position.set(x, terrain.heightAt(x, z), z);
         if (opts.rotY) m.rotation.y = opts.rotY;
-        /* ---- CAMERA: the cutout faces the lens; a long low one leans ---- */
-        const face = opts.face ?? (w >= 5 && h < w * 0.75 ? 'run' : 'camera');
+        /* ---- CAMERA: the cutout faces the lens; a long low one leans ----
+         * EXCEPT A THING YOU WALK INTO (owner, 2026-09-23: "when the
+         * camera shifts, certain items rotate, which makes it very hard
+         * to play"). A solid standee's barrier is laid along its
+         * AUTHORED line and never moves; a drawing that turned to the
+         * lens swung away from it, so a town wall broke into a
+         * staircase of cards, a gatehouse's arch slid off its gap, and
+         * the house you walked round was not where it stood. So a
+         * standee that is solid across its whole width (`true`, or a
+         * `{ gap }` with no narrower `hw`) holds its line, and what you
+         * see is what stops you. A narrow core (`solid: 1.2` — a well,
+         * a tree trunk, a crate) still turns: a round thing turned to
+         * the lens has not moved. `face` still overrides. */
+        const s0 = opts.solid;
+        const holds = s0 === true || (typeof s0 === 'object' && s0.hw === undefined);
+        const face = opts.face ?? (holds ? 'fixed' : w >= 5 && h < w * 0.75 ? 'run' : 'camera');
         if (face !== 'fixed') billboard(m, opts.rotY ?? 0, face === 'keep' ? 'keep' : face === 'run' ? 'run' : 'front');
         group.add(m);
         this.raiseSkyline(x, z, w, m.position.y + h);
@@ -426,6 +443,8 @@ export class World {
     };
 
     const update = BUILDERS[spec.id](ctx) ?? null;
+    /* the land's paper boxes, merged now it is built (`box.ts`) */
+    flushBoxes(ctx);
     this.scene.add(group);
     this.built.set(spec.id, { group, fields, update, inked: false });
   }

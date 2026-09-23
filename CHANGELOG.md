@@ -1,5 +1,105 @@
 # CHANGELOG
 
+## Buildings are paper boxes (2026-09-23)
+
+Follow-up to the entry below. Holding solid buildings on their line had
+one cost: a house seen exactly along its face showed as a thin line. The
+owner chose the real fix: give the buildings players walk round actual
+sides, a back and a roof.
+
+**What is boxed:** every Maple Court house (the court's twenty and
+June's), Val's house, Marget's house, and the keep at Greyweather.
+`regions/box.ts` (`boxUp`) takes the front the land already stood up and
+builds the rest round it: a side wall from each drawn corner going back
+`depth`, a back wall with the front's gable on it and no door, and two
+sloped roof sheets laid from the front's own eave corners to its own
+ridge (the keep gets a flat roof behind battlements, and a cone-capped
+tower at each far corner). The walls are solid and fixed, so the
+footprint you see from any bearing is the footprint that stops you.
+`textures-box.ts` draws the new walls in the same pen, at the same pixels
+per unit as each front, from a small description of where the front's
+walls, eaves and ridge fall on its canvas. The court's houses are three
+drawings, so their box textures are made once per kind.
+
+**Paper inside the wash.** Every drawing is a wash at about 60%, so a
+box of cards was a glass box, its far corners drawn through its front.
+Each sheet of a box is backed on its inside by its own silhouette in
+plain paper, drawn first and writing depth, so a house is solid to the
+eye as well as the foot. The backing follows its sheet's opacity and
+stops writing depth the moment the sheet fades, so a house between the
+lens and the walker still clears (roof included: a roof fades as far as
+its faintest wall), and a room's front still goes to pencil.
+
+**Batched, for the frame budget.** Built as meshes of their own, the
+new pieces were eleven draw calls a house: Maple Court went from 210
+calls to 386 on the desktop rig (budget 180; it and the kingdom were
+already over before this change, at 210 and 188). So a land's boxes are
+batched: every drawing a land's boxes use (fronts, sides, backs, roofs)
+is laid on one sheet (`packSheet`), and once a land is built
+(`flushBoxes`) every box in it is merged into one mesh of drawings and
+one of paper: two draw calls a land. Measured with `check-fps` on
+neighborhood, kingdom and castle, desktop rig: 214 / 192 / 61 calls,
+against 210 / 188 / 57 before any of this (portrait 82 / 120 / 44
+against 78 / 116 / 40). Triangles 82–83k, far under 350k. Each house
+still fades on its own through a per-house opacity array in the shader,
+read every frame off its front and off invisible stand-in standees
+that carry each wall's barrier, near-fade footprint and skyline top.
+
+**Rooms.** A house with a room is the room's box: its side walls stand
+on the room's walls, and `room.ts` fades the whole box with the front as
+the walker goes in. Two fronts were narrower than their rooms, which
+would have put a wall through the kitchen: **Val's house is redrawn
+wider** (walls at canvas x 10–246, was 40–214; same standee size, same
+windows, door and porch), and **Marget's standee is 9.75 wide, was 8.2**
+(same height).
+
+**Played on the harness.** `tools/check-solid.mjs` now also walks into a
+court house's side and back (both stop you) and along the lane beside it
+(still open), from two bearings: 29 of 29 with the gates and doors.
+Walker checked visible behind a house with the lens south of it; Val's
+kitchen checked from inside at two bearings. Contact sheets at Maple
+Court (0°, 45°, 90°, 200°, 270°, and from 48° pitch), Val's, Marget's
+and the keep. `check-roads` green. `check-sightline` reports four small
+things (grass fields and a 2-unit prop), the same four it reports on
+`main`; nothing boxed is among them.
+
+**Not boxed** (still one card, held on its line): Brim's terraces, the
+beach huts, the loft, Holt's house, Greyline's towers and the office
+blocks. `boxUp` takes any of them with a spec. The keep's curtain
+returns, drawn running off both edges of its front, still stand out past
+the box as flat walls.
+
+## Solid things hold still when the camera turns (2026-09-23)
+
+Owner: "when the camera shifts, certain items rotate, which makes it very
+hard to play." The items were every **solid** standee: town walls,
+gatehouses, towers, houses, huts, the keep. Each one turned to face the
+lens while its barrier stayed on the authored line, so after a drag a
+wall broke into a staircase of cards, a gate's arch slid off the gap you
+actually walk through, and a house was drawn somewhere other than where
+it stopped you. Same bug as the meadow fence on 2026-09-17, everywhere
+else.
+
+Now a standee that is solid across its whole width (`solid: true`, or
+`{ gap }` without a narrower `hw`) defaults to `face: 'fixed'`
+(`regions/index.ts`, `standee`). Things with a narrow core (`solid: 1.2`:
+wells, trunks, crates, the fountain, the mill) still turn, because a
+round thing turned to the lens has not moved. An explicit `face` still
+wins. A house's pencil ghost follows its house (`billboardLike` no longer
+falls back to turning on its own). `npm run build` green; checked on the
+harness at Brim's south gate at 0°, 35° and 70°. `check-camera.mjs` shows
+the same 4 failures before and after (recentre and held-key spring-back,
+not this change).
+
+**Played on the harness** (`tools/check-solid.mjs`, new): Brim's south and
+east gates and Greyweather's gate let you through, and the walls beside
+them stop you, with the lens at 0°, 60°, −60° and 150°; Val's, Marget's
+and the loft's doors still let you into their rooms. 23 of 23. Contact
+sheets before and after at Brim, the keep, Maple Court, Greyline and
+Longshore: walls read as one line and towers no longer swing across the
+view. A house seen exactly along its face now shows as a thin line, like
+the room walls always have.
+
 ## Tier 2 promises: Val, Brack, Holt (2026-09-19)
 
 `PROMPT.md` §3 item 3, and round 6's two leftovers before it.
