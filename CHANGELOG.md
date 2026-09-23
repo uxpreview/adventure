@@ -34,9 +34,13 @@ its faintest wall), and a room's front still goes to pencil.
 new pieces were eleven draw calls a house: Maple Court went from 210
 calls to 386 on the desktop rig (budget 180; it and the kingdom were
 already over before this change, at 210 and 188). So a land's boxes are
-batched: each building kind's front, side, back and roof drawings are
-laid on one atlas, and once a land is built (`flushBoxes`) every box of a
-kind is merged into one mesh of drawings and one of paper. Each house
+batched: every drawing a land's boxes use (fronts, sides, backs, roofs)
+is laid on one sheet (`packSheet`), and once a land is built
+(`flushBoxes`) every box in it is merged into one mesh of drawings and
+one of paper: two draw calls a land. Measured with `check-fps` on
+neighborhood, kingdom and castle, desktop rig: 214 / 192 / 61 calls,
+against 210 / 188 / 57 before any of this (portrait 82 / 120 / 44
+against 78 / 116 / 40). Triangles 82–83k, far under 350k. Each house
 still fades on its own through a per-house opacity array in the shader,
 read every frame off its front and off invisible stand-in standees
 that carry each wall's barrier, near-fade footprint and skyline top.

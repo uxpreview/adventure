@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { BuildCtx } from './index';
-import { boxAtlas, type AtlasRect, type BoxStyle } from '../textures-box';
+import { boxPieces, packSheet, type BoxStyle } from '../textures-box';
 import { PAPER } from '../../engine/palette';
 import { inkBlend } from '../../engine/props';
 
@@ -19,10 +19,10 @@ import { inkBlend } from '../../engine/props';
  *
  * THE FRAME BUDGET. Built as meshes of their own, the sides, back, roof
  * and paper were eleven draw calls a house, and Maple Court went from
- * 210 to 386. So every box of a kind in a land is BATCHED: its pieces
- * are laid on one atlas (`boxAtlas`), and `flushBoxes` (called once a
- * land is built) merges them into one mesh of drawings and one of
- * paper — two draw calls per kind of house, whatever the count.
+ * 210 to 386. So a land's boxes are BATCHED: every drawing they use
+ * (fronts, sides, backs, roofs) is laid on one sheet (`packSheet`), and
+ * `flushBoxes` (called once a land is built) merges every box into one
+ * mesh of drawings and one of paper — two draw calls a land.
  *
  * Each house still fades on its own: every vertex carries its house's
  * index, and a small uniform array holds each house's opacity, read
@@ -46,19 +46,21 @@ export type BoxSpec = {
 };
 
 type V3 = [number, number, number];
-type Buf = { pos: number[]; uv: number[]; hid: number[] };
+/** A piece of a building, by index on the land's sheet-to-be. */
+type Buf = { pos: number[]; uv: number[]; hid: number[]; piece: number[] };
 type Batch = {
-  tex: THREE.CanvasTexture;
+  /** Every distinct drawing the land's boxes use, laid on one sheet at flush. */
+  pieces: HTMLCanvasElement[];
   /** Each house's front and wall stand-ins: its opacity is the least of theirs. */
   houses: THREE.Mesh[][];
   ink: Buf;
   paper: Buf;
 };
 
-/** Atlases, once per (seed, size): the court's twenty houses are three drawings. */
-const atlases = new Map<string, ReturnType<typeof boxAtlas>>();
-/** A land's boxes, by atlas, until the land is built. */
-const pending = new WeakMap<BuildCtx, Map<string, Batch>>();
+/** Pieces, once per (seed, size): the court's twenty houses are three drawings. */
+const made = new Map<string, ReturnType<typeof boxPieces>>();
+/** A land's boxes, until the land is built. */
+const pending = new WeakMap<BuildCtx, Batch>();
 
 /** How far a back wall reaches past the side walls, and a roof past both. */
 const OVER = 0.3;
@@ -66,13 +68,15 @@ const OVER = 0.3;
 const IN = 0.04;
 
 /** A quad, corners bottom-left, bottom-right, top-right, top-left as the
- *  piece is drawn, into a batch's buffers, pushed `off` from where it is. */
-function quad(into: Buf, c: V3[], r: AtlasRect, h: number, off: V3 = [0, 0, 0]) {
-  const uv = [[r[0], r[2]], [r[1], r[2]], [r[1], r[3]], [r[0], r[3]]];
+ *  piece is drawn, into a batch's buffers, pushed `off` from where it is.
+ *  UVs are the piece's own, 0..1; the sheet's are put in at flush. */
+function quad(into: Buf, c: V3[], piece: number, h: number, off: V3 = [0, 0, 0]) {
+  const uv = [[0, 0], [1, 0], [1, 1], [0, 1]];
   for (const i of [0, 1, 2, 0, 2, 3]) {
     into.pos.push(c[i][0] + off[0], c[i][1] + off[1], c[i][2] + off[2]);
     into.uv.push(uv[i][0], uv[i][1]);
     into.hid.push(h);
+    into.piece.push(piece);
   }
 }
 
@@ -96,18 +100,26 @@ export function boxUp(ctx: BuildCtx, front: THREE.Mesh, w: number, h: number, sp
   const back = { w: r1 - r0, wallL: u0 - r0, wallR: u1 - r0, apexU: au - r0 };
   const frontTex = (front.material as THREE.MeshBasicMaterial).map!;
   const key = `${spec.seed}:${w}:${h}:${spec.depth}:${back.w.toFixed(2)}`;
-  let atlas = atlases.get(key);
-  if (!atlas) {
-    atlas = boxAtlas(spec.seed, s, frontTex.image as HTMLCanvasElement, h, spec.depth, back, slope);
-    atlases.set(key, atlas);
+  let drawn = made.get(key);
+  if (!drawn) {
+    drawn = boxPieces(spec.seed, s, h, spec.depth, back, slope);
+    made.set(key, drawn);
   }
-  let land = pending.get(ctx);
-  if (!land) pending.set(ctx, (land = new Map()));
-  let b = land.get(key);
+  let b = pending.get(ctx);
   if (!b) {
-    b = { tex: atlas.tex, houses: [], ink: { pos: [], uv: [], hid: [] }, paper: { pos: [], uv: [], hid: [] } };
-    land.set(key, b);
+    b = { pieces: [], houses: [], ink: { pos: [], uv: [], hid: [], piece: [] }, paper: { pos: [], uv: [], hid: [], piece: [] } };
+    pending.set(ctx, b);
   }
+  const batch = b;
+  const piece = (c: HTMLCanvasElement) => {
+    let i = batch.pieces.indexOf(c);
+    if (i < 0) i = batch.pieces.push(c) - 1;
+    return i;
+  };
+  const P = {
+    front: piece(frontTex.image as HTMLCanvasElement),
+    side: piece(drawn.side), back: piece(drawn.back), roof: piece(drawn.roof),
+  };
   const hi = b.houses.length;
 
   // the front's local x across it, and the way back into the page
@@ -120,7 +132,7 @@ export function boxUp(ctx: BuildCtx, front: THREE.Mesh, w: number, h: number, sp
   /* THE STAND-INS: a real solid standee for each wall, never drawn. */
   const stands: THREE.Mesh[] = [];
   const stand = (c: V3, sw: number, ry: number, solid: true | { hw: number }) => {
-    const m = ctx.standee(atlas!.tex, sw, h, c[0], c[2], { rotY: ry, solid, face: 'fixed' });
+    const m = ctx.standee(frontTex, sw, h, c[0], c[2], { rotY: ry, solid, face: 'fixed' });
     (m.material as THREE.MeshBasicMaterial).visible = false;
     stands.push(m);
     return m.position.y;
@@ -128,21 +140,21 @@ export function boxUp(ctx: BuildCtx, front: THREE.Mesh, w: number, h: number, sp
 
   // the paper behind the front
   quad(b.paper, [at(-w / 2, 0, y0), at(w / 2, 0, y0), at(w / 2, 0, y0 + h), at(-w / 2, 0, y0 + h)],
-    atlas.front, hi, [bk[0] * IN, 0, bk[1] * IN]);
+    P.front, hi, [bk[0] * IN, 0, bk[1] * IN]);
   // the sides, drawn from the front corner back, paper on the inside
   for (const [u, inward] of [[u0, 1], [u1, -1]] as const) {
     const ys = stand(at(u, spec.depth / 2, 0), spec.depth, rotY + Math.PI / 2, true);
     const cs: V3[] = [at(u, 0, ys), at(u, spec.depth, ys), at(u, spec.depth, ys + h), at(u, 0, ys + h)];
-    quad(b.ink, cs, atlas.side, hi);
-    quad(b.paper, cs, atlas.side, hi, [ax[0] * IN * inward, 0, ax[1] * IN * inward]);
+    quad(b.ink, cs, P.side, hi);
+    quad(b.paper, cs, P.side, hi, [ax[0] * IN * inward, 0, ax[1] * IN * inward]);
   }
   // the back: its gable, no door
   {
     const hw = Math.max((r0 + r1) / 2 - u0, u1 - (r0 + r1) / 2);
     const yb = stand(at((r0 + r1) / 2, spec.depth, 0), back.w, rotY, { hw });
     const cs: V3[] = [at(r0, spec.depth, yb), at(r1, spec.depth, yb), at(r1, spec.depth, yb + h), at(r0, spec.depth, yb + h)];
-    quad(b.ink, cs, atlas.back, hi);
-    quad(b.paper, cs, atlas.back, hi, [-bk[0] * IN, 0, -bk[1] * IN]);
+    quad(b.ink, cs, P.back, hi);
+    quad(b.paper, cs, P.back, hi, [-bk[0] * IN, 0, -bk[1] * IN]);
   }
   // the roof: sheets eave to ridge, from just behind the front's face
   // to just past the back
@@ -153,8 +165,8 @@ export function boxUp(ctx: BuildCtx, front: THREE.Mesh, w: number, h: number, sp
     : [[r0, baseY, au, ridgeY], [r1, baseY, au, ridgeY]];
   for (const [ue, ye, ur, yr] of sheets) {
     const cs: V3[] = [at(ue, d0, ye), at(ue, d1, ye), at(ur, d1, yr), at(ur, d0, yr)];
-    quad(b.ink, cs, atlas.roof, hi);
-    quad(b.paper, cs, atlas.roof, hi, [0, -0.05, 0]);
+    quad(b.ink, cs, P.roof, hi);
+    quad(b.paper, cs, P.roof, hi, [0, -0.05, 0]);
   }
   b.houses.push([front, ...stands]);
   front.userData.box = stands;
@@ -162,14 +174,24 @@ export function boxUp(ctx: BuildCtx, front: THREE.Mesh, w: number, h: number, sp
 }
 
 /**
- * Merge a land's boxes into their meshes: per atlas, one of drawings
- * and one of paper. The region builder calls this once a land is built.
+ * Merge a land's boxes into two meshes, one of drawings and one of
+ * paper, on one sheet. The region builder calls this once a land is built.
  */
 export function flushBoxes(ctx: BuildCtx) {
-  const land = pending.get(ctx);
-  if (!land) return;
+  const b = pending.get(ctx);
+  if (!b) return;
   pending.delete(ctx);
-  for (const b of land.values()) {
+  {
+    const sheet = packSheet(b.pieces);
+    // the pieces' own UVs, onto the sheet
+    for (const g of [b.ink, b.paper]) {
+      for (let v = 0; v < g.piece.length; v++) {
+        const r = sheet.rects[g.piece[v]];
+        g.uv[v * 2] = r[0] + (r[1] - r[0]) * g.uv[v * 2];
+        g.uv[v * 2 + 1] = r[2] + (r[3] - r[2]) * g.uv[v * 2 + 1];
+      }
+    }
+    const tex = sheet.tex;
     const n = b.houses.length;
     const op = { value: new Array<number>(n).fill(1) };
     const read = () => {
@@ -197,7 +219,7 @@ export function flushBoxes(ctx: BuildCtx) {
     };
 
     /* THE DRAWINGS: the pen's own blend, times the house's opacity. */
-    const ink = new THREE.MeshBasicMaterial({ map: b.tex, transparent: true, alphaTest: 0.1, side: THREE.DoubleSide });
+    const ink = new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.1, side: THREE.DoubleSide });
     inkBlend(ink);
     const pen = ink.onBeforeCompile;
     ink.onBeforeCompile = (shader, renderer) => {
@@ -218,7 +240,7 @@ export function flushBoxes(ctx: BuildCtx) {
      * behind a house shows through it. A house faded at all has no
      * paper — it is discarded, so it writes no depth — and the near-fade
      * never hides the walker behind one. */
-    const paper = new THREE.MeshBasicMaterial({ map: b.tex, color: PAPER, transparent: true, side: THREE.DoubleSide });
+    const paper = new THREE.MeshBasicMaterial({ map: tex, color: PAPER, transparent: true, side: THREE.DoubleSide });
     paper.onBeforeCompile = (shader) => {
       perHouse(shader);
       shader.fragmentShader = shader.fragmentShader.replace(
