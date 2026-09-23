@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { flushBoxes } from './box';
 import { StandeeField, type StandeeFieldOpts } from '../../engine/StandeeField';
 import { makeStandee, makeDecal, disposeGroup } from '../../engine/props';
 import { billboard } from '../../engine/billboard';
@@ -442,6 +443,8 @@ export class World {
     };
 
     const update = BUILDERS[spec.id](ctx) ?? null;
+    /* the land's paper boxes, merged now it is built (`box.ts`) */
+    flushBoxes(ctx);
     this.scene.add(group);
     this.built.set(spec.id, { group, fields, update, inked: false });
   }

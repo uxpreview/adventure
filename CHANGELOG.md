@@ -30,6 +30,17 @@ stops writing depth the moment the sheet fades, so a house between the
 lens and the walker still clears (roof included: a roof fades as far as
 its faintest wall), and a room's front still goes to pencil.
 
+**Batched, for the frame budget.** Built as meshes of their own, the
+new pieces were eleven draw calls a house: Maple Court went from 210
+calls to 386 on the desktop rig (budget 180; it and the kingdom were
+already over before this change, at 210 and 188). So a land's boxes are
+batched: each building kind's front, side, back and roof drawings are
+laid on one atlas, and once a land is built (`flushBoxes`) every box of a
+kind is merged into one mesh of drawings and one of paper. Each house
+still fades on its own through a per-house opacity array in the shader,
+read every frame off its front and off invisible stand-in standees
+that carry each wall's barrier, near-fade footprint and skyline top.
+
 **Rooms.** A house with a room is the room's box: its side walls stand
 on the room's walls, and `room.ts` fades the whole box with the front as
 the walker goes in. Two fronts were narrower than their rooms, which

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { makeTexture, line, hatch, type Ctx2D } from '../engine/ink';
+import { makeTexture, makeCanvas, toTexture, line, hatch, type Ctx2D } from '../engine/ink';
 
 /**
  * THE OTHER THREE WALLS (2026-09-23, owner: option 2).
@@ -201,24 +201,44 @@ function drawRoof(ctx: Ctx2D, r: () => number, s: BoxStyle, W: number, H: number
   line(ctx, 1, 3, W - 1, 3, r, { width: 2.6, alpha: 0.9 });
 }
 
+/** Where one piece of a building sits on its atlas, in UV: u0, u1, v0, v1. */
+export type AtlasRect = [number, number, number, number];
+
 /**
- * The side, back and roof of one building, for a front `frontH` world
- * units tall. `depth` is how far back it goes; the back is `backW` wide
- * with its wall between `wallL` and `wallR` and its apex at `apexU`
- * (all world units from its left edge); `slope` is the length of one
- * roof sheet from eave to ridge.
+ * ONE SHEET PER BUILDING (the frame budget: a box of eleven meshes a
+ * house was two hundred draw calls on the court). The front drawing,
+ * and the side, back and roof drawn here, are laid side by side on one
+ * canvas, so every house of a kind in a land is one mesh and one draw.
+ *
+ * `depth` is how far back it goes; the back is `back.w` wide with its
+ * wall between `wallL` and `wallR` and its apex at `apexU` (all world
+ * units from its left edge); `slope` is one roof sheet, eave to ridge.
  */
-export function boxTextures(
-  seed: number, s: BoxStyle, frontH: number, depth: number,
+export function boxAtlas(
+  seed: number, s: BoxStyle, front: HTMLCanvasElement, frontH: number, depth: number,
   back: { w: number; wallL: number; wallR: number; apexU: number }, slope: number
-): { side: THREE.CanvasTexture; back: THREE.CanvasTexture; roof: THREE.CanvasTexture } {
+): { tex: THREE.CanvasTexture; front: AtlasRect; side: AtlasRect; back: AtlasRect; roof: AtlasRect } {
   const ppu = s.canvasH / frontH;
   const px = (u: number) => Math.max(32, Math.min(1024, Math.round(u * ppu)));
-  const side = makeTexture(px(depth), s.canvasH, seed, (ctx, r, w) => drawSide(ctx, r, s, w));
+  const side = makeTexture(px(depth), s.canvasH, seed, (ctx, r, w) => drawSide(ctx, r, s, w)).image as HTMLCanvasElement;
   const bw = px(back.w);
   const k = bw / back.w;
-  const backTex = makeTexture(bw, s.canvasH, seed + 1,
-    (ctx, r, w) => drawBack(ctx, r, s, w, back.wallL * k, back.wallR * k, back.apexU * k));
-  const roof = makeTexture(px(depth), px(slope), seed + 2, (ctx, r, w, h) => drawRoof(ctx, r, s, w, h));
-  return { side, back: backTex, roof };
+  const backC = makeTexture(bw, s.canvasH, seed + 1,
+    (ctx, r, w) => drawBack(ctx, r, s, w, back.wallL * k, back.wallR * k, back.apexU * k)).image as HTMLCanvasElement;
+  const roof = makeTexture(px(depth), px(slope), seed + 2, (ctx, r, w, h) => drawRoof(ctx, r, s, w, h)).image as HTMLCanvasElement;
+  // a gutter between pieces, so a mip never bleeds one into the next
+  const G = 8;
+  const pieces = [front, side, backC, roof];
+  const W = pieces.reduce((a, c) => a + c.width + G, G);
+  const H = Math.max(...pieces.map((c) => c.height)) + G * 2;
+  const { canvas, ctx } = makeCanvas(W, H);
+  const rects: AtlasRect[] = [];
+  let x = G;
+  for (const c of pieces) {
+    ctx.drawImage(c, x, G);
+    // canvas y runs down, v runs up: a piece at the top of the sheet
+    rects.push([x / W, (x + c.width) / W, 1 - (G + c.height) / H, 1 - G / H]);
+    x += c.width + G;
+  }
+  return { tex: toTexture(canvas), front: rects[0], side: rects[1], back: rects[2], roof: rects[3] };
 }
