@@ -5,7 +5,7 @@ import { duneX, CUT_PATH, HOLD_PLAN } from '../elevation';
 import { driftwoodTexture, shellsDecal, signpostTexture, benchTexture, lampGlowTexture } from '../textures';
 import { stoneWearDecal } from '../textures-oldworld';
 import {
-  marramTexture, wrackDecal, beachHutTexture, groyneTexture, boardwalkDecal,
+  marramTexture, wrackDecal, beachHutTexture, HUT_SHAPE, groyneTexture, boardwalkDecal,
   boardwalkRailTexture, cutPostTexture, cutRopeRunTexture, chiselMarksDecal,
   seaStackTexture, cairnTexture, beachedBoatTexture, lobsterPotTexture,
   windsockTexture, gullTexture, shoreRockTexture,
@@ -28,6 +28,7 @@ import { helmTexture } from '../textures-worn';
 import { platform } from '../../engine/Eight15';
 import { rowboat } from '../../engine/Boat';
 import type { BuildCtx, RegionBuilder, WorldPOI } from './index';
+import { boxUp } from './box';
 
 /** Fire a named audio event up to the App without a plumbing run. */
 function say(name: string) {
@@ -96,12 +97,17 @@ const COMBER = { id: 'the-beachcomber', land: 'beach' as const, pace: 240, stops
   [6.15, -206, -1, 0, -1], [6.3, coastX(24) + 7, 24, 2, -1, 0.25], [6.65, coastX(8) + 8, 8, 2, -1, 0.25],
   [7.0, coastX(-8) + 7, -8, 2, 1, 0.25], [7.35, coastX(-22) + 8, -22, 2, 1, 0.25], [7.8, -206, -1, 0, 1, 0.02],
 ]) };
+/* (2026-09-23) past the front of the hut on its own, not through it:
+ * the huts are boxes now (`box.ts`) */
+const HUT_PASS = { x: -204.5, z: 19 };
 const HUT_OWNER = { id: 'the-hut-owner', land: 'beach' as const, pace: 260, stops: stops([
-  [8.95, -218, 28, 0, -1], [9.15, -203.5, -0.8, 0, 1, 0.3], [9.5, -206.5, 0.2, 3, 1, 3.0], [12.65, -203.5, -0.8, 0, -1, 0.1],
-  [12.9, -218, 28, 0, 1, 0.02],
+  [8.95, -218, 28, 0, -1], [9.074, HUT_PASS.x, HUT_PASS.z, 0, 1], [9.15, -203.5, -0.8, 0, 1, 0.3],
+  [9.5, -206.5, 0.2, 3, 1, 3.0], [12.65, -203.5, -0.8, 0, -1, 0.1],
+  [12.826, HUT_PASS.x, HUT_PASS.z, 0, -1], [12.9, -218, 28, 0, 1, 0.02],
 ]) };
 const HUT_SHUT = { id: 'the-hut-shut', land: 'beach' as const, pace: 260, stops: stops([
-  [17.4, -218, 28, 0, -1], [17.6, -203.5, -0.8, 0, 1, 0.2], [17.95, -218, 28, 0, 1, 0.02],
+  [17.4, -218, 28, 0, -1], [17.524, HUT_PASS.x, HUT_PASS.z, 0, 1], [17.6, -203.5, -0.8, 0, 1, 0.2],
+  [17.88, HUT_PASS.x, HUT_PASS.z, 0, -1], [17.95, -218, 28, 0, 1, 0.02],
 ]) };
 const BATHERS = [0, 1].map((i) => ({ id: `the-bathers-${i}`, land: 'beach' as const, pace: 240, stops: stops([
   [12.95 + i * 0.03, -218, 20, 0, -1], [13.1 + i * 0.03, -214 + i * 2.2, 10 + i * 4, 3, -1, 2.0], [15.3 + i * 0.03, -218, 20, 0, 1, 0.02],
@@ -377,8 +383,21 @@ export const buildBeach: RegionBuilder = (ctx) => {
     [-203.5, -5, 0.06, 6.9, 1],
     [-211, 20, -0.3, 6.1, 0],
   ];
-  hutSpots.forEach(([x, z, rot, sz, paint], i) =>
-    ctx.standee(beachHutTexture(1260 + i, paint), sz, sz, x, z, { rotY: rot, solid: true }));
+  hutSpots.forEach(([x, z, rot, sz, paint], i) => {
+    const hut = ctx.standee(beachHutTexture(1260 + i, paint), sz, sz, x, z, { rotY: rot, solid: true });
+    /* THE REST OF THE HUT (`box.ts`): boarded sides and a back on the
+     * same stilts, under its own felt, so from along the dune it is a
+     * hut and not a painted board */
+    const h = HUT_SHAPE.get(1260 + i)!;
+    boxUp(ctx, hut, sz, sz, {
+      x0: h.bx / 192, x1: (h.bx + h.bw) / 192, depth: 4, seed: 1270 + i * 3,
+      style: {
+        canvasW: 192, canvasH: 192, ground: 186, floor: h.floor, eave: h.top, ridge: h.ridge,
+        roofL: h.rl, roofR: h.rr, roofBase: h.top + 1, apex: 96,
+        wall: h.paint, roof: '#5f5c56', top: 'gable', windows: 1,
+      },
+    });
+  });
   ctx.decal(stoneWearDecal(1264, true), 12, 9, -205, -11, 0.4, 0.32);
   ctx.standee(benchTexture(1265), 2.8, 1.6, -207, -2, { rotY: -0.4 });
   ctx.standee(lobsterPotTexture(1266), 1.7, 1.4, -197, -22, { rotY: 0.7 });

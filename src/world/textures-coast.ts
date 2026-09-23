@@ -212,6 +212,13 @@ export function wrackDecal(seed: number): THREE.CanvasTexture {
  * horizontal body, vertical stilts stabbing down into the sand, and
  * paint that salt has been at for thirty years.
  */
+/** Where each hut was drawn on its 192-square canvas, by seed, so its
+ *  sides, back and roof (`regions/box.ts`) are the same hut: its body's
+ *  walls, floor and top, its roof's eaves and apex, and its paint. */
+export const HUT_SHAPE = new Map<number, {
+  bx: number; bw: number; floor: number; top: number; rl: number; rr: number; ridge: number; paint: string;
+}>();
+
 export function beachHutTexture(seed: number, paint: 0 | 1 | 2): THREE.CanvasTexture {
   const c = [SALT_BLUE, SALT_MINT, SALT_ROSE][paint];
   return makeTexture(192, 192, seed, (ctx, r) => {
@@ -296,6 +303,7 @@ export function beachHutTexture(seed: number, paint: 0 | 1 | 2): THREE.CanvasTex
     // the roof: shallow, felted, and its own pitch
     const rl = bx - 10 - r() * 8;
     const rr2 = bx + bw + 10 + r() * 8;
+    HUT_SHAPE.set(seed, { bx, bw, floor, top, rl, rr: rr2, ridge: top - pitch, paint: c });
     fillPoly(ctx, [[rl, top + 2], [96, top - pitch], [rr2, top - 1]], '#5f5c56', 0.34);
     stroke(ctx, [[rl, top + 2], [96, top - pitch], [rr2, top - 1]], r, { width: 2.6, alpha: 0.9 });
     line(ctx, rl, top + 2, rr2, top - 1, r, { width: 2, alpha: 0.7 });

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { BuildCtx } from './index';
-import { boxPieces, packSheet, type BoxStyle } from '../textures-box';
+import { boxPieces, packSheet, rowPieces, type BoxStyle, type RowHouse, type RowInk } from '../textures-box';
 import { PAPER } from '../../engine/palette';
 import { inkBlend } from '../../engine/props';
 
@@ -80,6 +80,43 @@ function quad(into: Buf, c: V3[], piece: number, h: number, off: V3 = [0, 0, 0])
   }
 }
 
+function batchOf(ctx: BuildCtx): Batch {
+  let b = pending.get(ctx);
+  if (!b) {
+    b = { pieces: [], houses: [], ink: { pos: [], uv: [], hid: [], piece: [] }, paper: { pos: [], uv: [], hid: [], piece: [] } };
+    pending.set(ctx, b);
+  }
+  return b;
+}
+
+function pieceOf(b: Batch, c: HTMLCanvasElement) {
+  let i = b.pieces.indexOf(c);
+  if (i < 0) i = b.pieces.push(c) - 1;
+  return i;
+}
+
+/** Where a front stands: its local x across it (`ax`), the way back
+ *  into the page (`bk`), a point `u` across and `d` back at height `y`
+ *  (`at`), and THE STAND-INS: a real solid standee for each wall, never
+ *  drawn, for the barrier, the near-fade and the skyline. */
+function frame(ctx: BuildCtx, front: THREE.Mesh, h: number) {
+  const rotY = front.rotation.y;
+  const frontTex = (front.material as THREE.MeshBasicMaterial).map!;
+  const ax = [Math.cos(rotY), -Math.sin(rotY)];
+  const bk = [-Math.sin(rotY), -Math.cos(rotY)];
+  const px = front.position.x;
+  const pz = front.position.z;
+  const at = (u: number, d: number, y: number): V3 => [px + ax[0] * u + bk[0] * d, y, pz + ax[1] * u + bk[1] * d];
+  const stands: THREE.Mesh[] = [];
+  const stand = (c: V3, sw: number, ry: number, solid: true | { hw: number }) => {
+    const m = ctx.standee(frontTex, sw, h, c[0], c[2], { rotY: ry, solid, face: 'fixed' });
+    (m.material as THREE.MeshBasicMaterial).visible = false;
+    stands.push(m);
+    return m.position.y;
+  };
+  return { ax, bk, at, stands, stand };
+}
+
 export function boxUp(ctx: BuildCtx, front: THREE.Mesh, w: number, h: number, spec: BoxSpec): THREE.Mesh[] {
   const s = spec.style;
   const rotY = front.rotation.y;
@@ -88,55 +125,37 @@ export function boxUp(ctx: BuildCtx, front: THREE.Mesh, w: number, h: number, sp
   const y0 = front.position.y;
   const hy = (py: number) => y0 + (1 - py / s.canvasH) * h;
   const keep = s.top === 'keep';
+  /** a roof you could stand on: the keep's leads, an office block's felt */
+  const level = keep || s.top === 'flat';
+  const lean = s.top === 'lean';
 
   // the roof's span: the front's own eave corners, never inside the walls
-  const r0 = keep ? u0 - OVER : Math.min(cu(s.roofL ?? 0), u0 - OVER);
-  const r1 = keep ? u1 + OVER : Math.max(cu(s.roofR ?? s.canvasW), u1 + OVER);
-  const au = keep ? (u0 + u1) / 2 : cu(s.apex ?? s.canvasW / 2);
-  const baseY = hy(keep ? s.eave : s.roofBase ?? s.eave);
+  // (a flat roof is exactly its walls: the parapet is the wall going up)
+  const r0 = keep ? u0 - OVER : level ? u0 : Math.min(cu(s.roofL ?? 0), u0 - OVER);
+  const r1 = keep ? u1 + OVER : level ? u1 : Math.max(cu(s.roofR ?? s.canvasW), u1 + OVER);
+  const au = level || lean ? (u0 + u1) / 2 : cu(s.apex ?? s.canvasW / 2);
+  const baseY = hy(level ? s.eave : s.roofBase ?? s.eave);
   const ridgeY = hy(s.ridge);
-  const slope = keep ? u1 - u0 : Math.max(Math.hypot(au - r0, ridgeY - baseY), Math.hypot(r1 - au, ridgeY - baseY));
+  const slope = level ? u1 - u0
+    : lean ? Math.hypot(spec.depth, ridgeY - baseY)
+    : Math.max(Math.hypot(au - r0, ridgeY - baseY), Math.hypot(r1 - au, ridgeY - baseY));
 
   const back = { w: r1 - r0, wallL: u0 - r0, wallR: u1 - r0, apexU: au - r0 };
   const frontTex = (front.material as THREE.MeshBasicMaterial).map!;
   const key = `${spec.seed}:${w}:${h}:${spec.depth}:${back.w.toFixed(2)}`;
   let drawn = made.get(key);
   if (!drawn) {
-    drawn = boxPieces(spec.seed, s, h, spec.depth, back, slope);
+    drawn = boxPieces(spec.seed, s, h, spec.depth, back, slope, lean ? r1 - r0 : spec.depth);
     made.set(key, drawn);
   }
-  let b = pending.get(ctx);
-  if (!b) {
-    b = { pieces: [], houses: [], ink: { pos: [], uv: [], hid: [], piece: [] }, paper: { pos: [], uv: [], hid: [], piece: [] } };
-    pending.set(ctx, b);
-  }
-  const batch = b;
-  const piece = (c: HTMLCanvasElement) => {
-    let i = batch.pieces.indexOf(c);
-    if (i < 0) i = batch.pieces.push(c) - 1;
-    return i;
-  };
+  const b = batchOf(ctx);
+  const piece = (c: HTMLCanvasElement) => pieceOf(b, c);
   const P = {
     front: piece(frontTex.image as HTMLCanvasElement),
     side: piece(drawn.side), back: piece(drawn.back), roof: piece(drawn.roof),
   };
   const hi = b.houses.length;
-
-  // the front's local x across it, and the way back into the page
-  const ax = [Math.cos(rotY), -Math.sin(rotY)];
-  const bk = [-Math.sin(rotY), -Math.cos(rotY)];
-  const px = front.position.x;
-  const pz = front.position.z;
-  const at = (u: number, d: number, y: number): V3 => [px + ax[0] * u + bk[0] * d, y, pz + ax[1] * u + bk[1] * d];
-
-  /* THE STAND-INS: a real solid standee for each wall, never drawn. */
-  const stands: THREE.Mesh[] = [];
-  const stand = (c: V3, sw: number, ry: number, solid: true | { hw: number }) => {
-    const m = ctx.standee(frontTex, sw, h, c[0], c[2], { rotY: ry, solid, face: 'fixed' });
-    (m.material as THREE.MeshBasicMaterial).visible = false;
-    stands.push(m);
-    return m.position.y;
-  };
+  const { ax, bk, at, stands, stand } = frame(ctx, front, h);
 
   // the paper behind the front
   quad(b.paper, [at(-w / 2, 0, y0), at(w / 2, 0, y0), at(w / 2, 0, y0 + h), at(-w / 2, 0, y0 + h)],
@@ -159,12 +178,13 @@ export function boxUp(ctx: BuildCtx, front: THREE.Mesh, w: number, h: number, sp
   // the roof: sheets eave to ridge, from just behind the front's face
   // to just past the back
   const d0 = 0.03;
-  const d1 = spec.depth + (keep ? 0 : OVER);
-  const sheets: [number, number, number, number][] = keep
-    ? [[u0, baseY, u1, baseY]]
-    : [[r0, baseY, au, ridgeY], [r1, baseY, au, ridgeY]];
-  for (const [ue, ye, ur, yr] of sheets) {
-    const cs: V3[] = [at(ue, d0, ye), at(ue, d1, ye), at(ur, d1, yr), at(ur, d0, yr)];
+  const d1 = spec.depth + (level || lean ? 0 : OVER);
+  const sheets: V3[][] = lean
+    // one pitch, across the front: eave along the front, ridge on the back wall
+    ? [[at(r0, d0, baseY), at(r1, d0, baseY), at(r1, d1, ridgeY), at(r0, d1, ridgeY)]]
+    : (level ? [[u0, baseY, u1, baseY]] : [[r0, baseY, au, ridgeY], [r1, baseY, au, ridgeY]])
+      .map(([ue, ye, ur, yr]) => [at(ue, d0, ye), at(ue, d1, ye), at(ur, d1, yr), at(ur, d0, yr)]);
+  for (const cs of sheets) {
     quad(b.ink, cs, P.roof, hi);
     quad(b.paper, cs, P.roof, hi, [0, -0.05, 0]);
   }
@@ -220,6 +240,12 @@ export function flushBoxes(ctx: BuildCtx) {
 
     /* THE DRAWINGS: the pen's own blend, times the house's opacity. */
     const ink = new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.1, side: THREE.DoubleSide });
+    /* THE INK WRITES NO DEPTH: the paper behind every sheet does the
+     * hiding. A house faded to let the walker through is ink at a
+     * seventh, and all the land's ink is one mesh, so a faded house
+     * that wrote depth kept every house drawn after it from inking
+     * where it stood — their bare paper showed through it, white. */
+    ink.depthWrite = false;
     inkBlend(ink);
     const pen = ink.onBeforeCompile;
     ink.onBeforeCompile = (shader, renderer) => {
@@ -252,7 +278,97 @@ export function flushBoxes(ctx: BuildCtx) {
     const paperMesh = new THREE.Mesh(geo(b.paper), paper);
     paperMesh.renderOrder = -1;
     paperMesh.onBeforeRender = read;
+    /* for the harness: each house's opacity, and its front */
+    paperMesh.userData.houses = { op: op.value, fronts: b.houses.map((walls) => walls[0]) };
 
     ctx.group.add(paperMesh, inkMesh);
   }
+}
+
+/**
+ * A ROW OF HOUSES IS A PAPER BOX TOO (Brim's terraces). The same box,
+ * except that a row is three or four houses each with its own eave and
+ * roof, as the front rolled them (`ROW_SHAPE`): an end wall at each end
+ * of the row, a party wall wherever a taller house stands over a lower
+ * one, a back drawn from the same record, and each house its own roof —
+ * a ridge along the street for a house that shows the street its long
+ * slope, a gable running back for one that shows it its gable.
+ */
+export function rowUp(
+  ctx: BuildCtx, front: THREE.Mesh, w: number, h: number,
+  spec: { houses: RowHouse[]; ink: RowInk; depth: number; seed: number; canvasW: number; canvasH: number; ground: number }
+): THREE.Mesh[] {
+  const { houses, depth: D } = spec;
+  const cu = (px: number) => (px / spec.canvasW - 0.5) * w;
+  const y0 = front.position.y;
+  const hy = (py: number) => y0 + (1 - py / spec.canvasH) * h;
+  const rotY = front.rotation.y;
+  const frontTex = (front.material as THREE.MeshBasicMaterial).map!;
+  const drawn = rowPieces(spec.seed, houses, spec.ink, spec.canvasW, spec.canvasH, spec.ground, h, D);
+
+  const b = batchOf(ctx);
+  const hi = b.houses.length;
+  const P = {
+    front: pieceOf(b, frontTex.image as HTMLCanvasElement),
+    sides: drawn.sides.map((c) => pieceOf(b, c)), back: pieceOf(b, drawn.back), roof: pieceOf(b, drawn.roof),
+  };
+  const { ax, bk, at, stands, stand } = frame(ctx, front, h);
+  const across = (k: number): V3 => [ax[0] * k, 0, ax[1] * k];
+
+  // the paper behind the front
+  quad(b.paper, [at(-w / 2, 0, y0), at(w / 2, 0, y0), at(w / 2, 0, y0 + h), at(-w / 2, 0, y0 + h)],
+    P.front, hi, [bk[0] * IN, 0, bk[1] * IN]);
+
+  /* the ends: the first house's and the last house's, solid */
+  const uL = cu(houses[0].x0 + 2);
+  const uR = cu(houses[houses.length - 1].x1 - 2);
+  for (const [u, i, inward] of [[uL, 0, 1], [uR, houses.length - 1, -1]] as const) {
+    const ys = stand(at(u, D / 2, 0), D, rotY + Math.PI / 2, true);
+    const cs: V3[] = [at(u, 0, ys), at(u, D, ys), at(u, D, ys + h), at(u, 0, ys + h)];
+    quad(b.ink, cs, P.sides[i], hi);
+    quad(b.paper, cs, P.sides[i], hi, across(IN * inward));
+  }
+  /* the party walls, where one house stands over the next: the taller
+   * one's end, inked on both faces with the paper between */
+  const top = (hs: RowHouse) => (hs.side ? hs.ridge : hs.eave);
+  for (let i = 0; i + 1 < houses.length; i++) {
+    const [a, c] = [houses[i], houses[i + 1]];
+    const t = top(a) <= top(c) ? i : i + 1;
+    const u = cu(c.x0);
+    const cs: V3[] = [at(u, 0, y0), at(u, D, y0), at(u, D, y0 + h), at(u, 0, y0 + h)];
+    quad(b.ink, cs, P.sides[t], hi, across(IN));
+    quad(b.ink, cs, P.sides[t], hi, across(-IN));
+    quad(b.paper, cs, P.sides[t], hi);
+  }
+  /* the back, the width of the front's canvas, solid across its walls */
+  {
+    const yb = stand(at((uL + uR) / 2, D, 0), uR - uL, rotY, true);
+    const cs: V3[] = [at(-w / 2, D, yb), at(w / 2, D, yb), at(w / 2, D, yb + h), at(-w / 2, D, yb + h)];
+    quad(b.ink, cs, P.back, hi);
+    quad(b.paper, cs, P.back, hi, [-bk[0] * IN, 0, -bk[1] * IN]);
+  }
+  /* every house's own roof */
+  const d0 = 0.03;
+  for (const hs of houses) {
+    const ul = cu(hs.x0 - hs.jet - 2 + hs.lean);
+    const ur = cu(hs.x1 + hs.jet + 2 + hs.lean);
+    const eY = hy(hs.eave + 1);
+    const rY = hy(hs.ridge);
+    const sheets: V3[][] = hs.side
+      // a long ridge halfway back, a slope down to the street and one to the yard
+      ? [[at(ul, d0, eY), at(ur, d0, eY), at(ur, D / 2, rY), at(ul, D / 2, rY)],
+        [at(ul, D, eY), at(ur, D, eY), at(ur, D / 2, rY), at(ul, D / 2, rY)]]
+      // a gable to the street: two slopes running back from its apex
+      : [ul, ur].map((ue) => {
+        const ua = cu(hs.apex);
+        return [at(ue, d0, eY), at(ue, D, eY), at(ua, D, rY), at(ua, d0, rY)];
+      });
+    for (const cs of sheets) {
+      quad(b.ink, cs, P.roof, hi);
+      quad(b.paper, cs, P.roof, hi, [0, -0.05, 0]);
+    }
+  }
+  b.houses.push([front, ...stands]);
+  front.userData.box = stands;
+  return stands;
 }

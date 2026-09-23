@@ -362,7 +362,9 @@ export class World {
          * `{ gap }` with no narrower `hw`) holds its line, and what you
          * see is what stops you. A narrow core (`solid: 1.2` — a well,
          * a tree trunk, a crate) still turns: a round thing turned to
-         * the lens has not moved. `face` still overrides. */
+         * the lens has not moved. `face` still overrides, and a drawing
+         * laid over a held one (its lit windows, its shutters, its porch
+         * light) must say `face: 'fixed'`, or it turns off its house. */
         const s0 = opts.solid;
         const holds = s0 === true || (typeof s0 === 'object' && s0.hw === undefined);
         const face = opts.face ?? (holds ? 'fixed' : w >= 5 && h < w * 0.75 ? 'run' : 'camera');

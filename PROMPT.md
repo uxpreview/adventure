@@ -54,14 +54,20 @@ Run the pillars and the loop **one at a time, one agent at a time, over as
 many sessions as it takes.** A cold player and then one critic in sequence
 is fine. The brief's goal is unchanged; only the shape of the work is.
 
-## 2. Where it stands (2026-09-19, branch `claude/continue-j5qoe2`; draft PR #34)
+## 2. Where it stands (2026-09-23, branch `claude/box-the-rest`; PR #36)
 
-Play it: https://adventure-git-claude-continue-j5qoe2-ryankm.vercel.app
+Play it: https://adventure-git-claude-box-the-rest-ryankm.vercel.app
 (Vercel rebuilds `adventure-git-<branch>-ryankm.vercel.app` on every push
-to a branch.) PRs #23 to #33 are merged; main is the story of record's
-first five minutes, the three verbs, Tier 1 (Wick, Nell, Marget) and a
-talk that waits for you. The branch adds **Tier 2** (Val, Brack, Holt)
-and round 6's two leftovers, as draft PR #34.
+to a branch.) PRs #23 to #35 are merged; main is the story of record's
+first five minutes, the three verbs, Tier 1 (Wick, Nell, Marget), a
+talk that waits for you, **Tier 2** (Val, Brack, Holt), and solid
+buildings that hold still when the lens turns (#35, the owner's
+interjection: *"when the camera shifts, certain items rotate"*). PR #36
+makes every building a walker walks round a paper box (`regions/box.ts`:
+`boxUp`, and `rowUp` for Brim's terraces) and fixes what #35 left: night
+drawings that turned off their houses, a faded house that blanked the
+ones behind it, and a Maple Court house standing on its own road.
+`CHANGELOG.md` has both entries.
 
 The gate (`design/reset/THE-GATE.md`) rounds so far, all desktop, from
 the title, no parameters:
@@ -443,14 +449,20 @@ instruction is the URL. Do not argue with the cold player or the critic.
 
 ## 5. The prompt for the next session (paste it as it is)
 
+The owner starts a session with one word, "Continue" or "Proceed", and
+`CLAUDE.md` sends the session here. The block below is the job.
+**Before you end a session, rewrite this block for the one after it**
+(its job, its branch, what you left), and update §2 and §3, so the next
+"Continue" picks up exactly where you stopped.
+
 ```
 Read PROMPT.md, GAME.md and CHANGELOG.md, then design/reset/THE-GATE.md.
 For story read design/foundation/01 and 08 and nothing else in that
 folder. Nothing under design/archive/ binds.
 
-You are on the branch claude/continue-j5qoe2 (draft PR #34, Tier 2 and
-round 7). Branch again before the first commit, or keep going on it if
-the owner has not merged.
+Start from main: git pull. If the last PR in PROMPT.md §2 is not merged
+yet, branch from its branch instead, so you build on it. Branch before
+your first commit (claude/<short-name>).
 
 THE JOB THIS SESSION: PROMPT.md §3 item 4, TIER 3 PROMISES (Amos, Pye,
 Wren) as built in foundation/08 §9: the rain table, the eighth pot and
@@ -504,6 +516,12 @@ the middle five):
   the mount, and that is the owner's. Do not add another.
 - Tier 3's tasks are played verbs. Amos's is 08's one reading; give him
   something to do with it.
+- A BUILDING IS A PAPER BOX (regions/box.ts). A new building a walker
+  walks round gets boxUp (or rowUp); a drawing laid over a held one (lit
+  windows, a door swung open) says face: 'fixed' or it turns off its
+  house. People walk STRAIGHT LINES between their stops (routineAt): a
+  corner is a stop. After moving a building, a road or a round, run
+  tools/check-boxes.mjs (dev server): nothing may stand inside a house.
 
 HOW TO WORK:
 - One agent at a time, never parallel (the usage window).

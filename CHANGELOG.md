@@ -1,5 +1,96 @@
 # CHANGELOG
 
+## The rest of the buildings are boxes (2026-09-23)
+
+Follow-up to the two entries below, from their "Not boxed" list. Every
+building left on it now has sides, a back and a roof, and three bugs
+the last change left behind are fixed.
+
+**What is boxed now:**
+- **Brim's ten terraces.** A row is three or four houses, and each one
+  was drawn with its own eave, jetty, lean and roof. `townRowTexture`
+  now records those (`ROW_SHAPE`, beside `ROW_WINDOWS`), and `rowUp`
+  (`regions/box.ts`) builds the row from that record. It gets an end
+  wall at each end, a party wall wherever a taller house stands over a
+  lower one, and a back with windows and no doors. Each house gets its
+  own roof: a ridge along the street if it shows the street its long
+  slope, or a gable running back if it shows the street its gable. The
+  rows are 4 deep, so the lamps and back-street doors behind them stay
+  where they were.
+- **The beach huts**, on their stilts (`HUT_SHAPE`, and a new `floor`
+  in `BoxStyle`: the wall stops there and the legs go on down).
+- **The loft**, as a lean-to (a new `top: 'lean'`): one pitch from the
+  eave over the door up to the tower. Its front is 9.2 wide (was 8.2)
+  so its drawn walls stand on the room's walls, the way Marget's were
+  widened.
+- **Holt's house**, on the rim.
+- **The office blocks and Greyline's towers**, with flat roofs (a new
+  `top: 'flat'`) and a row of windows per storey (`floors`). The stepped
+  tower's setback is a second, narrower box on top of the first.
+  `TOWER_SHAPE` and `BLOCK_PANEL` record each drawing's rolled width and
+  colour.
+
+**Three bugs from the last change:**
+- **Lit windows turned while their house held still.** Every night
+  twin of a held building (Brim's lit windows and shutters, the lit
+  court houses, Val's porch, Holt's lit house, the lit towers and
+  blocks) was not solid, so it still turned to face the lens. After
+  dark the light slid off the house. So did the belfry's clock when the
+  walker sets it, and the cistern when it is opened. They are all
+  `face: 'fixed'` now, and `standee` says so for the next one.
+- **A faded house blanked the houses behind it.** A box's ink wrote
+  depth even when the near-fade had it at a seventh. A land's ink is one
+  mesh, so every house drawn after the faded one lost its ink where the
+  faded one stood, and showed bare white paper. The ink writes no depth
+  now; the paper behind every sheet already does the hiding.
+- **Greyline's lit windows sat a few pixels off their panes**, on two
+  of the three tower kinds: the night drawing rolled its own width. It
+  reads the day drawing's width now.
+
+**Nothing inside a house (`tools/check-boxes.mjs`, new).** It checks
+every box's footprint against every road at its drawn width, every
+person's stops and the straight legs they walk between them, every
+thing's home and every event's place. The first run found 54 overlaps.
+To clear them:
+- Brim's south-east lamp moves a unit out of the east row's front wall.
+- The first west row moves 2.5 west, off the king's road's crown.
+- The Maple Court house at (-70, 152) moves to z 156.5: its back was
+  standing on the court's own road, the loop the walker walks. That
+  one came in with the last change, so it is broken on `main` now.
+- One court house and one Greyline tower are shallower (`depth` per
+  plot or block).
+- The Greyline tower at (150, 148) stood on the road in from the north
+  (true on `main` before any box) and moves to x 158.5.
+- People's rounds go round the ends of rows instead of through them:
+  the lamplighter, the sweeper, the dusk walker, the wheelwright, the
+  hut owner, Greyline's delivery and sweeper, the evening walker and
+  the postie. The lamps still light by the clock at the same minute.
+  People walk straight lines between stops (`routineAt`), so a corner
+  is a stop.
+
+**Checked:**
+- `npm run build` green.
+- `check-boxes`: nothing inside a house.
+- `check-solid`: 29 of 29.
+- `check-roads`: every road alive on both rigs.
+- `check-sightline`: the same four flags as `main`.
+- `check-fps`, desktop rig, draw calls: Maple Court 216, Brim 196,
+  Greyweather 61, Greyline 161, the office park 142, Longshore 77, the
+  canyon 57. The last change measured 214 / 192 / 61 for the first
+  three. Maple Court and Brim were already over the 180 budget on
+  `main`; nothing else is over. Triangles 80–83k everywhere (budget
+  350k). On the portrait rig every land is under 130 calls.
+- `check-camera`: the same 4 failures as `main` (recentre and held-key
+  spring-back).
+- `tools/shoot-boxes.mjs` (new) orbits each boxed building at four
+  bearings, low and from 40° up, at noon and at nine at night. Brim's
+  rows read as rows of houses with roofs from the square and from the
+  road; the lit panes stay in their windows with the lens at 70°.
+
+**Still one card:** Holt's shed, the atrium, the bus shelter, the
+belfry, the stalls and Brim's back-street roof rank, all turning to the
+lens as before. So are the keep's curtain returns.
+
 ## Buildings are paper boxes (2026-09-23)
 
 Follow-up to the entry below. Holding solid buildings on their line had

@@ -13,14 +13,14 @@ import {
   clippedHedgeTexture, gardenChairTexture, latchGateTexture, valTexture,
   juneTexture, pillarBoxTexture, binTexture, surveyPegTexture,
   mownLawnDecal, drivewayDecal, kerbRunDecal, emptyPlotDecal, roadEndDecal, hopscotchDecal,
-  greylineTowerTexture, greylineTowerLitTexture, farSkylineTexture, shopRowTexture,
+  greylineTowerTexture, TOWER_SHAPE, greylineTowerLitTexture, farSkylineTexture, shopRowTexture,
   wornPathsDecal, pavingDecal, hardBenchTexture, junctionManTexture,
   commuterTexture, lightMastTexture, fireEscapeTexture, hoardingTexture,
   revolvingDoorTexture, grateDecal, grateSteamTexture, cityBinsTexture,
   hollowWallTexture,
 } from '../textures-now';
 import {
-  officeBlockTexture, officeBlockLitTexture, atriumTexture, atriumLitTexture,
+  officeBlockTexture, BLOCK_PANEL, officeBlockLitTexture, atriumTexture, atriumLitTexture,
   slidingDoorsTexture, shelterTexture, shelterLitTexture, timetableTexture,
   dennisTexture, barrierTexture, gatehouseTexture, lampStandardTexture,
   lampStandardLitTexture, flagpolesTexture, officeFlagTexture, plannedShrubTexture,
@@ -34,7 +34,7 @@ import {
   hedgerowTexture, reedsTexture, swallowTexture,
 } from '../textures-common';
 import {
-  townRowTexture, townRowLitTexture, brimBelfryTexture, brimStallTexture, brimFountainTexture,
+  townRowTexture, ROW_SHAPE, ROW_INK, townRowLitTexture, brimBelfryTexture, brimStallTexture, brimFountainTexture,
   marketCrossTexture, buntingTexture, appleTreeTexture, pigeonTexture,
   woodGateTexture, cobblePlazaDecal, backStreetTexture, stoneWearDecal,
   crateBarrelTexture, greyweatherKeepTexture,
@@ -57,7 +57,7 @@ import {
 import { things } from '../things';
 import { rooms } from '../rooms';
 import { buildRoom, roomHide } from './room';
-import { boxUp, type BoxSpec } from './box';
+import { boxUp, rowUp, type BoxSpec } from './box';
 import {
   boardFloorDecal, flagFloorDecal, loftFloorDecal, valWallTexture, margetWallTexture,
   loftWallTexture, tableTexture, chairTexture, rangeTexture, coatHooksTexture,
@@ -164,7 +164,9 @@ function passFade(px: number, pz: number, gx: number, lo: number, hi: number): n
 
 /** THE LAMPS, in the order he takes them: south-west, south-east,
  *  north-east, north-west, and home to the belfry yard. */
-const LAMPS: [number, number][] = [[-58.5, -65], [-33, -65.5], [-32, -96], [-58, -96.5]];
+/* (2026-09-23) the south-east lamp stood in the east row's front wall
+ * (-33, -65.5); the row is a box now, so it stands a unit out from it */
+const LAMPS: [number, number][] = [[-58.5, -65], [-33.4, -64.2], [-32, -96], [-58, -96.5]];
 const LAMP_DOOR: [number, number] = [-61, -40];
 /** THE LAMPLIGHTER'S ROUND at dusk, and the same round at dawn to put
  *  them out. A lamp is lit from the moment he reaches it in the
@@ -172,16 +174,38 @@ const LAMP_DOOR: [number, number] = [-61, -40];
  *  lamplighter four lamps behind* — and the hours are the stops'. */
 const LIGHT_AT = [19.05, 19.18, 19.32, 19.45];
 const DOUSE_AT = [5.45, 5.58, 5.72, 5.85];
-const LAMPLIGHTER_DUSK = { id: 'the-lamplighter', land: 'kingdom' as const, pace: 300, walkPose: 6, stops: stops([
-  [18.92, LAMP_DOOR[0], LAMP_DOOR[1], 6, 1],
-  ...LAMPS.map((l, i): [number, number, number, number, -1 | 1, number] => [LIGHT_AT[i], l[0], l[1], 6, i < 2 ? 1 : -1, 0.03]),
-  [19.72, LAMP_DOOR[0], LAMP_DOOR[1], 6, -1, 0.02],
-]) };
-const LAMPLIGHTER_DAWN = { id: 'the-lamplighter-dawn', land: 'kingdom' as const, pace: 300, walkPose: 6, stops: stops([
-  [5.32, LAMP_DOOR[0], LAMP_DOOR[1], 6, 1],
-  ...LAMPS.map((l, i): [number, number, number, number, -1 | 1, number] => [DOUSE_AT[i], l[0], l[1], 6, i < 2 ? 1 : -1, 0.03]),
-  [6.12, LAMP_DOOR[0], LAMP_DOOR[1], 6, -1, 0.02],
-]) };
+/* (2026-09-23) THE WAY ROUND. The rows are boxes now (`box.ts`), and
+ * the first lamp stands behind the west row from his door, and the
+ * third behind the east row from the second: up the king's road and
+ * round the rows' ends, where a straight line went through them. */
+const ROUND_WEST: [number, number][] = [[-49.5, -57], [-50, -66.5]];
+const ROUND_EAST: [number, number][] = [[-42.5, -67.5]];
+/** the round, lamp to lamp, with the corners in; `at` is when he is at
+ *  each lamp, and a corner is timed by the distance walked to it */
+function round(id: string, out: number, at: number[], back: number) {
+  const rows: [number, number, number, number, (-1 | 1)?, number?][] = [[out, LAMP_DOOR[0], LAMP_DOOR[1], 6, 1]];
+  const via = (from: [number, number], corners: [number, number][], to: [number, number], t0: number, t1: number, face: -1 | 1) => {
+    const pts = [from, ...corners, to];
+    const d = pts.slice(1).map((q, i) => Math.hypot(q[0] - pts[i][0], q[1] - pts[i][1]));
+    const total = d.reduce((a, b) => a + b, 0);
+    let walked = 0;
+    corners.forEach((c, i) => {
+      walked += d[i];
+      rows.push([t0 + (t1 - t0) * (walked / total), c[0], c[1], 6, face]);
+    });
+  };
+  via(LAMP_DOOR, ROUND_WEST, LAMPS[0], out, at[0], 1);
+  rows.push([at[0], LAMPS[0][0], LAMPS[0][1], 6, 1, 0.03]);
+  rows.push([at[1], LAMPS[1][0], LAMPS[1][1], 6, 1]);
+  via(LAMPS[1], ROUND_EAST, LAMPS[2], at[1], at[2], -1);
+  rows.push([at[2], LAMPS[2][0], LAMPS[2][1], 6, -1, 0.03]);
+  rows.push([at[3], LAMPS[3][0], LAMPS[3][1], 6, -1, 0.03]);
+  via(LAMPS[3], [...ROUND_WEST].reverse(), LAMP_DOOR, at[3] + 0.03, back, -1);
+  rows.push([back, LAMP_DOOR[0], LAMP_DOOR[1], 6, -1, 0.02]);
+  return { id, land: 'kingdom' as const, pace: 300, walkPose: 6, stops: stops(rows) };
+}
+const LAMPLIGHTER_DUSK = round('the-lamplighter', 18.92, LIGHT_AT, 19.72);
+const LAMPLIGHTER_DAWN = round('the-lamplighter-dawn', 5.32, DOUSE_AT, 6.12);
 /**
  * THE CLOCK SET TO ELEVEN (Session 21, Marget's second door): the
  * lamplighter lights by the belfry clock, and if the walker sets it to
@@ -213,7 +237,7 @@ const DELIVERY = { id: 'the-brim-delivery', land: 'kingdom' as const, pace: 300,
 ]) };
 /** THE SWEEPER, before anybody else is in the square. */
 const SWEEPER = { id: 'the-brim-sweeper', land: 'kingdom' as const, pace: 260, stops: stops([
-  [5.75, -61, -40, 2, 1], [5.85, -51, -92, 2, 1, 0.08], [6.0, -44, -85, 2, -1, 0.08],
+  [5.75, -61, -40, 2, 1], [5.787, -49.5, -57, 2, 1], [5.85, -51, -92, 2, 1, 0.08], [6.0, -44, -85, 2, -1, 0.08],
   [6.15, -38, -76, 2, 1, 0.08], [6.3, -48, -70, 2, -1, 0.08], [6.5, -61, -40, 0, 1, 0.02],
 ]) };
 /** THE WARDEN who counts the orchard twice a day and has never once
@@ -241,14 +265,21 @@ const WARDEN_PM = warden('the-orchard-warden-evening', 17.6);
  *  would think that strange. */
 const BROKEN_CART = { x: -41.6, z: -34 };
 const MENDED_AT = 14.9;
+/* (2026-09-23) round the back corner of the first west row, which is a
+ * box now: a straight line from his door to the cart went through it */
+const WRIGHT_CORNER = { x: -46, z: -38.5 };
 const WRIGHT = { id: 'the-wheelwright', land: 'kingdom' as const, pace: 260, stops: stops([
-  [13.0, -62, -40, 0, 1], [13.2, BROKEN_CART.x - 2.3, BROKEN_CART.z + 0.2, 2, 1, 1.7], [15.35, -62, -40, 4, -1, 0.02],
+  [13.0, -62, -40, 0, 1], [13.18, WRIGHT_CORNER.x, WRIGHT_CORNER.z, 1, 1],
+  [13.2, BROKEN_CART.x - 2.3, BROKEN_CART.z + 0.2, 2, 1, 1.7],
+  [15.288, WRIGHT_CORNER.x, WRIGHT_CORNER.z, 4, -1], [15.35, -62, -40, 4, -1, 0.02],
 ]) };
 /** C2 · SOMEBODY WALKING THE OTHER WAY WHO DOES NOT LOOK UP: down the
  *  king's road from the square to the south gate at dusk, past whoever
  *  is coming up it, and back to a door in the back streets. */
 const DUSK_WALKER = { id: 'the-dusk-walker', land: 'kingdom' as const, pace: 380, stops: stops([
-  [18.85, -46, -84, 0, 1], [19.2, -44, -16, 0, -1, 0.04], [19.55, -38, -48, 0, 1, 0.02],
+  [18.85, -46, -84, 0, 1], [19.2, -44, -16, 0, -1, 0.04],
+  // round the end of the east row to his door behind it
+  [19.534, -44, -49.5, 0, 1], [19.55, -38, -48, 0, 1, 0.02],
 ]) };
 /** THE SHUTTERS: thrown back at first light, pulled to at nine. Every
  *  row a little after the last, because nobody in Brim does anything
@@ -319,8 +350,10 @@ export const buildKingdom: RegionBuilder = (ctx) => {
    * sightline from the south (the camera has to be able to stand
    * there without a facade in its face). */
   const terraces: [number, number, number, number][] = [
-    // west side (x, z, width, rotY)
-    [-55, -30, 18, 0.26], [-64, -58, 26, 0.26],
+    // west side (x, z, width, rotY); (2026-09-23) the first stood with
+    // its east end on the king's road's crown, which a card could and a
+    // box four deep cannot: it is 2.5 west of where it was
+    [-57.5, -30, 18, 0.26], [-64, -58, 26, 0.26],
     [-60, -108, 26, 0.34], [-62, -136, 28, 0.26],
     // east side
     [-30, -40, 26, -0.32], [-29, -64, 24, -0.28],
@@ -328,8 +361,17 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     // the market lane's north side
     [-6, -108, 26, 0.14], [22, -114, 24, -0.1],
   ];
-  terraces.forEach(([x, z, w, rot], i) =>
-    ctx.standee(townRowTexture(1400 + i), w, w * (288 / 512), x, z, { rotY: rot, solid: true }));
+  terraces.forEach(([x, z, w, rot], i) => {
+    const row = ctx.standee(townRowTexture(1400 + i), w, w * (288 / 512), x, z, { rotY: rot, solid: true });
+    /* THE REST OF THE ROW (`box.ts`, `rowUp`): its two ends, its party
+     * walls, its back to the yards, and every house its own roof */
+    rowUp(ctx, row, w, w * (288 / 512), {
+      /* four deep: the lamps and the doors in the back streets stand
+       * where they always stood, a unit or two behind the rows */
+      houses: ROW_SHAPE.get(1400 + i)!, ink: ROW_INK, depth: 4, seed: 1440 + i * 16,
+      canvasW: 512, canvasH: 288, ground: 282,
+    });
+  });
   /* THE WINDOWS COME ON. One run of panes per terrace, hung a hair in
    * front of the row it belongs to and lit by the same clock as the
    * lamps. Never all of them: a street where every window is lit is a
@@ -339,7 +381,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     // casements (textures-oldworld: townRowLitTexture). A generated run
     // of panes hung in front of a terrace lines up with nothing, and
     // round 2 of the gate had warm rectangles floating over the roofs.
-    const m = ctx.standee(townRowLitTexture(1400 + i), w, w * (288 / 512), x, z, { rotY: rot });
+    const m = ctx.standee(townRowLitTexture(1400 + i), w, w * (288 / 512), x, z, { rotY: rot, face: 'fixed' });
     m.position.x += Math.sin(rot) * 0.22;
     m.position.z += Math.cos(rot) * 0.22;
     (m.material as THREE.MeshBasicMaterial).depthWrite = false;
@@ -351,7 +393,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
    * of the row like the lit panes, and never both at once on one
    * window because a shut shutter is a dark one. */
   const shutRows: THREE.Mesh[] = terraces.map(([x, z, w, rot], i) => {
-    const m = ctx.standee(townRowShutTexture(1400 + i), w, w * (288 / 512), x, z, { rotY: rot });
+    const m = ctx.standee(townRowShutTexture(1400 + i), w, w * (288 / 512), x, z, { rotY: rot, face: 'fixed' });
     m.position.x += Math.sin(rot) * 0.24;
     m.position.z += Math.cos(rot) * 0.24;
     (m.material as THREE.MeshBasicMaterial).depthWrite = false;
@@ -394,7 +436,7 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   ];
   stalls.forEach(([x, z, v, rot], i) =>
     ctx.standee(brimStallTexture(1460 + i, v), 5.6, 5.1, x, z, { rotY: rot }));
-  const lampSpots: [number, number][] = [[-58, -96.5], [-32, -96], [-58.5, -65], [-33, -65.5]];
+  const lampSpots: [number, number][] = [[-58, -96.5], [-32, -96], [-58.5, -65], [-33.4, -64.2]];
   lampSpots.forEach(([x, z], i) =>
     ctx.standee(lamppostTexture(1470 + i), 1.8, 6.3, x, z));
   /* and the four of them are LIT after dark — hung at the lantern, six
@@ -553,8 +595,8 @@ export const buildKingdom: RegionBuilder = (ctx) => {
   /* THE CLOCK, SET BY HAND (Session 21): two more drawings of the same
    * tower with both hands on one hour, and which is up is the door,
    * read every frame. */
-  const belfrySet8 = ctx.standee(brimBelfryTexture(1480, 8), 6.5, 13, -66, -44);
-  const belfrySet11 = ctx.standee(brimBelfryTexture(1480, 11), 6.5, 13, -66, -44);
+  const belfrySet8 = ctx.standee(brimBelfryTexture(1480, 8), 6.5, 13, -66, -44, { face: 'fixed' });
+  const belfrySet11 = ctx.standee(brimBelfryTexture(1480, 11), 6.5, 13, -66, -44, { face: 'fixed' });
   belfrySet8.visible = false;
   belfrySet11.visible = false;
   ctx.decal(stoneWearDecal(1481, true), 9, 7, -66, -38, 0.7, 0.6);
@@ -1015,7 +1057,8 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     /* ---- THE ENCOUNTERS (Session 18) --------------------------------- */
     {
       const st = wright.tick(h, W.rain > 0.5);
-      const pushing = st.present && st.leg === 1 && st.moving;
+      // the legs home from the cart, round the corner
+      const pushing = st.present && st.leg >= 2 && st.moving;
       if (wright.prop) wright.prop.visible = pushing;
       const mended = h >= MENDED_AT;
       brokenCart.visible = !mended;
@@ -1523,7 +1566,19 @@ export const buildCastle: RegionBuilder = (ctx) => {
    * the ramp, whose slope is a third, and the one place at the gate
    * that is level is behind it. From the bailey it is a low stone shed
    * with a plank door. Inside it is the vat, the stool, and the rack. */
-  const loft = ctx.standee(loftLeanToTexture(1050), 8.2, 4.1, LOFT.x, LOFT.z, { solid: { gap: 0.8 } });
+  /* (2026-09-23) 9.2 wide, was 8.2: the drawn walls stand on the
+   * room's own walls now, which are the box's sides (`box.ts`) */
+  const loft = ctx.standee(loftLeanToTexture(1050), 9.2, 4.1, LOFT.x, LOFT.z, { solid: { gap: 0.8 } });
+  /* one pitch of slates from the eave over the door up to the tower
+   * behind it: a lean-to from the side, and the room inside it */
+  boxUp(ctx, loft, 9.2, 4.1, {
+    x0: 20 / 320, x1: 302 / 320, depth: LOFT.z - LOFT_ROOM.minZ + 0.2, seed: 1060,
+    sidesAt: [LOFT_ROOM.minX - 0.05 - LOFT.x, LOFT_ROOM.maxX + 0.05 - LOFT.x],
+    style: {
+      canvasW: 320, canvasH: 160, ground: 156, eave: 66, ridge: 24, roofL: 6, roofR: 316, roofBase: 66,
+      wall: WASH.castle, roof: '#6f6e6c', top: 'lean', windows: 0,
+    },
+  });
   const loftRoom = buildRoom(ctx, {
     id: 'the-loft', land: 'castle', name: 'the loft',
     rect: LOFT_ROOM, door: { x: LOFT.x, r: 0.8 },
@@ -2363,8 +2418,8 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
   });
   /** A court house: the front held on its line, solid across its drawn
    *  walls only, and the box behind it. */
-  const courtHouse = (v: 0 | 1 | 2, w: number, h: number, x: number, z: number, rotY: number) => {
-    const b = HOUSE_BOX[v];
+  const courtHouse = (v: 0 | 1 | 2, w: number, h: number, x: number, z: number, rotY: number, depth?: number) => {
+    const b = depth === undefined ? HOUSE_BOX[v] : { ...HOUSE_BOX[v], depth };
     const hw = Math.max(0.5 - b.x0, b.x1 - 0.5) * w;
     const m = ctx.standee(HOUSE[v], w, h, x, z, { rotY, solid: { hw }, face: 'fixed' });
     boxUp(ctx, m, w, h, b);
@@ -2386,13 +2441,15 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
    *             one who makes the road look like that.
    *   car/bin   what is out the front
    * ================================================================ */
-  type Plot = { x: number; z: number; rot: number; kind: 0 | 1 | 2; lit?: boolean; car?: boolean; bin?: boolean; lawn?: boolean };
+  /** `depth`: a shallower box than its drawing's, where its back is on somebody's way */
+  type Plot = { x: number; z: number; rot: number; kind: 0 | 1 | 2; lit?: boolean; car?: boolean; bin?: boolean; lawn?: boolean; depth?: number };
   const PLOTS: Plot[] = [
     /* the court, round the circle — the oldest part of the street */
     { x: -90, z: 134, rot: 0.36, kind: 1, car: true, lawn: true },
     { x: -89, z: 147, rot: 0.16, kind: 0, lit: true, bin: true, lawn: true },
     { x: -68, z: 135, rot: -0.3, kind: 2, lawn: true },
-    { x: -70, z: 152, rot: -0.12, kind: 0, car: true, lawn: true },
+    /* (2026-09-23) 156.5, was 152: its back stood on the court's own road */
+    { x: -70, z: 156.5, rot: -0.12, kind: 0, car: true, lawn: true },
     { x: -92, z: 160, rot: 0.1, kind: 2, lit: true, lawn: true },
     /* the east side of the king's road, north block */
     { x: -32, z: 141, rot: -0.22, kind: 0, car: true, lawn: true },
@@ -2408,7 +2465,7 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
     { x: 24, z: 218, rot: -0.2, kind: 0, bin: true },
     { x: 41, z: 211, rot: 0.26, kind: 1, car: true, lawn: true },
     /* south of main street the plots get bigger and further apart */
-    { x: -70, z: 233, rot: 0.22, kind: 1, lawn: true },
+    { x: -70, z: 233, rot: 0.22, kind: 1, lawn: true, depth: 4 },
     { x: -32, z: 236, rot: -0.1, kind: 0, lit: true, car: true, lawn: true },
     { x: -19, z: 249, rot: -0.4, kind: 2 },
     { x: -78, z: 251, rot: 0.44, kind: 0, bin: true },
@@ -2421,9 +2478,9 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
     const p = PLOTS[i];
     const w = p.kind === 1 ? 9.6 : 8.8;
     const h = p.kind === 1 ? 5.4 : p.kind === 2 ? 7.0 : 6.6;
-    courtHouse(p.kind as 0 | 1 | 2, w, h, p.x, p.z, p.rot);
+    courtHouse(p.kind as 0 | 1 | 2, w, h, p.x, p.z, p.rot, p.depth);
     if (p.lit) {
-      const m = ctx.standee(HOUSE_LIT[p.kind], w, h, p.x, p.z, { rotY: p.rot, opacity: 0 });
+      const m = ctx.standee(HOUSE_LIT[p.kind], w, h, p.x, p.z, { rotY: p.rot, opacity: 0, face: 'fixed' });
       (m.material as THREE.MeshBasicMaterial).transparent = true;
       lits.push(m);
     }
@@ -2471,7 +2528,7 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
       wall: '#d5d8cb', roof: '#79808a', top: 'gable', windows: 2,
     },
   });
-  const porch = ctx.standee(valPorchLitTexture(8101), 10.6, 8.6, VAL.x, VAL.z, { opacity: 0 });
+  const porch = ctx.standee(valPorchLitTexture(8101), 10.6, 8.6, VAL.x, VAL.z, { opacity: 0, face: 'fixed' });
   (porch.material as THREE.MeshBasicMaterial).transparent = true;
   /* ---- VAL'S KITCHEN, the room behind the porch (Session 23) ------- */
   const valRoom = buildRoom(ctx, {
@@ -2734,7 +2791,8 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
   const postie = new Figure(ctx, { id: 'the-post', land: 'neighborhood', pace: 300, walkPose: 4, stops: stops([
     [9.95, 52, 214, 4, -1],
     ...BOXES.map((b, i): [number, number, number, number, -1 | 1, number] => [10.05 + i * 0.09, b[0] + 1.2, b[1] + 1.2, 4, -1, 0.04]),
-    [10.75, -78, 246, 4, -1, 0.02],
+    // (2026-09-23) home behind the last house, not inside it
+    [10.75, -79, 242.5, 4, -1, 0.02],
   ]) }, 2);
   const kids = [0, 1].map((i) =>
     new Creature(ctx, `the-green-children-${i}`, 'neighborhood', [childTexture(1750 + i * 2, 0), childTexture(1751 + i * 2, 1)], 0.8, 1.2, GREEN.x, GREEN.z));
@@ -2761,8 +2819,11 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
     d.onLeg = (i, px, pz) => { if (i === 0 && Math.hypot(px - d.stops[0].x, pz - d.stops[0].z) < 40) say('car-start'); };
     registerRoutine(d);
   }
+  /* (2026-09-23) round the end of his own house and along main street,
+   * not through the backs of the houses on it, which are boxes now */
   const walker = new Figure(ctx, { id: 'the-evening-walker', land: 'neighborhood', pace: 280, stops: stops([
-    [18.2, 41, 220, 0, -1], [18.55, -45, 202, 0, -1, 0.05], [18.95, 41, 220, 0, 1, 0.02],
+    [18.15, 41, 220, 0, -1], [18.19, 48, 212, 0, 1], [18.225, 47, 203, 0, -1], [18.55, -45, 202, 0, -1, 0.05],
+    [18.93, 47, 203, 0, 1], [18.96, 48, 212, 0, 1], [19.0, 41, 220, 0, -1, 0.02],
   ]) }, 0);
   const waterer = new Figure(ctx, { id: 'the-watering', land: 'neighborhood', pace: 260, stops: stops([
     [18.95, -62, 218.5, 0, 1], [19.0, -58, 223, 0, -1, 0.5], [19.55, -62, 218.5, 0, 1, 0.02],
@@ -3317,10 +3378,11 @@ export const buildCity: RegionBuilder = (ctx) => {
   const TOWER_H: number[] = [];
   // six blocks, three kinds, two heights each — and every tower in the
   // land is one of these six, placed differently
-  ([[0, 5], [0, 9], [1, 6], [1, 12], [2, 7], [2, 11]] as [0 | 1 | 2, number][])
+  const TOWER_KIND: [0 | 1 | 2, number][] = [[0, 5], [0, 9], [1, 6], [1, 12], [2, 7], [2, 11]];
+  TOWER_KIND
     .forEach(([kind, floors], i) => {
       TOWER.push(greylineTowerTexture(9000 + i * 10, kind, floors));
-      TOWER_LIT.push(greylineTowerLitTexture(9001 + i * 10, kind, floors));
+      TOWER_LIT.push(greylineTowerLitTexture(9001 + i * 10, kind, floors, 9000 + i * 10));
       TOWER_H.push(72 + floors * 34);
     });
   const PAVING = [0, 1].map((v) => pavingDecal(9300 + v, v as 0 | 1));
@@ -3334,7 +3396,8 @@ export const buildCity: RegionBuilder = (ctx) => {
    * drawing, so two towers off the same canvas are different buildings
    * rather than the same building twice.
    * ================================================================ */
-  type Block = { x: number; z: number; t: number; w: number; rot?: number; lit?: boolean };
+  /** `depth`: how far back the box goes (eight, unless its back is on a street) */
+  type Block = { x: number; z: number; t: number; w: number; rot?: number; lit?: boolean; depth?: number };
   const BLOCKS: Block[] = [
     /* mill lane's west wall, coming north from the junction */
     { x: 132, z: 194, t: 3, w: 11.5, lit: true },
@@ -3347,7 +3410,7 @@ export const buildCity: RegionBuilder = (ctx) => {
     { x: 163, z: 166, t: 3, w: 11 },
     /* south of the junction, where the spur leaves: lower, older */
     { x: 131, z: 218, t: 0, w: 10, lit: true },
-    { x: 160, z: 214, t: 2, w: 11, rot: 0.05 },
+    { x: 160, z: 214, t: 2, w: 11, rot: 0.05, depth: 5.5 },
     { x: 130, z: 234, t: 2, w: 9.5 },
     { x: 164, z: 236, t: 0, w: 10.5, lit: true },
     { x: 141, z: 252, t: 4, w: 11.5 },
@@ -3363,7 +3426,9 @@ export const buildCity: RegionBuilder = (ctx) => {
     { x: 198, z: 222, t: 0, w: 9.5, lit: true },
     { x: 205, z: 188, t: 4, w: 11.5 },
     /* the north end, and the last one is on its own */
-    { x: 150, z: 148, t: 2, w: 10, rot: -0.05 },
+    /* (2026-09-23) 158.5, was 150: it stood on the road in from the
+     * north, and a walker coming down it walked into its front */
+    { x: 158.5, z: 148, t: 2, w: 10, rot: -0.05 },
     { x: 172, z: 143, t: 0, w: 9, lit: true },
   ];
 
@@ -3372,9 +3437,27 @@ export const buildCity: RegionBuilder = (ctx) => {
     const b = BLOCKS[i];
     if (terrain.waterAt(b.x, b.z) > 0.04) continue;
     const h = b.w * (TOWER_H[b.t] / 192);
-    ctx.standee(TOWER[b.t], b.w, h, b.x, b.z, { rotY: b.rot ?? 0, solid: true });
+    const m0 = ctx.standee(TOWER[b.t], b.w, h, b.x, b.z, { rotY: b.rot ?? 0, solid: true });
+    /* THE REST OF THE TOWER (`box.ts`): its ends and its back, storey
+     * on storey, and a flat roof; the stepped one's setback is a second,
+     * narrower box on top of the first */
+    const [kind, floors] = TOWER_KIND[b.t];
+    const sh = TOWER_SHAPE.get(9000 + b.t * 10)!;
+    const H = TOWER_H[b.t];
+    const flat = (x0: number, x1: number, ground: number, eave: number, depth: number, fl: number, seed: number) =>
+      boxUp(ctx, m0, b.w, h, {
+        x0: x0 / 192, x1: x1 / 192, depth, seed,
+        style: {
+          canvasW: 192, canvasH: H, ground, eave, ridge: eave,
+          wall: sh.wall, roof: '#8d8c88', top: 'flat', windows: 3, floors: fl,
+        },
+      });
+    flat(sh.x0, sh.x1, H, sh.top, b.depth ?? 8, floors, 9200 + b.t * 3);
+    if (kind === 2 && sh.sx0 !== undefined) {
+      flat(sh.sx0, sh.sx1!, sh.top, 8, 5, Math.max(2, Math.round((sh.top - 16) / 34)), 9220 + b.t * 3);
+    }
     if (b.lit) {
-      const m = ctx.standee(TOWER_LIT[b.t], b.w, h, b.x, b.z, { rotY: b.rot ?? 0, opacity: 0 });
+      const m = ctx.standee(TOWER_LIT[b.t], b.w, h, b.x, b.z, { rotY: b.rot ?? 0, opacity: 0, face: 'fixed' });
       (m.material as THREE.MeshBasicMaterial).transparent = true;
       towerLits.push(m);
     }
@@ -3573,12 +3656,16 @@ export const buildCity: RegionBuilder = (ctx) => {
   });
   events.register({ id: 'the-rush-morning', land: 'city', at: 7.7, hours: 1.4, place: JUNCTION });
   events.register({ id: 'the-rush-evening', land: 'city', at: 17.1, hours: 1.4, place: JUNCTION });
+  /* (2026-09-23) the towers are boxes now: the way from the lane to
+   * main street is round the junction's corner, not through the wall */
+  const LANE_FOOT = { x: 148, z: 204 };
   const citySweeper = new Figure(ctx, { id: 'the-city-sweeper', land: 'city', pace: 260, stops: stops([
     [5.35, 150, 160, 2, -1], [5.5, 140, 192, 2, -1, 0.08], [5.65, 128, 205, 2, -1, 0.08], [5.8, 117, 210, 2, -1, 0.08],
-    [5.95, 106, 208, 2, 1, 0.08], [6.35, 150, 160, 0, 1, 0.02],
+    [5.95, 106, 208, 2, 1, 0.08], [6.19, LANE_FOOT.x, LANE_FOOT.z, 2, 1], [6.36, 150, 160, 0, 1, 0.02],
   ]) }, 2);
   const cityDelivery = new Figure(ctx, { id: 'the-city-delivery', land: 'city', pace: 300, walkPose: 4, stops: stops([
-    [6.6, 150, 160, 4, -1], [6.9, 119, 202, 0, -1, 0.3], [7.4, 150, 160, 4, 1, 0.02],
+    [6.6, 150, 160, 4, -1], [6.803, LANE_FOOT.x, LANE_FOOT.z, 4, -1], [6.9, 119, 202, 0, -1, 0.3],
+    [7.297, LANE_FOOT.x, LANE_FOOT.z, 4, 1], [7.45, 150, 160, 4, 1, 0.02],
   ]) }, 0);
   cityDelivery.prop = ctx.standee(handcartTexture(9630), 2.6, 1.9, 150, 160);
   (cityDelivery.prop.material as THREE.MeshBasicMaterial).transparent = true;
@@ -4138,9 +4225,19 @@ export const buildOffice: RegionBuilder = (ctx) => {
   const lits: THREE.Mesh[] = [];
   for (let i = 0; i < BLOCKS.length; i++) {
     const b = BLOCKS[i];
-    ctx.standee(BLOCK[b.t], b.w, BLOCK_H, b.x, b.z, { rotY: b.rot ?? 0, solid: true });
+    const m0 = ctx.standee(BLOCK[b.t], b.w, BLOCK_H, b.x, b.z, { rotY: b.rot ?? 0, solid: true });
+    /* THE REST OF THE BLOCK (`box.ts`): panel ends and a back, three
+     * storeys of the same glazing, and a flat felt roof behind the
+     * parapet, so the level roofline is a roof and not a ruled edge */
+    boxUp(ctx, m0, b.w, BLOCK_H, {
+      x0: 22 / 320, x1: 298 / 320, depth: 8, seed: 7030 + b.t * 3,
+      style: {
+        canvasW: 320, canvasH: 160, ground: 148, eave: 26, ridge: 26,
+        wall: BLOCK_PANEL.get(7000 + b.t) ?? '#c9ccc9', roof: '#8d8c88', top: 'flat', windows: 3, floors: 3,
+      },
+    });
     if (b.lit) {
-      const m = ctx.standee(BLOCK_LIT[b.t], b.w, BLOCK_H, b.x, b.z, { rotY: b.rot ?? 0, opacity: 0 });
+      const m = ctx.standee(BLOCK_LIT[b.t], b.w, BLOCK_H, b.x, b.z, { rotY: b.rot ?? 0, opacity: 0, face: 'fixed' });
       (m.material as THREE.MeshBasicMaterial).transparent = true;
       lits.push(m);
     }
