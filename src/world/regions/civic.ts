@@ -9,7 +9,7 @@ import {
   lampGlowTexture, brazierTexture,
 } from '../textures';
 import {
-  courtHouseTexture, courtHouseLitTexture, valHouseTexture, valPorchLitTexture,
+  courtHouseTexture, courtHouseColors, courtHouseLitTexture, valHouseTexture, valPorchLitTexture,
   clippedHedgeTexture, gardenChairTexture, latchGateTexture, valTexture,
   juneTexture, pillarBoxTexture, binTexture, surveyPegTexture,
   mownLawnDecal, drivewayDecal, kerbRunDecal, emptyPlotDecal, roadEndDecal, hopscotchDecal,
@@ -57,6 +57,7 @@ import {
 import { things } from '../things';
 import { rooms } from '../rooms';
 import { buildRoom, roomHide } from './room';
+import { boxUp, type BoxSpec } from './box';
 import {
   boardFloorDecal, flagFloorDecal, loftFloorDecal, valWallTexture, margetWallTexture,
   loftWallTexture, tableTexture, chairTexture, rangeTexture, coatHooksTexture,
@@ -65,7 +66,7 @@ import {
 } from '../textures-rooms';
 import { barriers } from '../barriers';
 import { Footprints } from '../../engine/Footprints';
-import { INK_HEX } from '../../engine/palette';
+import { INK_HEX, WASH } from '../../engine/palette';
 import { routineAt } from '../events';
 import { UI } from '../../ui/UI';
 import { Figure, Creature, stops, type StopRow } from '../life';
@@ -512,7 +513,21 @@ export const buildKingdom: RegionBuilder = (ctx) => {
    * section — flags, the far wall with the shelf and the scale, the
    * side walls edge-on — and it is drawn up only as the walker goes
    * in, so from the square the house is exactly the house. */
-  const margetHouse = ctx.standee(margetHouseTexture(1495), 8.2, 5.74, MARGET_HOUSE.x, MARGET_HOUSE.z, { solid: { gap: 0.85 } });
+  /* (2026-09-23) 9.75 wide, was 8.2: the drawn walls now stand on the
+   * room's own walls, which the box's sides are (`box.ts`) */
+  const margetHouse = ctx.standee(margetHouseTexture(1495), 9.75, 5.74, MARGET_HOUSE.x, MARGET_HOUSE.z,
+    { solid: { hw: 4.1, gap: 0.85 }, face: 'fixed' });
+  /* the house is the room's box: its sides are the room's walls, tucked
+   * under the thatch's overhang (`box.ts`) */
+  boxUp(ctx, margetHouse, 9.75, 5.74, {
+    x0: 28 / 320, x1: 294 / 320, depth: MARGET_HOUSE.z - MARGET_ROOM.minZ + 0.2, seed: 1510,
+    sidesAt: [MARGET_ROOM.minX - 0.05 - MARGET_HOUSE.x, MARGET_ROOM.maxX + 0.05 - MARGET_HOUSE.x],
+    style: {
+      canvasW: 320, canvasH: 224, ground: 218, eave: 96, ridge: 22, roofL: 10, roofR: 312, roofBase: 98, apex: 160,
+      wall: '#e8dfc8', roof: '#a89468',
+      top: 'thatch', windows: 1, timber: '#4a4038',
+    },
+  });
   const margetRoom = buildRoom(ctx, {
     id: 'margets-house', land: 'kingdom', name: 'marget\'s house',
     rect: MARGET_ROOM, door: { x: MARGET_HOUSE.x, r: 0.85 },
@@ -1457,6 +1472,17 @@ export const buildCastle: RegionBuilder = (ctx) => {
   /* TIER 1: the keep has a door now (the hall behind it is Wick's
    * promise, kept); `the-hall-door` below is what keeps it shut */
   const keep = ctx.standee(greyweatherKeepTexture(980), 34, 17, -45, -250, { solid: { gap: 1.1 } });
+  /* THE KEEP GOES BACK (`box.ts`): its flanking towers' outer walls
+   * run twelve units into the plateau, a tower at each far corner and
+   * a curtain between, so from the side it is a castle and not a card;
+   * the hall is inside it. */
+  boxUp(ctx, keep, 34, 17, {
+    x0: 70 / 640, x1: 570 / 640, depth: 12, seed: 1030,
+    style: {
+      canvasW: 640, canvasH: 320, ground: 310, eave: 96, ridge: 84, cone: 22, tower: 80,
+      wall: WASH.castle, roof: '#5f6672', top: 'keep', windows: 2,
+    },
+  });
   /* THE KEEP STANDS ON SOMETHING (Session 19, the local QA pass §4:
    * *flat cards on empty ground*). Its foot is drawn: worn stone the
    * width of it, scree in the angles, and the bailey's own floor —
@@ -2318,6 +2344,32 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
 
   /* ---- the shared drawings, made ONCE (Session 10's costing) ------- */
   const HOUSE = [0, 1, 2].map((v) => courtHouseTexture(8000 + v, v as 0 | 1 | 2));
+  /* THE REST OF EACH HOUSE (`box.ts`): where each front's walls, eaves
+   * and ridge fall on its 256 × 192 canvas, and its colours. */
+  const HOUSE_BOX: BoxSpec[] = ([
+    // walls x, eave y; the roof triangle's corners x, base y, apex x, ridge y
+    [38, 218, 97, 26, 230, 98, 128, 40, 7.0, 2],
+    [44, 196, 121, 30, 210, 122, 120, 84, 6.5, 2],
+    [52, 188, 105, 40, 200, 106, 120, 46, 7.0, 1],
+  ] as const).map(([a, b, eave, roofL, roofR, roofBase, apex, ridge, depth, windows], v) => {
+    const c = courtHouseColors(8000 + v);
+    return {
+      x0: a / 256, x1: b / 256, depth, seed: 8020 + v * 3,
+      style: {
+        canvasW: 256, canvasH: 192, ground: 178, eave, ridge, roofL, roofR, roofBase, apex,
+        wall: c.siding, roof: c.roof, top: 'gable', windows,
+      },
+    };
+  });
+  /** A court house: the front held on its line, solid across its drawn
+   *  walls only, and the box behind it. */
+  const courtHouse = (v: 0 | 1 | 2, w: number, h: number, x: number, z: number, rotY: number) => {
+    const b = HOUSE_BOX[v];
+    const hw = Math.max(0.5 - b.x0, b.x1 - 0.5) * w;
+    const m = ctx.standee(HOUSE[v], w, h, x, z, { rotY, solid: { hw }, face: 'fixed' });
+    boxUp(ctx, m, w, h, b);
+    return m;
+  };
   const HOUSE_LIT = [0, 1, 2].map((v) => courtHouseLitTexture(8010 + v, v as 0 | 1 | 2));
   const LAWN = [0, 1].map((v) => mownLawnDecal(8600 + v, v as 0 | 1));
   const DRIVE = [0, 1].map((v) => drivewayDecal(8610 + v, v as 0 | 1));
@@ -2369,7 +2421,7 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
     const p = PLOTS[i];
     const w = p.kind === 1 ? 9.6 : 8.8;
     const h = p.kind === 1 ? 5.4 : p.kind === 2 ? 7.0 : 6.6;
-    ctx.standee(HOUSE[p.kind], w, h, p.x, p.z, { rotY: p.rot, solid: true });
+    courtHouse(p.kind as 0 | 1 | 2, w, h, p.x, p.z, p.rot);
     if (p.lit) {
       const m = ctx.standee(HOUSE_LIT[p.kind], w, h, p.x, p.z, { rotY: p.rot, opacity: 0 });
       (m.material as THREE.MeshBasicMaterial).transparent = true;
@@ -2409,7 +2461,16 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
    * ================================================================ */
   /* THE DOOR IS A GAP IN THE FOOTPRINT (Session 23): the house refuses
    * a foot everywhere but under the light. */
-  const valHouse = ctx.standee(valHouseTexture(8100), 10.6, 8.6, VAL.x, VAL.z, { solid: { gap: 0.85 } });
+  const valHouse = ctx.standee(valHouseTexture(8100), 10.6, 8.6, VAL.x, VAL.z, { solid: { hw: 5, gap: 0.85 }, face: 'fixed' });
+  /* her house is her kitchen's box: its sides are the kitchen's walls */
+  boxUp(ctx, valHouse, 10.6, 8.6, {
+    x0: 10 / 256, x1: 246 / 256, depth: VAL.z - VAL_ROOM.minZ + 0.2, seed: 8160,
+    sidesAt: [VAL_ROOM.minX - VAL.x, VAL_ROOM.maxX - VAL.x],
+    style: {
+      canvasW: 256, canvasH: 208, ground: 194, eave: 105, ridge: 42, roofL: 2, roofR: 254, roofBase: 106, apex: 128,
+      wall: '#d5d8cb', roof: '#79808a', top: 'gable', windows: 2,
+    },
+  });
   const porch = ctx.standee(valPorchLitTexture(8101), 10.6, 8.6, VAL.x, VAL.z, { opacity: 0 });
   (porch.material as THREE.MeshBasicMaterial).transparent = true;
   /* ---- VAL'S KITCHEN, the room behind the porch (Session 23) ------- */
@@ -2542,7 +2603,7 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
    * units from a man on the other side of a line neither of them can
    * cross, and **nothing in this game ever says so.**
    * ================================================================ */
-  ctx.standee(HOUSE[2], 8.8, 7.0, JUNE_GATE.x, JUNE_GATE.z - 5.5, { rotY: -0.06, solid: true });
+  courtHouse(2, 8.8, 7.0, JUNE_GATE.x, JUNE_GATE.z - 5.5, -0.06);
   ctx.decal(LAWN[1], 12, 10, JUNE_GATE.x, JUNE_GATE.z - 2, 0, 0.32);
   ctx.standee(latchGateTexture(8300), 4.6, 2.5, JUNE_GATE.x, JUNE_GATE.z + 0.5);
   const june = [0, 1].map((p) =>

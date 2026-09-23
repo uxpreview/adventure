@@ -6,10 +6,12 @@
 // 2026-09-23. A solid standee's barrier lies on its authored line; when
 // the drawing turned to the lens it swung off that line, and a gate's
 // arch was no longer over the gap you walk through. Solid standees hold
-// their line now (regions/index.ts, `standee`). This walks the walker
-// at the gates and along the walls from four camera bearings: every
-// gate must let you through and every wall must stop you, whichever
-// way the lens is turned, and the doors must still let you into rooms.
+// their line now (regions/index.ts, `standee`), and the buildings that
+// matter are paper boxes with four walls (regions/box.ts). This walks
+// the walker at the gates, along the walls and round a house from
+// several camera bearings: every gate must let you through and every
+// wall must stop you, whichever way the lens is turned, and the doors
+// must still let you into rooms.
 import { chromium } from 'playwright';
 import { CHROMIUM } from './pw.mjs';
 
@@ -44,6 +46,14 @@ const CASES = [
   ['Brim east wall stops you', 44, -92, E, 10, (q) => q[0] < 57],
   ['Greyweather gate lets you through', -45, -180, N, 10, (q) => q[1] < -198],
 ];
+/* THE BOXES (`regions/box.ts`): a Maple Court house at (-89, 147),
+ * turned 0.16, is walled on all four sides now — its east side and its
+ * back stop you, and the lane along its side is still a lane. */
+const BOXES = [
+  ["a house's side wall stops you", -80, 143.5, [-1, 0], 6, (q) => q[0] > -86.5],
+  ["a house's back wall stops you", -88.5, 137.6, [0, 1], 6, (q) => q[1] < 140.5],
+  ['the lane beside it stays open', -84.5, 150, [0, -1], 6, (q) => q[1] < 138],
+];
 const DOORS = [
   ["Val's door", -78, 134], ["Marget's door", -80, -91], ['the loft door', -34, -208],
 ];
@@ -52,6 +62,12 @@ let fails = 0;
 const say = (ok, msg) => { if (!ok) fails++; console.log(`  ${ok ? '✓' : '✗'} ${msg}`); };
 for (const yaw of [0, 60, -60, 150]) {
   for (const [label, x, z, dir, secs, ok] of CASES) {
+    const q = await walk(x, z, dir, yaw, secs);
+    say(ok(q), `${label} — lens at ${yaw}° (ended ${q[0].toFixed(1)}, ${q[1].toFixed(1)})`);
+  }
+}
+for (const yaw of [0, 120]) {
+  for (const [label, x, z, dir, secs, ok] of BOXES) {
     const q = await walk(x, z, dir, yaw, secs);
     say(ok(q), `${label} — lens at ${yaw}° (ended ${q[0].toFixed(1)}, ${q[1].toFixed(1)})`);
   }

@@ -131,6 +131,14 @@ export function buildRoom(
        * half drawn, and the ink stays on as pencil. */
       for (const f of fronts) {
         (f.house.material as THREE.MeshBasicMaterial).opacity = 1 - ease(k, 0, 0.55);
+        /* and the rest of the house's box (`box.ts`) goes with it: the
+         * room's own walls are the section from inside */
+        for (const m of (f.house.userData.box as THREE.Mesh[] | undefined) ?? []) {
+          const bm = m.material as THREE.MeshBasicMaterial;
+          bm.transparent = true;
+          bm.opacity = 1 - ease(k, 0, 0.55);
+          m.visible = bm.opacity > 0.01;
+        }
         const g = f.ghost.material as THREE.MeshBasicMaterial;
         g.opacity = GHOST * ease(k, 0.1, 0.7);
         f.ghost.visible = g.opacity > 0.01;
