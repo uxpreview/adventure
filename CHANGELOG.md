@@ -22,6 +22,15 @@ harness at Brim's south gate at 0°, 35° and 70°. `check-camera.mjs` shows
 the same 4 failures before and after (recentre and held-key spring-back,
 not this change).
 
+**Played on the harness** (`tools/check-solid.mjs`, new): Brim's south and
+east gates and Greyweather's gate let you through, and the walls beside
+them stop you, with the lens at 0°, 60°, −60° and 150°; Val's, Marget's
+and the loft's doors still let you into their rooms. 23 of 23. Contact
+sheets before and after at Brim, the keep, Maple Court, Greyline and
+Longshore: walls read as one line and towers no longer swing across the
+view. A house seen exactly along its face now shows as a thin line, like
+the room walls always have.
+
 ## Tier 2 promises: Val, Brack, Holt (2026-09-19)
 
 `PROMPT.md` §3 item 3, and round 6's two leftovers before it.
