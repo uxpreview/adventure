@@ -63,6 +63,7 @@ import {
 } from '../tier2';
 import { say as speak } from '../../ui/speech'; /* VOICE: a refusal that says why */
 import type { RegionBuilder, WorldPOI } from './index';
+import { boxUp } from './box';
 
 /** Fire a named audio event up to the App without a plumbing run. */
 function say(name: string) {
@@ -1655,7 +1656,17 @@ export const buildCanyon: RegionBuilder = (ctx) => {
 
   /* ---- THE HOUSE, on the rim, and it is lit at night -------------- */
   const houseDark = ctx.standee(holtHouseTexture(6230, false), 6.6, 6.0, HOUSE.x, HOUSE.z, { solid: true });
-  const houseLit = ctx.standee(holtHouseTexture(6231, true), 6.6, 6.0, HOUSE.x, HOUSE.z);
+  const houseLit = ctx.standee(holtHouseTexture(6231, true), 6.6, 6.0, HOUSE.x, HOUSE.z, { face: 'fixed' });
+  /* THE REST OF IT (`box.ts`): stone sides and a back going away from
+   * the rim, under the same roof, so the one lit window in the east
+   * half of the world is in a house and not on a card. */
+  boxUp(ctx, houseDark, 6.6, 6.0, {
+    x0: 56 / 320, x1: 264 / 320, depth: 5, seed: 6236,
+    style: {
+      canvasW: 320, canvasH: 288, ground: 280, eave: 140, ridge: 58, roofL: 40, roofR: 280, roofBase: 146, apex: 160,
+      wall: '#ded2b6', roof: '#bfae8e', top: 'gable', windows: 1,
+    },
+  });
   for (const m of [houseDark, houseLit]) {
     (m.material as THREE.MeshBasicMaterial).transparent = true;
   }
@@ -2353,7 +2364,7 @@ export const buildDesert: RegionBuilder = (ctx) => {
    * catch is a thing you come off the track to look at. */
   ctx.standee(rainApronTexture(7100), 13.4, 8.6, CATCH.x - 10, CATCH.z - 3.4, { rotY: 0.06 });
   const cisternShut = ctx.standee(cisternTexture(7101, true), 5.4, 4.7, CATCH.x, CATCH.z, { solid: true });
-  const cisternOpen = ctx.standee(cisternTexture(7102, false), 5.4, 4.7, CATCH.x, CATCH.z);
+  const cisternOpen = ctx.standee(cisternTexture(7102, false), 5.4, 4.7, CATCH.x, CATCH.z, { face: 'fixed' });
   for (const m of [cisternShut, cisternOpen]) {
     (m.material as THREE.MeshBasicMaterial).transparent = true;
   }

@@ -3,6 +3,7 @@ import {
   makeTexture, stroke, line, scribbleCircle, hatch, letteringFit, type Ctx2D,
 } from '../engine/ink';
 import { INK, PENCIL, WASH } from '../engine/palette';
+import type { RowHouse } from './textures-box';
 
 /**
  * THE OLD WORLD's prop box (Session 3): the streets of Brim and the
@@ -21,6 +22,8 @@ const PLASTER = '#e8dfc8';
 const SLATE = '#8d8a84';
 const RED = '#8f4a52';
 const CREAM = '#efe6cf';
+/** A row's own colours, for the rest of its houses (`textures-box.ts`). */
+export const ROW_INK = { plaster: PLASTER, stone: WASH.castle, slate: SLATE, timber: TIMBER };
 
 function fillPoly(ctx: Ctx2D, pts: [number, number][], color: string, alpha: number) {
   ctx.save();
@@ -79,9 +82,14 @@ function poly(
  * ------------------------------------------------------------------ */
 type WinRect = { x: number; y: number; w: number; h: number };
 const ROW_WINDOWS = new Map<number, WinRect[]>();
+/** AND WHERE THE HOUSES ARE (2026-09-23): each house's walls, eave,
+ *  jetty, lean and roof, as it was rolled, so the row's ends, back and
+ *  roofs (`regions/box.ts`, `rowUp`) are the same houses. */
+export const ROW_SHAPE = new Map<number, RowHouse[]>();
 
 export function townRowTexture(seed: number): THREE.CanvasTexture {
   const windows: WinRect[] = [];
+  const houses: RowHouse[] = [];
   const tex = makeTexture(512, 288, seed, (ctx, r) => {
     const baseY = 282;
     const n = 3 + Math.floor(r() * 2);
@@ -281,6 +289,8 @@ export function townRowTexture(seed: number): THREE.CanvasTexture {
           Math.max(12, ridgeX - x0), (eaveY - ridgeY) * 0.55, 0.8, 6, r, { alpha: 0.1 });
       }
 
+      houses.push({ x0, x1, eave: eaveY, jet, lean, side: sideGabled, ridge: ridgeY, apex: ridgeX, stone });
+
       // a chimney off the ridge, sometimes smoking in pencil
       if (r() > 0.35) {
         const cx = sideGabled
@@ -298,6 +308,7 @@ export function townRowTexture(seed: number): THREE.CanvasTexture {
     }
   });
   ROW_WINDOWS.set(seed, windows);
+  ROW_SHAPE.set(seed, houses);
   return tex;
 }
 

@@ -159,9 +159,14 @@ function feather(ctx: Ctx2D, w: number, h: number, px: number) {
  * stood at the same height on flat ground, nine blocks off three
  * drawings give one dead-level line across the whole land.
  */
+/** Which panel each block was drawn in, by seed, so its sides and back
+ *  (`regions/box.ts`) are the same building. */
+export const BLOCK_PANEL = new Map<number, string>();
+
 export function officeBlockTexture(seed: number, v: 0 | 1 | 2): THREE.CanvasTexture {
   return makeTexture(320, 160, seed, (ctx, r) => {
     const panel = PANEL[Math.floor(r() * 4)];
+    BLOCK_PANEL.set(seed, panel);
     const L = 22;
     const R = 298;
     const TOP = 26;

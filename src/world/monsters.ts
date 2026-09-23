@@ -85,7 +85,7 @@ const DEFS: MonsterDef[] = [
 /** LAMPS THAT STOP THEM: lit street lamps, by position and by hour. */
 const LAMPS: { x: number; z: number; lit: () => boolean }[] = [
   // Brim's four
-  ...[[-58.5, -65], [-33, -65.5], [-32, -96], [-58, -96.5]].map(([x, z]) => ({ x, z, lit: () => clock.lamp > 0.3 })),
+  ...[[-58.5, -65], [-33.4, -64.2], [-32, -96], [-58, -96.5]].map(([x, z]) => ({ x, z, lit: () => clock.lamp > 0.3 })),
   // the jetty lamp on Longshore, and the van's
   { x: -255.2, z: 51.6, lit: () => events.progress('the-jetty-lamp') >= 0 || clock.lamp > 0.6 },
   { x: -213, z: -41, lit: () => clock.lamp > 0.3 },

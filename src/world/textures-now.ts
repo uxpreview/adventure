@@ -695,6 +695,13 @@ export function hopscotchDecal(seed: number): THREE.CanvasTexture {
  * `floors` sets the height; the canvas grows with it, so a fourteen-
  * floor block is not a six-floor block stretched.
  */
+/** Where each tower was drawn on its canvas, by seed, so its sides,
+ *  back and roof (`regions/box.ts`) are the same building: its walls'
+ *  x, its roof's y, its setback's walls (kind 2), and its stone. */
+export const TOWER_SHAPE = new Map<number, {
+  x0: number; x1: number; top: number; sx0?: number; sx1?: number; wall: string;
+}>();
+
 export function greylineTowerTexture(
   seed: number, kind: 0 | 1 | 2, floors: number
 ): THREE.CanvasTexture {
@@ -704,6 +711,11 @@ export function greylineTowerTexture(
     const x0 = (192 - w) / 2;
     const step = kind === 2 ? Math.round(h * 0.34) : 0;
     const top = 6 + step;
+    const setW = w * 0.62;
+    TOWER_SHAPE.set(seed, {
+      x0, x1: x0 + w, top, wall: kind === 1 ? '#c3c6c4' : STONE,
+      ...(kind === 2 ? { sx0: x0 + (w - setW) / 2, sx1: x0 + (w + setW) / 2 } : {}),
+    });
     fillPoly(ctx, [[x0, h], [x0, top], [x0 + w, top], [x0 + w, h]],
       kind === 1 ? '#c3c6c4' : STONE, 0.5);
     hardPoly(ctx, [[x0, h], [x0, top], [x0 + w, top], [x0 + w, h]], r,
@@ -755,11 +767,15 @@ export function greylineTowerTexture(
  *  and never all of them: an office block at dusk is mostly dark and
  *  entirely unfinished. */
 export function greylineTowerLitTexture(
-  seed: number, kind: 0 | 1 | 2, floors: number
+  seed: number, kind: 0 | 1 | 2, floors: number,
+  /** The day drawing's seed: its panes are the panes that light. */
+  of?: number
 ): THREE.CanvasTexture {
   const h = 72 + floors * 34;
   return makeTexture(192, h, seed, (ctx, r) => {
-    const w = kind === 1 ? 150 : 128 + Math.floor(r() * 26);
+    const rolled = kind === 1 ? 150 : 128 + Math.floor(r() * 26);
+    const day = of === undefined ? undefined : TOWER_SHAPE.get(of);
+    const w = day ? day.x1 - day.x0 : rolled;
     const x0 = (192 - w) / 2;
     const step = kind === 2 ? Math.round(h * 0.34) : 0;
     const top = 6 + step;
