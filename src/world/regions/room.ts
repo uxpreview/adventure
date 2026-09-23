@@ -105,9 +105,9 @@ export function buildRoom(
       ghost.position.copy(house.position);
       ghost.position.z += 0.02;
       ghost.rotation.copy(house.rotation);
-      // CAMERA: the house turns about its feet now, so its pencil ghost
-      // turns exactly as the house does (engine/billboard.ts)
-      billboardLike(ghost, house, house.rotation.y);
+      // CAMERA: the pencil ghost turns exactly as the house does, and
+      // holds still when the house does (engine/billboard.ts)
+      billboardLike(ghost, house);
       (ghost.material as THREE.MeshBasicMaterial).depthWrite = false;
       // pencil is faint by nature; the cutout's alpha test would eat it
       (ghost.material as THREE.MeshBasicMaterial).alphaTest = 0.01;

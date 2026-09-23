@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## Solid things hold still when the camera turns (2026-09-23)
+
+Owner: "when the camera shifts, certain items rotate, which makes it very
+hard to play." The items were every **solid** standee: town walls,
+gatehouses, towers, houses, huts, the keep. Each one turned to face the
+lens while its barrier stayed on the authored line, so after a drag a
+wall broke into a staircase of cards, a gate's arch slid off the gap you
+actually walk through, and a house was drawn somewhere other than where
+it stopped you. Same bug as the meadow fence on 2026-09-17, everywhere
+else.
+
+Now a standee that is solid across its whole width (`solid: true`, or
+`{ gap }` without a narrower `hw`) defaults to `face: 'fixed'`
+(`regions/index.ts`, `standee`). Things with a narrow core (`solid: 1.2`:
+wells, trunks, crates, the fountain, the mill) still turn, because a
+round thing turned to the lens has not moved. An explicit `face` still
+wins. A house's pencil ghost follows its house (`billboardLike` no longer
+falls back to turning on its own). `npm run build` green; checked on the
+harness at Brim's south gate at 0°, 35° and 70°. `check-camera.mjs` shows
+the same 4 failures before and after (recentre and held-key spring-back,
+not this change).
+
 ## Tier 2 promises: Val, Brack, Holt (2026-09-19)
 
 `PROMPT.md` §3 item 3, and round 6's two leftovers before it.
