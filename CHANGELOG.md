@@ -60,7 +60,8 @@ Walker checked visible behind a house with the lens south of it; Val's
 kitchen checked from inside at two bearings. Contact sheets at Maple
 Court (0°, 45°, 90°, 200°, 270°, and from 48° pitch), Val's, Marget's
 and the keep. `check-roads` green. `check-sightline` reports four small
-things (grass fields and a 2-unit prop); nothing boxed is among them.
+things (grass fields and a 2-unit prop), the same four it reports on
+`main`; nothing boxed is among them.
 
 **Not boxed** (still one card, held on its line): Brim's terraces, the
 beach huts, the loft, Holt's house, Greyline's towers and the office
