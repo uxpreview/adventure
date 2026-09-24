@@ -1,7 +1,8 @@
 /**
  * NOT YET — the lines of THE LIST whose promise is not built on the
- * story of record (`design/foundation/08` §9) yet: Tier 3 (Amos, Pye,
- * Wren) and Tier 4 (Joan, the man at the crossing, Dennis).
+ * story of record (`design/foundation/08` §9) yet: Tier 4 (Joan, the
+ * man at the crossing, Dennis). Tier 3 (Amos, Pye, Wren) came off it
+ * on 2026-09-24 (`tier3.ts`).
  *
  * Their steps from before the story contradicted it (Amos's night walk
  * was Holt's walk again; Pye's never rowed; Joan's table laid for
@@ -18,7 +19,7 @@
  */
 
 /** Line ids, which are also the person's npc id. */
-export const NOT_YET = new Set<string>(['amos', 'pye', 'wren', 'joan', 'the-man', 'dennis']);
+export const NOT_YET = new Set<string>(['joan', 'the-man', 'dennis']);
 
 /** The same six, by land. */
 const LAND_OF: Record<string, string> = {

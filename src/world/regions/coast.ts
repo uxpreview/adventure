@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { notYet } from '../not-yet';
 import { coastX } from '../terrain';
 import { SANDBAR, barDist } from '../layout';
 import { duneX, CUT_PATH, HOLD_PLAN } from '../elevation';
@@ -29,6 +28,16 @@ import { helmTexture } from '../textures-worn';
 import { platform } from '../../engine/Eight15';
 import { rowboat } from '../../engine/Boat';
 import type { BuildCtx, RegionBuilder, WorldPOI } from './index';
+/* ---- TIER 3 (`world/tier3.ts`): Pye's eighth pot, Wren's finish ---- */
+import { towardLens } from '../../engine/billboard';
+import { ride } from '../ride';
+import {
+  cove, wideBlue, EIGHTH_POT as EIGHTH, PYE_PUSH, PUNT, FINISH_MARK, LONGSHIP_ANCHOR, LONGSHIP_IN,
+} from '../tier3-state';
+import {
+  tier3, K as K3, pyeSits, pyeCalls, eighthPotUp, markDown, fleetFinished, longshipIn, wrenSits,
+} from '../tier3';
+import { emptyBoatTexture, eighthPotTexture, eighthPotUpTexture } from '../textures-tier3';
 import { boxUp } from './box';
 
 /** Fire a named audio event up to the App without a plumbing run. */
@@ -212,8 +221,8 @@ things.register({ id: 'the-board', kind: 'carriable', land: 'beach', home: BOARD
 const COVE_BOAT = { x: -222, z: -136 };
 const POT_LINE: [number, number][] = [[-231, -139], [-235, -142.5], [-239, -146], [-242.5, -150], [-245.5, -153.5], [-247, -158], [-247.5, -163]];
 /** The eighth, further out than any of the seven, on a bearing he has
- *  never rowed. He will not go there. */
-const EIGHTH_POT = { x: -247.6, z: -167.5 };
+ *  never rowed (Tier 3 moved it due west, off their line: `tier3-state`). */
+const EIGHTH_POT = EIGHTH;
 const PYE_SHORE = { x: COVE_BOAT.x + 3.6, z: COVE_BOAT.z + 1.8 };
 const PYE_POTS = { x: -216.4, z: -129.2 };
 const PYE_ROWS = [{ at: 6.55, hours: 1.05 }, { at: 18.35, hours: 1.05 }];
@@ -224,6 +233,13 @@ const PYE_DAY = { id: 'pye', land: 'beach' as const, pace: 200, walkPose: 0, sto
 ]) };
 /** The day after the pots are hauled: nothing to row out to. He sits. */
 const PYE_HAULED = stops([[7.7, PYE_SHORE.x + 1.2, PYE_SHORE.z, 3, -1, 11.9]]);
+/** TIER 3: the day after he watched his boat go out without him. He
+ *  rows his pots in the morning, and sits where she was from then on;
+ *  there is no evening row. */
+const PYE_SAT = stops([
+  [7.7, PYE_SHORE.x, PYE_SHORE.z, 0, -1, 0.3], [8.2, PYE_POTS.x, PYE_POTS.z, 2, 1, 4.2],
+  [12.65, PYE_SHORE.x + 1.2, PYE_SHORE.z, 3, -1, 7.2],
+]);
 
 /* THE HORN ON THE POINT, and who answers it (Session 19; the Holdfast's
  * toy, `THE-FUN-PASS` §3 item 3). The point is LONGSHORE's and the
@@ -535,7 +551,9 @@ export const buildBeach: RegionBuilder = (ctx) => {
   // The cove's furniture sits on the WATER'S OWN EDGE. Round 1 put it
   // fifteen units inland, where the sea is out of frame to the left and
   // "the sheltered cove" was a beige void with a boat in it.
-  ctx.standee(beachedBoatTexture(1300), 6.6, 3.3, -222, -136, { rotY: 0.42 });
+  /* (TIER 3: she goes out on the eighth pot's bearing, so the land
+   * keeps hold of her drawing) */
+  const coveBoatSand = ctx.standee(beachedBoatTexture(1300), 6.6, 3.3, -222, -136, { rotY: 0.42 });
   ctx.standee(mooringPostTexture(1301), 1.1, 3.0, -227, -142);
   ctx.standee(mooringPostTexture(1302), 1.0, 2.6, -224, -150);
   const covePots: [number, number, number][] = [
@@ -656,8 +674,22 @@ export const buildBeach: RegionBuilder = (ctx) => {
   const pyeBoat = new Creature(ctx, 'pye-rowing', 'beach', [pyeBoatTexture(1513)], 6.0, 3.0, COVE_BOAT.x, COVE_BOAT.z);
   pyeBoat.hide();
   const pots = POT_LINE.map(([x, z], i) => ctx.standee(potBuoyTexture(1520 + i), 1.3, 1.7, x, z));
-  const eighthPot = ctx.standee(potBuoyTexture(1528), 1.3, 1.7, EIGHTH_POT.x, EIGHTH_POT.z);
-  eighthPot.visible = false;
+  /* TIER 3 · THE EIGHTH POT: set last week, out on the bearing Pye does
+   * not row, with a flag and a lamp on a pole so it can be found. Up for
+   * good once what is in it is read; back down, lamp on, if it is not. */
+  const eighthLit = ctx.standee(eighthPotTexture(1528, true), 1.9, 3.8, EIGHTH_POT.x, EIGHTH_POT.z);
+  const eighthDark = ctx.standee(eighthPotTexture(1529, false), 1.9, 3.8, EIGHTH_POT.x, EIGHTH_POT.z);
+  const eighthY = ctx.groundY(EIGHTH_POT.x, EIGHTH_POT.z);
+  const eighthUp = ctx.standee(eighthPotUpTexture(1527), 2.2, 1.65, -220.5, -131.5, { rotY: 0.2 });
+  eighthUp.visible = false;
+  /* PYE'S BOAT ON THE BEARING: Pye rowing it with you in the bow, or
+   * nobody in it but you at the oars, with the eighth pot in the stern
+   * once it is up */
+  const pyeRide = new Creature(ctx, 'pye-ride', 'beach',
+    [pyeBoatTexture(1514), emptyBoatTexture(1515, 'pye', false), emptyBoatTexture(1516, 'pye', true)], 6.0, 3.0, COVE_BOAT.x, COVE_BOAT.z);
+  pyeRide.hide();
+  let pyeSatDay = false;
+  let hornHour = clock.hour;
   // hauled: the seven stacked by the boat, wet
   const hauled = [[-218.5, -138.5, 0.3], [-217, -136.5, -0.4], [-219.5, -135, 0.8], [-216, -139.5, 0.1]]
     .map(([x, z, rot], i) => ctx.standee(lobsterPotTexture(1530 + (i % 3)), 1.8, 1.5, x, z, { rotY: rot }));
@@ -777,17 +809,55 @@ export const buildBeach: RegionBuilder = (ctx) => {
         if (door === 'hauled') PYE_DAY.stops.splice(0, PYE_DAY.stops.length, ...PYE_HAULED);
         for (const m of pots) m.visible = door !== 'hauled';
         for (const m of hauled) m.visible = door === 'hauled';
-        eighthPot.visible = door === 'eighth';
       }
-      const gone = platform.land === 'beach';
+      /* TIER 3 · I'LL HANDLE IT, AND ITS COST: he sits where she was */
+      if (pyeSits() && !pyeSatDay) {
+        pyeSatDay = true;
+        PYE_DAY.stops.splice(0, PYE_DAY.stops.length, ...PYE_SAT);
+      }
+      /* ...and rowed for you, he is in the boat, not on the sand */
+      const rowing3 = ride.on && ride.who === 'pye';
+      const gone = platform.land === 'beach' || (rowing3 && ride.rower === 'them');
       pye.tick(h, grey || gone);
+      /* TIER 3 · THE BOAT ON THE BEARING */
+      coveBoatSand.visible = !cove.boat.out;
+      if (cove.boat.out) {
+        const [lx, lz] = towardLens();
+        const pose = ride.rower === 'them' ? 0 : knowledge.has(K3.hauled) && !knowledge.has(K3.noteDropped) ? 2 : 1;
+        const bx = cove.boat.x + lx * 0.5;
+        const bz = cove.boat.z + lz * 0.5;
+        pyeRide.set(pose, bx, bz, cove.boat.fx < 0 ? -1 : 1, Math.sin(t * 1.1) * 0.08 - 0.2);
+      } else pyeRide.hide();
+      /* THE EIGHTH POT: out on its bearing with its lamp lit after dark;
+       * in the boat while it is being read; up on the sand for good */
+      {
+        const inBoat = rowing3 && knowledge.has(K3.hauled) && !knowledge.has(K3.noteDropped) && !knowledge.has(K3.noteRead);
+        const up = eighthPotUp();
+        const out = !up && !inBoat;
+        const lit = clock.lamp > 0.3;
+        const sw = Math.sin(t * 0.8 + 2.1) + 0.4 * Math.sin(t * 1.7);
+        for (const [m, want] of [[eighthLit, out && lit], [eighthDark, out && !lit]] as const) {
+          m.visible = want;
+          m.position.y = eighthY + sw * 0.2;
+          m.rotation.z = sw * 0.08;
+        }
+        eighthUp.visible = up && !rowing3;
+      }
+      /* PYE'S CALL, PUT BACK: the horn on the point at dusk, once a day,
+       * and out past the mark something answers (the Wide Blue's roar) */
+      if (pyeCalls() && hornHour < 19.5 && h >= 19.5 && Math.hypot(px + 233, pz + 76) < 160) {
+        say('horn');
+        horn.pending = true;
+      }
+      hornHour = h;
       // the row: out along the line, a pause at each pot, and back
       let rowing = -1;
       for (let i = 0; i < PYE_ROWS.length; i++) {
         const p = events.progress(`pye-rows-${i}`);
         if (p >= 0) rowing = p;
       }
-      if (rowing < 0 || door === 'hauled' || gone) pyeBoat.hide();
+      if (pyeSits() && h > 15) rowing = -1;
+      if (rowing < 0 || door === 'hauled' || gone || cove.boat.out) pyeBoat.hide();
       else {
         const n = POT_LINE.length;
         const u = rowing < 0.5 ? rowing * 2 : 2 - rowing * 2;   // out, then back
@@ -828,7 +898,7 @@ export const buildBeach: RegionBuilder = (ctx) => {
       hatState.running = !worn.has('the-hat') && k >= 0;
     }
     /* THE HELM, on the foreshore, until it is picked up. */
-    helm.visible = knowledge.has('door:the-fleet-finished') && !worn.has('the-helm');
+    helm.visible = (knowledge.has('door:the-fleet-finished') || fleetFinished()) && !worn.has('the-helm');
   };
 };
 
@@ -944,33 +1014,67 @@ export const BEACH_POIS: WorldPOI[] = [
     },
   },
   {
-    /* THE POT LINE — where Pye's wait is legible, and where both doors
-     * are (`THE-FUN-PASS` §6, `THE-WAITS` §6). Before you have the
-     * mark's name it is a note; with it, a card with two doors, offered
-     * once. Nothing here says which was right. */
+    /* THE POT LINE — where Pye's day is legible. (Session 19's card —
+     * the mark's name for an eighth pot, or the pots hauled — went with
+     * Tier 3: the eighth pot is set already, and it is yours to row out
+     * to, `tier3.ts`.) */
     x: PYE_POTS.x, z: PYE_POTS.z + 0.5, radius: 5.5, label: 'THE POT LINE',
-    get prompt() {
-      const done = knowledge.has('door:the-eighth-pot') || knowledge.has('door:the-pots-hauled');
-      if (!done && !notYet('beach') && knowledge.has('name:the-mark')) return 'TELL HIM THE MARK\'S NAME';
-      return 'COUNT THE POTS';
-    },
-    get choice() {
-      if (notYet('beach') || !knowledge.has('name:the-mark')) return undefined;
-      return {
-        body: 'seven pots on a line off the cove, and a man who rows out to them at the tide and back at the tide, and has done for as long as the tide has. you have been out to the mark, which nobody in longshore has. he would like to know what it is called. or the pots could come up. they have never once come up.',
-        options: [
-          { label: 'TELL HIM THE MARK\'S NAME', door: 'door:the-eighth-pot' },
-          { label: 'HAUL THE POTS', door: 'door:the-pots-hauled' },
-        ],
-      };
-    },
+    prompt: 'COUNT THE POTS',
     note: {
       title: 'the pot line',
       body: () => {
         if (knowledge.has('door:the-eighth-pot')) return 'eight pots on a line off the cove, and the eighth is further out than any of the seven, on a bearing nobody here has rowed. he set it the morning after you came back. he has not been out to it and he is not going to, and it has his mark on it.';
         if (knowledge.has('door:the-pots-hauled')) return 'seven pots stacked by the boat, wet, and nothing on the line. they were empty. he has not said anything about it, and he sits on the gunwale now at the hours he used to row, and the tide comes in and goes out without anywhere to put him.';
-        return 'seven pots on a line off the cove, three or four paces apart, going out. pye rows out to them at the tide and back at the tide. they catch nothing much, and he sets them again anyway, and the tide is the most reliable thing anybody here knows.';
+        if (eighthPotUp()) return 'seven pots on a line off the cove, going out, and an eighth on the sand by the boat with its pole laid across it. it came up with a coat in it. pye rows the seven at the tide and blows the horn on the point at dusk.';
+        return 'seven pots on a line off the cove, three or four paces apart, going out. pye rows out to them at the tide and back at the tide. they catch nothing much, and he sets them again anyway. further out, off their line and due west, there is an eighth, with a flag and a lamp on a pole. he does not row to that one.';
       },
+    },
+  } as unknown as WorldPOI,
+  {
+    /* TIER 3 · PYE'S BOAT, at the water's edge beside her: the key is
+     * getting in, once Pye has said who rows. Eight units off where he
+     * stands, so his talk does not win it. */
+    x: PYE_PUSH.x, z: PYE_PUSH.z, radius: 3.0, label: 'PYE\'S BOAT', labelHeight: 2.2, labelReach: 22,
+    get enabled() { return tier3.boardPye; },
+    set enabled(_v: boolean) { /* the promise decides */ },
+    get prompt() { return knowledge.has(K3.pyeRows) ? 'GET IN THE BOW' : 'PUSH HER OFF AND GET IN'; },
+    answers: true,
+    touch: () => { tier3.getInPyes(); },
+  } as unknown as WorldPOI,
+  {
+    /* TIER 3 · PULL. In somebody's boat with the oars in your hands, the
+     * key is a stroke (and so is any push of the stick: `ride.ts`). It
+     * is wherever the walker is sitting. */
+    get x() { return ride.x; },
+    get z() { return ride.z; },
+    get enabled() { return tier3.pullMine; },
+    set enabled(_v: boolean) { /* the ride decides */ },
+    radius: 3.0,
+    prompt: 'PULL',
+    answers: true,
+    ride: true,
+    touch: () => { tier3.pull(); },
+  } as unknown as WorldPOI,
+  {
+    /* TIER 3 · THE EIGHTH POT, from the boat: haul it up, and then the
+     * card — read what is in the coat, or drop it back in. */
+    x: EIGHTH_POT.x, z: EIGHTH_POT.z, radius: 5.0, label: 'THE EIGHTH POT', labelHeight: 2.8, labelReach: 60,
+    get enabled() { return tier3.haulMine || tier3.noteMine; },
+    set enabled(_v: boolean) { /* the promise decides */ },
+    get prompt() { return tier3.haulMine ? 'HAUL IT UP' : 'READ IT, OR DROP IT BACK IN'; },
+    answers: true,
+    ride: true,
+    touch: () => { tier3.haul(); },
+    get choice() {
+      if (!tier3.noteMine) return undefined;
+      return {
+        title: 'the eighth pot',
+        body: 'a pot on a long line, and in it, rolled tight and soaked and dried and soaked again, a coat. yours: it fits the shape of you. in the inside pocket there is a note folded small, in your hand. pye has not read it. nobody has. you could read it here, out past his seventh. or roll it back up and drop the pot back down, with its lamp on, where it has been.',
+        options: [
+          { label: 'READ IT', door: 'door:the-note-read' },
+          { label: 'DROP IT BACK IN', door: 'door:the-note-dropped' },
+        ],
+      };
     },
   } as unknown as WorldPOI,
 ];
@@ -1039,27 +1143,26 @@ events.register({ id: 'the-deep', land: 'ocean', at: 19.35, hours: 0.1, place: {
   onStart: (px, pz) => { if (deepDay(clock.day) && Math.hypot(px + 300, pz + 70) < 110) say('deep-surface'); } });
 
 /* ================================================================== *
- * THE VIKINGS ON THE HOLDFAST (Session 19, `THE-FUN-PASS` §10). A
- * longship beached at the foot of the point's seaward face, and a
- * raiding party that has been waiting for a wind for four hundred
- * years. **Every day they row out to the mark and compete in the
- * regatta**, because it is the only thing to do. They roar at the
- * shore. **They cannot land on it**: the berth is THE WIDE BLUE's and
- * the sand they roar at is LONGSHORE's, and the border is the rule that
- * makes them funny. The ship is a thing and the crew is its drawing;
- * neither has a position outside the ocean's rect by any path here.
+ * THE VIKINGS BEYOND THE MARK (Session 19; moved out by Tier 3 to the
+ * story of record, `foundation/08` §5). A longship that has lain at
+ * anchor out past the mark for four hundred years and cannot land.
+ * **Every day they row in to the mark and race in the regatta**, the
+ * last boat since anybody was counting, and gaining. They roar at the
+ * shore. They have never once stood on it. For three years the walker
+ * pulled an oar on their fourth bench (Wren's promise, `tier3.ts`).
  *
- * Their day is a pure function of the hour, like everybody's: in from
- * the offing at first light (the first time you see them from the
- * promenade they are a longship coming in), beached until the regatta
- * is called, out to the course and round it, back, and beached again
- * through the night.
+ * (Session 19 had them beached at the foot of the Holdfast, which is a
+ * landing, and the whole of them is that they cannot.)
+ *
+ * Their day is a pure function of the hour, like everybody's: at anchor
+ * beyond the mark; in to the course before noon; round it, last; and
+ * back out. Under the old rules, once the race has a finish and a
+ * winner, they do not come in to race at all. Under a new rule, the last
+ * boat over the line has finished too, and they lie inside the mark
+ * afterwards, off the bar, like they live here.
  * ================================================================== */
-const BERTH = { x: -264, z: -46 };
-const OFFING = { x: -334, z: -96 };
-const SHIP = { rowIn: [6.0, 7.0], out: [11.85, 12.0], race: [12.0, 13.5], back: [13.5, 13.75] };
-events.register({ id: 'the-longship-in', land: 'ocean', at: 6.0, hours: 1.0, place: BERTH });
-events.register({ id: 'the-longship-out', land: 'ocean', at: 11.85, hours: 1.9, place: BERTH });
+const SHIP = { out: [11.6, 12.0], race: [12.0, 13.5], back: [13.5, 13.95] };
+events.register({ id: 'the-longship-out', land: 'ocean', at: 11.6, hours: 2.35, place: { x: -330, z: -40 } });
 
 /* ================================================================== *
  * WREN (Session 19, `THE-WAITS` §8). Keeps the mark: rows out, rings
@@ -1068,11 +1171,14 @@ events.register({ id: 'the-longship-out', land: 'ocean', at: 11.85, hours: 1.9, 
  * the noon row goes out along the bar's seaward side to the mark, and
  * Wren is beside the buoy for the race and rows back after it.
  * ================================================================== */
-const WREN_BOAT = { x: -266.5, z: 72.5 };
+/* (Tier 3 moved the punt nine units off where Wren stands, so the
+ * punt can be pressed at all: `tier3-state.ts` PUNT) */
+const WREN_BOAT = PUNT;
 const WREN_SHORE = { x: -263.6, z: 70.4 };
 const WREN_AT_MARK = { x: -304, z: -32 };
-/** The second mark, at the bar's far end, in the water off it. */
-const SECOND_MARK = { x: -266, z: -16 };
+/** The second mark: out where the fleet comes home, so the line from
+ *  the first runs across the course (Tier 3, `tier3-state.ts`). */
+const SECOND_MARK = FINISH_MARK;
 const WREN_ROW = { at: 11.6, hours: 2.3 };
 events.register({ id: 'wren-rows', land: 'ocean', ...WREN_ROW, place: { x: -282, z: 34 } });
 const WREN_EVENING = { at: 18.0, hours: 1.0 };
@@ -1087,6 +1193,9 @@ const WREN_AFTERNOON = { id: 'wren-afternoon', land: 'ocean' as const, pace: 200
  *  afternoon routine is given a stop it never reaches. */
 const WREN_FINISHED = stops([[8.0, WREN_SHORE.x + 1.6, WREN_SHORE.z + 0.4, 3, -1, 10]]);
 const WREN_NEVER = stops([[24.5, WREN_SHORE.x, WREN_SHORE.z, 0, 1, 0.01]]);
+/** TIER 3: I'LL HANDLE IT, and its cost: the punt went out without
+ *  Wren, and Wren sits on the bar at noon and does not row the mark. */
+const WREN_SAT = stops([[8.0, WREN_SHORE.x, WREN_SHORE.z, 2, -1, 3.5], [11.58, WREN_SHORE.x + 1.6, WREN_SHORE.z + 0.4, 3, -1, 6.4]]);
 
 /** THE BAR'S STONE (`QUESTS` §8: skim a stone off the sandbar). The
  *  Common's stone has a twin on the bar, and this one skips. */
@@ -1215,32 +1324,36 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
    * the sand, drifting a little, and nothing anywhere says what is
    * under it. The mark is fifty units further out and rings. This one
    * does not. */
-  const COVE_LIGHT = { x: -252, z: -165 };
+  /* (Tier 3: it is the eighth pot's lamp — `tier3-state.ts` — and it
+   * goes when the pot comes up) */
+  const COVE_LIGHT = { x: EIGHTH.x, z: EIGHTH.z - 0.4 };
   const coveLight = new Creature(ctx, 'the-cove-light', 'ocean', [lampGlowTexture(1495)], 3.2, 3.2, COVE_LIGHT.x, COVE_LIGHT.z);
   events.register({ id: 'the-cove-light', land: 'ocean', at: 21.0, hours: 7.6 });
 
   /* ---- THE VIKINGS (Session 19) ------------------------------------- */
   const longship = new Creature(ctx, 'the-longship', 'ocean',
-    [longshipTexture(1600, 0), longshipTexture(1601, 1), longshipTexture(1602, 2)], 14, 7, BERTH.x, BERTH.z);
+    [longshipTexture(1600, 0), longshipTexture(1601, 1), longshipTexture(1602, 2)], 14, 7, LONGSHIP_ANCHOR.x, LONGSHIP_ANCHOR.z);
   /* AND THE MAN IN THE BOW WITHOUT HIS HELM (Session 22, `worn.ts`):
    * the same three drawings with one line missing, swapped in once
    * the helm is picked up off the sand, for good. */
   let shipBare = false;
   const ship = { roarT: 0, next: 4 + r() * 6, seen: false };
-  /* Where the ship is at an hour, and what it is doing. Pure. */
+  /* Where the ship is at an hour, and what it is doing. Pure. Pose 0
+   * is at rest with the sail furled, 1 under oars. */
   const shipAt = (h: number): { x: number; z: number; pose: 0 | 1; face: -1 | 1 } => {
     const lerp = (a: { x: number; z: number }, b: { x: number; z: number }, u: number) =>
       ({ x: a.x + (b.x - a.x) * u, z: a.z + (b.z - a.z) * u });
+    const home = longshipIn() ? LONGSHIP_IN : LONGSHIP_ANCHOR;
+    /* the old rules: the race is over, and nobody from past the mark
+     * finishes. They do not come in to race again. */
+    if (fleetFinished() || knowledge.has('door:the-fleet-finished')) return { ...home, pose: 0, face: 1 };
     const start = alongPath(COURSE, 0.9);
-    if (h >= SHIP.rowIn[0] && h < SHIP.rowIn[1]) {
-      const u = (h - SHIP.rowIn[0]) / (SHIP.rowIn[1] - SHIP.rowIn[0]);
-      return { ...lerp(OFFING, BERTH, u * u * (3 - 2 * u)), pose: 1, face: 1 };
-    }
     if (h >= SHIP.out[0] && h < SHIP.out[1]) {
       const u = (h - SHIP.out[0]) / (SHIP.out[1] - SHIP.out[0]);
-      return { ...lerp(BERTH, start, u), pose: 1, face: -1 };
+      return { ...lerp(home, start, u * u * (3 - 2 * u)), pose: 1, face: start.x > home.x ? 1 : -1 };
     }
     if (h >= SHIP.race[0] && h < SHIP.race[1]) {
+      /* last, and a lap behind the fleet's slowest, and gaining */
       const u = (h - SHIP.race[0]) / (SHIP.race[1] - SHIP.race[0]);
       const p = alongPath(COURSE, 0.9 + u * 2.6);
       return { x: p.x, z: p.z, pose: 1, face: p.ax >= 0 ? 1 : -1 };
@@ -1248,10 +1361,20 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
     if (h >= SHIP.back[0] && h < SHIP.back[1]) {
       const u = (h - SHIP.back[0]) / (SHIP.back[1] - SHIP.back[0]);
       const end = alongPath(COURSE, 0.9 + 2.6);
-      return { ...lerp({ x: end.x, z: end.z }, BERTH, u), pose: 1, face: 1 };
+      return { ...lerp({ x: end.x, z: end.z }, home, u), pose: 1, face: home.x > end.x ? 1 : -1 };
     }
-    return { x: BERTH.x, z: BERTH.z, pose: 0, face: 1 };
+    return { x: home.x, z: home.z, pose: 0, face: 1 };
   };
+  /* where it is drawn, eased, so a longship leaving the punt's side or
+   * let in over the line does not jump there */
+  const shipDrawn = { x: LONGSHIP_ANCHOR.x, z: LONGSHIP_ANCHOR.z, set: false };
+  /* WREN'S PUNT ON THE WAY OUT: Wren sculling it with you in the bow,
+   * or nobody in it but you, with the second mark across the thwarts
+   * until it is dropped */
+  const puntRide = new Creature(ctx, 'punt-ride', 'ocean',
+    [wrenBoatTexture(1617), emptyBoatTexture(1618, 'punt', true), emptyBoatTexture(1619, 'punt', false)], 5.6, 3.3, WREN_BOAT.x, WREN_BOAT.z);
+  puntRide.hide();
+  let wrenSatDay = false;
   /* ---- WREN, THE SECOND MARK (Session 19) --------------------------- */
   const wrenMaps = { 0: wrenTexture(1610, 0), 2: wrenTexture(1611, 2), 3: wrenTexture(1612, 3) };
   const wren = new Figure(ctx, WREN_DAY, 2, { maps: wrenMaps, scale: 0.98 });
@@ -1285,9 +1408,10 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
      * it happens where the course doubles back. From Session 17 the
      * RACE is at noon: three times the speed for an hour and a half,
      * and the heel goes with the wind. */
-    /* THE FLEET FINISHED (Session 19, Wren's second door): the boats
-     * lie at anchor off the second mark and do not race, ever again. */
-    const finished = knowledge.has('door:the-fleet-finished');
+    /* THE FLEET FINISHED (Session 19, Wren's second door; Tier 3's old
+     * rules): the boats lie at anchor off the second mark and do not
+     * race, ever again. */
+    const finished = knowledge.has('door:the-fleet-finished') || fleetFinished();
     const race = !finished && events.progress('the-regatta') >= 0 ? 1 : 0;
     const wind = weather.state.wind;
     const fill = 1 + race * (1.6 + wind * 1.6);
@@ -1331,8 +1455,21 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
       }
       const hh = clock.hour;
       const at = shipAt(hh);
-      const beached = at.pose === 0;
-      ship.roarT = Math.max(0, ship.roarT - dt);
+      /* TIER 3 · THE LAST BOAT COMES ALONGSIDE the punt, under oars */
+      const A = wideBlue.alongside;
+      const tx = A.on ? A.x : at.x;
+      const tz = A.on ? A.z : at.z;
+      const resting = !A.on && at.pose === 0;
+      if (!shipDrawn.set) { shipDrawn.x = tx; shipDrawn.z = tz; shipDrawn.set = true; }
+      {
+        /* eased, so it rows off the punt's side, or in over the line,
+         * rather than jumping there */
+        const gap = Math.hypot(tx - shipDrawn.x, tz - shipDrawn.z);
+        const k = gap > 6 ? 1 - Math.exp(-dt * 0.7) : 1;
+        shipDrawn.x += (tx - shipDrawn.x) * k;
+        shipDrawn.z += (tz - shipDrawn.z) * k;
+      }
+      ship.roarT = Math.max(0, ship.roarT - dt, A.roar);
       // the horn is answered a beat and a half after it is blown
       if (horn.pending) { horn.pending = false; horn.answerAt = t + 1.4; }
       if (horn.answerAt > 0 && t >= horn.answerAt) {
@@ -1341,12 +1478,10 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
         horn.liftGulls = true;
         say('viking-roar');
       }
-      /* THEY ROAR AT THE SHORE: at anybody on the sand within earshot
-       * of the berth, by day, every ten seconds or so — and never at
-       * anybody on the water, because that is a different matter. */
-      const onSand = px > -250 && hh >= 7 && hh < 20;
-      const d = Math.hypot(px - BERTH.x, pz - BERTH.z);
-      if (beached && onSand && d < 46) {
+      /* THEY ROAR AT THE SHORE: at anybody on the bar or the sand within
+       * earshot of where they lie, by day, every ten seconds or so. */
+      const d = Math.hypot(px - shipDrawn.x, pz - shipDrawn.z);
+      if (resting && !ride.on && hh >= 7 && hh < 20 && d < 72) {
         ship.next -= dt;
         if (ship.next <= 0) {
           ship.next = 9 + Math.abs(Math.sin(t * 3.1)) * 6;
@@ -1354,17 +1489,19 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
           say('viking-roar');
         }
       } else ship.next = Math.min(ship.next, 3);
-      const pose = beached ? (ship.roarT > 0 ? 2 : 0) : 1;
+      const pose = ship.roarT > 0 ? 2 : resting ? 0 : 1;
       // the ship is a THING: nothing gives it a position off the ocean's page
-      const sx = Math.min(-252.5, at.x);
+      const sx = Math.min(-252.5, shipDrawn.x);
       const lurch = ship.roarT > 0 ? Math.sin(t * 22) * 0.03 : 0;
-      longship.set(pose, sx, at.z, at.face, Math.sin(t * 0.6) * (beached ? 0.05 : 0.12));
-      longship.mesh.rotation.z = Math.sin(t * 0.55) * (beached ? 0.012 : 0.035) + lurch;
+      longship.set(pose, sx, shipDrawn.z, A.on ? A.face : at.face, Math.sin(t * 0.6) * (resting ? 0.08 : 0.12));
+      longship.mesh.rotation.z = Math.sin(t * 0.55) * (resting ? 0.02 : 0.035) + lurch;
     }
 
-    /* ---- WREN, THE SECOND MARK, THE FINISH (Session 19) --------------- */
+    /* ---- WREN, THE SECOND MARK, THE FINISH (Session 19; Tier 3) ------- */
     {
-      const door = knowledge.has('door:the-fleet-finished') ? 'finished' : knowledge.has('door:the-second-mark') ? 'mark' : 'none';
+      const oldFinished = knowledge.has('door:the-fleet-finished') || fleetFinished();
+      const marked = oldFinished || markDown() || knowledge.has('door:the-second-mark');
+      const door = oldFinished ? 'finished' : marked ? 'mark' : 'none';
       if (door !== wrenDoor) {
         wrenDoor = door;
         secondMark.visible = door !== 'none';
@@ -1373,16 +1510,25 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
           WREN_AFTERNOON.stops.splice(0, WREN_AFTERNOON.stops.length, ...WREN_NEVER);
         }
       }
+      /* TIER 3 · I'LL HANDLE IT, AND ITS COST: Wren sits at noon */
+      if (wrenSits() && !wrenSatDay && door !== 'finished') {
+        wrenSatDay = true;
+        WREN_DAY.stops.splice(0, WREN_DAY.stops.length, ...WREN_SAT);
+        WREN_AFTERNOON.stops.splice(0, WREN_AFTERNOON.stops.length, ...WREN_NEVER);
+      }
       if (secondMark.visible) {
         const sw = Math.sin(t * 0.7 + 1.3) + 0.4 * Math.sin(t * 1.5);
         secondMark.position.y = secondMarkY + sw * 0.24;
         secondMark.rotation.z = sw * 0.09;
       }
-      const gone = platform.land === 'ocean';
+      /* rowed for you, Wren is in the punt, not on the bar */
+      const riding = ride.on && ride.who === 'wren';
+      const gone = platform.land === 'ocean' || (riding && ride.rower === 'them');
       wren.tick(clock.hour, gone);
       wrenPm.tick(clock.hour, gone);
-      const rowing = events.progress('wren-rows');
-      const evening = door === 'none' || door === 'finished' ? -1 : events.progress('wren-rows-evening');
+      const puntOut = wideBlue.punt.out;
+      const rowing = wrenSits() || puntOut ? -1 : events.progress('wren-rows');
+      const evening = door === 'none' || door === 'finished' || wrenSits() || puntOut ? -1 : events.progress('wren-rows-evening');
       let out: { x: number; z: number; face: -1 | 1 } | null = null;
       if (rowing >= 0 && door !== 'finished' && !gone) {
         // out for the first sixth, at the mark for the middle, back for the last
@@ -1402,8 +1548,14 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
         punt.visible = false;
       } else {
         wrenRowing.hide();
-        punt.visible = true;
+        punt.visible = !puntOut;
       }
+      /* TIER 3 · THE PUNT ON ITS WAY OUT */
+      if (puntOut) {
+        const [lx, lz] = towardLens();
+        const pose = ride.rower === 'them' ? 0 : markDown() ? 2 : 1;
+        puntRide.set(pose, wideBlue.punt.x + lx * 0.5, wideBlue.punt.z + lz * 0.5, wideBlue.punt.fx < 0 ? -1 : 1, Math.sin(t * 1.2) * 0.08 - 0.2);
+      } else puntRide.hide();
       // Wren rings the bell at noon: the mark nods harder while the punt is beside it
       if (rowing >= 0.174 && rowing < 0.22) bell.rotation.z += Math.sin(t * 9) * 0.06;
     }
@@ -1506,8 +1658,9 @@ export const buildOcean: RegionBuilder = (ctx: BuildCtx) => {
     }
     {
       const on = events.progress('the-cove-light');
-      if (on < 0) coveLight.hide();
-      else coveLight.set(0, COVE_LIGHT.x + Math.sin(t * 0.05) * 5, COVE_LIGHT.z + Math.cos(t * 0.037) * 3, 1, 0.9, 0.55 + Math.sin(t * 0.9) * 0.2);
+      const inBoat = ride.on && ride.who === 'pye' && knowledge.has(K3.hauled) && !knowledge.has(K3.noteDropped);
+      if (on < 0 || eighthPotUp() || inBoat) coveLight.hide();
+      else coveLight.set(0, COVE_LIGHT.x, COVE_LIGHT.z, 1, 3.3 + Math.sin(t * 0.8) * 0.15, 0.55 + Math.sin(t * 0.9) * 0.2);
     }
   };
 };
@@ -1573,54 +1726,51 @@ export const OCEAN_POIS: WorldPOI[] = [
   },
   /* ---- SESSION 19: THE NEW CAST, WEST ------------------------------ */
   {
-    /* THE HOLDFAST's berth, read from the bar's near end or the bight:
-     * the longship is a thing you look at, and the note is the whole of
-     * what anybody will ever tell you about them. */
-    x: BERTH.x + 6, z: BERTH.z + 4, radius: 13, label: 'THE LONGSHIP',
+    /* THE LONGSHIP, read from the bar's far bend, where it is nearest
+     * the anchorage — or, once a rule lets it in, from the bar by the
+     * punt. The note is the whole of what anybody ashore can tell you
+     * about them. */
+    get x() { return longshipIn() ? -286 : -293.5; },
+    get z() { return longshipIn() ? 50 : -40; },
+    radius: 10, label: 'THE LONGSHIP',
     prompt: 'COUNT THE SHIELDS',
     note: {
       title: 'the longship',
       body: () => {
-        if (worn.has('the-helm')) return 'a longship, beached at the foot of the point, with seven shields along her side and four men in her who have been waiting for a wind for four hundred years. the one in the bow has no helm. the other three have not let him forget it. they roar at the sand. they have never once stood on it.';
-        if (knowledge.has('door:the-fleet-finished')) return 'a longship, beached at the foot of the point, with seven shields along her side and four men in her who have been waiting for a wind for four hundred years. there is no race to row out to now, so they do not. the one in the bow threw something at the sand this morning. it went further than they ever have. they roar at it.';
-        /* THE HELM UNDER THE OTHER DOOR (Session 23, `critique-story-4`
-         * RECOMMENDED 2): with the second mark alone the fleet still
-         * races and nothing is thrown, and the note says what the bow
-         * man did not do, so a cost the walker never took is a cost they
-         * can see. One clause. */
-        if (knowledge.has('door:the-second-mark')) return 'a longship, beached at the foot of the point, with seven shields along her side and four men in her who have been waiting for a wind for four hundred years. every day at noon they row out and go round the mark, and the second mark, with the others, because it is still the only thing to do. the one in the bow stood up this morning with his helm in his hand and looked at the sand a long time, and put it back on. they roar at the sand. they have never once stood on it.';
-        return 'a longship, beached at the foot of the point, with seven shields along her side and four men in her who have been waiting for a wind for four hundred years. every day at noon they row out and go round the mark with the others, because it is the only thing to do. they roar at the sand. they have never once stood on it.';
+        if (longshipIn()) return 'a longship at anchor inside the mark, off the bar, with seven shields along her side and four men in her. she came over the second mark last, roaring, under a rule that says the last boat home has finished too, and she lies here now like she lives here. they have still never stood on the sand. they are looking at it differently.';
+        if (worn.has('the-helm')) return 'a longship at anchor out past the mark, with seven shields along her side and four men in her who have lain out there four hundred years and cannot land. the one in the bow has no helm. the other three have not let him forget it. they roar at the shore. they have never once stood on it.';
+        if (knowledge.has('door:the-fleet-finished') || fleetFinished()) return 'a longship at anchor out past the mark, with seven shields along her side and four men in her who cannot land. the race has a finish now and a winner, under the old rules, and a boat from past the mark does not finish. so they do not come in to race. the one in the bow threw something at the shore the morning after. it went further than they ever have. they roar at it.';
+        return 'a longship at anchor out past the mark, with seven shields along her side and four men in her who have lain out there four hundred years and cannot land. every day at noon they row in and go round the mark with the fleet, last since anybody was counting, and gaining. there is a fourth bench on her steerboard side with nobody on it. they roar at the shore. they have never once stood on it.';
       },
     },
   },
   {
-    /* WREN'S PUNT — where Wren's wait is legible and where both doors
-     * are (`THE-FUN-PASS` §6, `THE-WAITS` §8). With the bar walked to
-     * its end it is a card with two doors, offered once. */
-    x: WREN_BOAT.x, z: WREN_BOAT.z - 1.5, radius: 6, label: 'THE PUNT',
+    /* WREN'S PUNT, nine units from where Wren stands (Tier 3): look in
+     * it; and once Wren has said who rows, get in it. A place with a
+     * note and a touch reads its note, so the note is not here while
+     * getting in is the key. (Session 19's card — set the second mark,
+     * or call the finish — went with Tier 3: the mark is rowed out and
+     * dropped now, `tier3.ts`.) */
+    x: WREN_BOAT.x, z: WREN_BOAT.z, radius: 4.2, label: 'THE PUNT', labelHeight: 2.2, labelReach: 24,
     get prompt() {
-      const done = knowledge.has('door:the-second-mark') || knowledge.has('door:the-fleet-finished');
-      if (!done && !notYet('ocean') && knowledge.has('route:the-bar')) return 'TELL WREN WHERE THE BAR ENDS';
+      if (tier3.boardPunt) return knowledge.has(K3.wrenRows) ? 'GET IN THE BOW' : 'PUSH IT OFF AND GET IN';
       return 'LOOK IN THE PUNT';
     },
-    get choice() {
-      if (notYet('ocean') || !knowledge.has('route:the-bar')) return undefined;
+    answers: true,
+    touch: () => { tier3.getInPunt(); },
+    get note() {
+      if (tier3.boardPunt) return undefined;
       return {
-        body: 'you have walked the bar to its end, which is the one thing out here that is not water, and wren has never asked what is at the end of it. two marks make a line, and a line has an end, and the fleet has been calling this a race since before anybody was counting. wren could set a second mark. or set it, and call the finish.',
-        options: [
-          { label: 'SET THE SECOND MARK', door: 'door:the-second-mark' },
-          { label: 'SET IT, AND CALL THE FINISH', door: 'door:the-fleet-finished' },
-        ],
+        title: 'the punt',
+        body: () => {
+          if (fleetFinished() || knowledge.has('door:the-fleet-finished')) return 'a punt drawn up on the bar with one oar in it, and the fleet at anchor off the second mark, which is where the line ended. somebody won. wren sits by the punt at the hours the bell used to go, and the bell does not go, and out past the mark the longship lies where the old rules put it.';
+          if (longshipIn()) return 'a punt drawn up on the bar with one oar in it, a coil of the bell\'s rope and a tin of the mark\'s paint. the fleet races to the second mark every noon now, and a longship comes over it last, roaring, and lies inside the mark afterwards. wren rows out to the far mark in the evening, and rows back.';
+          if (markDown()) return 'a punt drawn up on the bar with one oar in it, and a coil of the bell\'s rope, and a tin of the mark\'s paint. there are two marks now.';
+          return 'a punt drawn up on the bar with one oar in it, a coil of the bell\'s rope, a tin of the mark\'s paint, and a second bell buoy lying across the thwarts with the paint still bright on it. somebody rows out to the mark at noon and rings the bell and rows back, and has done for as long as the fleet has gone round it, and everything wren says is said twice, in case.';
+        },
       };
     },
-    note: {
-      title: 'the punt',
-      body: () => {
-        if (knowledge.has('door:the-fleet-finished')) return 'a punt drawn up on the bar with one oar in it, and the fleet at anchor off the far end of the bar by the second mark, which is where the line ended. nobody won. wren sits by the punt at the hours the bell used to go, and the bell does not go, and the fleet is all in one place now, all day, which was the point, and is not the same.';
-        if (knowledge.has('door:the-second-mark')) return 'a punt drawn up on the bar with one oar in it, and a coil of the bell\'s rope, and a tin of the mark\'s paint. there are two marks now. wren rows out to the far one in the evening and rings nothing, because it has no bell, and rows back. the fleet goes round the first one, the way it always has.';
-        return 'a punt drawn up on the bar with one oar in it, a coil of the bell\'s rope, and a tin of the mark\'s paint. somebody rows out to the mark at noon and rings the bell and rows back, and has done for as long as the fleet has gone round it, and everything wren says is said twice, in case.';
-      },
-    },
+    set note(_v: unknown) { /* the promise decides */ },
   } as unknown as WorldPOI,
   {
     /* THE BAR'S STONE, where it lies. */
@@ -1633,8 +1783,32 @@ export const OCEAN_POIS: WorldPOI[] = [
     touch: () => { things.pickUp('bar-stone'); },
   } as unknown as WorldPOI,
   {
-    x: SECOND_MARK.x, z: SECOND_MARK.z, radius: 9, label: 'THE SECOND MARK',
-    get enabled() { return knowledge.has('door:the-second-mark') || knowledge.has('door:the-fleet-finished'); },
-    set enabled(_v: boolean) { /* the door decides */ },
+    /* THE SECOND MARK: out where the fleet comes home. From the punt at
+     * the end of its row, the key drops it (Tier 3), and then the card
+     * says which rules the finish is run under. */
+    x: SECOND_MARK.x, z: SECOND_MARK.z, radius: 9, label: 'THE SECOND MARK', labelHeight: 5, labelReach: 70,
+    get enabled() { return tier3.dropMine || tier3.rulesMine; },
+    set enabled(_v: boolean) { /* the promise decides */ },
+    get prompt() { return tier3.dropMine ? 'DROP THE SECOND MARK' : 'SAY WHICH RULES'; },
+    ride: true,
+    answers: true,
+    touch: () => { tier3.dropTheMark(); },
+    get choice() {
+      if (!tier3.rulesMine) return undefined;
+      return {
+        title: 'the second mark',
+        body: 'two marks, and a line between them across the fleet\'s home leg: a finish. alongside lies the longship, last since anybody was counting. under the old rules a boat from past the mark does not finish and does not come in, and the race has a winner today and ends. or a new rule: the last boat over the line has finished too.',
+        options: [
+          { label: 'THE OLD RULES', door: 'door:the-old-rules' },
+          { label: 'A NEW RULE: LAST IN FINISHES TOO', door: 'door:the-longship-in' },
+        ],
+      };
+    },
+  } as unknown as WorldPOI,
+  {
+    /* and once it is down, it is a place with a name */
+    x: SECOND_MARK.x, z: SECOND_MARK.z, radius: 9, label: 'THE SECOND MARK', labelHeight: 5, labelReach: 70,
+    get enabled() { return !tier3.dropMine && !tier3.rulesMine && (markDown() || knowledge.has('door:the-second-mark') || knowledge.has('door:the-fleet-finished')); },
+    set enabled(_v: boolean) { /* the promise decides */ },
   } as unknown as WorldPOI,
 ];

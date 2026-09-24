@@ -17,12 +17,13 @@ import { TIER1_JOBS } from './jobs/tier1';
 import { tier1, hourKnown } from './tier1';
 import { TIER2_JOBS } from './jobs/tier2';
 import { tier2 } from './tier2';
+import { TIER3_JOBS } from './jobs/tier3';
+import { tier3 } from './tier3';
 import { clock } from './daylight';
 import { NOT_YET, notYet } from './not-yet';
 import { THE_LIST } from './thelist';
 import { CIVIC_JOBS } from './jobs/civic';
 import { WILDS_JOBS } from './jobs/wilds';
-import { COAST_JOBS } from './jobs/coast';
 
 /**
  * THINGS TO DO — the hub. A job registry with triggers (`jobs/*.ts`),
@@ -40,10 +41,10 @@ import { COAST_JOBS } from './jobs/coast';
  *
  * THE TWELVE LINES. Every job hangs on a line of THE LIST
  * (`thelist.ts`), in his order, and the notebook heads it with that
- * line verbatim. Tier 1 (`jobs/tier1.ts`) is rebuilt on the story of
- * record: a PROMISE is the job from the first word its person says to
- * him, and only doing it keeps it. The other nine hang on their lines
- * with the steps they had, until their tier's session.
+ * line verbatim. Tiers 1 to 3 (`jobs/tier1.ts`, `tier2.ts`, `tier3.ts`)
+ * are rebuilt on the story of record: a PROMISE is the job from the
+ * first word its person says to him, and only doing it keeps it. Tier
+ * 4's three wait in `not-yet.ts` until their session.
  *
  * Nell's line is the opening's (`opening.ts` gives and ticks it); it
  * is not here, and `landsDone` counts it like any other job.
@@ -66,7 +67,7 @@ export type JobsCtx = {
 
 /** The registry, in the list's own order. */
 /* A line whose tier is not built gives no job (`not-yet.ts`). */
-const SPECS: JobSpec[] = [...TIER1_JOBS, ...TIER2_JOBS, ...CIVIC_JOBS, ...WILDS_JOBS, ...COAST_JOBS]
+const SPECS: JobSpec[] = [...TIER1_JOBS, ...TIER2_JOBS, ...TIER3_JOBS, ...CIVIC_JOBS, ...WILDS_JOBS]
   .filter((s) => !NOT_YET.has(s.line))
   .sort((a, b) => THE_LIST.findIndex((l) => l.id === a.line) - THE_LIST.findIndex((l) => l.id === b.line));
 const LINE_OF = new Map(THE_LIST.map((l) => [l.id, l.line]));
@@ -105,6 +106,9 @@ class Jobs {
     toys.init({ scene: ctx.scene, groundAt: ctx.groundAt, waterAt: ctx.waterAt, walker: ctx.walker, bicycle: ctx.bicycle, root: ctx.root });
     monsters.init({ scene: ctx.scene, groundAt: ctx.groundAt, walker: ctx.walker, wake: ctx.wake, blink: ctx.blink, started: ctx.started, mounted: ctx.mounted });
     tier1.install(ctx.walker);
+    /* Tier 3 first: Tier 2 wraps Amos's lines (the morning at the
+     * bridge, with Holt in front of him) round whatever they are */
+    tier3.install(ctx.walker);
     tier2.install(ctx.walker);
   }
 
@@ -113,6 +117,7 @@ class Jobs {
     T.noteTalk(id);
     tier1.talked(id);
     tier2.talked(id);
+    tier3.talked(id);
     const spec = BY_GIVER.get(id);
     if (!spec) return;
     const s = npcs.state(id);
@@ -243,6 +248,7 @@ class Jobs {
 
     tier1.tick(dt);
     tier2.tick(dt);
+    tier3.tick(dt);
     stamps.tick(this.elapsed);
     toys.tick(dt);
     monsters.tick(dt);

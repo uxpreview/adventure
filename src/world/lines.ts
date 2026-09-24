@@ -355,6 +355,13 @@ export const CONSEQUENCES: Record<string, { hint: string; shout: string; /** rea
   'door:the-lands-spoke': { hint: 'walk him there; the Flats answer and the echo comes back right', shout: 'IN SPLITROCK, A MAN COMES DOWN OFF HIS OWN FLOOR', world: true },
   'door:the-channel-rigged': { hint: 'the water comes, and nobody else learns how', shout: 'IN SPLITROCK, A CHANNEL RUNS THAT ONLY YOU CAN MEND', world: true },
   'door:the-sea-has-no-bottom': { hint: 'Holt stops oiling; the marks weather', shout: 'IN SPLITROCK, NOBODY OILS THE BOAT ANY MORE' },
+  /* ---- TIER 3 (`foundation/08` §9, promises 7 to 9) ---- */
+  'door:the-rain-dated': { hint: 'Amos wins his argument with the Downs; Joan Harrow loses it', shout: 'ON THE FLATS, A BOARD GOES UP BY THE ROAD: IT RAINED ONCE', world: true },
+  'door:the-rain-rubbed': { hint: 'the line is gone and nobody will ever know it; Amos goes on asking', shout: 'ON THE FLATS, A RAIN TABLE IS CLEAN AGAIN', world: true },
+  'door:the-note-read': { hint: 'the note is yours, and in your coat; the pot comes up for good', shout: 'OFF LONGSHORE, AN EIGHTH POT COMES UP FOR GOOD', world: true },
+  'door:the-note-dropped': { hint: 'the pot goes back down, its lamp on, and nobody reads it', shout: 'OFF LONGSHORE, AN EIGHTH POT GOES BACK DOWN WITH ITS LAMP ON', world: true },
+  'door:the-old-rules': { hint: 'a winner, and the race ends; the longship stays out for good', shout: 'ON THE WIDE BLUE, THE RACE IS WON AND OVER. A LONGSHIP TURNS BACK AT THE MARK.', world: true },
+  'door:the-longship-in': { hint: 'the longship comes in; the fleet has to race with it', shout: 'ON THE WIDE BLUE, A LONGSHIP COMES IN OVER THE LINE, LAST, ROARING', world: true },
   'door:the-lid-off': { hint: 'the catch catches; Amos stops walking at night', shout: 'ON THE FLATS, A LID COMES OFF' },
   'door:the-cistern-yours': { hint: 'you fill it by hand; the track grows over', shout: 'ON THE FLATS, A TRACK BEGINS TO GROW OVER' },
   'door:the-seat-taken': { hint: 'you sit; the place was kept for you', shout: 'ON THE DOWNS, A SECOND PLACE IS TAKEN' },

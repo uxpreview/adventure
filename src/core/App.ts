@@ -68,6 +68,7 @@ import { nellsCapTexture } from '../world/textures-opening';
 /* ---- THINGS: jobs, stamps, toys, monsters (`src/world/jobs.ts`) ---- */
 import { jobs, THINGS_POIS } from '../world/jobs';
 import { canWait } from '../world/tier1'; /* TIER 1: WAIT is earned */
+import { ride } from '../world/ride'; /* TIER 3: a ride in somebody's boat */
 import { redScarfTexture, postmasterCapTexture } from '../world/textures-monsters';
 
 const ALL_POIS: WorldPOI[] = [
@@ -309,7 +310,7 @@ export class App {
       get z() { return self.horse.pos.y; },
       /* THE THREE VERBS: when the gate is his to shut, the key at the
        * gate is the gate's, even from the saddle */
-      get enabled() { return !self.bicycle.aboard && !self.boat.aboard && !self.train.aboard && !(self.horse.aboard && opening.gateKey); },
+      get enabled() { return !ride.on && !self.bicycle.aboard && !self.boat.aboard && !self.train.aboard && !(self.horse.aboard && opening.gateKey); },
       radius: 6.0, /* gate round 2: "the mount band is so narrow finding it costs five moves" */
       /* sent for, it is what the key is for: the note on the bench and
        * the stile it jumped beside were nearer, and won the prompt */
@@ -405,7 +406,7 @@ export class App {
       waterAt: (x, z) => this.terrain.waterAt(x, z),
       walker: () => this.char.pos,
       bicycle: this.bicycle,
-      mounted: () => this.boat.aboard || this.bicycle.aboard || this.train.aboard || this.horse.aboard,
+      mounted: () => this.boat.aboard || this.bicycle.aboard || this.train.aboard || this.horse.aboard || ride.on,
       wake: (x, z) => {
         this.standUp();
         this.char.teleport(x, z);
@@ -1113,6 +1114,8 @@ export class App {
    * did in Session 14 — nothing here changes a look.
    * ================================================================ */
   private seat: WorldPOI | null = null;
+  /** TIER 3: sat in somebody's boat last frame (`world/ride.ts`). */
+  private riding = false;
   private seatDy = 0;
   private handShown = false;
   /** The stone's drawing, for the hand. */
@@ -1199,7 +1202,7 @@ export class App {
     return regionAt(def.sit!.x, def.sit!.z).id === 'downs' ? 4.4 : 2.2;
   }
   private trySit(def: WorldPOI) {
-    if (!def.sit || this.boat.aboard || this.train.aboard) return;
+    if (!def.sit || this.boat.aboard || this.train.aboard || ride.on) return;
     const need = this.sitNeed(def);
     if (need <= 0) { this.sitDown(def); return; }
     const sx = def.sit.x;
@@ -1304,7 +1307,7 @@ export class App {
       toast('YOU STOPPED WAITING', 'plain');
       return;
     }
-    if (this.seat || this.sitTry || this.horse.aboard || this.bicycle.aboard || this.boat.aboard || this.train.aboard) return;
+    if (this.seat || this.sitTry || this.horse.aboard || this.bicycle.aboard || this.boat.aboard || this.train.aboard || ride.on) return;
     this.waiting = {
       x: this.char.pos.x, z: this.char.pos.z, radius: 3,
       wait: { until: () => false, hint: 'waiting — a step stops it', done: '' },
@@ -1672,7 +1675,7 @@ export class App {
   private horseCalledAt = -99;
   /** The whistle: the horse comes if it can hear you. */
   private whistle() {
-    if (!this.started || this.char.frozen || this.horse.aboard) return;
+    if (!this.started || this.char.frozen || this.horse.aboard || ride.on) return;
     this.audio.init();
     this.audio.event('whistle');
     this.horseCalledAt = this.elapsed;
@@ -2203,6 +2206,9 @@ export class App {
      * camera, the map opens, the notes open, and the doors open again
      * in half a minute at the next stop. */
     if (this.train.aboard) this.input.move.set(0, 0);
+    /* TIER 3: IN SOMEBODY'S BOAT THE STICK IS AN OAR (`world/ride.ts`).
+     * Any push is a pull; the boat keeps its bearing. */
+    if (ride.on) { ride.pull = Math.min(1, this.input.move.length()); this.input.move.set(0, 0); }
     /* ---- CAMERA: the walk is relative to the lens ------------------- *
      * W walks away from the camera, S toward it, A and D across it: the
      * stick's vector is turned by the yaw before the walker, the road's
@@ -2375,6 +2381,21 @@ export class App {
       const tp = this.train.pos;
       this.char.teleport(tp.x, tp.z, this.char.heading);
       this.char.setGround(this.terrain.heightAt(tp.x, tp.z) - 0.15, [0, 1, 0]);
+    }
+    /* ---- TIER 3: A RIDE IN SOMEBODY'S BOAT. Aboard, it IS the walker's
+     * position, sat in the bow a foot down, the way the rowboat is. Off,
+     * the walker is put on the sand it lands at. ---- */
+    if (ride.on !== this.riding) {
+      this.riding = ride.on;
+      this.char.setSitting(ride.on);
+      if (!ride.on) {
+        this.char.teleport(ride.x, ride.z, this.char.heading);
+        this.char.setGround(this.terrain.heightAt(ride.x, ride.z), this.terrain.normalAt(ride.x, ride.z));
+      }
+    }
+    if (ride.on) {
+      this.char.teleport(ride.x, ride.z, ride.heading);
+      this.char.setGround(this.terrain.heightAt(ride.x, ride.z) - 0.34, [0, 1, 0]);
     }
     /* THE DOORS, and it is the only sound this thing makes anywhere in
      * the world. There is no announcement: a world organised around a
@@ -2717,6 +2738,7 @@ export class App {
       // a card is up: the world's own writing stays behind it
       this.poi.suppressed = this.ui.noteOpen || this.ui.mapOpen || this.ui.choiceOpen || this.ui.nameOpen;
       if (this.voice.open || conversing()) this.poi.suppressed = true; /* VOICE; A CONVERSATION */
+      this.poi.rideOnly = ride.on; /* TIER 3: in somebody's boat, the boat's verbs only */
       /* ONE VOICE AT A TIME (the owner, 2026-09-17). A card or a land's
        * name has the page: the answer line waits. A bubble is on the
        * page: no place is named under it. Somebody is talking to a man
@@ -2769,7 +2791,7 @@ export class App {
         this.save.data.worn = worn.current;
         this.save.data.known = k.known;
         this.save.data.passed = k.passed;
-        this.save.data.pos = { x: this.char.pos.x, z: this.char.pos.z };
+        this.save.data.pos = ride.on ? { ...ride.home } : { x: this.char.pos.x, z: this.char.pos.z };
         this.save.data.boat = { x: this.boat.pos.x, z: this.boat.pos.y };
         this.save.data.bicycle = { x: this.bicycle.pos.x, z: this.bicycle.pos.y };
         this.save.data.horse = { x: this.horse.pos.x, z: this.horse.pos.y }; /* ---- SCALE ---- */

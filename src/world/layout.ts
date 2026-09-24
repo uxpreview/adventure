@@ -882,6 +882,10 @@ export function waterFieldAt(x: number, z: number): number {
 export const ROW_MIN_WATER = 0.42;
 /** How far off dry paper an oar will go. */
 export const ROW_REACH = 34;
+/** TIER 3: and how far it goes once Wren's race has a finish (08 §9.9,
+ *  "Unlocks: the sea"). Nothing past the reach was ever forbidden; the
+ *  sea was just somewhere nobody went. `tier3.ts` opens it. */
+export const SEA = { reach: ROW_REACH };
 
 /** How far (x, z) is from dry paper, out on the open sea. Two shores
  *  count and the bar is one of them: the crest is paper, so a boat can
@@ -897,7 +901,7 @@ export function offshoreDist(x: number, z: number): number {
 export function rowableAt(x: number, z: number): boolean {
   if (x < WORLD.minX || x > WORLD.maxX || z < WORLD.minZ || z > WORLD.maxZ) return false;
   if (riverAt(x, z) >= ROW_MIN_WATER) return true;
-  return seaAt(x, z) >= ROW_MIN_WATER && offshoreDist(x, z) < ROW_REACH;
+  return seaAt(x, z) >= ROW_MIN_WATER && offshoreDist(x, z) < SEA.reach;
 }
 
 /**
