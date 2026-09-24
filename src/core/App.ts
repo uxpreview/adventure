@@ -235,7 +235,12 @@ export class App {
 
     /* seated, the key stands him up, and the prompt says so whatever
      * place is nearest (round 5's leftover: READ THE NOTE on the bench) */
-    this.poi.keySays = () => (this.seat ? 'STAND UP' : null);
+    /* gate round 8: "STAND UP, floating at the side, with no key named.
+     * I guessed E." The first prompt of the game names its key, until
+     * the key has been pressed once. */
+    this.poi.keySays = () => (this.seat
+      ? (this.keyPressed ? 'STAND UP' : ('ontouchstart' in window ? 'STAND UP — TAP HERE' : 'STAND UP — E'))
+      : null);
     this.poi.promptLift = () => repliesLift();
     // every point of interest exists from the start; distance hides them
     for (const def of ALL_POIS) {
@@ -419,6 +424,7 @@ export class App {
 
     this.input.onInteract(() => {
       if (!this.started) return; // Enter on the title is not a press in the world
+      this.keyPressed = true;
       /* ---- A CONVERSATION: the press is the next line, and nothing else ---- */
       if (advanceConverse()) return;
       /* ---- VOICE: the key closes the notebook first ---- */
@@ -1114,6 +1120,8 @@ export class App {
    * did in Session 14 — nothing here changes a look.
    * ================================================================ */
   private seat: WorldPOI | null = null;
+  /** The act key has been pressed once: prompts stop naming it. */
+  private keyPressed = false;
   /** TIER 3: sat in somebody's boat last frame (`world/ride.ts`). */
   private riding = false;
   private seatDy = 0;

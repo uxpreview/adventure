@@ -57,9 +57,13 @@ export const AMOS_JOB: JobSpec = {
     { text: 'ASK AMOS WHEN IT LAST RAINED', when: any(talkedTo('amos'), known(K.wet)), pin: { x: CATCH.x, z: CATCH.z, label: 'THE CATCH' } },
     { text: 'LOOK AT HIS RAIN TABLE', when: any(known(K.tableLooked), known(K.wet)), pin: { x: RAIN_TABLE.x, z: RAIN_TABLE.z, label: 'THE RAIN TABLE' } },
     {
+      /* (gate round 8: "after filling the can, the objective still read
+       * FILL THE CAN... I couldn't tell whether the can was full") */
       text: () => (has(K.amosFetches)
         ? 'AMOS HAS GONE DOWN HIS TRACK FOR WATER. WAIT BY THE TABLE.'
-        : 'FILL THE CAN AT THE OASIS AND WET THE TABLE WITH IT'),
+        : flats.can.full
+          ? 'THE CAN IS FULL. CARRY IT UP AND WET THE TABLE.'
+          : 'FILL THE CAN AT THE OASIS AND WET THE TABLE WITH IT'),
       when: known(K.wet),
       pin: () => (has(K.amosFetches) || flats.can.full
         ? { x: RAIN_TABLE.x, z: RAIN_TABLE.z, label: 'THE RAIN TABLE' }

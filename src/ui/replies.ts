@@ -81,6 +81,18 @@ export function repliesTop(): number {
   return window.innerHeight - strip.getBoundingClientRect().top;
 }
 
+/** THE KEY THAT IS NOT AN ANSWER IS STILL ANSWERED (gate round 8): E
+ *  pressed at a question pressed nothing, five times, and nothing said
+ *  that the answers were the way on. The answers jump. */
+let nudgeT = 0;
+export function nudgeReplies() {
+  if (!strip || !current.length) return;
+  strip.classList.remove('nudge');
+  void strip.offsetWidth;
+  strip.classList.add('nudge');
+  nudgeT = 0.7;
+}
+
 export function repliesOpen(): string[] {
   return current.map((r) => r.label);
 }
@@ -91,6 +103,7 @@ export function pickReply(i: number) {
 }
 
 export function tickReplies(dt: number) {
+  if (nudgeT > 0) { nudgeT -= dt; if (nudgeT <= 0) strip?.classList.remove('nudge'); }
   if (!current.length) return;
   ttl -= dt;
   if (ttl > 0) return;

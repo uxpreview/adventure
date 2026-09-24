@@ -468,9 +468,21 @@ class Opening {
     if (this.homeTalked) return;
     this.homeTalked = true;
     this.wave(false);
+    /* T1, gate round 8: THE LIST OPENS WHEN SHE SAYS IT IS THERE. Her
+     * "twelve people... in that book under your coat" came at fifty
+     * seconds and the page said "stuck to the cover" for another sixty,
+     * while Morrow's walk went by (the cold player: 5 of 10 at sixty
+     * seconds, 9 the moment it opened). The page is readable from her
+     * word; Morrow still goes past; the pins come when it is shut. */
+    notebook.listShown = true;
+    notebook.dirty = true;
+    fallbackAsk.refresh();
     this.save();
     this.releaseMorrow();
   }
+  /** THE LIST has been read (opened while readable) before Morrow was
+   *  past: the stage after him does not ask for it a second time. */
+  private listRead = false;
 
   /** Morrow's walk is due, and the horse is his. A TALK WAITS FOR YOU:
    *  this used to be the same call as `heardNellOut`, so the twenty-
@@ -671,13 +683,15 @@ class Opening {
     this.go('list');
     notebook.listShown = true;
     notebook.dirty = true;
+    this.listWaited = 0;
+    /* read already, on her word (gate round 8): straight on to the pins */
+    if (this.listRead) { this.listWasOpen = true; return; }
     /* THE NOTEBOOK IS HIS TO OPEN. It used to open itself over whatever
      * he was doing. Now the walker says it, the objective line says how,
      * and it opens itself only for somebody who has let half a minute go. */
     say('walker', 'The notebook. Under my coat.', { hold: 3.5 });
     toast(this.ctx.touch ? 'TAP NOTEBOOK' : 'N — YOUR NOTEBOOK', 'learned');
     this.listWasOpen = false;
-    this.listWaited = 0;
   }
 
   private tickList(dt: number) {
@@ -864,6 +878,7 @@ class Opening {
         break;
       }
       case 'home':
+        if (notebook.listShown && c.notebookOpen() && !this.listRead) { this.listRead = true; fallbackAsk.refresh(); }
         /* the list always comes (gate round 4): a walker who never goes
          * back to her still gets Morrow, and the horse is still his */
         if (!this.homeTalked) {
@@ -912,7 +927,12 @@ class Opening {
   private fallback(): { name: string; want: string } | null {
     if (!this.ctx) return null;
     if (this.stage === 'bench') return this.waving ? { name: 'NELL', want: 'GO AND TALK TO HER' } : null;
-    if (this.stage === 'home') return this.waving ? { name: 'NELL', want: 'GO AND TALK TO HER' } : null;
+    if (this.stage === 'home') {
+      if (this.waving) return { name: 'NELL', want: 'GO AND TALK TO HER' };
+      /* her word is said and the page is open: the book is the thing */
+      if (notebook.listShown && !this.listRead) return { name: 'YOUR NOTEBOOK', want: this.ctx.touch ? 'TAP NOTEBOOK' : 'N OPENS IT' };
+      return null;
+    }
     if (this.stage === 'list') return { name: 'YOUR NOTEBOOK', want: this.ctx.touch ? 'TAP NOTEBOOK' : 'N OPENS IT' };
     if (this.stage === 'bull') return this.saidRun ? { name: 'NELL', want: 'RUN' } : null;
     if (this.stage !== 'done') return null;

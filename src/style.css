@@ -439,6 +439,14 @@ body {
 .reply-btn:nth-child(2) { transform: rotate(0.5deg); }
 .reply-btn:hover { border-color: var(--ink); }
 .reply-btn canvas { max-width: 100%; height: auto; display: block; }
+/* gate round 8: E at a question is answered — the answers jump, so the
+ * press lands somewhere a player can see */
+.replies.nudge .reply-btn { animation: reply-nudge 0.55s ease; border-color: var(--ink); }
+@keyframes reply-nudge {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+  60% { transform: translateY(2px); }
+}
 
 /* ---------- the name card ---------- */
 .name-card {

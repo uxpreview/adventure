@@ -2912,7 +2912,9 @@ export const DESERT_POIS: WorldPOI[] = [
   } as unknown as WorldPOI,
   {
     x: 305, z: 55, radius: 13, label: 'THE OASIS',
-    prompt: 'DRINK',
+    /* A PROMPT THAT NAMES A VERB DOES THAT VERB (gate round 8: DRINK
+     * opened a card and nobody drank). It is a look. */
+    prompt: 'LOOK AT THE WATER',
     note: {
       title: 'the oasis',
       body: 'green, out here, is a rumor you can stand in. the water is the same blue as the sea, which is a long way off, and nobody has ever worked out how it gets here or where it goes afterwards. from the road it is a stand of trees and nothing else.',
