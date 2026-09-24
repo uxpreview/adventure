@@ -4,10 +4,14 @@
 
 **Walk it: [adventure.ryankm.com](https://adventure.ryankm.com)**
 
-> **2026-09-09 — the reset, built.** Free camera, people who talk, a
-> notebook, a first job in the first minute, a horse, traffic, twelve jobs,
-> stamps, toys, monsters. Read `GAME.md`; the notes are in `CHANGELOG.md`.
-> Everything below describes what was built before the reset.
+> **Start at `GAME.md`.** It is what the game is now. The story of record
+> is `design/foundation/08_Inklands_Story_Foundation_v1.md` (2026-09-16):
+> you wake on the bench with no memory and a list of twelve promises.
+> The next session's job is `PROMPT.md` §5; the notes are in
+> `CHANGELOG.md`. **Everything below this box describes the world as it
+> was built before the reset (2026-09-07) and before the story of
+> record.** Its story (THE 8:15, `STORY.md`, THE WAITS, the doors) is
+> superseded, and the files it names now live in `design/archive/`.
 
 An open-world adventure drawn entirely in procedural ballpoint, built on
 the engine from [margins](https://github.com/uxpreview/margins). The
@@ -357,7 +361,8 @@ and deals a region card — nothing else, because the sheet is continuous.
   page has the gate open, and a save that wakes elsewhere finds the
   bull grazing.)
 
-The story is **THE 8:15** — see `design/STORY.md` for the bible and
+*Superseded by `design/foundation/08` (all the files in this paragraph
+are in `design/archive/` now).* The story was **THE 8:15** — see `design/STORY.md` for the bible and
 `design/QUESTS.md` for how content is tiered in a game with no quest
 log. It is mapped as well as locked: `design/THE-LINE.md` (the four
 acts, and the ending), `design/THE-WAITS.md` (twelve lands, twelve

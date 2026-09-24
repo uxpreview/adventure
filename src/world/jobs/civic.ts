@@ -23,7 +23,7 @@ export const MAN_JOB: JobSpec = {
 };
 
 export const DENNIS_JOB: JobSpec = {
-  id: 'job:dennis', land: 'office', giver: 'dennis', line: 'dennis', name: 'THE LIST',
+  id: 'job:dennis', land: 'office', giver: 'dennis', line: 'dennis', name: 'THE TIMETABLE',
   pin: { x: 252, z: 200.2, label: 'THE 8:15 STOP' },
   reward: 'THE PAPER PLANE',
   shout: 'IN THE MILE, A TIMETABLE IS FOLDED INTO A PLANE',

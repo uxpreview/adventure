@@ -39,7 +39,7 @@ export const STAMPS: StampDef[] = [
   { land: 'forest', name: 'THE PENWOOD', x: 185.5, z: -243.5, place: 'THE DEEP PINES', hint: 'A stamp in THE DEEP PINES, right at the back of the wood. Go by day.' },
   { land: 'canyon', name: 'SPLITROCK', x: 302, z: -184, place: 'THE NEEDLE ARCH', hint: 'Under THE NEEDLE ARCH in the canyon there\'s a stamp. Something lives down there.' },
   { land: 'downs', name: 'THE DOWNS', x: 155.5, z: -5.5, place: 'THE MILL', hint: 'The miller keeps a stamp at the foot of THE MILL. He\'d not miss it.' },
-  { land: 'desert', name: 'THE FLATS', x: 346, z: 21, place: 'WHERE THE ROAD STOPS', hint: 'Out WHERE THE ROAD STOPS, east of everything, there\'s a stamp. Long walk.' },
+  { land: 'desert', name: 'THE FLATS', x: 346, z: 21, place: 'WHERE THE ROAD STOPS', hint: 'Out WHERE THE ROAD STOPS, at the end of the long road, there\'s a stamp. Long walk.' },
   { land: 'city', name: 'GREYLINE', x: 90, z: 217, place: 'THE HOLLOW', hint: 'Down in THE HOLLOW in Greyline, by the grating, a stamp. Warm down there.' },
   { land: 'office', name: 'THE MILE', x: 291.5, z: 250.5, place: 'THE MUSTER POINT', hint: 'THE MUSTER POINT behind the Mile has a stamp in the painted box. Health and safety.' },
   { land: 'beach', name: 'LONGSHORE', x: -252.5, z: 55.8, place: 'THE BOARDWALK', hint: 'At the end of THE BOARDWALK, under the lamp, a stamp. Mind what\'s under the boards.' },

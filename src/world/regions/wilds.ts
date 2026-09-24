@@ -1915,7 +1915,7 @@ export const CANYON_POIS: WorldPOI[] = [
     prompt: 'LOOK AT WHERE IT STARTS',
     note: {
       title: 'the riverhead',
-      body: 'it comes out of the ground here and goes west. above it the channel is dry and has been dry a long time. same channel.',
+      body: 'it comes out of the ground here and goes on down the cut. above it the channel is dry and has been dry a long time. same channel.',
     },
   },
   {
@@ -1930,7 +1930,7 @@ export const CANYON_POIS: WorldPOI[] = [
     prompt: 'GO DOWN',
     note: {
       title: 'the mouth',
-      body: 'a scratch in the ground here, no more. walk north and it opens. there is no other way in and no way out at the far end.',
+      body: 'a scratch in the ground here, no more. walk on in and it opens. there is no other way in and no way out at the far end.',
     },
   },
   {
@@ -1943,7 +1943,7 @@ export const CANYON_POIS: WorldPOI[] = [
     x: 272, z: -178, radius: 10, label: 'THE OVERLOOK',
     note: {
       title: 'the overlook',
-      body: 'the whole cut, end to end, from the one place you can see it from. the other rim is forty units away and about an hour.',
+      body: 'the whole cut, end to end, from the one place you can see it from. the other rim is forty paces away and about an hour.',
     },
   },
   {
@@ -2008,37 +2008,31 @@ export const CANYON_POIS: WorldPOI[] = [
      * his channel, and there are two ways to put water in it. One of
      * them works this afternoon and nobody else ever learns it. The
      * other is an hour on foot with a man who has not crossed his own
-     * border in three years. The river card is still under it, for a
-     * walker who rowed salt to source and has no promise open. */
+     * border in three years. */
     get prompt() {
       if (holtStep() === 3) return 'SAY HOW THE WATER COMES';
-      if (!knowledge.decided('canyon') && knowledge.has('route:the-river')) return 'TELL HIM WHAT YOU ROWED';
       return 'LOOK AT THE MARKS';
     },
     get choice() {
       if (holtStep() === 3) {
         return {
           title: 'the channel',
-          body: 'a boat, keel up, oiled, on trestles over a dry bed, and a board leaning on the end of them. forty units up the cut there is a slot in the head wall with two empty grooves in it. you know which board goes where and nobody else does. eighty units the other way, over a line this man has never crossed, there is an oasis and a man who walks to it every night with two cans.',
+          body: 'a boat, keel up, oiled, on trestles over a dry bed, and a board leaning on the end of them. forty paces up the cut there is a slot in the head wall with two empty grooves in it. you know which board goes where and nobody else does. eighty paces the other way, over a line this man has never crossed, there is an oasis and a man who walks to it every night with two cans.',
           options: [
             { label: 'RIG IT YOURSELF', door: 'door:the-channel-rigged' },
             { label: 'WALK HOLT DOWN TO AMOS', door: 'door:the-lands-spoke' },
           ],
         };
       }
-      if (!knowledge.has('route:the-river') || knowledge.decided('canyon')) return undefined;
-      return {
-        body: 'a boat, keel up, oiled. marks up the wall behind it, in the order things would float. you rowed the river, salt to source. it starts here. it ends in the sea, and the sea has no bottom that anybody has found. he would like to know about the river. he has not asked about the sea.',
-        options: [
-          { label: 'TELL HIM ABOUT THE RIVER', door: 'door:the-boat-righted' },
-          { label: 'TELL HIM THE SEA HAS NO BOTTOM', door: 'door:the-sea-has-no-bottom' },
-        ],
-      };
+      /* The river card (door:the-boat-righted) is gone (the design
+       * audit, 2026-09-24): it floated the boat beside Holt's promise,
+       * and the boat is what his promise unlocks (08 §9.6). */
+      return undefined;
     },
     note: {
       title: 'the trestles',
       body: () => {
-        if (knowledge.has('door:the-boat-righted')) return 'trestles, with nothing on them. the boat is on the floor of the channel, right way up, bow north, in the dry. the marks up the wall are the same marks. he goes over them.';
+        if (knowledge.has('door:the-boat-righted')) return 'trestles, with nothing on them. the boat is on the floor of the channel, right way up, bow up the cut, in the dry. the marks up the wall are the same marks. he goes over them.';
         if (knowledge.has('door:the-sea-has-no-bottom')) return 'a boat, keel up, off the ground. not oiled. there are marks up the wall behind it and they are going. he is up at the house. he has not been down.';
         return 'a boat, keel up, off the ground, oiled. there are marks up the wall behind it. the lowest one is the height of the boat.';
       },
@@ -2802,7 +2796,7 @@ export const DESERT_POIS: WorldPOI[] = [
     prompt: 'DRINK',
     note: {
       title: 'the oasis',
-      body: 'green, out here, is a rumor you can stand in. the water is the same blue as the sea, which is a long way west, and nobody has ever worked out how it gets here or where it goes afterwards. from the north it is a stand of trees and nothing else.',
+      body: 'green, out here, is a rumor you can stand in. the water is the same blue as the sea, which is a long way off, and nobody has ever worked out how it gets here or where it goes afterwards. from the road it is a stand of trees and nothing else.',
       learns: ['name:beach'],
     },
   },
@@ -2811,8 +2805,8 @@ export const DESERT_POIS: WorldPOI[] = [
     note: {
       title: 'the track',
       body: () => (knowledge.has('fact:the-cistern-filled')
-        ? 'forty units of ground between the only water out here and the only building, and it is growing over. nobody has walked it since the night the tank was full without him. there is a can standing at one end of it.'
-        : 'forty units of worn ground between the only water out here and the only building. one set of feet, both ways, and it goes nowhere else. there is a can standing at each end of it.'),
+        ? 'forty paces of ground between the only water out here and the only building, and it is growing over. nobody has walked it since the night the tank was full without him. there is a can standing at one end of it.'
+        : 'forty paces of worn ground between the only water out here and the only building. one set of feet, both ways, and it goes nowhere else. there is a can standing at each end of it.'),
     },
   },
   {
@@ -2846,7 +2840,7 @@ export const DESERT_POIS: WorldPOI[] = [
       title: 'the catch',
       body: () => {
         if (knowledge.has('fact:the-cistern-filled')) return 'guttering, a fall, a tank with a lid on it, full. it was filled in daylight by somebody who was not him, and he was there, and he has not been down the track since. the board beside it is ruled into columns, ready. the gutter has still never delivered a drop.';
-        if (knowledge.has('door:the-cistern-yours')) return 'guttering, a fall, a tank with a lid on it, and a can at the foot of it that is yours to carry now. the oasis is forty units down the track, and every one of them is uphill on the way back.';
+        if (knowledge.has('door:the-cistern-yours')) return 'guttering, a fall, a tank with a lid on it, and a can at the foot of it that is yours to carry now. the oasis is forty paces down the track, and every one of them is uphill on the way back.';
         if (knowledge.has('door:the-lid-off')) return 'guttering, a fall, and a tank with the lid off it, open to a sky that has never once rained here in anybody\'s memory. he has decided to find out. the board beside it is ruled into columns, ready.';
         return 'guttering, a fall, a tank with a lid on it, and every bracket on it present and true. the only piece of engineering in the bleach flats. there is a board beside it ruled into columns, ready.';
       },
@@ -2856,7 +2850,7 @@ export const DESERT_POIS: WorldPOI[] = [
     x: 348, z: 18, radius: 10, label: 'WHERE THE ROAD STOPS',
     note: {
       title: 'where the road stops',
-      body: 'the east road runs four hundred units from the meadow and then quits, here, at the foot of the place the ground lifts. you can climb the rest. there is nothing up there but the edge, and past the edge there is nothing, and it goes on a long way.',
+      body: 'the east road runs four hundred paces from the meadow and then quits, here, at the foot of the place the ground lifts. you can climb the rest. there is nothing up there but the edge, and past the edge there is nothing, and it goes on a long way.',
     },
   },
 ];

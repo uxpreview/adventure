@@ -115,8 +115,8 @@ export const PEOPLE: PersonDef[] = [
         'You came up a dry channel to tell me something. People don\'t, usually.',
       ],
       asked: ['Follow the dry bed back down to THE RIVERHEAD, where the water comes out. Then come back up and tell me if it\'s the same river.'],
-      done: ['Forty units. Forty. I could have walked it in an afternoon.', 'Boat\'s the right way up. First time in years.'],
-      'chose:door:the-boat-righted': ['Running forty units away. Then the boat comes off the trestles. Give me a hand with her.'],
+      done: ['Forty paces. Forty. I could have walked it in an afternoon.', 'Boat\'s the right way up. First time in years.'],
+      'chose:door:the-boat-righted': ['Running forty paces away. Then the boat comes off the trestles. Give me a hand with her.'],
       'chose:door:the-sea-has-no-bottom': ['No bottom. Then there\'s nothing to oil a boat for. Let the marks weather.'],
     },
   },
@@ -163,12 +163,12 @@ export const PEOPLE: PersonDef[] = [
     },
   },
   {
-    id: 'the-man', name: 'THE MAN AT THE JUNCTION', land: 'city', want: 'THE JUNCTION',
+    id: 'the-man', name: 'THE MAN AT THE CROSSING', land: 'city', want: 'THE JUNCTION',
     lines: {
       idle: ['You stopped. Nobody stops. Four green lights and nobody stops.'],
       met: [
         'I\'ve been here long enough to be geography.',
-        'There\'s a bench twenty units off. Nobody\'s ever used it.',
+        'There\'s a bench twenty paces off. Nobody\'s ever used it.',
       ],
       asked: ['Look down at THE PAVEMENT first. Then stand here with me. Four seconds. Just stand. That\'s all it is.'],
       done: ['You asked. That\'s all anyone had to do. I\'ll sit on the bench now.', 'Four seconds. Nobody had four seconds.'],

@@ -1,6 +1,8 @@
 # INKLANDS — what the game is
 
-*Read this and `design/THE-RESET.md`. Nothing else in `design/` binds.*
+*Read this, `design/THE-RESET.md` (the six pillars) and
+`design/foundation/08_Inklands_Story_Foundation_v1.md` (the story of
+record). Nothing else in `design/` binds.*
 
 ## In two sentences
 You wake on a bench on a village green with no memory and a note in your
@@ -31,7 +33,7 @@ until their tier's session.
 6. **Keep the pen.** Zero image assets, procedural ballpoint and wash,
    hand lettering, procedural sound, 60 fps on a phone.
 
-## What exists (Session 29)
+## What exists (2026-09-24, after PR #36)
 - **Controls.** WASD/stick to walk (relative to the camera), Shift to run,
   drag to look, wheel/pinch to zoom, `R` recentre, `E` talk/act, `M` map,
   `N` notebook, `H` whistle the horse, `Esc` close. **Hold** `E` to sit
@@ -91,14 +93,20 @@ until their tier's session.
   it.
 - **People.** Nell (Common), Marget (Brim), Wick (castle), Pye (beach), Wren
   (ocean), Brack (Penwood), Holt (canyon), Amos (Flats), Joan Harrow
-  (Downs), Val (Maple Court), the man at the junction (Greyline), Dennis
+  (Downs), Val (Maple Court), the man at the crossing (Greyline), Dennis
   (Cubicle Mile). Each has one job, hung on their line of THE LIST and
-  headed by it in the notebook. Everyone else has a line.
+  headed by it in the notebook. Everyone else has a line. Tiers 1 and 2
+  (Wick, Nell, Marget, Val, Brack, Holt) are built on the story of
+  record; the other six still carry their steps from before it, under
+  their line, until Tiers 3 and 4 are built.
 - **Things to do.** Twelve jobs; twelve stamps; four scored toys (stone
   skimming, paper plane, main-street time trial, office chair); three
   monsters (Penwood at night, the canyon, under the pier); the 8:15.
-- **Mounts.** Horse (crossroads), bicycle (Maple Court), rowboat (river and
-  sea), the 8:15 (once it runs).
+- **Mounts.** Horse (Nell's, given in the opening), bicycle (Maple
+  Court), rowboat (river and sea), the 8:15 (once it runs).
+- **Buildings are paper boxes** (`regions/box.ts`: `boxUp`, `rowUp`):
+  sides, back and roof, held still when the lens turns; a drawing laid
+  over one (lit windows, a door) is `face: 'fixed'`.
 - **Systems kept from before.** A forty-minute day, weather as a function of
   time, sixty-odd routines, interiors, collision, footprints as ink, save.
 
@@ -109,6 +117,8 @@ until their tier's session.
     node tools/check-fps.mjs                                 # draw-call / triangle budget
     node tools/check-camera.mjs                              # the camera's invariants
     node tools/check-glyphs.mjs                              # the hand's glyph sheet
+    node tools/check-boxes.mjs                               # nothing stands inside a house (dev server)
+    node tools/check-solid.mjs                               # gates pass, walls block, every bearing (preview)
 The only play instruction a person gets is the URL. No `?hour=`, no sheet.
 
 ## How a session works from here

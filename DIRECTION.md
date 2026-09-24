@@ -1,5 +1,14 @@
 # DIRECTION — what the game becomes
 
+> **Superseded (2026-09-16).** This is the record of how THE 8:15 was
+> chosen, before the reset and before the story of record. It binds
+> nothing. The story now is
+> `design/foundation/08_Inklands_Story_Foundation_v1.md`; the game is
+> `GAME.md`. The `design/*.md` files named below (`STORY.md`,
+> `WORLD-SYSTEMS.md`, `QUESTS.md`, `THE-FUN-PASS.md`...) are in
+> `design/archive/`. One rule here still stands, and 08 §1 repeats it:
+> the medium is the style, never the subject.
+
 ## THE STANDING RULE
 
 **The medium is the STYLE. It is never the SUBJECT.**

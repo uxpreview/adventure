@@ -54,11 +54,11 @@ Run the pillars and the loop **one at a time, one agent at a time, over as
 many sessions as it takes.** A cold player and then one critic in sequence
 is fine. The brief's goal is unchanged; only the shape of the work is.
 
-## 2. Where it stands (2026-09-23, branch `claude/box-the-rest`; PR #36)
+## 2. Where it stands (2026-09-24, `main` after PR #36)
 
-Play it: https://adventure-git-claude-box-the-rest-ryankm.vercel.app
+Play it: https://adventure.ryankm.com (production, from `main`)
 (Vercel rebuilds `adventure-git-<branch>-ryankm.vercel.app` on every push
-to a branch.) PRs #23 to #35 are merged; main is the story of record's
+to a branch.) PRs #23 to #36 are merged; main is the story of record's
 first five minutes, the three verbs, Tier 1 (Wick, Nell, Marget), a
 talk that waits for you, **Tier 2** (Val, Brack, Holt), and solid
 buildings that hold still when the lens turns (#35, the owner's
@@ -67,7 +67,9 @@ makes every building a walker walks round a paper box (`regions/box.ts`:
 `boxUp`, and `rowUp` for Brim's terraces) and fixes what #35 left: night
 drawings that turned off their houses, a faded house that blanked the
 ones behind it, and a Maple Court house standing on its own road.
-`CHANGELOG.md` has both entries.
+`CHANGELOG.md` has both entries. A design audit on 2026-09-24
+(`CHANGELOG.md` "The design audit") squared the docs with the story of
+record and fixed the contradictions a player could see.
 
 The gate (`design/reset/THE-GATE.md`) rounds so far, all desktop, from
 the title, no parameters:
@@ -200,7 +202,7 @@ What every critic still names, and what a fix costs:
   answered; WAIT as a verb; step pins; hints in game time; the lens
   taught once; gates wide enough; a wall that says "Solid."; names read
   from fourteen units; bubbles from off-screen pinned at the top.
-- **Pillar-sized, not done (see §3):** the camera never moves for the
+- **Pillar-sized, not done (see §3, P2 to P5):** the camera never moves for the
   world (no crane on a border, no vista); occluders are grey slabs over
   the walker and the figure stands inside props (PEN); a universal
   touch verb every drawn thing answers (THINGS); Marget, Joan and Val
@@ -375,16 +377,25 @@ drawn edge and the strangers' prompts are the two a first minute meets.
    played verb; every promise hangs an I'LL HANDLE IT with an
    `offer.while`; the two old cards (the three chairs' and the
    trestles') are rebuilt as the promise's own choice, and the tarn's is
-   gone. New rules the building found are in §2b below and in §5's
-   RULES THAT STAND. Left: the portrait rig has not seen any of it; the
+   gone. New rules the building found are in §5's RULES THAT STAND. Left: the portrait rig has not seen any of it; the
    old cut through the bramble is a convenience and not a way, so the
    clippers are thin; `door:the-boat-righted` and `door:the-oar-taken`
    are still takeable beside the promise (archive content beside it, the
    way `door:the-king-restored` is beside Wick's).
 4. **Tier 3** (Amos, Pye, Wren): the rain table, the eighth pot and the
    honest note, the fleet and the Vikings.
+   **The design audit (2026-09-24) found what Tier 3 must settle first:**
+   it rains in the game (`weather.ts`: showers on days 0 and 1, storms
+   after), and 08 says one rain in memory; Amos's old NIGHT WALK
+   repeats Holt's; Pye says "Never rowed to it"; the Vikings in
+   `coast.ts` are beached waiting for wind. See `CHANGELOG.md` "The
+   design audit", the list at its end.
 5. **Tier 4** (Joan, the man at the crossing, Dennis): the second plate
    and the sit, the truth told, the board and the date.
+   Also Tier 4's to settle (the audit): the 8:15 still runs on seven
+   old WAITS where 08 has a stop with no track; Joan's CLEAR THE SECOND
+   SETTING AWAY and Dennis's WIPE THE BOARD are still live; the toast
+   still counts N OF 12 KEPT.
 6. **The relay and the gathering** (`08` §10, §14): the call in one
    shot, Morrow's morning, handing lines to people, the gate held,
    the table, Joan, the bench, the first page typed, the note taken
@@ -392,9 +403,10 @@ drawn edge and the strangers' prompts are the two a first minute meets.
 7. Then the gate rounds below, on the whole thing.
 
 The pillar items that follow (camera, pen, things, phone) are done
-inside these sessions where the story needs them, not before.
+inside these sessions where the story needs them, not before. They are
+lettered P1 to P9 so they are not confused with the story items above.
 
-1. **Run the gate again** (round 8+): `THE-GATE.md` top to bottom —
+P1. **Run the gate again** (round 8+): `THE-GATE.md` top to bottom —
    cold player, then the six critics, one agent at a time. Keep fixing
    the three things named most. T1 and T2 hold as of rounds 2, 3, 4, 5,
    6 and 7; T3 is 0 every round, so the loop is not done.
@@ -403,7 +415,7 @@ inside these sessions where the story needs them, not before.
    reach fifty-nine game-seconds. Tell it two or three actions between
    screenshots, long holds, and to read the `text` list rather than
    open every PNG; it got to 308 after that.
-2. **NOTHING IN THE WORLD POINTS AT A NAMED PLACE** (round 7's cold
+P2. **NOTHING IN THE WORLD POINTS AT A NAMED PLACE** (round 7's cold
    player and its critic, both, and the owner on 2026-09-12: *"with the
    free camera it's easy to forget which way north is"*). *"The map
    shows twelve destinations and my own position, but nothing in the
@@ -415,31 +427,31 @@ inside these sessions where the story needs them, not before.
    pinned place, which Tier 1 and Tier 2 already do per-promise and
    nothing does in general) and a FENCE YOU CAN SEE from inside it. The
    "!" marker points and does not answer a click; it should do both.
-3. **THE CAMERA moves for the world.** A crane on every border crossing
+P3. **THE CAMERA moves for the world.** A crane on every border crossing
    (pull back and rise, then settle behind the figure), an opening
    shot from the Common that frames Brim, the Downs, Maple Court and
    the sea, and occluders that dolly or line-fade instead of grey slabs.
    Two critics in two rounds named it first.
-4. **THE PEN's second half: depth.** The walker and people depth-sorted
+P4. **THE PEN's second half: depth.** The walker and people depth-sorted
    against props (nobody inside a bull, a fence, a cart or a fountain);
    near buildings opaque and off the HUD; the figure whole at every
    distance. Round 7: *"near-camera bushes and cows render as huge
    semi-transparent blobs that swallow the whole screen, and at one
    point a house was drawn straight through my character."*
-5. **THINGS: one verb for everything.** A touch every drawn object
+P5. **THINGS: one verb for everything.** A touch every drawn object
    answers — sheaves topple, the bull startles, pigeons scatter, the
    signpost's arms spin — and the "push the cart yourself" branch as a
    toy. **And a toy that shows its score shows its verb**: round 7 read
    BEST SKIM: NO BEST YET — THROW IT AT A RUN, OVER WATER on the
    sandbar and could not find the stone.
-6. **The gate on a phone.** The same with `--rig portrait`. Tier 2's
+P6. **The gate on a phone.** The same with `--rig portrait`. Tier 2's
    beats were checked there one at a time (`CHANGELOG.md`); no round has
    been run on it.
-7. **The open list** in `CHANGELOG.md` "Known and open", top to bottom.
-8. **The four missing reports**, one page each, from the diff:
+P7. **The open list** in `CHANGELOG.md` "Known and open", top to bottom.
+P8. **The four missing reports**, one page each, from the diff:
    `git log --stat dcd1a6e..origin/wt/camera-2`, `…wt/pen-2`,
    `…wt/first-hour`, `…wt/things`.
-9. **The owner plays.** Nothing but the URL. Their notes beat every critic.
+P9. **The owner plays.** Nothing but the URL. Their notes beat every critic.
 
 ## 4. Rules that stay
 Keep the pen (no image, font or audio assets, ever). `npm run build` green
@@ -465,7 +477,8 @@ yet, branch from its branch instead, so you build on it. Branch before
 your first commit (claude/<short-name>).
 
 THE JOB THIS SESSION: PROMPT.md §3 item 4, TIER 3 PROMISES (Amos, Pye,
-Wren) as built in foundation/08 §9: the rain table, the eighth pot and
+Wren) as built in foundation/08 §9 (read §3 item 4's audit note and
+settle the rain first): the rain table, the eighth pot and
 the honest note, the fleet and the Vikings. This is the tier where THE
 LIST IS WRONG and the player learns HOW he left — in his own
 handwriting, in a pot, on a bearing nobody rows. Build it the way Tier 2
@@ -477,8 +490,8 @@ promise hangs an I'LL HANDLE IT on JobSpec.offer with a cost you can see
 and an offer.while, so it is not made when the part is already done.
 One item, this session, end to end. Do not start Tier 4.
 
-WHAT ROUND 7 NAMED AND I DID NOT FIX (both pillar-sized; §3 items 2 and
-4). Do not take either on as well as Tier 3 — but do not make them
+WHAT ROUND 7 NAMED AND I DID NOT FIX (both pillar-sized; §3 P2 and
+P4). Do not take either on as well as Tier 3 — but do not make them
 worse, and where Tier 3 sends somebody a hundred units across a land,
 give that walk a board and a trodden way:
 - Nothing in the world points at a named place. The cold player

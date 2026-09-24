@@ -1,6 +1,6 @@
 # INKLANDS — CODE MAP
 
-Repo `/home/user/adventure` (or your worktree). `src/` ≈ 43.6k lines TS. Vite + Three.js r170 + gsap. Entry `index.html` → `src/main.ts`. **Do not read `design/`** (archived doctrine). Prose comments in source are long and doctrinal; the mechanism is described here instead.
+Written at the reset (2026-09-07): the subsystems still hold, the line numbers do not — grep. Newer than this map: the story's tiers (`world/tier1.ts`, `tier2.ts`, `jobs/tier*.ts`), THE LIST (`world/thelist.ts`), talk (`ui/converse.ts`), paper boxes (`regions/box.ts`). Vite + Three.js r170 + gsap. Entry `index.html` → `src/main.ts`. In `design/`, only `THE-RESET.md` and `foundation/08` (the story of record) bind; the rest is archive. Prose comments in source are long and doctrinal; the mechanism is described here instead.
 
 ---
 
