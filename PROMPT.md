@@ -54,7 +54,7 @@ Run the pillars and the loop **one at a time, one agent at a time, over as
 many sessions as it takes.** A cold player and then one critic in sequence
 is fine. The brief's goal is unchanged; only the shape of the work is.
 
-## 2. Where it stands (2026-09-24, `main` after PR #36; #37 and the picks' PR open)
+## 2. Where it stands (2026-09-24, Tier 3 on `claude/tier-3`, its PR open)
 
 Play it: https://adventure.ryankm.com (production, from `main`)
 (Vercel rebuilds `adventure-git-<branch>-ryankm.vercel.app` on every push
@@ -74,7 +74,20 @@ fixed the contradictions a player could see. The owner then took all
 four of its recommendations (`CHANGELOG.md` "The owner's four picks",
 branch `claude/dry-weather`, built on #37): it does not rain; the 8:15
 does not come; the six lines of Tiers 3 and 4 wait (`world/not-yet.ts`);
-no count of kept lines.
+no count of kept lines. Both are merged (#37, #39).
+
+**Tier 3 is built (2026-09-24, branch `claude/tier-3`, PR open):**
+Amos, Pye and Wren, on the story of record (`CHANGELOG.md` "Tier 3
+promises"). `jobs/tier3.ts`, `world/tier3.ts`, `world/tier3-state.ts`,
+`world/textures-tier3.ts`, the lands in `regions/wilds.ts` (the rain
+table) and `regions/coast.ts` (the eighth pot, the punt, the longship
+moved out past the mark), and a ride in somebody else's boat
+(`world/ride.ts`: its owner rows, or you pull; `POI.ride` verbs only
+while aboard). Pye's note is `promise:pye:the-note` (read) — Tier 4's
+man at the crossing is gated on the eighth pot, and Joan reads the note
+at the end if he has it. The longship's landing at the bend is the
+gathering's (item 6), not Wren's. If that PR is not merged when you
+start, branch from `claude/tier-3`.
 
 The gate (`design/reset/THE-GATE.md`) rounds so far, all desktop, from
 the title, no parameters:
@@ -88,6 +101,7 @@ the title, no parameters:
 | 5 | 9/10 — holds (the three verbs) | yes | 0 of 1 (FIRST HOUR only) |
 | 6 | 6/10 at 60 s, 9/10 at 134 s — **one short** (Tier 1) | yes | 0 of 1 (FIRST HOUR only) |
 | 7 | 7/10 — holds (Tier 2) | yes (four, not three) | 0 of 1 (FIRST HOUR only) |
+| 8 | 5/10 at 60 s, 9/10 at 112 s — **fails** (Tier 3) | yes | 0 of 1 (FIRST HOUR only) |
 
 Round 1's cold player never met Nell. Round 2's could not get through
 Brim's south gate. Round 3 (the rebuilt opening) rode fifteen metres of
@@ -126,6 +140,16 @@ name card, three lines drawn over one another at the foot of the page, a
 prompt that said LEAN and read a card). **The two they named that are
 not fixed are pillar-sized and are items below: nothing in the world
 points at a named place, and near-camera drawings are grey slabs.**
+
+Round 8 (2026-09-24, Tier 3) is the first round a cold player kept a
+Tier 3 promise cold: they rode to the Flats, carried Amos's water, and
+read him the date off their own pencil line (*"It gave me
+goosebumps."*). T1 fell to 5 because THE LIST stayed "stuck to the
+cover" until 112 s; fixed after the round (the page opens on Nell's
+"twelve people" line; the first prompt names its key; E at a question
+makes the answers jump), **not yet played cold**. The critic's first
+ask is the one every round names: **the goal on the horizon** (§3 P2).
+Nobody cold has rowed with Pye or Wren yet.
 
 **Tier 2 as built (2026-09-19):** `world/tier2.ts` (what Val, Brack and
 Holt say by the step of their promise; June, the last tree, Holt's
@@ -322,7 +346,7 @@ folder, to build story.
 
 **The story rebuild comes first (owner, 2026-09-16: "proceed"). One item
 per session, in order, each ending with the cold player and the critic
-from `THE-GATE.md`.** Items 0 to 3 are built; **item 4 (Tier 3) is next.**
+from `THE-GATE.md`.** Items 0 to 4 are built; **item 5 (Tier 4) is next.**
 Round 4's arch and map labels rode along with item 1; Brim's
 bystanders rode with Tier 1's Marget; round 6's two leftovers rode with
 Tier 2. Round 5's open list (`CHANGELOG.md`
@@ -387,21 +411,29 @@ drawn edge and the strangers' prompts are the two a first minute meets.
    clippers are thin; `door:the-boat-righted` and `door:the-oar-taken`
    are still takeable beside the promise (archive content beside it, the
    way `door:the-king-restored` is beside Wick's).
-4. **Tier 3** (Amos, Pye, Wren): the rain table, the eighth pot and the
-   honest note, the fleet and the Vikings.
-   **Settled by the owner's picks (2026-09-24):** it does not rain
-   (fronts and dry storms only), so Amos's question has one answer.
-   Amos, Pye and Wren wait in `world/not-yet.ts` with no job and no
-   old card; **delete their ids from `NOT_YET` first**, then build.
-   Still to replace: Amos's old NIGHT WALK spec, Pye's and Wren's old
-   specs and cards in `jobs/`, `regions/coast.ts` and `wilds.ts`, and
-   the Vikings in `coast.ts` beached waiting for wind (08: in the
-   regatta, unable to land).
+4. ~~**Tier 3** (Amos, Pye, Wren)~~ **BUILT, 2026-09-24** (`CHANGELOG.md`
+   "Tier 3 promises"): the rain table and his own pencil line, the
+   eighth pot and I'M NOT COMING BACK, the second mark and the longship
+   that knows him. Played end to end on desktop (both answers of every
+   offer) and beat by beat on portrait; round 8 kept Amos cold. Left:
+   nobody cold has rowed Pye's boat or Wren's punt; the kite (08's
+   unlock for Amos) is not built (08 §17 leaves it open); the old
+   `door:the-eighth-pot`/`the-second-mark`/`the-lid-off` reads in the
+   lands are dead unless an old save has them.
 5. **Tier 4** (Joan, the man at the crossing, Dennis): the second plate
    and the sit, the truth told, the board and the date.
-   Joan, the man and Dennis wait in `world/not-yet.ts` too. The 8:15
-   no longer comes (`Eight15.qualified()` is false); Joan's CLEAR card
-   is gone and her table is SIT DOWN; the kept count is gone.
+   Joan, the man and Dennis wait in `world/not-yet.ts`; **delete their
+   ids from `NOT_YET` first**, then build. The 8:15 no longer comes
+   (`Eight15.qualified()` is false); Joan's CLEAR card is gone and her
+   table is SIT DOWN; the kept count is gone. Still to replace: Joan's
+   old THE SECOND PLACE spec (`jobs/wilds.ts`), the man's FOUR SECONDS
+   and Dennis's THE TIMETABLE (`jobs/civic.ts`) and their cards
+   (STAND, OR WALK ROUND; WIPE IT, OR PRESS THE CORNER in
+   `regions/civic.ts`), and the paper plane that lies by the atrium
+   while Dennis waits (`toys.ts`). The man is **gated on the eighth
+   pot** (08 §9.11): Pye's promise kept (`tier3.pyeStep() === 99`), and
+   `promise:pye:the-note` says whether he read it. Joan already has one
+   Tier 3 line (she lost the rain argument, `tier3.ts` install).
 6. **The relay and the gathering** (`08` §10, §14): the call in one
    shot, Morrow's morning, handing lines to people, the gate held,
    the table, Joan, the bench, the first page typed, the note taken
@@ -414,8 +446,9 @@ lettered P1 to P9 so they are not confused with the story items above.
 
 P1. **Run the gate again** (round 8+): `THE-GATE.md` top to bottom —
    cold player, then the six critics, one agent at a time. Keep fixing
-   the three things named most. T1 and T2 hold as of rounds 2, 3, 4, 5,
-   6 and 7; T3 is 0 every round, so the loop is not done.
+   the three things named most. T1 and T2 held in rounds 2 to 7; round
+   8's T1 fell to 5 (the list stuck shut to 112 s; fixed, not played
+   cold); T3 is 0 every round, so the loop is not done.
    **The cold player runs out of COMMANDS long before it runs out of
    game-seconds on this machine** — round 7 took forty-five minutes to
    reach fifty-nine game-seconds. Tell it two or three actions between
@@ -479,95 +512,95 @@ For story read design/foundation/01 and 08 and nothing else in that
 folder. Nothing under design/archive/ binds.
 
 Start from main: git pull. If the last PR in PROMPT.md §2 is not merged
-yet (claude/dry-weather, which carries claude/design-audit), branch from
-its branch instead, so you build on it. Branch before
-your first commit (claude/<short-name>).
+yet (claude/tier-3), branch from it instead, so you build on it. Branch
+before your first commit (claude/<short-name>).
 
-THE JOB THIS SESSION: PROMPT.md §3 item 4, TIER 3 PROMISES (Amos, Pye,
-Wren) as built in foundation/08 §9. First delete 'amos', 'pye' and
-'wren' from NOT_YET in src/world/not-yet.ts (read §3 item 4's note).
-It does not rain in this world any more (world/weather.ts); the one
-rain is the night before the gathering, which is Amos's answer: the rain table, the eighth pot and
-the honest note, the fleet and the Vikings. This is the tier where THE
-LIST IS WRONG and the player learns HOW he left — in his own
-handwriting, in a pot, on a bearing nobody rows. Build it the way Tier 2
-is built: jobs/tier3.ts with promise: true on the list's own lines, what
-people say by the step of their promise in a world/tier3.ts, the land
-and the promise meeting in a state file with no imports, a
-world/textures-tier3.ts. The old steps on those three lines go. Every
-promise hangs an I'LL HANDLE IT on JobSpec.offer with a cost you can see
-and an offer.while, so it is not made when the part is already done.
-One item, this session, end to end. Do not start Tier 4.
+THE JOB THIS SESSION: PROMPT.md §3 item 5, TIER 4 PROMISES (Joan, the
+man at the crossing, Dennis) as built in foundation/08 §9, promises 10
+to 12. First delete 'joan', 'the-man' and 'dennis' from NOT_YET in
+src/world/not-yet.ts (read §3 item 5's note: what still has to go, and
+what Tier 3 left for you). This is the tier of THE PEOPLE: why he left.
+Joan's line is crossed out already and her task is SIT DOWN, the sit
+costing more effort at her table than anywhere, and she will give him
+nothing to fix; if he tries, she waits. The man at the crossing is
+gated on the eighth pot (Pye's promise kept); the task is telling him
+the truth, or holding the lights green with him; told, he goes and sits
+on the bench and the city stops. Dennis keeps the board: set the date
+for the next gathering, and then do not walk the circuit. Build it the
+way Tiers 2 and 3 are built: jobs/tier4.ts with promise: true on the
+list's own lines, a world/tier4.ts, a state file with no imports, a
+world/textures-tier4.ts. Every promise hangs an I'LL HANDLE IT on
+JobSpec.offer with a cost you can see and an offer.while (Joan's is the
+one where handling it is the whole failure: she waits). One item, this
+session, end to end. Do not start the relay and the gathering (item 6).
 
-WHAT ROUND 7 NAMED AND I DID NOT FIX (both pillar-sized; §3 P2 and
-P4). Do not take either on as well as Tier 3 — but do not make them
-worse, and where Tier 3 sends somebody a hundred units across a land,
-give that walk a board and a trodden way:
-- Nothing in the world points at a named place. The cold player
-  navigated by reading x/z off the status line and lost forty seconds
-  inside an invisible fence.
-- Near-camera drawings are grey slabs across the whole frame, and a
-  house was drawn through the walker.
+WHAT ROUND 8 NAMED AND I DID NOT FIX (all pillar-sized; §3 P2 to P4).
+Do not take them on as well as Tier 4 — but do not make them worse, and
+where Tier 4 sends somebody across a land, give that walk a board and a
+trodden way:
+- No goal on the horizon: the cold player could not turn "up on the
+  map" into a direction on screen and ended lost at WHERE THE ROAD
+  STOPS. The critic's first ask, every round.
+- The camera rolls and clips (a hedge, a riverbank); the horse is drawn
+  faint behind a bubble; floating verb labels crowd the frame.
 
-RULES THAT STAND (PROMPT.md §2 has the detail; Tier 2 and round 7 added
-the middle five):
+RULES THAT STAND (PROMPT.md §2 has the detail; Tier 3 added the last
+three):
 - ONE VOICE AT A TIME. promise:* knowledge is silent; a touch that
   answers itself sets answers: true; a promise kept in front of its
   person is theirs to say. ANSWERS ARE A CARD TOO: while somebody waits
   to be answered, the toast line and the hint line hold their tongues.
-- A PLACE WITH A NOTE AND A TOUCH READS ITS NOTE. App.act takes the note
-  first and returns, so a place whose verb is a touch must not offer a
-  note while the verb is live (`get note()` returning undefined).
-- A PROMPT THAT NAMES A VERB DOES THAT VERB. LEAN ON THE GATE read a
-  card for five sessions and the cold player wrote it down as the thing
-  they wanted most and could not have.
-- NOTHING INTERACTABLE STANDS WITHIN 4 + ITS OWN RADIUS OF A PERSON. A
-  named person's talk place leans to a third of a stride from the
-  walker's feet, so they win every prompt inside four units.
+- A PLACE WITH A NOTE AND A TOUCH READS ITS NOTE (App.act takes the
+  note first): a place whose verb is a touch returns no note while the
+  verb is live (`get note()` returning undefined).
+- A PROMPT THAT NAMES A VERB DOES THAT VERB (round 8: DRINK read a card).
+- NOTHING INTERACTABLE STANDS WITHIN 4 + ITS OWN RADIUS OF A PERSON.
 - A PERSON A LINE OF THE TWELVE NAMES IS ON THE PAGE WHILE THAT LINE IS
-  OPEN. Val was out of doors three and a half hours a day.
+  OPEN.
 - NOBODY IN THIS WORLD TALKS ABOUT THE SCREEN, and nothing says "units".
-- A THING I HAVE TO FIND MUST READ FROM EVERY CAMERA BEARING, and a
-  DRAWING STUCK ON A CLIFF READS AS A CRATE: draw the thing, not a panel
-  of it.
-- DIRECTION LIVES IN THE WORLD: a board at the mouth of the road, a
-  trodden way, a name that reads from far off. No compass words.
+- A THING I HAVE TO FIND MUST READ FROM EVERY CAMERA BEARING; draw the
+  thing, not a panel of it.
+- DIRECTION LIVES IN THE WORLD: a board, a trodden way, a name that
+  reads from far off. No compass words.
 - A MOUNT NEVER FAILS SILENTLY.
-- A click or tap on the thing is the press (App.thingUnder); verify one
-  new interactable. The lens is turned for the world exactly once, at
-  the mount, and that is the owner's. Do not add another.
-- Tier 3's tasks are played verbs. Amos's is 08's one reading; give him
-  something to do with it.
-- A BUILDING IS A PAPER BOX (regions/box.ts). A new building a walker
-  walks round gets boxUp (or rowUp); a drawing laid over a held one (lit
-  windows, a door swung open) says face: 'fixed' or it turns off its
-  house. People walk STRAIGHT LINES between their stops (routineAt): a
-  corner is a stop. After moving a building, a road or a round, run
-  tools/check-boxes.mjs (dev server): nothing may stand inside a house.
+- A click or tap on the thing is the press (App.thingUnder). The lens
+  is turned for the world exactly once, at the mount, and that is the
+  owner's. Do not add another.
+- A BUILDING IS A PAPER BOX (regions/box.ts); people walk straight lines
+  between stops; after moving a building, a road or a round, run
+  tools/check-boxes.mjs.
+- SOMEBODY ELSE'S BOAT IS A RIDE (world/ride.ts): one bearing, its
+  owner rows or you pull, and only a place marked `ride: true` takes
+  the key while you are in it.
+- A PLACE SWITCHED OFF TAKES ITS NAME WITH IT (POI.ts now does this).
+- THE LIST IS OPEN FROM NELL'S WORD, and the first prompt names its key
+  until it is pressed. Do not undo either for a beat of the opening.
 
 HOW TO WORK:
 - One agent at a time, never parallel (the usage window).
 - Play it on the harness: tools/play-server.mjs with PW_CHROMIUM set as
   in PROMPT.md §2a; --rig portrait for the phone, and check every new
   beat there as well as on desktop. A source edit does NOT reload a
-  `vite preview` page — rebuild and restart the play server to get your
-  change into the game. When a cold player is mid-play, build to a
-  scratch outDir so dist/ does not change under them.
-- When Tier 3 plays end to end from the title, run the gate: one cold
-  player, then the FIRST HOUR critic, in sequence, per THE-GATE.md.
-  Save both to play-gate/round-8/ and design/reset/rounds/round-8/
-  yourself; the sub-agents are refused the Write tool and hand the
-  report back as their last message.
-- THE COLD PLAYER RUNS OUT OF COMMANDS, NOT GAME-SECONDS. Round 7 spent
-  forty-five minutes reaching fifty-nine. Tell it: long holds, two or
-  three actions between screenshots, read the `text` list instead of
-  opening every PNG, and aim at 300 game-seconds rather than 600.
+  `vite preview` page — rebuild and restart the play server. When a
+  cold player is mid-play, build to a scratch outDir so dist/ does not
+  change under them. `__inklands.opening.go('done')` and
+  `__inklands.notebook.listShown = true` after SET OUT skip the opening
+  for a check (never for the gate).
+- When Tier 4 plays end to end from the title, run the gate: one cold
+  player, then the FIRST HOUR critic, in sequence, per THE-GATE.md. Save
+  both to play-gate/round-9/ and design/reset/rounds/round-9/ yourself;
+  the sub-agents are refused the Write tool and hand the report back as
+  their last message. Tell the cold player its tools live at
+  /Users/ryan/Developer/Adventure/tools/, not /home/user.
+- THE COLD PLAYER RUNS OUT OF COMMANDS, NOT GAME-SECONDS. Tell it: long
+  holds, two or three actions between screenshots, read the `text` list
+  instead of opening every PNG, and aim at 300 game-seconds.
 - Make no source edit while the cold player plays.
 
-DONE MEANS: npm run build green; Amos, Pye and Wren each playable from
-the title with no parameter; CHANGELOG.md has one page on what changed
-and what the cold player said; PROMPT.md §2, §3 and §5 updated for the
-session after; committed and pushed; the Vercel branch URL in your last
-message. Report faithfully: what you checked, on which rig, and what you
-did not.
+DONE MEANS: npm run build green; Joan, the man and Dennis each playable
+from the title with no parameter; CHANGELOG.md has one page on what
+changed and what the cold player said; PROMPT.md §2, §3 and §5 updated
+for the session after; committed and pushed; the Vercel branch URL in
+your last message. Report faithfully: what you checked, on which rig,
+and what you did not.
 ```

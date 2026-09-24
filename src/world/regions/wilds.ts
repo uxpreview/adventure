@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { notYet } from '../not-yet';
 import { signpostTexture } from '../textures';
 import { tearX } from '../elevation';
 import {
@@ -63,6 +62,10 @@ import {
   tier2, clippersKept, lanternHung, lanternCarried, waterRuns, brackStep, holtStep,
 } from '../tier2';
 import { say as speak } from '../../ui/speech'; /* VOICE: a refusal that says why */
+/* ---- TIER 3 (`world/tier3.ts`): Amos's rain table ---- */
+import { rainTableTexture3, amosSatTexture, catchLampTexture } from '../textures-tier3';
+import { RAIN_TABLE, ROAD_BOARD, flats } from '../tier3-state';
+import { tier3, tableState, amosSits, rainDated } from '../tier3';
 import type { RegionBuilder, WorldPOI } from './index';
 import { boxUp } from './box';
 
@@ -2071,9 +2074,10 @@ const lineTried = { at: -99 };
 /** The world's seconds, as the desert's update last saw them, so a
  *  touch with no clock of its own can stamp one. */
 const flatsClock = { t: 0 };
-/** Whether the door's can has water in it. Not saved: a can put down
- *  by closing the tab is a can to fill again, which costs a walk. */
-const canFull = { full: false };
+/** Whether the can has water in it. Not saved: a can put down by
+ *  closing the tab is a can to fill again, which costs a walk. (Tier 3
+ *  shares it: `tier3-state.ts`.) */
+const canFull = flats.can;
 /** THE CATCH — Amos's, forty units south, and on the pan's RIM, which
  *  is why the water he carries goes uphill both ways. */
 const CATCH = { x: 302, z: 95 };
@@ -2363,7 +2367,23 @@ export const buildDesert: RegionBuilder = (ctx) => {
   for (const m of [cisternShut, cisternOpen]) {
     (m.material as THREE.MeshBasicMaterial).transparent = true;
   }
-  ctx.standee(rainTableTexture(7103), 2.6, 3.1, CATCH.x - 5.6, CATCH.z + 3.4, { rotY: -0.22 });
+  /* TIER 3 · THE RAIN TABLE, off the apron's north corner (it stood at
+   * his elbow, inside the four units a person wins every prompt in),
+   * bigger, and in the four states the promise takes it through. */
+  const TABLE_STATES = ['faint', 'wet', 'dated', 'rubbed'] as const;
+  const tables = TABLE_STATES.map((st, i) => ctx.standee(rainTableTexture3(7170 + i, st), 3.4, 4.1, RAIN_TABLE.x, RAIN_TABLE.z));
+  void rainTableTexture;
+  /* and once the date is given: his lamp on a post at the catch, lit
+   * at night, and a board by the Downs road with the date on it */
+  const lampLit = ctx.standee(catchLampTexture(7175, true), 1.1, 3.3, CATCH.x + 4.6, CATCH.z + 3.2);
+  const lampOut = ctx.standee(catchLampTexture(7176, false), 1.1, 3.3, CATCH.x + 4.6, CATCH.z + 3.2);
+  lampLit.visible = false;
+  lampOut.visible = false;
+  const roadBoard = ctx.standee(canyonBoardTexture(7177, 'IT RAINED ONCE', 'THE NIGHT BEFORE THE GATHERING. — AMOS'), 4.6, 2.3, ROAD_BOARD.x, ROAD_BOARD.z, { face: 'run' });
+  roadBoard.visible = false;
+  const amosSat = ctx.standee(amosSatTexture(7178), 1.6, 2.62, CATCH.x - 11.6, CATCH.z - 1.6);
+  (amosSat.material as THREE.MeshBasicMaterial).transparent = true;
+  amosSat.visible = false;
   ctx.decal(crackedPanDecal(7104), 13, 13, CATCH.x - 4, CATCH.z - 1, 0.3, 0.5);
 
   /* TIER 2 · A BOARD WHERE THE FLATS BEGIN. Holt's walk comes out of
@@ -2382,7 +2402,11 @@ export const buildDesert: RegionBuilder = (ctx) => {
     ctx.standee(holtTexture(7130 + p, p as 0 | 1 | 2), 1.55, 2.65, CATCH.x - 7.2, CATCH.z + 3.4));
   for (const m of holtHere) { m.visible = false; (m.material as THREE.MeshBasicMaterial).transparent = true; }
   /* ---- VOICE: where Amos is drawn ---- */
-  npcs.track('amos', () => { const m = amos.find((v) => v.visible) ?? amos[0]; return { x: m.position.x, z: m.position.z, present: !!amos.find((v) => v.visible) }; });
+  npcs.track('amos', () => {
+    /* TIER 3: sat on his apron is still Amos, and still talks */
+    const m = amos.find((v) => v.visible) ?? (amosSat.visible ? amosSat : amos[0]);
+    return { x: m.position.x, z: m.position.z, present: !!amos.find((v) => v.visible) || amosSat.visible };
+  });
 
   /* ================================================================ *
    * THE HANDS, and WHERE THE ROAD STOPS.
@@ -2530,7 +2554,9 @@ export const buildDesert: RegionBuilder = (ctx) => {
      * doing there is maintenance on a machine that has never worked. */
     const walk = routineNow('amos-night', h);
     // and with the cistern filled by your hand, the night walk is over
-    const night = !!walk && walk.present && !filled;
+    /* TIER 3: and with his water carried for him, it is over too: he
+     * sits on the edge of his apron instead, all night */
+    const night = !!walk && walk.present && !filled && !amosSits();
     let pose: 0 | 1 | 2 = 1;
     let ax = CATCH.x - 4.6;
     let az = CATCH.z + 2.4;
@@ -2555,9 +2581,35 @@ export const buildDesert: RegionBuilder = (ctx) => {
       pose = swing > 0.62 ? 2 : 1;
       if (pose === 2) { ax = CATCH.x - 12.4; az = CATCH.z - 1.4; }
     }
+    /* TIER 3 · HIS PART, LET: down his own track in the daylight for
+     * water, back up with the can, and he pours it over the board */
+    const F = flats.amos;
+    let face: -1 | 1 = 1;
+    if (F.leg) {
+      ax = F.x;
+      az = F.z;
+      pose = F.leg === 'up' || F.leg === 'pour' ? 0 : 1;
+      face = F.face;
+    }
+    /* and not let: sat on the apron's edge while the promise is open,
+     * and all night from then on */
+    const sitting = amosSits() && !F.leg && (tier3.amosOpen || (!!walk && walk.present));
     for (let p = 0; p < 3; p++) {
-      amos[p].visible = p === pose && platform.land !== 'desert';
+      amos[p].visible = !sitting && p === pose && platform.land !== 'desert';
       amos[p].position.set(ax, ctx.groundY(ax, az), az);
+      amos[p].scale.x = face * Math.abs(amos[p].scale.x);
+    }
+    amosSat.visible = sitting && platform.land !== 'desert';
+    amosSat.position.y = ctx.groundY(amosSat.position.x, amosSat.position.z);
+    /* TIER 3 · THE RAIN TABLE, THE LAMP, THE BOARD BY THE ROAD */
+    {
+      const st = tableState();
+      for (let i = 0; i < tables.length; i++) tables[i].visible = TABLE_STATES[i] === st;
+      const dated = rainDated();
+      const lit = dated && clock.lamp > 0.3;
+      lampLit.visible = lit;
+      lampOut.visible = dated && !lit;
+      roadBoard.visible = dated;
     }
     /* TIER 2 · HOLT, over his own line, on the Flats. */
     {
@@ -2749,7 +2801,9 @@ export const DESERT_POIS: WorldPOI[] = [
      * in the air. Only a thing once the door has made it one. */
     get x() { return things.get('the-can')!.x; },
     get z() { return things.get('the-can')!.z; },
-    get enabled() { return knowledge.has('door:the-cistern-yours') && !knowledge.has('fact:the-cistern-filled') && things.get('the-can')!.state === 'ground'; },
+    /* TIER 3: and while Amos's table wants wetting and he has not gone
+     * for the water himself, it is the verb */
+    get enabled() { return (tier3.canMine || (knowledge.has('door:the-cistern-yours') && !knowledge.has('fact:the-cistern-filled'))) && things.get('the-can')!.state === 'ground'; },
     set enabled(_v: boolean) { /* the door and the registry decide */ },
     radius: 2.6,
     prompt: 'PICK UP THE CAN',
@@ -2793,8 +2847,74 @@ export const DESERT_POIS: WorldPOI[] = [
     touch: () => { knowledge.learn('fact:the-oasis-a-hand-deep'); lineTried.at = flatsClock.t; say('line-out'); },
   } as unknown as WorldPOI,
   {
+    /* TIER 3 · THE RAIN TABLE. One POI and one key for the whole of
+     * Amos's promise: read it (a line too pale to read), wet it (with
+     * the can full in hand), read what came up, and then the card —
+     * the date to Amos, or rubbed out. A place with a note and a touch
+     * reads its note (`App.act`), so the note is not here while the
+     * touch is the verb. */
+    x: RAIN_TABLE.x, z: RAIN_TABLE.z, radius: 4.5, label: 'THE RAIN TABLE', labelHeight: 4.4, labelReach: 34,
+    get prompt() {
+      if (tier3.datedMine) return 'READ AMOS THE DATE, OR RUB IT OUT';
+      if (tier3.wetMine) return 'WET THE TABLE';
+      if (knowledge.has('promise:amos:wet') && !knowledge.has('promise:amos:read')) return 'READ WHAT CAME UP';
+      return 'READ THE RAIN TABLE';
+    },
+    answers: true,
+    touch: () => {
+      if (!tier3.wetMine) return;
+      if (things.place('the-can', RAIN_TABLE.x + 2.2, RAIN_TABLE.z - 1.8)) {
+        canFull.full = false;
+        say('can-pour');
+        tier3.wetTheTable();
+      }
+    },
+    get choice() {
+      if (!tier3.datedMine) return undefined;
+      return {
+        title: 'the rain table',
+        body: 'a board ruled into columns for rain, and one line on it, in pencil, in your own hand, the night before the gathering. rain, all night. i\'ll see to it. amos has asked everybody he has ever met when it last rained, and the downs has said at every market for three years that it never has. the water has made the pencil soft: one thumb would take it off.',
+        options: [
+          { label: 'READ AMOS THE DATE', door: 'door:the-rain-dated' },
+          { label: 'RUB IT OUT', door: 'door:the-rain-rubbed' },
+        ],
+      };
+    },
+    get note() {
+      if (tier3.wetMine || tier3.datedMine) return undefined;
+      const st = tableState();
+      if (st === 'faint') {
+        return {
+          title: 'the rain table',
+          body: 'a board on a post, ruled into four columns and six rows, for rain, in a land where it does not. every cell is empty but one, at the foot of the first column: a line of pencil, gone white in the sun, too pale to read. there is writing there. that is all you can say about it.',
+          learns: ['promise:amos:table-looked'],
+        };
+      }
+      if (st === 'wet') {
+        return {
+          title: 'the rain table',
+          body: 'the board is dark with water and the line has come up black, in pencil, in a hand you know from the first page of your own notebook, because it is yours: THE NIGHT BEFORE THE GATHERING. RAIN. ALL NIGHT. THE GROUND WON\'T HOLD — THE EAST BRIDGE WILL GO BY MORNING. I\'LL SEE TO IT. you were here. you knew.',
+          learns: ['promise:amos:read'],
+        };
+      }
+      if (st === 'dated') {
+        return {
+          title: 'the rain table',
+          body: 'one line of pencil at the foot of the first column, in your hand, and over the top of the column in amos\'s red paint, big enough to read from the track: IT RAINED. THE NIGHT BEFORE THE GATHERING. there is a board by the road now that says the same, facing the downs.',
+        };
+      }
+      return {
+        title: 'the rain table',
+        body: 'a board ruled into columns for rain, dark from the water it was given once, and clean. there is a grey smear at the foot of the first column the width of a thumb. amos still asks everybody when it last rained.',
+      };
+    },
+    set note(_v: unknown) { /* the promise decides */ },
+  } as unknown as WorldPOI,
+  {
     x: 305, z: 55, radius: 13, label: 'THE OASIS',
-    prompt: 'DRINK',
+    /* A PROMPT THAT NAMES A VERB DOES THAT VERB (gate round 8: DRINK
+     * opened a card and nobody drank). It is a look. */
+    prompt: 'LOOK AT THE WATER',
     note: {
       title: 'the oasis',
       body: 'green, out here, is a rumor you can stand in. the water is the same blue as the sea, which is a long way off, and nobody has ever worked out how it gets here or where it goes afterwards. from the road it is a stand of trees and nothing else.',
@@ -2823,27 +2943,16 @@ export const DESERT_POIS: WorldPOI[] = [
      * it yourself from the oasis, which is a walk he makes six times a
      * night and you make once, in daylight. Nothing says which was
      * right. */
-    get prompt() {
-      if (!notYet('desert') && !knowledge.decided('desert') && knowledge.has('fact:the-fold')) return 'TELL HIM ABOUT THE FOLD';
-      return 'LOOK AT THE GUTTER';
-    },
-    get choice() {
-      if (notYet('desert') || !knowledge.has('fact:the-fold')) return undefined;
-      return {
-        body: 'a tank with a lid on it, full, and a gutter that runs downhill away from it, and a track worn to the only water in the land by one set of feet at night. you have walked the crease, both faces, which is where the rain would go if it came. the lid could come off, to find out. or the tank could be filled from the oasis by hand, once, in the daylight, by somebody who is not him.',
-        options: [
-          { label: 'TAKE THE LID OFF', door: 'door:the-lid-off' },
-          { label: 'FILL IT YOURSELF, FROM THE OASIS', door: 'door:the-cistern-yours' },
-        ],
-      };
-    },
+    /* (Session 21's card — take the lid off, or fill it yourself — went
+     * with Tier 3: Amos's line is the rain table's now, `tier3.ts`) */
+    prompt: 'LOOK AT THE GUTTER',
     note: {
       title: 'the catch',
       body: () => {
         if (knowledge.has('fact:the-cistern-filled')) return 'guttering, a fall, a tank with a lid on it, full. it was filled in daylight by somebody who was not him, and he was there, and he has not been down the track since. the board beside it is ruled into columns, ready. the gutter has still never delivered a drop.';
         if (knowledge.has('door:the-cistern-yours')) return 'guttering, a fall, a tank with a lid on it, and a can at the foot of it that is yours to carry now. the oasis is forty paces down the track, and every one of them is uphill on the way back.';
         if (knowledge.has('door:the-lid-off')) return 'guttering, a fall, and a tank with the lid off it, open to a sky that has never once rained here in anybody\'s memory. he has decided to find out. the board beside it is ruled into columns, ready.';
-        return 'guttering, a fall, a tank with a lid on it, and every bracket on it present and true. the only piece of engineering in the bleach flats. there is a board beside it ruled into columns, ready.';
+        return 'guttering, a fall, a tank with a lid on it, and every bracket on it present and true. the only piece of engineering in the bleach flats. there is a board off the corner of the apron ruled into columns, for rain.';
       },
     },
   } as unknown as WorldPOI,

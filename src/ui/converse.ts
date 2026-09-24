@@ -1,7 +1,7 @@
 import { rng, stroke } from '../engine/ink';
 import { INK } from '../engine/palette';
 import { letterCanvas, S } from './lettering';
-import { openReplies, closeReplies, repliesTop, type Reply } from './replies';
+import { openReplies, closeReplies, repliesTop, nudgeReplies, type Reply } from './replies';
 import { hush, type Speaker } from './speech';
 
 /**
@@ -188,7 +188,7 @@ export function advanceConverse(): boolean {
   const t = current;
   if (!t) return false;
   if (clock - t.shownAt < GUARD_S) return true;
-  if (t.answering) return true; // an answer is the only way on
+  if (t.answering) { nudgeReplies(); return true; } // an answer is the only way on, and it jumps
   if (t.i < t.pages.length - 1) { t.i++; show(); } else end();
   return true;
 }

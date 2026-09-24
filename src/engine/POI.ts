@@ -52,6 +52,10 @@ export type POIDef = {
   bias?: number;
   /** Internal: remembered state across a blanket suppression. */
   userWasEnabled?: boolean;
+  /** TIER 3: a verb that is live in somebody else's boat (PULL, HAUL IT
+   *  UP, DROP THE MARK). Everything else holds its tongue while a ride
+   *  has the walker (`POIManager.rideOnly`). */
+  ride?: boolean;
 };
 
 export class POI {
@@ -155,6 +159,9 @@ export class POIManager {
    * it.
    */
   suppressed = false;
+  /** TIER 3: the walker is in somebody else's boat, and only a place
+   *  marked `ride` answers the key (`world/ride.ts`). */
+  rideOnly = false;
   /** Names stay off the page and the prompt stays on it: somebody is
    *  talking and the places can wait (the bench's minute). */
   quietLabels = false;
@@ -188,7 +195,12 @@ export class POIManager {
     }
 
     for (const p of this.pois) {
-      if (!p.enabled) continue;
+      /* a place switched off takes its name with it (Tier 3: PYE'S BOAT
+       * stood over empty water for the whole row out) */
+      if (!p.enabled) { p.labelEl?.classList.remove('show'); continue; }
+      /* TIER 3: in somebody's boat, only the boat's verbs are the key;
+       * names still read from the water */
+      const riding = this.rideOnly && !p.def.ride;
       const dx = charPos.x - p.def.x;
       const dz = charPos.z - p.def.z;
       const d = Math.hypot(dx, dz);
@@ -207,7 +219,7 @@ export class POIManager {
       /* a thing that has just been sent for (the whistled horse) is
        * nearer than it stands: `bias` is taken off its distance */
       const dd = d - (p.def.bias ?? 0);
-      if (inR && p.def.onInteract && !p.def.weak && dd < best) {
+      if (inR && !riding && p.def.onInteract && !p.def.weak && dd < best) {
         best = dd;
         active = p;
       }
@@ -216,7 +228,7 @@ export class POIManager {
      * win every contest; it is offered only when nothing else is. */
     if (!active) {
       for (const p of this.pois) {
-        if (!p.enabled || !p.def.weak || !p.def.onInteract) continue;
+        if (!p.enabled || !p.def.weak || !p.def.onInteract || this.rideOnly) continue;
         if (Math.hypot(charPos.x - p.def.x, charPos.z - p.def.z) < p.def.radius) active = p;
       }
     }

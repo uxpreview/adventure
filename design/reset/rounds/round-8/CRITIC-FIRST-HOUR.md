@@ -1,0 +1,9 @@
+# Critic: THE FIRST HOUR vs A Short Hike (round 8, desktop, 2026-09-24)
+
+*Handed back as the sub-agent's final message and saved by the session.*
+
+Judged only on the strip, INKLANDS's first ten minutes has two beats that really do teach by playing. In one, Nell shouts "RUN." with the bull right behind you and "hold shift to run" underneath (009). In the other, you fetch water, wet the rain table and watch your own pencil line come up (056–057), which is better storytelling than anything in A Short Hike's opening. Almost everything else teaches by label. The first prompt, "STAND UP" (002), names no key, and the controls line only shows up after the note (006). The horse you're told to mount is a faint ghost behind a speech bubble (012–013). THE LIST, which holds the whole game together, twice reads "the first page is stuck to the cover. it can wait" (019, 022). Floating words like WHOA, GET OFF and LOOK AT THE GUTTER cover the world. A Short Hike keeps one peak in view in every frame, so "go up" is always clear. Here the player stares at blank sand (034, 066), the camera clips into a riverbank (026), and the map says north but nothing on screen does. The session ends lost at "WHERE THE ROAD STOPS" instead of the riverhead. A Short Hike's climbing and gliding change how you move within minutes, but most of the actions in this strip are pressing E to open a text card.
+
+VERDICT: REFERENCE
+
+Put the current goal on the horizon: a visible landmark (such as the riverhead) or a compass that matches the map, plus a camera that doesn't roll or clip | Name the key on the first prompt ("STAND UP — E"), and have THE LIST open while Nell tells you about the twelve people | Draw the horse solid, make the whistle work every time, and cut the floating verb labels down to one prompt near the player
