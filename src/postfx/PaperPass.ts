@@ -108,6 +108,7 @@ export class PaperFX {
          * style, and this is the style getting wet. A storm's flash is
          * one add over the whole frame, gone in half a second. */
         uRain: { value: 0 },
+        uGather: { value: 0 },
         uFlash: { value: 0 },
         uPixel: { value: new THREE.Vector2(1 / 1280, 1 / 720) },
       },
@@ -132,6 +133,7 @@ export class PaperFX {
         uniform vec3 uPoolWarm;
         uniform vec3 uPoolCool;
         uniform float uRain;
+        uniform float uGather;
         uniform float uFlash;
         uniform vec2 uPixel;
         varying vec2 vUv;
@@ -170,6 +172,16 @@ export class PaperFX {
            * darken paper, never lighten a line. The streaks: the frame
            * cut into narrow slanted columns, a few of them carrying a
            * short falling mark on a phase of their own. */
+          /* ---- A GATHERED SKY ------------------------------------------
+           * It does not rain (world/weather.ts). When the sky comes
+           * over, the light goes flat and a little cold, the paper
+           * greys, and that is all. */
+          if (uGather > 0.001) {
+            float lum = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+            vec3 dull = mix(col.rgb, vec3(lum), 0.35) * vec3(0.93, 0.94, 0.97);
+            col.rgb = mix(col.rgb, dull, uGather);
+          }
+
           if (uRain > 0.001) {
             vec2 up = vec2(0.0, uPixel.y) * (2.0 + 5.0 * uRain);
             vec3 a1 = texture2D(tDiffuse, vUv + wob + up * 0.5).rgb;
@@ -280,9 +292,10 @@ export class PaperFX {
     (this.pass.uniforms.uPoolCool.value as THREE.Vector3).set(poolCool[0], poolCool[1], poolCool[2]);
   }
 
-  /** THE WEATHER ON THE FRAME: how hard it is raining, and the flash. */
-  setWeather(rain: number, flash: number) {
+  /** THE WEATHER ON THE FRAME: how far the sky has gathered, the flash, and the rain a pin alone can make. */
+  setWeather(rain: number, flash: number, gather = 0) {
     this.pass.uniforms.uRain.value = rain;
+    this.pass.uniforms.uGather.value = gather;
     this.pass.uniforms.uFlash.value = flash;
   }
 

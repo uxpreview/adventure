@@ -2,57 +2,68 @@ import { clock } from './daylight';
 
 /**
  * THE WEATHER — one clock, like the day, readable by anything
- * (`THE-FUN-PASS.md` §9 item 3, Session 17).
+ * (`THE-FUN-PASS.md` §9 item 3, Session 17; made dry 2026-09-24).
  *
- * Rain, wind, fog and a storm once in a while at night. It is a SYSTEM
- * and not a land's: nothing in a region builder decides whether it is
- * raining, it asks. And it obeys the same law `events.ts` obeys, for
- * the same reason:
+ * **IT DOES NOT RAIN.** The story of record (`design/foundation/08`
+ * §0, §4) has it rain once in anybody's memory: the night before the
+ * gathering, when the river took the east bridge. Amos's line of THE
+ * LIST ("When did it last rain?") and his rain table stand on that.
+ * So the weather here is everything but: wind, fog at first light, a
+ * sky that GATHERS (the light drops, the wind gets up, a grey front
+ * comes over with its rain hanging under it and never reaching the
+ * ground, and people take their washing in and go indoors for nothing)
+ * and, some nights, a DRY STORM: wind, lightning and thunder, no rain.
+ * The world is always about to rain. It never does.
+ *
+ * `rain` stays on the state and the clock never sets it. The patter,
+ * the smudge pass and the preset are kept for the one rain the story
+ * may still want (after the gathering, the second rain in memory), and
+ * for the harness (`setWeather('rain')`).
+ *
+ * It is a SYSTEM and not a land's: nothing in a region builder decides
+ * the weather, it asks. And it obeys the same law `events.ts` obeys:
  *
  *   **IT HAPPENS WHETHER OR NOT THE WALKER IS THERE.** The state is a
  *   pure function of the day and the hour (`daylight.clock.day`,
  *   `clock.hour`) and of nothing else — no random walk, no timer, no
- *   memory. A walker who arrives ten minutes into a shower finds it ten
- *   minutes old, a save that wakes on the second morning wakes into
- *   the second morning's fog, and two runs of one hour on one day are
- *   the same weather, which is what lets `diff-sheets` keep judging
- *   the protected framings.
+ *   memory. Two runs of one hour on one day are the same weather,
+ *   which is what lets `diff-sheets` keep judging the protected
+ *   framings.
  *
  * ── DAY ZERO IS THE SHIPPED PAGE ────────────────────────────────────
  *
- * Every verdict this project holds was earned at noon and at 19.6 on a
- * fresh page, in still air. So the first day is AUTHORED rather than
- * hashed: calm at both of those hours — wind exactly at the field's
- * shipped sway, no rain, no fog — with one shower in the middle of the
- * afternoon, after the first hour is over and before the light goes.
- * The second day is authored too, so the owner's first full cycle
- * meets a fog at dawn, a shower, and the first storm after dark. From
- * the third day on the days are hashed, and no two are alike.
+ * The first day is AUTHORED: calm at noon and at 19.6, with one grey
+ * front in the middle of the afternoon that comes over and goes on.
+ * The second day meets a fog at dawn, a front before noon, and the
+ * first dry storm after dark. From the third day on the days are
+ * hashed, and no two are alike.
  *
  * ── WHAT READS IT ───────────────────────────────────────────────────
  *
- *   App          the haze closes in (fog), the smudge pass runs the
- *                drawing (rain), the whole frame flashes (a storm), and
- *                the voices: the patter, the gusts, the thunder
+ *   App          the haze closes in (fog, a little for a gathered
+ *                sky), the paper greys under a gathered sky, the frame
+ *                flashes (a storm), and the voices: the gusts, the
+ *                thunder
  *   StandeeField the wind is a multiplier over every field's own sway
- *   the lures    fog closes the vistas — and the four lures with them,
- *                which the Common's opening now depends on
- *   the mill     turns faster when the wind gets up; the regatta's
- *                sails fill; the folk go in out of the rain
+ *   traffic      the grey front at the horizon, its rain hanging
+ *   the lures    fog closes the vistas, and the four lures with them
+ *   the folk     go in when the sky gathers, and come out again dry
  *
- * `wind` is 0..1 and HALF is the shipped page: a field's sway is
- * multiplied by `windK`, which is exactly one at a half. Fog is 0..1
- * over how far the horizon has come in. Rain is 0..1 over how hard.
- * `flash` is the lightning, 0 almost always.
+ * `wind` is 0..1 and HALF is the shipped page. Fog is 0..1 over how far
+ * the horizon has come in. `gather` is 0..1 over how far the sky has
+ * come over. `flash` is the lightning, 0 almost always.
  */
 
-export type WeatherKind = 'clear' | 'wind' | 'rain' | 'fog' | 'storm';
+export type WeatherKind = 'clear' | 'wind' | 'gather' | 'fog' | 'storm' | 'rain';
 
 export type WeatherState = {
+  /** Never set by the clock (see above). Only a pin sets it. */
   rain: number;
+  /** How far the sky has come over: the light drops, folk go in. */
+  gather: number;
   wind: number;
   fog: number;
-  /** 0..1 through a storm; the storm is rain and wind at one, plus
+  /** 0..1 through a dry storm: a gathered sky and wind at one, plus
    *  lightning. */
   storm: number;
   /** The lightning, this frame: 0 nearly always, a spike that decays
@@ -86,7 +97,8 @@ function window(hour: number, at: number, hours: number, edge = 0.25): number {
 }
 
 type DayPlan = {
-  shower?: { at: number; hours: number; k: number };
+  /** A grey front that comes over and goes on without breaking. */
+  front?: { at: number; hours: number; k: number };
   fog?: { at: number; hours: number; k: number };
   storm?: { at: number; hours: number };
   /** The wind's own level for the day, 0.25..0.75 around the half. */
@@ -95,12 +107,12 @@ type DayPlan = {
 
 /** THE FIRST TWO DAYS ARE WRITTEN. The rest are hashed. */
 const AUTHORED: DayPlan[] = [
-  // day zero: the shipped page. Calm at noon and at dusk, one shower
-  // after the first hour is over.
-  { wind: 0.5, shower: { at: 14.2, hours: 1.4, k: 0.85 } },
-  // day one: fog at first light, a shower before noon, and after dark
-  // the first storm — the frightening content lives at night
-  { wind: 0.58, fog: { at: 4.9, hours: 2.6, k: 0.9 }, shower: { at: 10.8, hours: 1.5, k: 0.7 },
+  // day zero: the shipped page. Calm at noon and at dusk, one front
+  // over after the first hour is over.
+  { wind: 0.5, front: { at: 14.2, hours: 1.4, k: 0.85 } },
+  // day one: fog at first light, a front before noon, and after dark
+  // the first dry storm — the frightening content lives at night
+  { wind: 0.58, fog: { at: 4.9, hours: 2.6, k: 0.9 }, front: { at: 10.8, hours: 1.5, k: 0.7 },
     storm: { at: 22.6, hours: 2.0 } },
 ];
 
@@ -108,7 +120,7 @@ export function planFor(day: number): DayPlan {
   if (day < AUTHORED.length) return AUTHORED[day];
   const plan: DayPlan = { wind: 0.3 + h(day, 1) * 0.45 };
   if (h(day, 2) < 0.55) {
-    plan.shower = { at: 9.5 + h(day, 3) * 9.5, hours: 0.7 + h(day, 4) * 2.2, k: 0.55 + h(day, 5) * 0.45 };
+    plan.front = { at: 9.5 + h(day, 3) * 9.5, hours: 0.7 + h(day, 4) * 2.2, k: 0.55 + h(day, 5) * 0.45 };
   }
   if (h(day, 6) < 0.45) plan.fog = { at: 4.6 + h(day, 7) * 0.8, hours: 2 + h(day, 8) * 1.6, k: 0.6 + h(day, 9) * 0.4 };
   if (h(day, 10) < 0.32) plan.storm = { at: 21.8 + h(day, 11) * 1.8, hours: 1.4 + h(day, 12) * 1.4 };
@@ -119,7 +131,7 @@ export function planFor(day: number): DayPlan {
  *  a play sheet can ask for tomorrow. */
 export function weatherAt(day: number, hour: number): WeatherState {
   const p = planFor(day);
-  let rain = 0;
+  let gather = 0;
   let fog = 0;
   let storm = 0;
   let flash = 0;
@@ -128,16 +140,16 @@ export function weatherAt(day: number, hour: number): WeatherState {
   // on day zero it sits exactly at the half at the protected hours
   let wind = p.wind;
   if (day > 0) wind += Math.sin(hour * 0.9 + day) * 0.06 + Math.sin(hour * 2.3) * 0.03;
-  if (p.shower) {
-    const w = window(hour, p.shower.at, p.shower.hours, 0.22);
-    rain = Math.max(rain, w * p.shower.k);
+  if (p.front) {
+    const w = window(hour, p.front.at, p.front.hours, 0.22);
+    gather = Math.max(gather, w * p.front.k);
     wind = Math.max(wind, 0.5 + w * 0.3);
   }
   if (p.fog) fog = Math.max(fog, window(hour, p.fog.at, p.fog.hours, 0.5) * p.fog.k);
   if (p.storm) {
     const w = window(hour, p.storm.at, p.storm.hours, 0.3);
     storm = w;
-    rain = Math.max(rain, w);
+    gather = Math.max(gather, w);
     wind = Math.max(wind, 0.5 + w * 0.5);
     if (w > 0.35) {
       /* THE LIGHTNING: the storm's hours cut into slots of about five
@@ -156,19 +168,21 @@ export function weatherAt(day: number, hour: number): WeatherState {
     }
   }
   wind = Math.max(0, Math.min(1, wind));
-  const kind: WeatherKind = storm > 0.35 ? 'storm' : rain > 0.15 ? 'rain' : fog > 0.15 ? 'fog' : wind > 0.72 ? 'wind' : 'clear';
-  return { rain, wind, fog, storm, flash, flashId, kind };
+  const kind: WeatherKind = storm > 0.35 ? 'storm' : gather > 0.15 ? 'gather' : fog > 0.15 ? 'fog' : wind > 0.72 ? 'wind' : 'clear';
+  return { rain: 0, gather, wind, fog, storm, flash, flashId, kind };
 }
 
-const CALM: WeatherState = { rain: 0, wind: 0.5, fog: 0, storm: 0, flash: 0, flashId: -1, kind: 'clear' };
+const CALM: WeatherState = { rain: 0, gather: 0, wind: 0.5, fog: 0, storm: 0, flash: 0, flashId: -1, kind: 'clear' };
 
 /** The named states a harness or a URL can ask for. */
 export const PRESETS: Record<WeatherKind, WeatherState> = {
   clear: CALM,
   wind: { ...CALM, wind: 0.92, kind: 'wind' },
-  rain: { ...CALM, rain: 0.85, wind: 0.7, kind: 'rain' },
+  gather: { ...CALM, gather: 0.85, wind: 0.7, kind: 'gather' },
   fog: { ...CALM, fog: 0.95, wind: 0.3, kind: 'fog' },
-  storm: { ...CALM, rain: 1, wind: 1, storm: 1, kind: 'storm' },
+  storm: { ...CALM, gather: 1, wind: 1, storm: 1, kind: 'storm' },
+  /** The one rain. The clock never makes it; only a pin does. */
+  rain: { ...CALM, rain: 0.85, gather: 0.85, wind: 0.7, kind: 'rain' },
 };
 
 class Weather {
@@ -177,13 +191,13 @@ class Weather {
   pinned: WeatherState | null = null;
 
   /** Once a frame, after the clock has advanced. */
-  /* ---- SCALE: THE FORECAST. The rain a third of an hour on, so the
-   * traffic can stand a curtain at the horizon before it arrives, and
-   * the fields can gust before it. ---- */
+  /* ---- SCALE: THE FORECAST. The sky a third of an hour on, so the
+   * traffic can stand the grey front at the horizon before it comes
+   * over, and the fields can gust before it. ---- */
   ahead = 0;
   tick() {
     this.state = this.pinned ?? weatherAt(clock.day, clock.hour);
-    this.ahead = this.pinned ? this.pinned.rain : weatherAt(clock.day, (clock.hour + 0.35) % 24).rain;
+    this.ahead = this.pinned ? this.pinned.gather : weatherAt(clock.day, (clock.hour + 0.35) % 24).gather;
   }
 
   pin(kind: WeatherKind | WeatherState | null) {
@@ -194,8 +208,8 @@ class Weather {
   /** The multiplier every field's sway takes: exactly one at the
    *  shipped page's half. */
   get windK(): number {
-    /* ---- SCALE: gusts you can see in the fields before the rain ---- */
-    const pre = Math.max(0, Math.min(1, (this.ahead - this.state.rain) * 3));
+    /* ---- SCALE: gusts you can see in the fields before the front ---- */
+    const pre = Math.max(0, Math.min(1, (this.ahead - this.state.gather) * 3));
     const pulse = Math.pow(Math.max(0, Math.sin(clock.hour * 100 * 0.9)), 2);
     return 0.45 + this.state.wind * 1.1 + pre * pulse * 0.9;
   }

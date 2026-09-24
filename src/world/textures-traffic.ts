@@ -286,6 +286,7 @@ export const MARKS = {
   flagA: 1, flagB: 2,
   glint: 3,
   lamp: 4,
+  /** The grey front at the horizon (named for what it never does). */
   rain: 5,
 } as const;
 
@@ -330,15 +331,26 @@ export function marksAtlas(): Atlas {
         break;
       }
       case MARKS.rain: {
-        // a curtain of slanted grey hatch, soft at every edge
-        const g = ctx.createRadialGradient(96, 100, 20, 96, 100, 100);
-        g.addColorStop(0, 'rgba(120,124,134,0.55)');
+        /* THE FRONT (it does not rain: `world/weather.ts`). A grey cloud
+         * bank with its rain hanging under it, and the rain gives out
+         * in the air, well short of the ground: virga. The world is
+         * always about to rain. */
+        const g = ctx.createRadialGradient(96, 52, 16, 96, 52, 96);
+        g.addColorStop(0, 'rgba(120,124,134,0.6)');
         g.addColorStop(1, 'rgba(120,124,134,0)');
         ctx.fillStyle = g;
-        ctx.fillRect(0, 0, MARK_W, MARK_H);
+        ctx.fillRect(0, 0, MARK_W, 112);
         ctx.save();
         ctx.globalAlpha = 0.5;
-        hatch(ctx, 24, 12, 144, 170, 1.32, 5, r, { alpha: 0.22, width: 1.2, color: '#5d616b', jitter: 2.6 });
+        hatch(ctx, 30, 58, 132, 84, 1.32, 5, r, { alpha: 0.22, width: 1.2, color: '#5d616b', jitter: 2.6 });
+        // the streaks thin out and are gone before they land
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'destination-out';
+        const fade = ctx.createLinearGradient(0, 70, 0, 146);
+        fade.addColorStop(0, 'rgba(0,0,0,0)');
+        fade.addColorStop(1, 'rgba(0,0,0,1)');
+        ctx.fillStyle = fade;
+        ctx.fillRect(0, 70, MARK_W, MARK_H - 70);
         ctx.restore();
         break;
       }
