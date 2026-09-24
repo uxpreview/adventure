@@ -2184,27 +2184,12 @@ export const CASTLE_POIS: WorldPOI[] = [
   },
   {
     x: -56, z: -222, radius: 7, label: 'THE TOPPLED KING',
-    prompt: () => (
-      knowledge.has('door:the-king-restored') || knowledge.has('door:the-king-left')
-        ? 'READ THE PLINTH'
-        : 'SET YOUR SHOULDER TO HIM'
-    ),
-    /* THE FIRST CHOICE CARD IN THE GAME (`THE-FUN-PASS` §6, Session
-     * 15). The plinth's note is on the card, and under it are the two
-     * doors: put him back, or leave him. Both are visible before either
-     * is taken; either writes one `door:` id into knowledge and the
-     * castle reads it back every frame; and nothing, here or anywhere,
-     * says which was right. After a door the card is never offered
-     * again and the plinth is a note like any other, reading a little
-     * differently depending on what you did. */
-    choice: {
-      body: 'a king fell over and was left where he landed, sceptre a body\'s length away. the plinth says he was beloved of graweder, which is this place with the old spelling still on it. he is heavier than he looks. the rooks say he is comfortable.',
-      options: [
-        { label: 'PUT HIM BACK ON HIS PLINTH', door: 'door:the-king-restored' },
-        { label: 'LEAVE HIM WHERE HE LANDED', door: 'door:the-king-left' },
-      ],
-      learns: ['fact:the-old-name'],
-    },
+    /* The plinth's card (PUT HIM BACK / LEAVE HIM) is gone (the design
+     * audit, 2026-09-24): putting the king back relieved Wick of his
+     * rounds and folded the banners, beside a promise (08 §9.1) whose
+     * whole turn is that the king never came back and Wick lights the
+     * braziers anyway. He stays where he landed; the plinth is a note. */
+    prompt: 'READ THE PLINTH',
     note: {
       title: 'the toppled king',
       /* THE NAME ON THE PLINTH (`THE-STRANGERS` S8, beat two), and it
@@ -2226,8 +2211,8 @@ export const CASTLE_POIS: WorldPOI[] = [
     },
   },
   {
-    /* THE CROWN (Session 22, `worn.ts`). Once a door has been taken at
-     * the plinth — he is back on it, or he is left — his crown is a
+    /* THE CROWN (Session 22, `worn.ts`). Once the plinth has been
+     * read, his crown is a
      * thing you can take, at the head end of him, and it is the first
      * thing the walker ever wears. The cost is his: he is drawn
      * bare-headed from then on, standing or lying, in every save, and
@@ -2235,7 +2220,7 @@ export const CASTLE_POIS: WorldPOI[] = [
      * his head; the plinth's own note wins from anywhere else. */
     x: -53.2, z: -221.4, radius: 2.6,
     get enabled() {
-      return (knowledge.has('door:the-king-restored') || knowledge.has('door:the-king-left')) && !worn.has('the-crown');
+      return knowledge.has('fact:the-old-name') && !worn.has('the-crown');
     },
     set enabled(_v: boolean) { /* the plinth decides */ },
     prompt: 'TAKE HIS CROWN',

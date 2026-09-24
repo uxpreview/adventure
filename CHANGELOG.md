@@ -1,5 +1,108 @@
 # CHANGELOG
 
+## The design audit (2026-09-24)
+
+The owner asked for a review of the game's current design against
+itself: where the docs, the story of record (`design/foundation/08`)
+and the code disagree. I fixed what was cheap and visible to a player.
+What needs a story decision is listed at the end for the owner.
+
+**Docs brought into line with the story of record:**
+- `GAME.md` told a session to read only `THE-RESET.md` in `design/`,
+  and two paragraphs later called `foundation/08` the story of record.
+  It names both now. "What exists" was dated Session 29; it says after
+  PR #36 now. It calls him the man at the crossing, not the junction,
+  and the horse is Nell's, not the crossroads'. It says six of the
+  twelve jobs still carry their steps from before the story. It adds
+  the paper boxes and the `check-boxes` and `check-solid` tools.
+- `README.md` opened with "Everything below describes what was built
+  before the reset," and then pointed its story paragraph at
+  `design/STORY.md` (THE 8:15), which is now in `design/archive/`. It
+  points at `GAME.md` and `foundation/08` now, and the old paragraph
+  says it is superseded.
+- `DIRECTION.md` still said "the story is still THE 8:15" and that
+  `STORY.md` binds. It has a superseded banner now. `SESSIONS.md` has
+  one saying it closed at Session 27. `design/reset/CODE-MAP.md` told
+  readers "do not read `design/`" and gave a Linux repo path. It names
+  the two binding files and the files newer than the map now.
+- `PROMPT.md` §3 had two lists that were both numbered from 1, and §5
+  said "§3 items 2 and 4", which could mean either list. The pillar list
+  is P1 to P9 now. §3's Tier 2 item sent readers to "§2b below" for the
+  new rules, but the rules are in §5. §2 still called #36 open.
+
+**In the game (all were checked on the harness, desktop):**
+- **The man's name tag said THE MAN AT THE JUNCTION** while his line of
+  THE LIST says THE MAN AT THE CROSSING. The tag says CROSSING now.
+  THE JUNCTION is still the name of the place.
+- **Dennis's job was called THE LIST**, which is also the notebook's
+  first tab and the objective line's own name. It is THE TIMETABLE now.
+- **"units" in the world's mouth** (rule: nothing says "units"): Holt's
+  "forty units of channel", the man's "bench twenty units off", and
+  seven canyon and Flats notes. They say paces now.
+- **Compass words telling you where to go** (rule: direction lives in
+  the world). They say what is there instead:
+  - the shut gate's hint: THE STILE IS IN THE LONG FENCE
+  - Nell: "Stile's in the long fence, top of the field"
+  - Brack: "the far end of the water"
+  - Wick: "on the post"
+  - the time trial: FINISH IS PAST THE BRIDGE
+  - the Flats stamp: "at the end of the long road"
+  - the signpost: "four arms"
+  - the footprints: "in the penwood"
+  
+  Five descriptive compass words in canyon and Flats notes are gone too.
+  Place names (SOUTH GATE, NORTH END, EAST BENCH) stay. So do the two
+  painted boards ("THE CATCH, SOUTH", "THE CHANNEL, NORTH").
+- **The king's plinth card is gone.** PUT HIM BACK ON HIS PLINTH
+  relieved Wick of his rounds and folded the banners. That sat beside
+  Wick's promise (08 §9.1), whose whole turn is that the king never
+  came back and Wick lights the braziers anyway. The plinth is a note
+  now, and reading it is what lets you take the crown. Checked: READ
+  THE PLINTH shows the note and learns the old name, and then TAKE HIS
+  CROWN is offered at his head.
+- **The canyon's river card is gone.** TELL HIM ABOUT THE RIVER floated
+  the boat beside Holt's promise, and the boat is what his promise
+  unlocks (08 §9.6). Checked: with the river rowed and no promise open,
+  the trestles only offer LOOK AT THE MARKS.
+
+**Found, and left for the owner (story-sized, and each is a decision):**
+1. **It rains.** `weather.ts` has showers on days 0 and 1 and storms
+   after them. 08 §0 says the night before the gathering was "the only
+   rain in memory", and Amos's promise (Tier 3) is built on that.
+   Marget's promise also has you sit through rain. Some notes contradict
+   it too: the cistern's "That's rain going in. First time.", "rained on
+   twice" and "rained on more than once". Tier 3 has to choose: no rain
+   (wind, fog, dust instead), or rain that is news every time.
+2. **The 8:15 still runs and can be ridden.** It is gated on seven of
+   the old WAITS (`knowledge.ts` `WAITS_FOR_THE_LINE`). 08 §3 says the
+   Mile has "a stop with a timetable and no track", and §16 cuts the
+   railway as story. Tier 4 (Dennis) should settle it.
+3. **Six promises still have their steps from before the story.**
+   - Amos's NIGHT WALK repeats Holt's walk to the oasis.
+   - Pye's has no rowing and no coat, and Pye says "Never rowed to it"
+     against 08's "I found you past the mark".
+   - Wren's Vikings do not know him, and `coast.ts` has them beached
+     four hundred years waiting for wind.
+   - Joan's is "sit in the place laid for nobody, TELL JOAN YOU SAT",
+     and CLEAR THE SECOND SETTING AWAY is still on her table.
+   - The man's is FOUR SECONDS, with no eighth pot gate and no telling.
+   - Dennis's has you stand in six lands, and WIPE THE BOARD stops him
+     going to it.
+   
+   These are Tiers 3 and 4 (PROMPT.md §3 items 4 and 5).
+4. **"N OF 12 KEPT"** (`jobs.ts`) is a checklist count on the toast.
+   08 §0 says the calls reconnect "never as a checklist", and
+   `knowledge.ts` says the 8:15's number "is never shown".
+5. Low, for whoever is next in the file:
+   - Several old `door:*` keys are still read and nothing grants them
+     (`the-water-stood`, `the-cart-turned-north`, `the-cart-pushed`,
+     `the-bell-rings-it`, `the-oar-taken`).
+   - Wick's and Marget's I'LL HANDLE IT offers are made in `tier1.ts`
+     and not on `JobSpec.offer`.
+   - Joan's name tag says JOAN HARROW.
+   - The camera is clean: its only automatic turn is the one at the
+     mount.
+
 ## The rest of the buildings are boxes (2026-09-23)
 
 Follow-up to the two entries below, from their "Not boxed" list. Every

@@ -1431,7 +1431,7 @@ export const MEADOW_POIS: WorldPOI[] = [
     prompt: 'READ THE SIGNPOST',
     note: {
       title: 'the crossroads',
-      body: 'brim, to the north. the sea, west. the downs, east. maple court, south. and one that says 8:15, which is not a place. every road in the world starts here, which is another way of saying you are nowhere in particular.',
+      body: 'four arms: brim, the sea, the downs, maple court. and one that says 8:15, which is not a place. every road in the world starts here, which is another way of saying you are nowhere in particular.',
       /* THREE LANDS GO INTO PENCIL ON THE MAP FROM THE FIRST NOTE IN
        * THE GAME. The signpost has named them since Session 1 and it
        * has never been worth anything, because the map had nothing to
@@ -1478,7 +1478,7 @@ export const MEADOW_POIS: WorldPOI[] = [
       body: () => {
         const water = knowledge.has('promise:brack:on-purpose');
         const head = 'a line of prints across the green, going west, pressed into ground that was wet once and has not been since. one man, walking, not running. nobody has walked them out because nobody crosses the green here. ';
-        if (water) return head + 'they come out again on the shingle at the tarn, forty minutes north-east of here, and go into the water, and there is nobody in the water. so they go on out the far side, through the wood, in the dark, to the coast. they are yours.';
+        if (water) return head + 'they come out again on the shingle at the tarn, in the penwood, and go into the water, and there is nobody in the water. so they go on out the far side, through the wood, in the dark, to the coast. they are yours.';
         return head + 'they are the size of the boot you are standing in.';
       },
     },

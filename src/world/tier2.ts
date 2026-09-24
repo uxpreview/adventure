@@ -266,8 +266,8 @@ class Tier2 {
       case 1:
         return pick(has(K.brackCame)
           ? ['I\'m coming as far as the last tree. Don\'t tell me what\'s in it till I\'m back up here.', 'Last tree. Go on.']
-          : ['Down the shingle at the north end. There\'s the old cut through the bramble if you\'ve anything to cut with, or go round by the boat.',
-            'The bank. North end. I\'ll be here.']);
+          : ['Down the shingle, the far end of the water. There\'s the old cut through the bramble if you\'ve anything to cut with, or go round by the boat.',
+            'The bank. The far end. I\'ll be here.']);
       case 2:
         return ['A lantern. On my bank. Three years and nobody picked it up, because nobody goes down there, because I don\'t.'];
       case 3:
@@ -378,7 +378,7 @@ class Tier2 {
         ? 'Running. And I still don\'t know which board went where. Same as last time.'
         : 'Water\'s coming down from the Flats. I shouted up the cut this morning and it came back right. First time in three years.',
       has(K.amosSaw) ? 'He offered you a hand at that bridge. You said no to him and all.' : 'Boat\'s off the trestles. First time in years.',
-      'Forty units of channel. I could have walked it in an afternoon.',
+      'Forty paces of channel. I could have walked it in an afternoon.',
     ];
     return [out[s.said % out.length]];
   }

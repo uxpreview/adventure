@@ -192,7 +192,7 @@ class Opening {
         id: 'shut-gate', held: 0, last: -99,
         test: (x, z, land) => (land === 'meadow' && ctx.common.gate.shut
           && x > HEDGE_X && x < FIELD.maxX && z > FIELD.minZ + 3 && z < FIELD.maxZ)
-          ? 'THE GATE IS SHUT. THE STILE IS ON THE LONG FENCE, NORTH.' : null,
+          ? 'THE GATE IS SHUT. THE STILE IS IN THE LONG FENCE.' : null,
       },
       {
         /* riding the hedge with the bull behind: the gap is the one
@@ -541,7 +541,7 @@ class Opening {
     const w = this.ctx.walker();
     const inside = w.x > HEDGE_X && w.z > FIELD.minZ && w.z < FIELD.maxZ && w.x < FIELD.maxX;
     /* said last, and held, so the next line does not paint over it */
-    if (inside) this.after(6.0, () => this.nellSays('You\'re in with it. Stile\'s at the top of the field, north.', 5));
+    if (inside) this.after(6.0, () => this.nellSays('You\'re in with it. Stile\'s in the long fence, top of the field.', 5));
     notebook.step(JOB_ID, 2);
     notebook.complete(JOB_ID, 'It went in. It always did, for you.');
     this.go('home');

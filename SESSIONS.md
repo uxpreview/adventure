@@ -1,5 +1,9 @@
 # SESSIONS — the handoff log
 
+> **Closed at Session 27 (2026-09-09).** Handoffs since then are the
+> top entries of `CHANGELOG.md` and `PROMPT.md` §5. This file is the
+> record and binds nothing.
+
 ## Sessions 24–27 — 2026-09-07 → 2026-09-09 — THE RESET, BUILT
 
 *The owner's brief (verbatim in `PROMPT.md` §1): make it an open world that

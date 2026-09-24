@@ -180,7 +180,7 @@ class Tier1 {
         return ['Well? The chain. It\'s your road as much as mine.'];
       case 5:
         if (has(K.roadLeft)) return pick(['Tell Marget the castle\'s lit. Same as every night. She\'ll not have heard it from anybody in three years.', 'Marget. In Brim. The castle\'s lit. Go on.']);
-        if (has(K.wickSat)) return pick(['Your chain. You said. It\'s on a hook, west post.', 'West post. Lift it off the hook. I\'m sat.']);
+        if (has(K.wickSat)) return pick(['Your chain. You said. It\'s on a hook, on the post.', 'On the post. Lift it off the hook. I\'m sat.']);
         return pick(['I\'m going. I put it up, I\'ll take it down.', 'Walk down with me or don\'t.']);
       default:
         break;

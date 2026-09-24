@@ -292,7 +292,7 @@ class Toys {
       if (aboard && Math.hypot(w.x - START.x, w.z - START.z) < 3.2) {
         this.trialT = 0;
         this.trialDrawn = -1;
-        toast('GO. FINISH IS EAST, PAST THE BRIDGE.', 'score');
+        toast('GO. FINISH IS PAST THE BRIDGE.', 'score');
         say('bicycle-bell');
       }
       return;
