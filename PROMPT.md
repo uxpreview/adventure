@@ -54,7 +54,7 @@ Run the pillars and the loop **one at a time, one agent at a time, over as
 many sessions as it takes.** A cold player and then one critic in sequence
 is fine. The brief's goal is unchanged; only the shape of the work is.
 
-## 2. Where it stands (2026-09-24, `main` after PR #36)
+## 2. Where it stands (2026-09-24, `main` after PR #36; #37 and the picks' PR open)
 
 Play it: https://adventure.ryankm.com (production, from `main`)
 (Vercel rebuilds `adventure-git-<branch>-ryankm.vercel.app` on every push
@@ -68,8 +68,13 @@ makes every building a walker walks round a paper box (`regions/box.ts`:
 drawings that turned off their houses, a faded house that blanked the
 ones behind it, and a Maple Court house standing on its own road.
 `CHANGELOG.md` has both entries. A design audit on 2026-09-24
-(`CHANGELOG.md` "The design audit") squared the docs with the story of
-record and fixed the contradictions a player could see.
+(`CHANGELOG.md` "The design audit", PR #37, branch
+`claude/design-audit`) squared the docs with the story of record and
+fixed the contradictions a player could see. The owner then took all
+four of its recommendations (`CHANGELOG.md` "The owner's four picks",
+branch `claude/dry-weather`, built on #37): it does not rain; the 8:15
+does not come; the six lines of Tiers 3 and 4 wait (`world/not-yet.ts`);
+no count of kept lines.
 
 The gate (`design/reset/THE-GATE.md`) rounds so far, all desktop, from
 the title, no parameters:
@@ -384,18 +389,19 @@ drawn edge and the strangers' prompts are the two a first minute meets.
    way `door:the-king-restored` is beside Wick's).
 4. **Tier 3** (Amos, Pye, Wren): the rain table, the eighth pot and the
    honest note, the fleet and the Vikings.
-   **The design audit (2026-09-24) found what Tier 3 must settle first:**
-   it rains in the game (`weather.ts`: showers on days 0 and 1, storms
-   after), and 08 says one rain in memory; Amos's old NIGHT WALK
-   repeats Holt's; Pye says "Never rowed to it"; the Vikings in
-   `coast.ts` are beached waiting for wind. See `CHANGELOG.md` "The
-   design audit", the list at its end.
+   **Settled by the owner's picks (2026-09-24):** it does not rain
+   (fronts and dry storms only), so Amos's question has one answer.
+   Amos, Pye and Wren wait in `world/not-yet.ts` with no job and no
+   old card; **delete their ids from `NOT_YET` first**, then build.
+   Still to replace: Amos's old NIGHT WALK spec, Pye's and Wren's old
+   specs and cards in `jobs/`, `regions/coast.ts` and `wilds.ts`, and
+   the Vikings in `coast.ts` beached waiting for wind (08: in the
+   regatta, unable to land).
 5. **Tier 4** (Joan, the man at the crossing, Dennis): the second plate
    and the sit, the truth told, the board and the date.
-   Also Tier 4's to settle (the audit): the 8:15 still runs on seven
-   old WAITS where 08 has a stop with no track; Joan's CLEAR THE SECOND
-   SETTING AWAY and Dennis's WIPE THE BOARD are still live; the toast
-   still counts N OF 12 KEPT.
+   Joan, the man and Dennis wait in `world/not-yet.ts` too. The 8:15
+   no longer comes (`Eight15.qualified()` is false); Joan's CLEAR card
+   is gone and her table is SIT DOWN; the kept count is gone.
 6. **The relay and the gathering** (`08` §10, §14): the call in one
    shot, Morrow's morning, handing lines to people, the gate held,
    the table, Joan, the bench, the first page typed, the note taken
@@ -473,12 +479,15 @@ For story read design/foundation/01 and 08 and nothing else in that
 folder. Nothing under design/archive/ binds.
 
 Start from main: git pull. If the last PR in PROMPT.md §2 is not merged
-yet, branch from its branch instead, so you build on it. Branch before
+yet (claude/dry-weather, which carries claude/design-audit), branch from
+its branch instead, so you build on it. Branch before
 your first commit (claude/<short-name>).
 
 THE JOB THIS SESSION: PROMPT.md §3 item 4, TIER 3 PROMISES (Amos, Pye,
-Wren) as built in foundation/08 §9 (read §3 item 4's audit note and
-settle the rain first): the rain table, the eighth pot and
+Wren) as built in foundation/08 §9. First delete 'amos', 'pye' and
+'wren' from NOT_YET in src/world/not-yet.ts (read §3 item 4's note).
+It does not rain in this world any more (world/weather.ts); the one
+rain is the night before the gathering, which is Amos's answer: the rain table, the eighth pot and
 the honest note, the fleet and the Vikings. This is the tier where THE
 LIST IS WRONG and the player learns HOW he left — in his own
 handwriting, in a pot, on a bearing nobody rows. Build it the way Tier 2

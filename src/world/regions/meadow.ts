@@ -1320,7 +1320,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
      * is a thing you can see from the crossroads; in a fog you cannot,
      * and the keep goes with them. Rain takes a little too. */
     const Wx = weather.state;
-    const clear = (1 - Wx.fog) * (1 - 0.35 * Wx.rain);
+    const clear = (1 - Wx.fog) * (1 - 0.35 * Wx.gather);
     vistaMat.opacity *= clear;
     for (const l of lures) l.mat.opacity = l.base * Math.max(0, Math.min(1, (pz - 18) / 22)) * far * inX * clear;
     // the mill's smoke leans on the wind, and lies down in a gale
@@ -1329,14 +1329,14 @@ export const buildMeadow: RegionBuilder = (ctx) => {
 
     /* ---- THE UNNAMED, AND THE NIGHT'S ANIMALS (Session 17) ---------- */
     const h = clock.hour;
-    const rain = Wx.rain > 0.5;
-    for (const f of arguers) f.tick(h, rain);   // nobody argues in the rain
+    const grey = Wx.gather > 0.5;
+    for (const f of arguers) f.tick(h, grey);   // nobody argues under a grey sky
     fisher.tick(h);
-    wellWoman.tick(h, rain);
+    wellWoman.tick(h, grey);
     carter.tick(h);
     const kids = events.progress('the-fair-children');
     for (let i = 0; i < 2; i++) {
-      if (kids < 0 || rain) { children[i].hide(); continue; }
+      if (kids < 0 || grey) { children[i].hide(); continue; }
       const a = h * 100 * 0.62 + i * Math.PI;
       const cx = -95 + Math.cos(a) * 5.6;
       const cz = 99 + Math.sin(a) * 5.0;
@@ -1391,7 +1391,7 @@ export const buildMeadow: RegionBuilder = (ctx) => {
         dawnDogDrawn.set(dp, dawnDog.x, dawnDog.z, dawnDog.face < 0 ? -1 : 1);
       }
     }
-    for (const f of ladderFolk) f.tick(h, rain);
+    for (const f of ladderFolk) f.tick(h, grey);
     // the ladder's day: carried out, leant, carried home
     for (const i of [0, 2]) {
       const f = ladderFolk[i];
@@ -1423,7 +1423,7 @@ export const MEADOW_POIS: WorldPOI[] = [
       title: 'the note',
       body: () => common.note.second
         ? 'a second note, under the first, in a hand that is not yours: YOU DON\'T HAVE TO DO ALL TWELVE. on the back, in yours, older, pressed hard enough to go through: YES, I DO.'
-        : 'back in an hour. — you. pinned to the bench with a tack, in your own handwriting, and it has been rained on more than once. nobody has taken it down.',
+        : 'back in an hour. — you. pinned to the bench with a tack, in your own handwriting, and the sun has had three years at it. nobody has taken it down.',
     },
   } as unknown as WorldPOI,
   {

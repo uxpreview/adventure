@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { notYet } from '../not-yet';
 import { signpostTexture } from '../textures';
 import { tearX } from '../elevation';
 import {
@@ -1008,13 +1009,13 @@ export const buildForest: RegionBuilder = (ctx) => {
 
     /* ---- THE UNNAMED, THE HERON, THE BATS (Session 17) --------------- */
     const h = clock.hour;
-    const rain = weather.state.rain > 0.5;
+    const grey = weather.state.gather > 0.5;
     for (const c of cutters) c.tick(h);
-    picker.tick(h, rain);
-    roundWalker.tick(h, rain);
+    picker.tick(h, grey);
+    roundWalker.tick(h, grey);
     {
       const on = events.progress('the-wood-road-child');
-      if (on < 0 || rain) woodChild.hide();
+      if (on < 0 || grey) woodChild.hide();
       else {
         const e = on < 0.5 ? on * 2 : 2 - on * 2;
         const x = 62 + (101 - 62) * e;
@@ -1922,7 +1923,7 @@ export const CANYON_POIS: WorldPOI[] = [
     x: 297, z: -120, radius: 8, label: 'THE TOP OF THE CLIMB',
     note: {
       title: 'the top of the climb',
-      body: 'somebody left their boots here. side by side, laced, pointing up the canyon. they have been rained on twice.',
+      body: 'somebody left their boots here. side by side, laced, pointing up the canyon. the sun has had the laces white.',
     },
   },
   {
@@ -2823,11 +2824,11 @@ export const DESERT_POIS: WorldPOI[] = [
      * night and you make once, in daylight. Nothing says which was
      * right. */
     get prompt() {
-      if (!knowledge.decided('desert') && knowledge.has('fact:the-fold')) return 'TELL HIM ABOUT THE FOLD';
+      if (!notYet('desert') && !knowledge.decided('desert') && knowledge.has('fact:the-fold')) return 'TELL HIM ABOUT THE FOLD';
       return 'LOOK AT THE GUTTER';
     },
     get choice() {
-      if (!knowledge.has('fact:the-fold')) return undefined;
+      if (notYet('desert') || !knowledge.has('fact:the-fold')) return undefined;
       return {
         body: 'a tank with a lid on it, full, and a gutter that runs downhill away from it, and a track worn to the only water in the land by one set of feet at night. you have walked the crease, both faces, which is where the rain would go if it came. the lid could come off, to find out. or the tank could be filled from the oasis by hand, once, in the daylight, by somebody who is not him.',
         options: [
@@ -3565,9 +3566,9 @@ export const buildDowns: RegionBuilder = (ctx) => {
     }
 
     /* ---- THE UNNAMED (Session 17) ------------------------------------ */
-    const rain = weather.state.rain > 0.5;
-    miller.tick(h, rain);
-    carter.tick(h, rain);
+    const grey = weather.state.gather > 0.5;
+    miller.tick(h, grey);
+    carter.tick(h, grey);
     shepherd.tick(h);
 
     /* THE HERD PARTS, slowly, and looks up first. At night they lie
@@ -3657,24 +3658,14 @@ export const DOWNS_POIS: WorldPOI[] = [
      * where the strip is. `fact:the-place-kept` is learned by sitting
      * and by nothing else, which is what `THE-WAITS` §10 always said. */
     x: 140, z: 10, radius: 6,
-    /* AND FROM SESSION 21 A CARD, first (`THE-FUN-PASS` §6): sit down,
-     * which is the wait as it always was and seats you the moment the
-     * door is taken, or clear the second setting away. A table laid
-     * for one can still be sat at, and sitting at it keeps nothing. */
+    /* The card that was here (SIT DOWN, or CLEAR THE SECOND SETTING
+     * AWAY) is gone (the design audit, 2026-09-24): the second plate is
+     * laid for him and the table is home (08 §9.10, §13), and clearing
+     * it away is not a thing this game offers. SIT DOWN is the story's
+     * own verb and stays; its weight is Tier 4's. */
     /* A function and not a getter, because App wraps a seat's prompt
      * with STAND UP by assigning to it. */
-    prompt: () => (knowledge.decided('downs') ? 'SIT DOWN' : 'SIT DOWN, OR CLEAR IT'),
-    get choice() {
-      if (knowledge.decided('downs')) return undefined;
-      return {
-        title: 'the table',
-        body: 'a table laid for two, at the edge of a field, and a basket under it with the day in it. it is put away every evening and laid again every morning, and it has been, for years, in a land nobody can get to. you could sit down. or the second setting could be cleared away, and it would not be laid again.',
-        options: [
-          { label: 'SIT DOWN', door: 'door:the-seat-taken', sits: true },
-          { label: 'CLEAR THE SECOND SETTING AWAY', door: 'door:the-setting-cleared' },
-        ],
-      };
-    },
+    prompt: () => 'SIT DOWN',
     get sit() {
       return knowledge.has('door:the-setting-cleared')
         ? { x: 140.2, z: 10.6 }

@@ -2054,13 +2054,13 @@ export class App {
      * of its reach at the thickest, which takes every far silhouette
      * off the page — the keep from the Common, the towers from the
      * Downs — and the four lures go with it, by their own hand (the
-     * Common's builder reads the same number). Rain brings it in a
-     * little too, the way rain does. */
+     * Common's builder reads the same number). A gathered sky brings
+     * it in a little too, the way a grey afternoon does. */
     const w = weather.state;
-    const close = 1 - 0.68 * w.fog - 0.22 * w.rain * (1 - w.fog);
+    const close = 1 - 0.68 * w.fog - 0.22 * w.gather * (1 - w.fog);
     fog.near = (C.fogNear + lift * 0.28) * day * close;
     fog.far = (C.fogFar + lift) * day * close;
-    this.terrain.setFogCap(0.74 + 0.26 * Math.max(w.fog, w.rain * 0.5));
+    this.terrain.setFogCap(0.74 + 0.26 * Math.max(w.fog, w.gather * 0.5));
     this.camera.far = Math.max(320, fog.far * 1.7);
     this.camera.updateProjectionMatrix();
   }
@@ -2076,9 +2076,9 @@ export class App {
   private weatherVoices(dt: number) {
     if (!this.started) return;
     const w = weather.state;
-    /* INDOORS THE RAIN IS ON THE ROOF (Session 23): the patter and the
-     * wind come down by the room's blend. A cutaway has no roof drawn,
-     * and has one. */
+    /* INDOORS THE WIND IS ON THE ROOF (Session 23): the wind (and the
+     * patter, on the one night a pin makes it rain) come down by the
+     * room's blend. A cutaway has no roof drawn, and has one. */
     const inK = rooms.camK;
     this.audio.setWeather(w.rain * (1 - 0.7 * inK), w.wind * (1 - 0.6 * inK));
     if (w.flashId !== this.lastFlash) {
@@ -2143,7 +2143,7 @@ export class App {
     weather.tick();
     const W = weather.state;
     this.fx.setDay(day.tint, day.value, day.lamp, LAMP_POOL, LAMP_EDGE);
-    this.fx.setWeather(W.rain, W.flash);
+    this.fx.setWeather(W.rain, W.flash, W.gather);
     this.weatherVoices(dt);
     /* THE HAZE TAKES THE SUNSET (world/daylight.ts, `skyOf`). The fog
      * colour and the clear colour are the same colour and always have

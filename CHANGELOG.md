@@ -1,5 +1,80 @@
 # CHANGELOG
 
+## The owner's four picks (2026-09-24)
+
+After the design audit (below), the owner took all four recommendations:
+"go with your picks, start with the dry weather." Branch
+`claude/dry-weather`, on top of `claude/design-audit`.
+
+**1. It does not rain** (`world/weather.ts`). The story of record has
+one rain in memory: the night before the gathering, when the river took
+the east bridge. Amos's line of THE LIST stands on it. The clock still
+makes wind, fog at first light and fronts. When a front comes over:
+- the light goes flat and a little cold (the paper pass's new
+  `uGather`)
+- the haze comes in a little
+- the front stands at the horizon as a grey bank with its rain hanging
+  under it and giving out before it lands (virga)
+- folk go indoors for a rain that never comes.
+
+Storms are dry: wind, lightning, thunder. `WeatherState.rain` stays and
+the clock never sets it. The patter, the streak shader and
+`setWeather('rain')` are kept for the harness, and for a second rain
+the ending may want. The folk read `gather` now. Four lines of text
+changed:
+- the bench note says "the sun has had three years at it"
+- the canyon boots say "the sun has had the laces white"
+- Amos's cistern line was "That's rain going in. First time."
+- a comment
+
+Checked on the harness, desktop, day 0:
+- At 14.0 the forecast is 0.85 with nothing falling yet.
+- At 14.8 the kind is `gather`, rain 0, gather 0.85. The frame is
+  greyer with the haze in, and nothing falls.
+- Day 1 at 23.4 is `storm` with rain 0.
+- The `rain` pin still gives rain 0.85.
+- No console errors.
+
+**2. The 8:15 does not come** (`engine/Eight15.ts` `qualified()` is
+false). 08 gives the Mile "a stop with a timetable and no track" and cuts
+the railway as story. The car was never visible before it ran; it stays
+asleep, kept for the harness. The old rule is in the comment.
+
+**3. Six lines wait for their tiers** (`world/not-yet.ts`, new). Amos,
+Pye, Wren, Joan, the man at the crossing and Dennis are on THE LIST and
+pinned, and they talk. But they give no job, never move on from their
+"met" lines to the old "asked", and their lands' old cards are not
+offered. The cards were the pot line, the punt, the cistern, the
+pavement and the board. Old doors no longer strike their lines.
+- Joan's table keeps SIT DOWN, which is the story's own verb, and loses
+  CLEAR THE SECOND SETTING AWAY for good.
+- The paper plane (Dennis's old reward) lies by the atrium from the
+  start, so all four toys are still in the game.
+- The objective line never names a line that waits.
+- Two "met" lines that contradicted 08 now say what 08 has them want.
+  - Pye: "There's an eighth pot. Further out than the seven, on a
+    bearing I don't row. It's yours, when you want it."
+  - Amos: "It rained once. I'd like to know when."
+
+**A tier's session deletes its three ids from `NOT_YET` first thing.**
+
+Checked on the harness, desktop:
+- Talking to Amos, Pye and Dennis three times each leaves them at `met`
+  with no jobs in the notebook.
+- Joan's table says SIT DOWN, a held E seats you with no card, and it
+  learns `fact:the-place-kept`.
+- PICK UP THE PLANE is offered at the atrium on a fresh game.
+- Not checked: Pye's and Wren's cards, which are gated in code. Each
+  person's own talk prompt wins that spot, so the harness could not
+  reach the card.
+
+**4. No count of kept lines.** The "N OF 12 KEPT" toast is gone (08 §0:
+the calls come back "never as a checklist"). THE LIST's strikes are the
+count.
+
+Not done: the rain rework was checked on desktop only, not the portrait
+rig. No cold player has played any of this.
+
 ## The design audit (2026-09-24)
 
 The owner asked for a review of the game's current design against

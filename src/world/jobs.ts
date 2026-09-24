@@ -18,6 +18,7 @@ import { tier1, hourKnown } from './tier1';
 import { TIER2_JOBS } from './jobs/tier2';
 import { tier2 } from './tier2';
 import { clock } from './daylight';
+import { NOT_YET, notYet } from './not-yet';
 import { THE_LIST } from './thelist';
 import { CIVIC_JOBS } from './jobs/civic';
 import { WILDS_JOBS } from './jobs/wilds';
@@ -64,7 +65,9 @@ export type JobsCtx = {
 };
 
 /** The registry, in the list's own order. */
+/* A line whose tier is not built gives no job (`not-yet.ts`). */
 const SPECS: JobSpec[] = [...TIER1_JOBS, ...TIER2_JOBS, ...CIVIC_JOBS, ...WILDS_JOBS, ...COAST_JOBS]
+  .filter((s) => !NOT_YET.has(s.line))
   .sort((a, b) => THE_LIST.findIndex((l) => l.id === a.line) - THE_LIST.findIndex((l) => l.id === b.line));
 const LINE_OF = new Map(THE_LIST.map((l) => [l.id, l.line]));
 /** Lands whose promise is rebuilt: a card's old door does not keep it. */
@@ -80,17 +83,16 @@ export function landsDone(): number {
   return n;
 }
 /** Whether a land's line is kept: its job done, or (for a land whose
- *  promise is not rebuilt yet) its old wait decided. One rule, so the
- *  count on the toast and the strikes on THE LIST agree (gate round 6:
- *  "3 OF 12 KEPT" at the tarn with two lines struck). */
+ *  promise is not rebuilt yet) its old wait decided. One rule for every
+ *  strike on THE LIST (gate round 6 found a count and the strikes
+ *  disagreeing: "3 OF 12 KEPT" at the tarn with two lines struck). */
 export function landKept(id: string): boolean {
-  return notebook.list().some((j) => j.land === id && j.complete) || (!PROMISE_LANDS.has(id) && knowledge.decided(id));
+  return notebook.list().some((j) => j.land === id && j.complete) || (!PROMISE_LANDS.has(id) && !notYet(id) && knowledge.decided(id));
 }
 export const LANDS_TOTAL = 12;
 
 class Jobs {
   private ctx: JobsCtx | null = null;
-  private doneWas = -1;
   private elapsed = 0;
 
   init(ctx: JobsCtx) {
@@ -102,7 +104,6 @@ class Jobs {
     stamps.init(ctx.scene, ctx.groundAt);
     toys.init({ scene: ctx.scene, groundAt: ctx.groundAt, waterAt: ctx.waterAt, walker: ctx.walker, bicycle: ctx.bicycle, root: ctx.root });
     monsters.init({ scene: ctx.scene, groundAt: ctx.groundAt, walker: ctx.walker, wake: ctx.wake, blink: ctx.blink, started: ctx.started, mounted: ctx.mounted });
-    this.doneWas = landsDone();
     tier1.install(ctx.walker);
     tier2.install(ctx.walker);
   }
@@ -236,11 +237,9 @@ class Jobs {
       }
     }
 
-    const n = landsDone();
-    if (n !== this.doneWas) {
-      this.doneWas = n;
-      toast(`${n} OF ${LANDS_TOTAL} KEPT`, 'job');
-    }
+    /* No "N OF 12 KEPT" (the design audit's pick, 2026-09-24): the
+     * story of record's calls come back "never as a checklist" (08 §0).
+     * A kept line is struck on THE LIST, and that is the count. */
 
     tier1.tick(dt);
     tier2.tick(dt);
