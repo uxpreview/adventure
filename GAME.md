@@ -33,7 +33,7 @@ until their tier's session.
 6. **Keep the pen.** Zero image assets, procedural ballpoint and wash,
    hand lettering, procedural sound, 60 fps on a phone.
 
-## What exists (2026-09-24, after PR #36)
+## What exists (2026-09-24, after Tier 3: branch `claude/tier-3`)
 - **Controls.** WASD/stick to walk (relative to the camera), Shift to run,
   drag to look, wheel/pinch to zoom, `R` recentre, `E` talk/act, `M` map,
   `N` notebook, `H` whistle the horse, `Esc` close. **Hold** `E` to sit
@@ -91,21 +91,43 @@ until their tier's session.
   what he has been holding: he offered, that morning, at the bridge.
   Yours from it: the clippers, the lantern, and a boat with water under
   it.
+- **Tier 3 promises (`foundation/08` §9; `world/tier3.ts`,
+  `jobs/tier3.ts`).** The list is wrong: how he left. AMOS wants the
+  date it last rained, to beat Joan at an argument; his rain table has
+  one line of pencil gone white, and water brings pencil up (he goes
+  down his track for it, or you carry the can and he sits down); it is
+  in your hand: the night before the gathering, rain all night, the
+  bridge will go, I'LL SEE TO IT. Read him the date (a board by the
+  Downs road, a lamp at the catch; Joan loses) or rub it out. PYE set an
+  eighth pot last week on a bearing he does not row; his boat goes out
+  on it, rowed by him (he stops at his seventh) or by you (he sits down);
+  haul it and there is your coat, and in it a note in your hand: I'M NOT
+  COMING BACK. Read it, or drop it back in. "I found you past the mark.
+  Coming in, not going out." WREN's race has one mark and no finish; the
+  second mark goes out in the punt, and on the way the longship comes
+  alongside and knows you: fourth bench, three summers. Finish it under
+  the old rules (a winner; the longship stays out for good) or a new one
+  (the last boat in finishes too; it lies inside the mark). Then the
+  sea past the mark is somewhere the rowboat goes. Somebody else's boat
+  is a RIDE (`world/ride.ts`): its owner rows, or you pull.
 - **People.** Nell (Common), Marget (Brim), Wick (castle), Pye (beach), Wren
   (ocean), Brack (Penwood), Holt (canyon), Amos (Flats), Joan Harrow
   (Downs), Val (Maple Court), the man at the crossing (Greyline), Dennis
   (Cubicle Mile). Each has one line of THE LIST. Tiers 1 and 2 (Wick,
-  Nell, Marget, Val, Brack, Holt) are built on the story of record, and
-  each of those six has a promise, headed by their line in the
-  notebook. The other six are on the list and the map and talk, and give
-  nothing to do until Tiers 3 and 4 are built (`world/not-yet.ts`).
+  Nell, Marget, Val, Brack, Holt) and Tier 3 (Amos, Pye, Wren) are built
+  on the story of record, and each of those nine has a promise, headed
+  by their line in the notebook. Joan, the man at the crossing and
+  Dennis are on the list and the map and talk, and give nothing to do
+  until Tier 4 is built (`world/not-yet.ts`).
   Everyone else has a line.
-- **Things to do.** Six promises (twelve when the tiers are built);
+- **Things to do.** Nine promises (twelve when Tier 4 is built);
   twelve stamps; four scored toys (stone skimming, paper plane,
   main-street time trial, office chair); three monsters (Penwood at
   night, the canyon, under the pier).
 - **Mounts.** Horse (Nell's, given in the opening), bicycle (Maple
-  Court), rowboat (river and sea). The 8:15 is an hour, and a stop in
+  Court), rowboat (river and sea; past the mark once Wren's race has a
+  finish). Pye's boat and Wren's punt are rides on one bearing. The
+  longship lies at anchor out past the mark. The 8:15 is an hour, and a stop in
   the Mile with a timetable and no track; the old railcar sleeps.
 - **Buildings are paper boxes** (`regions/box.ts`: `boxUp`, `rowUp`):
   sides, back and roof, held still when the lens turns; a drawing laid

@@ -1,5 +1,107 @@
 # CHANGELOG
 
+## Tier 3 promises: Amos, Pye, Wren (2026-09-24)
+
+`PROMPT.md` §3 item 4, on branch `claude/tier-3`. `npm run build` is
+green. All three promises play end to end from the title on the desktop
+harness, both answers of every offer. Every new beat was also checked
+on the portrait rig. Then round 8 of the gate.
+
+**Built like Tier 2.** Amos, Pye and Wren come off `NOT_YET`:
+- `jobs/tier3.ts` hangs each promise on its own line of THE LIST
+- `world/tier3.ts` is what the three of them say and do
+- `world/tier3-state.ts` has no imports; it is where the lands and the
+  promises meet
+- `world/textures-tier3.ts` has the drawings.
+
+Their old steps are gone (the night walk, the mark's name, the bar's
+end), and so are their three old cards (the lid, the pots, the second
+mark). This tier is **how he left**, and every task in it is a played
+verb.
+
+- **7. AMOS. When did it last rain?** He wants the date, to beat Joan
+  Harrow at the market. His rain table has one line in pencil, gone
+  white. Pencil comes up wet, and that board has never been wet. His
+  part is to go down his own track for the water. Or I'LL HANDLE IT:
+  you carry the can uphill, and he sits down on his apron and stops
+  walking at night. The line is in your hand: *THE NIGHT BEFORE THE
+  GATHERING. RAIN. ALL NIGHT. THE GROUND WON'T HOLD — THE EAST BRIDGE
+  WILL GO BY MORNING. I'LL SEE TO IT.* Read him the date, and a board
+  goes up by the Downs road and a lamp is lit at the catch; Joan says
+  she lost. Or rub it out.
+- **8. PYE. Row the eighth pot out.** The pot is out past his seventh,
+  off their bearing, with a lamp on a pole. (That lamp is the light on
+  the water since Session 18, "nothing says what is under it".) He rows
+  you out and stops at his seventh ("...Past it, then."). Or you pull,
+  and he sits where his boat was and stops rowing at evening. Haul it
+  up and your coat is inside. In the pocket is a note in your hand:
+  I'M NOT COMING BACK. Read it (it stays in your coat, for Tier 4 and
+  the ending) or drop it back in. Back ashore Pye says *"I found you
+  past the mark. Coming in, not going out."*
+- **9. WREN. Give the race a finish line.** The second mark goes out in
+  the punt. On the way, the longship comes alongside, and the Vikings
+  know you: *"FOURTH BENCH, STEERBOARD SIDE. THREE SUMMERS."* Drop the
+  mark across the fleet's home leg. Under the old rules there is a
+  winner, the race ends, and the longship stays out for good. Under a
+  new rule the last boat in has finished too, and it lies inside the
+  mark. Either way, the sea past the mark opens to the rowboat.
+
+**A ride in somebody else's boat** (`world/ride.ts`). Pye's boat and
+Wren's punt go out on one bearing and back. Either the owner rows, or
+the stick and E pull. While you are in the boat only the boat's own
+verbs take the key (`POI.ride`). **The longship lies at anchor out past
+the mark** (08 §5) and races last at noon. Session 19 had it beached
+at the Holdfast, which is a landing, and the whole point of it is that
+it cannot land. Two engine fixes came with this: a place switched off
+takes its name with it, and a ride's barks follow the boat.
+
+### The gate, round 8 (desktop, from the title, no parameters)
+
+| | |
+|---|---|
+| **T1** | **5/10 at sixty seconds: fails.** (Round 7: 7.) 9/10 once THE LIST opened, at 112 s. |
+| **T2** | **Holds.** Three next things: Holt's riverhead, what happened to the east bridge, and the Canyon, the Tarn and the 8:15. |
+| **T3** | **0 of 1. VERDICT: REFERENCE** (A Short Hike). |
+
+**A Tier 3 promise was kept cold on its first outing.** The cold player
+rode east to the Flats and took I'LL HANDLE IT with Amos. They carried
+the can up from the oasis, wet the board and read him the date. Their
+best moment: *"pouring water on the rain table and seeing my own pencil
+line come up… It gave me goosebumps."* Their worst was finding their
+way. Scores: understandable 6, alive 8, fun 7, beautiful 9. The critic
+called the table *"better storytelling than anything in A Short Hike's
+opening"*. They picked the reference anyway, for teaching by label, a
+list stuck shut, and no goal on the horizon.
+
+**Fixed after round 8.** None of these has been played cold yet:
+- **THE LIST opens on Nell's word.** The page is readable from her
+  "twelve people… in that book under your coat". Until now it said
+  "stuck to the cover" through Morrow's walk. The objective line says
+  N OPENS IT, and once it has been read nobody asks again. Played on
+  the harness: the page opened on her line.
+- **The first prompt names its key** (STAND UP — E, or TAP HERE) until
+  the key has been pressed once.
+- **E at a question is answered.** Five presses at Amos's answers did
+  nothing; the answers jump now.
+- **The can's step says when it is full.**
+- **The oasis's DRINK is LOOK AT THE WATER.** A prompt that names a verb
+  does that verb.
+
+**Named and not fixed** (pillar-sized, `PROMPT.md` §3):
+- no goal on the horizon: the player was lost looking for the riverhead
+  (P2)
+- the camera rolls and clips (P3)
+- the horse is faint behind a bubble (P4). The whistle came when I
+  reproduced it at the table.
+- floating verb labels crowd the frame
+
+**Not checked:**
+- Nobody cold has rowed with Pye or Wren; the cold player never reached
+  the coast.
+- The portrait rig was checked beat by beat, with no round run on it.
+- Whether the eighth pot reads from the cove at the lens's default
+  bearing (the harness's camera after a teleport was not north).
+
 ## The owner's four picks (2026-09-24)
 
 After the design audit (below), the owner took all four recommendations:
