@@ -94,21 +94,28 @@ until their tier's session.
 - **People.** Nell (Common), Marget (Brim), Wick (castle), Pye (beach), Wren
   (ocean), Brack (Penwood), Holt (canyon), Amos (Flats), Joan Harrow
   (Downs), Val (Maple Court), the man at the crossing (Greyline), Dennis
-  (Cubicle Mile). Each has one job, hung on their line of THE LIST and
-  headed by it in the notebook. Everyone else has a line. Tiers 1 and 2
-  (Wick, Nell, Marget, Val, Brack, Holt) are built on the story of
-  record; the other six still carry their steps from before it, under
-  their line, until Tiers 3 and 4 are built.
-- **Things to do.** Twelve jobs; twelve stamps; four scored toys (stone
-  skimming, paper plane, main-street time trial, office chair); three
-  monsters (Penwood at night, the canyon, under the pier); the 8:15.
+  (Cubicle Mile). Each has one line of THE LIST. Tiers 1 and 2 (Wick,
+  Nell, Marget, Val, Brack, Holt) are built on the story of record, and
+  each of those six has a promise, headed by their line in the
+  notebook. The other six are on the list and the map and talk, and give
+  nothing to do until Tiers 3 and 4 are built (`world/not-yet.ts`).
+  Everyone else has a line.
+- **Things to do.** Six promises (twelve when the tiers are built);
+  twelve stamps; four scored toys (stone skimming, paper plane,
+  main-street time trial, office chair); three monsters (Penwood at
+  night, the canyon, under the pier).
 - **Mounts.** Horse (Nell's, given in the opening), bicycle (Maple
-  Court), rowboat (river and sea), the 8:15 (once it runs).
+  Court), rowboat (river and sea). The 8:15 is an hour, and a stop in
+  the Mile with a timetable and no track; the old railcar sleeps.
 - **Buildings are paper boxes** (`regions/box.ts`: `boxUp`, `rowUp`):
   sides, back and roof, held still when the lens turns; a drawing laid
   over one (lit windows, a door) is `face: 'fixed'`.
-- **Systems kept from before.** A forty-minute day, dry weather (wind, fog, a sky that gathers and never breaks, dry storms; the one rain is history) as a function of
-  time, sixty-odd routines, interiors, collision, footprints as ink, save.
+- **It does not rain.** Wind, fog, a sky that gathers and never breaks,
+  dry storms (`world/weather.ts`). The one rain is the night before the
+  gathering.
+- **Systems kept from before.** A forty-minute day, weather as a
+  function of time, sixty-odd routines, interiors, collision, footprints
+  as ink, save.
 
 ## How to run and test
     npm install && npm run build && npx vite preview        # http://localhost:4173
