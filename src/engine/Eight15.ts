@@ -4,8 +4,7 @@ import {
   railcarSideTexture, railcarFrontTexture, platformFigureTexture, platformThingTexture,
 } from '../world/textures-office';
 import { LINE_STOPS, LINE_STOP_S, LINE_LENGTH, lineAt } from '../world/layout';
-import { knowledge, WAITS_FOR_THE_LINE } from '../world/knowledge';
-import { landsDone } from '../world/jobs'; /* ---- THINGS ---- */
+import { knowledge } from '../world/knowledge';
 import { clock } from '../world/daylight';
 import { events } from '../world/events';
 
@@ -399,9 +398,14 @@ export class Eight15 {
    *  Session 21 the second is waits DECIDED, either door, because the
    *  ending reads the doors and cannot read a door it never comes for. */
   static qualified(): boolean {
-    /* ---- THINGS: qualification reads jobs done (a land's job complete, or its wait decided) ---- */
-    return knowledge.has('route:the-line') &&
-      landsDone() >= WAITS_FOR_THE_LINE;
+    /* IT DOES NOT COME (the design audit's pick, 2026-09-24). The story
+     * of record gives the Mile "a stop with a timetable and no track"
+     * (08 §3) and cuts the railway as story (§16), and 8:15 is the hour
+     * the gathering failed and nothing else. The car is kept, asleep
+     * and out of sight, for the harness (`runTheLine`) and for whatever
+     * the relay (08 §10) may want of it; the old rule was:
+     *   route:the-line && landsDone() >= WAITS_FOR_THE_LINE */
+    return false;
   }
 
   /** The platforms the residue stands on, for the harness: which stops
