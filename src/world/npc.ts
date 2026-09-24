@@ -10,6 +10,7 @@ import type { Reply } from '../ui/replies';
 import { PEOPLE, FOLK_BY_ROLE, FOLK_BY_LAND, BRIM_FOLK, FOLK_NAMES, FENN_AT_ELEVEN, type NpcPhase, type PersonDef } from './lines';
 import type { RegionId } from './layout';
 import { crossout } from './crossout'; /* THE THREE VERBS */
+import { NOT_YET } from './not-yet';
 
 /**
  * THE PEOPLE (VOICE) — a registry of everybody who can be talked to.
@@ -325,7 +326,7 @@ class Npcs {
       if (s.phase === 'idle') {
         s.phase = 'met';
         s.said = 0;
-      } else if (s.phase === 'met' && n.def.want && !s.doors.length && !knowledge.decided(n.def.land)) {
+      } else if (s.phase === 'met' && n.def.want && !NOT_YET.has(n.def.id) && !s.doors.length && !knowledge.decided(n.def.land)) {
         s.phase = 'asked';
         s.said = 0;
         s.want = n.def.want;

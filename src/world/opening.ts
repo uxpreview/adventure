@@ -1,4 +1,5 @@
 import { notebook } from './notebook';
+import { NOT_YET } from './not-yet';
 import { npcs, type NpcState } from './npc';
 import { say, shout, beckon, inFrame, type Speaker } from '../ui/speech';
 import type { Page } from '../ui/converse';
@@ -919,7 +920,8 @@ class Opening {
     let best: (typeof THE_LIST)[number] | null = null;
     let bd = Infinity;
     for (const l of THE_LIST) {
-      if (l.kept || notebook.crossed.includes(l.id) || npcs.state(l.id).phase === 'done' || knowledge.decided(l.land)
+      /* a line whose tier is not built has nothing to do yet (`not-yet.ts`) */
+      if (l.kept || NOT_YET.has(l.id) || notebook.crossed.includes(l.id) || npcs.state(l.id).phase === 'done' || knowledge.decided(l.land)
         || notebook.list().some((j) => j.land === l.land && j.complete)) continue;
       const d = Math.hypot(l.pin.x - w.x, l.pin.z - w.z);
       if (d < bd) { bd = d; best = l; }

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { notYet } from '../not-yet';
 import { coastX } from '../terrain';
 import { SANDBAR, barDist } from '../layout';
 import { duneX, CUT_PATH, HOLD_PLAN } from '../elevation';
@@ -950,11 +951,11 @@ export const BEACH_POIS: WorldPOI[] = [
     x: PYE_POTS.x, z: PYE_POTS.z + 0.5, radius: 5.5, label: 'THE POT LINE',
     get prompt() {
       const done = knowledge.has('door:the-eighth-pot') || knowledge.has('door:the-pots-hauled');
-      if (!done && knowledge.has('name:the-mark')) return 'TELL HIM THE MARK\'S NAME';
+      if (!done && !notYet('beach') && knowledge.has('name:the-mark')) return 'TELL HIM THE MARK\'S NAME';
       return 'COUNT THE POTS';
     },
     get choice() {
-      if (!knowledge.has('name:the-mark')) return undefined;
+      if (notYet('beach') || !knowledge.has('name:the-mark')) return undefined;
       return {
         body: 'seven pots on a line off the cove, and a man who rows out to them at the tide and back at the tide, and has done for as long as the tide has. you have been out to the mark, which nobody in longshore has. he would like to know what it is called. or the pots could come up. they have never once come up.',
         options: [
@@ -1599,11 +1600,11 @@ export const OCEAN_POIS: WorldPOI[] = [
     x: WREN_BOAT.x, z: WREN_BOAT.z - 1.5, radius: 6, label: 'THE PUNT',
     get prompt() {
       const done = knowledge.has('door:the-second-mark') || knowledge.has('door:the-fleet-finished');
-      if (!done && knowledge.has('route:the-bar')) return 'TELL WREN WHERE THE BAR ENDS';
+      if (!done && !notYet('ocean') && knowledge.has('route:the-bar')) return 'TELL WREN WHERE THE BAR ENDS';
       return 'LOOK IN THE PUNT';
     },
     get choice() {
-      if (!knowledge.has('route:the-bar')) return undefined;
+      if (notYet('ocean') || !knowledge.has('route:the-bar')) return undefined;
       return {
         body: 'you have walked the bar to its end, which is the one thing out here that is not water, and wren has never asked what is at the end of it. two marks make a line, and a line has an end, and the fleet has been calling this a race since before anybody was counting. wren could set a second mark. or set it, and call the finish.',
         options: [

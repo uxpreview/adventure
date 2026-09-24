@@ -18,6 +18,7 @@ import { tier1, hourKnown } from './tier1';
 import { TIER2_JOBS } from './jobs/tier2';
 import { tier2 } from './tier2';
 import { clock } from './daylight';
+import { NOT_YET, notYet } from './not-yet';
 import { THE_LIST } from './thelist';
 import { CIVIC_JOBS } from './jobs/civic';
 import { WILDS_JOBS } from './jobs/wilds';
@@ -64,7 +65,9 @@ export type JobsCtx = {
 };
 
 /** The registry, in the list's own order. */
+/* A line whose tier is not built gives no job (`not-yet.ts`). */
 const SPECS: JobSpec[] = [...TIER1_JOBS, ...TIER2_JOBS, ...CIVIC_JOBS, ...WILDS_JOBS, ...COAST_JOBS]
+  .filter((s) => !NOT_YET.has(s.line))
   .sort((a, b) => THE_LIST.findIndex((l) => l.id === a.line) - THE_LIST.findIndex((l) => l.id === b.line));
 const LINE_OF = new Map(THE_LIST.map((l) => [l.id, l.line]));
 /** Lands whose promise is rebuilt: a card's old door does not keep it. */
@@ -84,7 +87,7 @@ export function landsDone(): number {
  *  strike on THE LIST (gate round 6 found a count and the strikes
  *  disagreeing: "3 OF 12 KEPT" at the tarn with two lines struck). */
 export function landKept(id: string): boolean {
-  return notebook.list().some((j) => j.land === id && j.complete) || (!PROMISE_LANDS.has(id) && knowledge.decided(id));
+  return notebook.list().some((j) => j.land === id && j.complete) || (!PROMISE_LANDS.has(id) && !notYet(id) && knowledge.decided(id));
 }
 export const LANDS_TOTAL = 12;
 

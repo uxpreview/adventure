@@ -70,7 +70,7 @@ export const PEOPLE: PersonDef[] = [
       idle: ['Seven pots. They catch nothing much. I set them anyway. The tide\'s the one thing here you can count on.'],
       met: [
         'Out at the tide, back at the tide. That\'s the day.',
-        'There\'s a mark out on the Wide Blue. Never rowed to it. Never learned its name.',
+        'There\'s an eighth pot. Further out than the seven, on a bearing I don\'t row. It\'s yours, when you want it.',
       ],
       asked: ['Walk the bar out to THE MARK. It\'s got a name. Read it and bring it back to the pot line.'],
       done: ['Eighth pot\'s out. On a bearing I never rowed. We\'ll see.', 'You walked to it. Nobody walks to it.'],
@@ -126,7 +126,7 @@ export const PEOPLE: PersonDef[] = [
       idle: ['Cistern\'s empty. Catch has never caught. Water\'s at the oasis, so that\'s where I walk.'],
       met: [
         'Down empty, back with two cans. All night. Every night.',
-        'The water on this sheet comes from somewhere. I\'d like to know where.',
+        'It rained once. I\'d like to know when. I\'ve an argument with the Downs that turns on it.',
       ],
       asked: ['Come to THE CATCH after dark. Walk the track down to the oasis with me and back. Then tell me where the water comes from. The things are out at night. I know.'],
       done: ['Lid\'s off. Open to the sky. Now we wait for it. Once, it came.', 'You walked it at night. With the things out. Fourteen years I did that alone.'],

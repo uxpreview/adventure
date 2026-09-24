@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { notYet } from '../not-yet';
 import { grassTexture } from '../../engine/ink';
 import {
   lamppostTexture, bannerTexture, boulderTexture, wellTexture,
@@ -3900,11 +3901,11 @@ export const CITY_POIS: WorldPOI[] = [
     x: 139, z: 199.5, radius: 8, label: 'THE PAVEMENT', labelHeight: 3.2,
     get prompt() {
       const done = knowledge.has('door:the-stood-with') || knowledge.has('door:the-walked-round') || knowledge.has('fact:the-man-at-the-junction');
-      if (!done && knowledge.has('fact:the-pavement')) return 'STAND, OR WALK ROUND';
+      if (!done && !notYet('city') && knowledge.has('fact:the-pavement')) return 'STAND, OR WALK ROUND';
       return 'LOOK DOWN';
     },
     get choice() {
-      if (!knowledge.has('fact:the-pavement') || knowledge.has('fact:the-man-at-the-junction')) return undefined;
+      if (notYet('city') || !knowledge.has('fact:the-pavement') || knowledge.has('fact:the-man-at-the-junction')) return undefined;
       return {
         body: 'a man standing on the one patch of stone nobody walks on, and the two lanes worn round him by everybody who did not stop. it costs four seconds to stand here with him. it costs nothing at all to go round, and the stone will take your lane like it took theirs.',
         options: [
@@ -4976,11 +4977,11 @@ export const OFFICE_POIS: WorldPOI[] = [
     x: BOARD.x + 0.8, z: BOARD.z + 1.5, radius: 2.4,
     get prompt() {
       const done = knowledge.has('door:the-board-wiped') || knowledge.has('door:the-corner-pressed');
-      if (!done && knowledge.has('route:the-line')) return 'WIPE IT, OR PRESS THE CORNER';
+      if (!done && !notYet('office') && knowledge.has('route:the-line')) return 'WIPE IT, OR PRESS THE CORNER';
       return 'LOOK AT THE BOARD';
     },
     get choice() {
-      if (!knowledge.has('route:the-line')) return undefined;
+      if (notYet('office') || !knowledge.has('route:the-line')) return undefined;
       return {
         body: 'twelve names and twelve times, in order, under a century of grime, and the corner has lifted. you have walked the whole of it, the gate to the car park, and nothing else ever has. the board could be wiped. or the corner could be pressed back and the rest left as it is.',
         options: [

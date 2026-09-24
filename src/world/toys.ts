@@ -5,6 +5,7 @@ import { letterEl, S } from '../ui/lettering';
 import { toast } from '../ui/toast';
 import { notebook } from './notebook';
 import { things } from './things';
+import { NOT_YET } from './not-yet';
 import { knowledge } from './knowledge';
 import { SANDBAR } from './layout';
 import type { WorldPOI } from './regions';
@@ -181,7 +182,9 @@ class Toys {
   unlocked(id: string): boolean {
     if (this.unlockedNow.has(id)) return true;
     if (id === 'tarn-stone') return knowledge.has('fact:the-tarn') || knowledge.decided('forest') || !!notebook.list().find((j) => j.id === 'job:brack' && j.complete);
-    if (id === 'office-plane') return !!notebook.list().find((j) => j.id === 'job:dennis' && j.complete);
+    /* while Dennis's promise waits for its tier (`not-yet.ts`) the plane
+     * is simply there, by the atrium, for anybody who finds it */
+    if (id === 'office-plane') return NOT_YET.has('dennis') || !!notebook.list().find((j) => j.id === 'job:dennis' && j.complete);
     return false;
   }
 
