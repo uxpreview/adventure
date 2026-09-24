@@ -102,7 +102,7 @@ export function pinnedNoteTexture(seed: number, second = false): THREE.CanvasTex
     lettering(ctx, second ? 'HAVE TO' : 'AN HOUR', 14, 42, 5.2, r, { crooked: 0.4, width: 1.2, alpha: 0.8, tracking: 0.8 });
     line(ctx, 30, 54, 50, 55, r, { width: 1.2, alpha: 0.6, passes: 1 });
     if (!second) {
-      // rain got at the bottom corner
+      // three years of weather got at the bottom corner
       hatch(ctx, 14, 52, 22, 10, 0.6, 3, r, { width: 0.7, alpha: 0.14 });
     }
   });

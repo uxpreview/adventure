@@ -634,7 +634,7 @@ class Traffic {
 
     /* ---- weather you can see coming -------------------------------- */
     {
-      const now = weather.state.rain;
+      const now = weather.state.gather;
       const ahead = weather.ahead;
       const front = Math.max(now, ahead);
       const clearing = ahead < now - 0.03;

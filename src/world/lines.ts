@@ -129,7 +129,7 @@ export const PEOPLE: PersonDef[] = [
         'The water on this sheet comes from somewhere. I\'d like to know where.',
       ],
       asked: ['Come to THE CATCH after dark. Walk the track down to the oasis with me and back. Then tell me where the water comes from. The things are out at night. I know.'],
-      done: ['Lid\'s off. Listen. That\'s rain going in. First time.', 'You walked it at night. With the things out. Fourteen years I did that alone.'],
+      done: ['Lid\'s off. Open to the sky. Now we wait for it. Once, it came.', 'You walked it at night. With the things out. Fourteen years I did that alone.'],
       'chose:door:the-lid-off': ['Off. The lid. Fourteen years with the lid on. Don\'t say anything.'],
       'chose:door:the-cistern-yours': ['You filled it. By hand. From the oasis. Then I\'ll stop walking. The track can grow over.'],
     },

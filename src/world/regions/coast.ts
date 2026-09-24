@@ -716,13 +716,13 @@ export const buildBeach: RegionBuilder = (ctx) => {
 
     /* ---- THE UNNAMED, AND THE CRABS (Session 17) --------------------- */
     const h = clock.hour;
-    const rain = weather.state.rain > 0.5;
+    const grey = weather.state.gather > 0.5;
     comber.tick(h);
-    hutOwner.tick(h, rain);
+    hutOwner.tick(h, grey);
     hutShut.tick(h);
-    for (const b of bathers) b.tick(h, rain);
+    for (const b of bathers) b.tick(h, grey);
     fisher.tick(h);
-    for (const w of promWalkers) w.tick(h, rain);
+    for (const w of promWalkers) w.tick(h, grey);
     let scuttled = false;
     crabs.forEach((c, i) => {
       const [x, z] = CRABS[i];
@@ -736,15 +736,15 @@ export const buildBeach: RegionBuilder = (ctx) => {
     if (scuttled) say('crab-scuttle');
 
     /* ---- THE ENCOUNTERS (Session 18) --------------------------------- */
-    for (const c of combers) c.tick(h, rain);
+    for (const c of combers) c.tick(h, grey);
     {
       const lit = events.progress('the-fire') >= 0;
       fireLit.visible = lit;
       fireCold.visible = !lit;
-      for (const f of fireFolk) f.tick(h, rain);
+      for (const f of fireFolk) f.tick(h, grey);
     }
     /* ---- THE SURFERS, THE BOARD, THE LIGHTS (Session 19) ------------- */
-    for (const s of surfers) s.tick(h, rain);
+    for (const s of surfers) s.tick(h, grey);
     vanLight.visible = events.progress('the-van-light') >= 0;
     jettyLamp.visible = events.progress('the-jetty-lamp') >= 0;
     {
@@ -779,7 +779,7 @@ export const buildBeach: RegionBuilder = (ctx) => {
         eighthPot.visible = door === 'eighth';
       }
       const gone = platform.land === 'beach';
-      pye.tick(h, rain || gone);
+      pye.tick(h, grey || gone);
       // the row: out along the line, a pause at each pot, and back
       let rowing = -1;
       for (let i = 0; i < PYE_ROWS.length; i++) {

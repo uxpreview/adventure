@@ -107,7 +107,7 @@ until their tier's session.
 - **Buildings are paper boxes** (`regions/box.ts`: `boxUp`, `rowUp`):
   sides, back and roof, held still when the lens turns; a drawing laid
   over one (lit windows, a door) is `face: 'fixed'`.
-- **Systems kept from before.** A forty-minute day, weather as a function of
+- **Systems kept from before.** A forty-minute day, dry weather (wind, fog, a sky that gathers and never breaks, dry storms; the one rain is history) as a function of
   time, sixty-odd routines, interiors, collision, footprints as ink, save.
 
 ## How to run and test

@@ -1008,13 +1008,13 @@ export const buildForest: RegionBuilder = (ctx) => {
 
     /* ---- THE UNNAMED, THE HERON, THE BATS (Session 17) --------------- */
     const h = clock.hour;
-    const rain = weather.state.rain > 0.5;
+    const grey = weather.state.gather > 0.5;
     for (const c of cutters) c.tick(h);
-    picker.tick(h, rain);
-    roundWalker.tick(h, rain);
+    picker.tick(h, grey);
+    roundWalker.tick(h, grey);
     {
       const on = events.progress('the-wood-road-child');
-      if (on < 0 || rain) woodChild.hide();
+      if (on < 0 || grey) woodChild.hide();
       else {
         const e = on < 0.5 ? on * 2 : 2 - on * 2;
         const x = 62 + (101 - 62) * e;
@@ -1922,7 +1922,7 @@ export const CANYON_POIS: WorldPOI[] = [
     x: 297, z: -120, radius: 8, label: 'THE TOP OF THE CLIMB',
     note: {
       title: 'the top of the climb',
-      body: 'somebody left their boots here. side by side, laced, pointing up the canyon. they have been rained on twice.',
+      body: 'somebody left their boots here. side by side, laced, pointing up the canyon. the sun has had the laces white.',
     },
   },
   {
@@ -3565,9 +3565,9 @@ export const buildDowns: RegionBuilder = (ctx) => {
     }
 
     /* ---- THE UNNAMED (Session 17) ------------------------------------ */
-    const rain = weather.state.rain > 0.5;
-    miller.tick(h, rain);
-    carter.tick(h, rain);
+    const grey = weather.state.gather > 0.5;
+    miller.tick(h, grey);
+    carter.tick(h, grey);
     shepherd.tick(h);
 
     /* THE HERD PARTS, slowly, and looks up first. At night they lie

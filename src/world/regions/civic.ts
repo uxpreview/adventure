@@ -863,12 +863,13 @@ export const buildKingdom: RegionBuilder = (ctx) => {
      * like a bug rather than a day. They leave a little later than she
      * does and come back a little later, because she is the one who is
      * always first. */
-    /* AND IN THE RAIN THE SQUARE EMPTIES (Session 17): the crowd goes in
-     * under the awnings and the shutters, which is what a crowd does. */
+    /* AND UNDER A GREY SKY THE SQUARE EMPTIES (Session 17; it does not
+     * rain, `weather.ts`): the crowd goes in under the awnings and the
+     * shutters for a rain that never comes, which is what a crowd does. */
     const folkDim = Math.min(
       Math.max(0, Math.min(1, (clock.hour - 6.1) / 1.0)),
       Math.max(0, Math.min(1, (21.2 - clock.hour) / 1.0))
-    ) * (1 - 0.85 * W.rain);
+    ) * (1 - 0.85 * W.gather);
     folk.setDim(folkDim);
     for (const m of [stallShut, stallOpen, marget, margetSat]) {
       (m.material as THREE.MeshBasicMaterial).opacity = outNow;
@@ -1053,10 +1054,10 @@ export const buildKingdom: RegionBuilder = (ctx) => {
     lamplighterDawn.tick(h);
     delivery.tick(h);
     sweeper.tick(h);
-    for (const w of wardens) w.tick(h, W.rain > 0.5);
+    for (const w of wardens) w.tick(h, W.gather > 0.5);
     /* ---- THE ENCOUNTERS (Session 18) --------------------------------- */
     {
-      const st = wright.tick(h, W.rain > 0.5);
+      const st = wright.tick(h, W.gather > 0.5);
       // the legs home from the cart, round the corner
       const pushing = st.present && st.leg >= 2 && st.moving;
       if (wright.prop) wright.prop.visible = pushing;
@@ -1065,10 +1066,10 @@ export const buildKingdom: RegionBuilder = (ctx) => {
       offWheel.visible = !mended;
       mendedCart.visible = mended && h < 15.35 && !pushing;
     }
-    duskWalker.tick(h, W.rain > 0.5);
+    duskWalker.tick(h, W.gather > 0.5);
     const kids = events.progress('the-square-children');
     for (let i = 0; i < 2; i++) {
-      if (kids < 0 || W.rain > 0.4) { children[i].hide(); continue; }
+      if (kids < 0 || W.gather > 0.4) { children[i].hide(); continue; }
       const a = h * 100 * 0.7 + i * Math.PI;
       children[i].set(Math.floor(h * 100 / 0.28) % 2, -45 + Math.cos(a) * 5.4, -81 + Math.sin(a) * 5.2, Math.sin(a) > 0 ? 1 : -1);
     }
@@ -2053,11 +2054,11 @@ export const buildCastle: RegionBuilder = (ctx) => {
     }
 
     /* ---- THE UNNAMED, AND THE CROSSING (Session 17) ------------------ */
-    const rain = weather.state.rain > 0.5;
+    const grey = weather.state.gather > 0.5;
     sentryDusk.tick(h);
     sentryDawn.tick(h);
     groom.tick(h);
-    washer.tick(h, rain);
+    washer.tick(h, grey);
     for (const f of pilgrims) f.tick(h);
     const batsOn = events.progress('the-moat-bats');
     moatBats.forEach((b, i) => {
@@ -2842,7 +2843,7 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
   let dog = 21;
   return (dt: number, _t: number, px: number, pz: number) => {
     const h = clock.hour;
-    const rain = weather.state.rain > 0.5;
+    const grey = weather.state.gather > 0.5;
 
     /* THE PORCH LIGHT, AND IT NEVER GOES ALL THE WAY OUT.
      *
@@ -2988,10 +2989,10 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
     swing.rotation.z = Math.sin(_t * 0.8) * 0.055 + Math.sin(_t * 0.31) * 0.02;
 
     /* ---- THE UNNAMED (Session 17) ------------------------------------ */
-    jogger.tick(h, rain);
+    jogger.tick(h, grey);
     postie.tick(h);
-    walker.tick(h, rain);
-    waterer.tick(h, rain);
+    walker.tick(h, grey);
+    waterer.tick(h, grey);
     /* THE BELL IS ANSWERED (Session 18, the bicycle): ring it anywhere
      * in the built part of the land and the children on the green stop
      * where they are and look at you for two seconds; ring it near
@@ -3002,7 +3003,7 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
     kidsStill = Math.max(0, kidsStill - dt);
     const green = events.progress('the-green-children');
     for (let i = 0; i < 2; i++) {
-      if (green < 0 || rain) { kids[i].hide(); continue; }
+      if (green < 0 || grey) { kids[i].hide(); continue; }
       if (kidsStill > 0) {
         const a = kidsA[i];
         const kx = GREEN.x + Math.cos(a) * 4.6;
@@ -3054,7 +3055,7 @@ export const buildNeighborhood: RegionBuilder = (ctx) => {
         ball.rotation.z -= Math.hypot(ballThing.vx, ballThing.vz) * dt * 2.2 * (ballThing.vx < 0 ? -1 : 1);
       } else ball.visible = false;
 
-      const out = events.progress('the-low-dog') >= 0 && !rain;
+      const out = events.progress('the-low-dog') >= 0 && !grey;
       if (!out) lowDog.hide();
       else {
         const walkerIn = inGreen(px, pz);
@@ -3705,14 +3706,14 @@ export const buildCity: RegionBuilder = (ctx) => {
     const dusk = Math.max(0, Math.min(1,
       Math.max((h - 16.8) / 2.4, (7.2 - h) / 2)));
     lightUp(towerLits, dusk);
-    const rainNow = weather.state.rain > 0.5;
+    const greyNow = weather.state.gather > 0.5;
 
     /* ---- THE BARISTA, THE DOG, THE CUPS, THE BIN (Session 20) -------- */
     {
-      barista.tick(h, rainNow);
+      barista.tick(h, greyNow);
       // the cups on the counter: one more on every hour, and the row
       // is a pure function of the hour, so it is right on arrival
-      const n = rainNow ? 0 : cupsAt(h);
+      const n = greyNow ? 0 : cupsAt(h);
       if (n !== cupsShown) {
         cupsShown = n;
         if (n > 0) (cups.material as THREE.MeshBasicMaterial).map = cupRows[n - 1];
@@ -3720,7 +3721,7 @@ export const buildCity: RegionBuilder = (ctx) => {
       }
       // the dog, on its own routine, and where it walks it leaves paws
       const ds = routineAt(BARISTA_DOG, h);
-      if (!ds.present || rainNow) baristaDog.hide();
+      if (!ds.present || greyNow) baristaDog.hide();
       else {
         const pose = ds.moving ? (Math.floor((h * 100) / 0.34) % 2 === 0 ? 1 : 2) : 0;
         baristaDog.set(pose, ds.x, ds.z, ds.face, 0, ds.fade);
@@ -3754,11 +3755,11 @@ export const buildCity: RegionBuilder = (ctx) => {
     }
 
     /* ---- THE UNNAMED, THE RUSH, THE FLOCK (Session 17) --------------- */
-    const rain = weather.state.rain > 0.5;
+    const grey = weather.state.gather > 0.5;
     citySweeper.tick(h);
     cityDelivery.tick(h);
-    cleaner.tick(h, rain);
-    busker.tick(h, rain);
+    cleaner.tick(h, grey);
+    busker.tick(h, grey);
     {
       const bump = (p: number) => (p < 0 ? 0 : Math.min(1, p / 0.18, (1 - p) / 0.18));
       const k = Math.max(bump(events.progress('the-rush-morning')), bump(events.progress('the-rush-evening')));
@@ -4736,10 +4737,10 @@ export const buildOffice: RegionBuilder = (ctx) => {
     cup.rotation.z = Math.sin(a * 2) * 0.5;
 
     /* ---- THE UNNAMED (Session 17) ------------------------------------ */
-    const rain = weather.state.rain > 0.5;
+    const grey = weather.state.gather > 0.5;
     for (const f of workersIn) f.tick(h);
     for (const f of workersOut) f.tick(h);
-    for (const f of smokers) f.tick(h, rain);
+    for (const f of smokers) f.tick(h, grey);
     courier.tick(h);
     officeCleaner.tick(h);
     guard.tick(h);
@@ -4787,9 +4788,9 @@ export const buildOffice: RegionBuilder = (ctx) => {
 
     /* ---- THE DESIGN STUDIO (Session 20) ------------------------------ */
     {
-      lead.tick(h, rain);
-      researcher.tick(h, rain);
-      maker.tick(h, rain);
+      lead.tick(h, grey);
+      researcher.tick(h, grey);
+      maker.tick(h, grey);
       // the glass: the sprint's wall, less what has been peeled off it
       const n = Math.max(0, stickiesAt(h) - peeled.n);
       const level = Math.round(n / 4);
